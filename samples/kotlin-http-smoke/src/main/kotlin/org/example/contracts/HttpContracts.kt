@@ -256,6 +256,8 @@ fun main() = runBlocking {
     referencedStringEnumScalarDefaultsContracts(false)
     referencedStringEnumNullMemberDefaultsContracts(false)
     nestedObjectDefaultsContracts(checked = false)
+    referencedObjectDefaultsContracts(checked = false)
+    nestedObjectCollectionDefaultsContracts(checked = false)
     directNullableComponentCountsContracts()
     structuredValuesContracts()
     structuredConstContracts()

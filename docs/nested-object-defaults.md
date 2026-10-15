@@ -22,10 +22,10 @@ An optional ordinary field gets a typed initializer that decodes the canonical J
 
 Only a direct ordinary DTO field's own `default` grants this role, and only when the field schema is a plain inline object: `type` may be explicit `"object"` or inferred from a non-empty `properties` map. Rejected sub-constructs keep their original diagnostics at the same or a more precise original Pointer. Excluded here:
 
-- `$ref` to a named DTO (the separate referenced role), `oneOf`/`anyOf`/union and `allOf` objects;
+- `$ref` to a named DTO (the separate [referenced object contract](referenced-object-defaults.md)), `oneOf`/`anyOf`/union and `allOf` objects;
 - dictionaries or fixed extras (`additionalProperties`), empty-property objects and raw `JsonElement` projections;
 - `const`, `enum` on the object node, native (`x-native-type`), value-class, format and OpenAPI discriminator markers;
-- containers whose element is an inline object (List/Map of DTOs), and container-child defaults.
+- containers whose element is an inline object use the separate [object collection contract](nested-object-collection-defaults.md); container-child defaults remain rejected.
 
 Every declared property is checked, including when the default object omits it, and every present key must name a declared property. All `required` wires must be present in the default object; `null` is accepted only for a nullable property. Property values reuse the existing finite leaf/container planner, so scalar/temporal leaves, String enum membership against the original vocabulary, native enum exact membership, nested builtin collections and per-layer nullability follow those contracts unchanged. Nested plain-object properties recurse through this same walk, so finite non-recursive object trees are supported. A property may declare its own `default`; the nested model's own field plan validates that annotation, and the outer default may omit the key.
 

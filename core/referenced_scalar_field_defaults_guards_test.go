@@ -89,7 +89,8 @@ func TestReferencedScalarFieldDefaultsNoNewSourceRoles(t *testing.T) {
 	for _, terminal := range []string{
 		`{"type":"string","const":"a"}`,
 		`{"type":"string","x-native-type":"kotlin.String"}`, `{"type":"string","x-kotlin-value-class":true}`,
-		`{"properties":{"id":{"type":"integer"}}}`, `{"oneOf":[{"type":"string"},{"type":"null"}]}`,
+		// Plain object targets now use the separate referenced object role.
+		`{"oneOf":[{"type":"string"},{"type":"null"}]}`,
 		`{"type":"integer","nullable":true,"default":1}`,
 	} {
 		for _, checked := range []bool{false, true} {

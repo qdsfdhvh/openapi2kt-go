@@ -1,0 +1,40 @@
+# Referenced ordinary DTO object field defaults
+
+[Direct inline ordinary DTO object field defaults](nested-object-defaults.md) own the inline plain-object leaf role. This contract extends the same field-own annotation to an ordinary DTO property whose direct local `$ref` resolves to an already accepted plain ordinary named DTO component, possibly through transparent aliases.
+
+```json
+{
+  "Inner": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}, "age": {"type": "integer", "default": 7}}},
+  "Holder": {"properties": {"cfg": {"$ref": "#/components/schemas/Inner", "default": {"name": "outer", "age": 9}}}}
+}
+```
+
+The property keeps the resolver's actual public type (`org.example.models.models.InnerDto?`) and the emitted helper decodes the canonical JSON through that final actual DTO serializer, for example `= `openapi-kt model default org.example.models.models.InnerDto`("{\"age\":9,\"name\":\"outer\"}")`. Helpers bind to the final emitted type after optimization and are deduplicated per file, so a field and its alias that resolve to the same DTO share one helper and never spell a stale classifier. Each evaluation produces a fresh tree.
+
+## Annotation and presence
+
+Only the consuming field's own `default` is accepted. A default on the referenced target, an intermediate reference, a target root or a property's own container child is not inherited or used; target-root defaults are rejected outright. No target value is inherited, discarded or selected by a collision rule.
+
+Nullable intent follows the existing reference contracts: nearest explicit consumer/alias true or false, terminal intent. Optional presence alone does not legalize a null annotation; a `null` default on a nearest `nullable:false` view is rejected, while an explicitly nullable target accepts it as a literal `null`. Optional ordinary fields get a typed constructor/decoding initializer, a supplied value replaces the default and omitted nested keys use the target DTO's own property defaults. Required fields validate the annotation and keep required constructor arguments, including required nullable fields. Optional explicitly nullable inline request fields retain `Patch.Absent`, with separate Null and Value wire states. A missing request key never becomes a default update.
+
+The role is available in ordinary shared/nested DTOs and ordinary inline request/response/SSE payload DTOs. Ordinary object `allOf` retains its later-property override contract and validates discarded original defaults. Union/hierarchy fields, alias views that do not collapse to a plain nominal DTO, internal reference chains, raw/open dictionaries and wider default roles remain outside this profile.
+
+## Admission and source fidelity
+
+The target must be a plain inline-style ordinary DTO: explicit or inferred `type: "object"`, a non-empty declared `properties` map, and no `$ref`, composition, `additionalProperties`, `const`, object-level `enum`, native/value-class or format marker anywhere in the walked target. Property values reuse the finite leaf/container planner: builtin and temporal scalars, String enum membership against the original vocabulary with open runtime `Unrecognized`, native numeric/Boolean exact membership, nested builtin collections, nested plain-object recursion and per-layer nullability. A walked property may carry its own validated default through the target model's own plan; the outer default may omit it.
+
+The planner borrows the original target component nodes and the consuming field's original `/default` value; it never rewrites the source. Canonical JSON sorts object keys with the same rule as typed dictionaries, while validation runs in original member order so diagnostics keep their source precedence. Changing an effective value, a nullable layer or a retained check changes the final shape seen by deduplication, merging, hoisting and name locks; key reordering and equivalent mapped Float/Double spelling preserve identity. Required/Patch annotations that emit no initializer add no runtime default identity.
+
+## Validation and resources
+
+With `--validation`, the default value is checked against each target property's retained bounds/counts/enum membership exactly as a supplied value would be, and the target DTO's own `init` checks run when the decoded default is constructed. Native enum membership of the default annotation is strict in both modes, while runtime wire enforcement stays validation-gated. Null bypasses only its own non-null checks.
+
+The existing input8MiB, source48, checked-collection16 and 240 serialized constructor-slot limits are unchanged. The whole annotation reuses the nested default budget: 16,384 JSON value nodes and 32 KiB compact JSON bytes per original `/default`, with the canonical encoding independently limited to 32 KiB. Exceeded budgets return `E_MODEL_LIMIT` at an original Pointer with no partial artifacts. These bounds apply to required/Patch/discarded annotations as well as emitted initializers; independent width/depth/byte probes do not establish a combined maximum-width × depth guarantee.
+
+## Compatibility and verification
+
+These referenced object defaults previously failed with `E_SCHEMA_UNSUPPORTED`. Existing scalar, collection, enum, temporal and direct inline object roles retain their contracts and emitted bytes. This closes only the referenced plain ordinary DTO field-default subitem of D03 and extends M01/M03/M04/M07/M08 with the existing M12/V05 and typed A03/A05/A08 consumers; target-root defaults, `$ref` companion properties inside the target, union/hierarchy fields, root/component defaults and general D03/D04 remain open.
+
+The [fixture](../tests/fixtures/http/referenced-object-defaults.json), [core typed/presence and graduation tests](../core/referenced_object_defaults_test.go), [guards/budgets](../core/referenced_object_defaults_guards_test.go), [source/value authority tests](../internal/schema/referenced_object_defaults_test.go) and [native parity/preservation/optimization tests](../internal/cli/referenced_object_defaults_process_test.go) define the increment. `bash scripts/test.sh feature referenced-object-defaults` freshly generates Data/Plain × validation off/on projects and checks constructor/serde/Patch/copy, required presence, four Json configurations, validation membership, controlled HTTP and fragmented live SSE closure/reuse, plus a combined optimized/locked package whose helper still binds its relocated type. The fixture/consumer also run in `http`. `OPENAPI_KT_PREPARE_ONLY=1` provides native preparation evidence only.
+
+**Migration:** previously rejected referenced ordinary DTO field defaults now generate. Adding the annotation does not change the field's public type. General D03/D04, wider platforms and release gates remain open.

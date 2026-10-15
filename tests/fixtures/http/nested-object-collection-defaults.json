@@ -1,0 +1,316 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Nested object collection defaults",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "age": {
+                  "type": "integer",
+                  "default": 7
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b"
+                  ]
+                },
+                "code": {
+                  "type": "integer",
+                  "format": "int32",
+                  "enum": [
+                    1,
+                    2,
+                    3
+                  ]
+                }
+              }
+            },
+            "default": [
+              {
+                "name": "a",
+                "kind": "a"
+              },
+              {
+                "name": "b",
+                "age": 3,
+                "code": 2
+              }
+            ]
+          },
+          "maps": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "v": {
+                  "type": "integer"
+                }
+              }
+            },
+            "default": {
+              "k": {
+                "v": 1
+              }
+            }
+          },
+          "mixed": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "z": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "default": [
+              {
+                "a": {
+                  "z": "x"
+                }
+              }
+            ]
+          },
+          "nilRows": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "n": {
+                  "type": "integer"
+                }
+              }
+            },
+            "default": null
+          },
+          "requiredRows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "k"
+              ],
+              "properties": {
+                "k": {
+                  "type": "string"
+                }
+              }
+            },
+            "default": [
+              {
+                "k": "v"
+              }
+            ]
+          },
+          "scalars": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        "required": [
+          "requiredRows"
+        ]
+      },
+      "RequiredCfg": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "r": {
+                  "type": "integer"
+                }
+              }
+            },
+            "default": [
+              {
+                "r": 1
+              }
+            ]
+          }
+        },
+        "required": [
+          "rows"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "sendHolder",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patchHolder",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "required": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "rows": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "default": [
+                      {
+                        "x": "p"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watchHolders",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "const": "holder"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/required": {
+      "post": {
+        "operationId": "sendRequired",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequiredCfg"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequiredCfg"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

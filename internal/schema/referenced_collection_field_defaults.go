@@ -89,7 +89,7 @@ const (
 	noReferencedDefaultRole referencedDefaultSourceRole = iota
 	referencedScalarOwnDefault
 	referencedCollectionOwnDefault
-	referencedStringEnumOwnDefault
+	referencedNamedOwnDefault
 )
 
 func (a *analyzer) referencedDefaultSchema(v *document.Value, pointer string, ty TypeRef, depth int, root bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
@@ -101,9 +101,9 @@ func (a *analyzer) referencedDefaultSchema(v *document.Value, pointer string, ty
 		case List, Map:
 			role = referencedCollectionOwnDefault
 		case Named:
-			// Source grammar below must confirm a plain String enum; a Named
-			// spelling alone never grants DTO/union/nominal default admission.
-			role = referencedStringEnumOwnDefault
+			// Source grammar below must confirm a plain String enum or ordinary
+			// DTO; a Named spelling alone never grants default admission.
+			role = referencedNamedOwnDefault
 		}
 	}
 	return a.referencedDefaultSchemaRole(v, pointer, ty, depth, root, role)
@@ -151,7 +151,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 	}
 	if edge == "" && has(v, "enum") {
 		if kind == "" || kind == "string" {
-			if role != referencedCollectionOwnDefault && role != referencedStringEnumOwnDefault {
+			if role != referencedCollectionOwnDefault && role != referencedNamedOwnDefault {
 				return nil, unsupported(naming.Pointer(pointer, "enum"))
 			}
 			// Plain String enum terminals join this profile. Default members are
@@ -221,6 +221,25 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		node.native = a
 		return node, nil
 	}
+	if edge == "" && kind == "object" && !has(v, "enum") {
+		// A Named terminal may be an ordinary DTO instead of a String enum. The
+		// target root must not carry its own default; property schemas keep their
+		// own validated defaults through the nested model plan.
+		if role != referencedNamedOwnDefault {
+			return nil, unsupported(naming.Pointer(pointer, "properties"))
+		}
+		if bare.Kind != Named {
+			return nil, unsupported(pointer)
+		}
+		object, err := a.objectDefaultNode(v, pointer, depth, false)
+		if err != nil {
+			return nil, err
+		}
+		// The annotation follows the effective consumer/alias nullability, not
+		// only the target's own intent.
+		object.ty = actual
+		return object, nil
+	}
 	if edge == "" && a.options.Validation {
 		keys = append(keys, primitiveBoundKeys...)
 	}
@@ -281,7 +300,7 @@ func (a *analyzer) planReferencedFieldDefaults() *diagnostic.Diagnostic {
 			return err
 		}
 		kind := node.ty.WithoutRootNull().Kind
-		if kind != List && kind != Map && kind != Scalar && !(kind == Named && node.stringEnum) {
+		if kind != List && kind != Map && kind != Scalar && !(kind == Named && node.stringEnum) && !node.object {
 			return unsupported(naming.Pointer(plan.Field.Pointer, "default"))
 		}
 		value := get(plan.Field.Schema, "default")
@@ -312,6 +331,17 @@ func (a *analyzer) planReferencedFieldDefaults() *diagnostic.Diagnostic {
 		if node.stringEnum {
 			// Bind the final actual lexical type in the emitter after relocation.
 			property.Default = "`openapi-kt default enum scalar`(" + naming.Literal(encoded) + ")"
+			continue
+		}
+		if node.object {
+			// Keep the plain-nominal boundary explicit: alias/Element views and
+			// internal chains stay outside this role, and the emitter binds the
+			// final actual DTO type after relocation.
+			target := property.Type.WithoutRootNull()
+			if target.Kind != Named || target.Element != nil {
+				return unsupported(naming.Pointer(plan.Field.Pointer, "default"))
+			}
+			property.Default = "`openapi-kt default model`(" + naming.Literal(encoded) + ")"
 			continue
 		}
 		if kind == Scalar {

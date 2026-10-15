@@ -45,10 +45,6 @@ func TestNestedObjectDefaultsGuards(t *testing.T) {
 	}
 	// Excluded sub-roles stay rejected without partial output.
 	for _, input := range []string{
-		// Named DTO reference default is a separate referenced role.
-		`{"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{"a":"x"}}}},"Inner":{"type":"object","properties":{"a":{"type":"string"}}}}`,
-		// Containers of inline objects inside the default tree are separate roles.
-		`{"Holder":{"properties":{"value":{"type":"object","properties":{"rows":{"type":"array","items":{"type":"object","properties":{"v":{"type":"integer"}}}}},"default":{"rows":[{"v":1}]}}}}}`,
 		// Const-bearing properties are not part of this slice.
 		`{"Holder":{"properties":{"value":{"type":"object","properties":{"tag":{"const":"a"}},"default":{"tag":"a"}}}}}`,
 		// A container child default is not an outer object default.

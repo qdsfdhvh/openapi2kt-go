@@ -43,7 +43,11 @@ func nullableArraySchema(v *document.Value) bool {
 // dictionaryValue validates the container independently of its value projection.
 // A nil value denotes the open/closed JsonObject representation.
 func (a *analyzer) dictionaryValue(v *document.Value, pointer string) (*document.Value, *diagnostic.Diagnostic) {
-	if err := checkKeys(v, a.collectionKeys([]string{"type", "nullable", "properties", "required", "additionalProperties"}), pointer); err != nil {
+	keys := a.collectionKeys([]string{"type", "nullable", "properties", "required", "additionalProperties"})
+	if a.objectDefaultSchemas[v] {
+		keys = append(keys, "default")
+	}
+	if err := checkKeys(v, keys, pointer); err != nil {
 		return nil, err
 	}
 	if required, ok := v.Get("required"); ok && (required.Kind() != document.Array || len(required.Items()) != 0) {

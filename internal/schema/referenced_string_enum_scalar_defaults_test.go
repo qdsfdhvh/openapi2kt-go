@@ -40,7 +40,7 @@ func TestReferencedStringEnumScalarDefaultsSourceAuthority(t *testing.T) {
 	if _, err := a.referencedDefaultSchemaRole(node.schema, node.pointer, node.ty, 0, false, noReferencedDefaultRole); err == nil {
 		t.Fatal("Named spelling granted source role")
 	}
-	if _, err := a.referencedDefaultSchemaRole(node.schema, node.pointer, TypeRef{Kind: Scalar, Name: "kotlin.String"}, 0, false, referencedStringEnumOwnDefault); err == nil {
+	if _, err := a.referencedDefaultSchemaRole(node.schema, node.pointer, TypeRef{Kind: Scalar, Name: "kotlin.String"}, 0, false, referencedNamedOwnDefault); err == nil {
 		t.Fatal("plain scalar swallowed enum classifier")
 	}
 	// An annotation does not replace the existing actual-owner authority barrier.

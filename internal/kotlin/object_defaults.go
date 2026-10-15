@@ -37,17 +37,45 @@ func objectDefaultExpression(p schema.Property, scope string) (string, bool) {
 }
 
 func qualifyObjectDefaultType(ty schema.TypeRef, scope string) (schema.TypeRef, bool) {
-	if ty.Kind != schema.Named || ty.Element != nil {
-		return schema.TypeRef{}, false
+	switch ty.Kind {
+	case schema.Nullable, schema.List, schema.Map:
+		if ty.Element == nil {
+			return schema.TypeRef{}, false
+		}
+		element, ok := qualifyObjectDefaultType(*ty.Element, scope)
+		if !ok {
+			return schema.TypeRef{}, false
+		}
+		ty.Element = &element
+		return ty, true
+	case schema.Named:
+		if ty.Element != nil {
+			return schema.TypeRef{}, false
+		}
+		if !strings.Contains(ty.Name, ".") {
+			ty.Name = scope + "." + ty.Name
+		}
+		return ty, true
 	}
-	if !strings.Contains(ty.Name, ".") {
-		ty.Name = scope + "." + ty.Name
-	}
-	return ty, true
+	return schema.TypeRef{}, false
 }
 
 func objectDefaultHelperName(ty schema.TypeRef) string {
-	return "`openapi-kt model default " + strings.ReplaceAll(ty.Name, ".", " ") + "`"
+	return "`openapi-kt model default " + strings.ReplaceAll(objectDefaultTypeKey(ty), ".", " ") + "`"
+}
+
+// objectDefaultTypeKey distinguishes the container/nullable wrappers so a DTO,
+// a list of DTOs and a dictionary of DTOs never share one helper name.
+func objectDefaultTypeKey(ty schema.TypeRef) string {
+	switch ty.Kind {
+	case schema.Nullable:
+		return "Nullable " + objectDefaultTypeKey(*ty.Element)
+	case schema.List:
+		return "List " + objectDefaultTypeKey(*ty.Element)
+	case schema.Map:
+		return "Map " + objectDefaultTypeKey(*ty.Element)
+	}
+	return ty.Name
 }
 
 func emitObjectDefaultHelpers(declaration schema.Declaration, owner string, out *strings.Builder) {

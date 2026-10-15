@@ -20,7 +20,7 @@
 
 ## 原始注解、ISO 与身份
 
-所有原 schema 节点都要验证，即使 default 为 empty/null。只授予普通 DTO 字段自己的 outer default 角色：内层容器/叶、target/chain/root default、named/ref 集合默认值、`$ref` temporal 叶、native-date/provider/value-class、formatted enum/const/DTO/union/hierarchy 叶及组合包装保持拒绝；plain unformatted String enum 叶仅由上方独立合同授予 outer field default，不改变 temporal grammar/checks。本合同不扩大 general schema roles、intersection 或 default inheritance。
+所有原 schema 节点都要验证，即使 default 为 empty/null。只授予普通 DTO 字段自己的 outer default 角色：内层容器/叶、target/chain/root default、named/ref 集合默认值、`$ref` temporal 叶、native-date/provider/value-class、formatted enum/const/union/hierarchy 叶及组合包装保持拒绝（inline DTO object 叶改用独立的[object collection 合同](nested-object-collection-defaults.md)）；plain unformatted String enum 叶仅由上方独立合同授予 outer field default，不改变 temporal grammar/checks。本合同不扩大 general schema roles、intersection 或 default inheritance。
 
 LocalDate 使用既有合法四位年份 ISO date 规则，包括真实闰日检查。Instant 除既有 RFC3339 date 检查外，共用[单层集合限制](primitive-array-defaults.md#date-and-timestamp-elements)：四位年份、uppercase T/Z、两位时间字段、点后最多九位小数，Z 或范围在 ±18:00 的合法 offset。逗号小数、单数字小时、过量精度、坏闰日和范围外 offset 在 generation 时拒绝，防止 initializer 首次执行时才失败。不会新增 timezone 等价 default identity 或日期排序规则。
 

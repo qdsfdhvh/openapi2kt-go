@@ -28,18 +28,30 @@ type objectDefaultProperty struct {
 
 // objectDefaultCandidateSchema is the exact source grammar for this role. It
 // deliberately excludes constructs owned by separate reference/composition/
-// dictionary/const/union roles so existing rejections keep their behavior.
+// dictionary/const/union roles so existing rejections keep their behavior. It
+// returns true when the tree is a plain object candidate or a List/typed Map
+// whose element tree contains one, so scalar-only collections stay with the
+// existing nested collection profile.
 func objectDefaultCandidateSchema(v *document.Value) bool {
 	if v == nil {
 		return false
+	}
+	kind, _, err := schemaType(v, "")
+	if err != nil {
+		return false
+	}
+	if kind == "array" {
+		return objectDefaultCandidateSchema(get(v, "items"))
+	}
+	if dictionarySchema(v) {
+		return objectDefaultCandidateSchema(get(v, "additionalProperties"))
 	}
 	for _, key := range []string{"$ref", "allOf", "oneOf", "anyOf", "const", "enum", "additionalProperties", "format", "x-native-type", "x-kotlin-value-class"} {
 		if has(v, key) {
 			return false
 		}
 	}
-	kind, _, err := schemaType(v, "")
-	if err != nil || kind != "object" {
+	if kind != "object" {
 		return false
 	}
 	properties, exists := v.Get("properties")
@@ -68,9 +80,10 @@ func objectDefaultRequiredNames(v *document.Value, pointer string) (map[string]b
 	return required, nil
 }
 
-// objectDefaultNode mirrors the accepted plain-object source grammar. Property
-// schemas retain the existing leaf/container planner, which validates their own
-// grammar, bounds, counts and enum vocabularies against original nodes.
+// objectDefaultNode mirrors the accepted plain-object and List/typed Map source
+// grammar. Property and container elements retain the existing leaf/container
+// planner, which validates their own grammar, bounds, counts and enum
+// vocabularies against original nodes.
 func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth int, allowOwnDefault bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	if err := depthCheck(depth, pointer); err != nil {
 		return nil, err
@@ -81,6 +94,15 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 	kind, nullable, err := schemaType(v, pointer)
 	if err != nil {
 		return nil, err
+	}
+	if kind == "array" {
+		return a.objectDefaultContainer(v, pointer, depth, TypeRef{Kind: List, Element: &TypeRef{Kind: JSON}}, allowOwnDefault)
+	}
+	if dictionarySchema(v) {
+		if required, ok := v.Get("required"); ok && (required.Kind() != document.Array || len(required.Items()) != 0) {
+			return nil, invalid("Dictionary schemas cannot require undeclared fixed properties.", naming.Pointer(pointer, "required"))
+		}
+		return a.objectDefaultContainer(v, pointer, depth, TypeRef{Kind: Map, Element: &TypeRef{Kind: JSON}}, allowOwnDefault)
 	}
 	if kind != "object" {
 		return nil, unsupported(naming.Pointer(pointer, "type"))
@@ -130,6 +152,48 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 		}
 	}
 	return node, nil
+}
+
+// objectDefaultContainer builds a List/typed Map node whose element tree may
+// contain inline DTO objects. Non-object elements keep the existing planner.
+func (a *analyzer) objectDefaultContainer(v *document.Value, pointer string, depth int, kind TypeRef, allowOwnDefault bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	edge := "items"
+	keys := a.collectionKeys([]string{"type", "nullable", "items"})
+	if kind.Kind == Map {
+		edge = "additionalProperties"
+		keys = a.collectionKeys([]string{"type", "nullable", "properties", "required", "additionalProperties"})
+	}
+	if allowOwnDefault {
+		keys = append(keys, "default")
+	}
+	if err := checkKeys(v, keys, pointer); err != nil {
+		return nil, err
+	}
+	child, err := a.objectDefaultChild(get(v, edge), naming.Pointer(pointer, edge), depth+1)
+	if err != nil {
+		return nil, err
+	}
+	node := &nestedDefaultNode{schema: v, pointer: pointer, element: child}
+	kind.Element = &child.ty
+	ty, err := a.checkedCollection(kind, v, pointer)
+	if err != nil {
+		return nil, err
+	}
+	node.ty = ty
+	if _, nullable, _ := schemaType(v, pointer); nullable {
+		node.ty = node.ty.Null()
+	}
+	return node, nil
+}
+
+// objectDefaultChild dispatches a container element. Object-containing trees
+// recurse here; every other element stays with the existing leaf/container
+// planner. Element schemas cannot own the default annotation themselves.
+func (a *analyzer) objectDefaultChild(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	if objectDefaultCandidateSchema(v) {
+		return a.objectDefaultNode(v, pointer, depth, false)
+	}
+	return a.nestedDefaultSchema(v, "Validation", pointer, nil, nil, depth, false)
 }
 
 // objectDefaultField plans the shared field type and fully validates the own
