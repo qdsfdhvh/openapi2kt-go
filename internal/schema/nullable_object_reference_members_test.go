@@ -24,7 +24,7 @@ func TestNullableObjectReferenceMembersRequireActualSourceAndAliasOwners(t *test
 	}
 	catalog := get(get(root, "components"), "schemas")
 	original := get(catalog, "OriginalProduct")
-	view, e := readUnion(get(catalog, "Product"), "/components/schemas/Product")
+	view, e := a.readUnion(get(catalog, "Product"), "/components/schemas/Product")
 	if e != nil {
 		t.Fatal(e)
 	}

@@ -1804,6 +1804,10 @@ done
   --output "$workspace/project/build/generated-limits/referenced-object-collection-defaults" --package-name org.example.refcol --api-client-name RefCol --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/referenced-object-collection-defaults.json \
   --output "$workspace/project/build/generated-limits/referenced-object-collection-defaults" --package-name org.example.refcol --api-client-name RefCol --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/union-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/union-field-defaults" --package-name org.example.uniondef --api-client-name UnionDef --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/union-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/union-field-defaults" --package-name org.example.uniondef --api-client-name UnionDef --model-name-suffix Dto --check
 if [[ "${OPENAPI_KT_PREPARE_ONLY:-0}" == 1 ]]; then
   echo "PREPARED HTTP native generation/check: $workspace/project"
   exit 0

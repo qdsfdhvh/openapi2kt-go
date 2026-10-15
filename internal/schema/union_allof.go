@@ -66,7 +66,7 @@ func (a *analyzer) objectCompositionUnion(v *document.Value, pointer string, dep
 			}
 			return alternatives(c.Schema, c.Pointer, d+steps, stack)
 		}
-		union, err := readUnion(v, p)
+		union, err := a.readUnion(v, p)
 		if err != nil {
 			return nil, false, err
 		}

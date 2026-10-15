@@ -62,7 +62,7 @@ func (a *analyzer) requestBody(v *document.Value, pointer, owner string) (*Reque
 			return nil, err
 		}
 		view := s
-		union, err := readUnion(s, p+"/schema")
+		union, err := a.readUnion(s, p+"/schema")
 		if err != nil {
 			return nil, err
 		}

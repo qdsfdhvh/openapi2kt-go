@@ -83,7 +83,7 @@ func (a *analyzer) primitiveElementType(v *document.Value, pointer string, depth
 	var union *unionView
 	if !hasPrimitiveBounds(v) {
 		var err *diagnostic.Diagnostic
-		union, err = readUnion(v, pointer)
+		union, err = a.readUnion(v, pointer)
 		if err != nil {
 			return nil, err
 		}

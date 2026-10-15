@@ -64,7 +64,7 @@ func (a *analyzer) sseSchema(v *document.Value, owner, pointer string) (*SSEEven
 			}
 			return visit(target.Schema, target.Pointer, depth+steps)
 		}
-		union, err := readUnion(v, p)
+		union, err := a.readUnion(v, p)
 		if err != nil {
 			return err
 		}

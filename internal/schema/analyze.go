@@ -677,7 +677,7 @@ type unionView struct {
 	NullSources                         int
 }
 
-func readUnion(v *document.Value, pointer string) (*unionView, *diagnostic.Diagnostic) {
+func (a *analyzer) readUnion(v *document.Value, pointer string) (*unionView, *diagnostic.Diagnostic) {
 	keyword := ""
 	if has(v, "oneOf") {
 		keyword = "oneOf"
@@ -690,7 +690,13 @@ func readUnion(v *document.Value, pointer string) (*unionView, *diagnostic.Diagn
 	if has(v, "type") {
 		return nil, unsupported(location)
 	}
-	if err := checkKeys(v, []string{keyword, "nullable"}, pointer); err != nil {
+	keys := []string{keyword, "nullable"}
+	if a != nil && a.objectDefaultSchemas[v] {
+		// A union field own default is validated by its dedicated planner; the
+		// shared type plan borrows the same node and must allow the annotation.
+		keys = append(keys, "default")
+	}
+	if err := checkKeys(v, keys, pointer); err != nil {
 		return nil, err
 	}
 	_, nullable, err := schemaType(v, pointer)
@@ -763,7 +769,7 @@ func (a *analyzer) propertyType(v *document.Value, nestedName, pointer string, n
 		return TypeRef{}, err
 	}
 	if union == nil {
-		union, err = readUnion(v, pointer)
+		union, err = a.readUnion(v, pointer)
 		if err != nil {
 			return TypeRef{}, err
 		}

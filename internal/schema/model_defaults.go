@@ -63,6 +63,10 @@ func (a *analyzer) modelDefaultType(f field, ordinary bool, name string, nested 
 		ty, err := a.referencedDefaultType(f, ordinary)
 		return ty, nil, err
 	}
+	if a.primitiveUnionDefaultCandidate(f.Schema) {
+		ty, err := a.primitiveUnionDefaultField(f, name, nested, used)
+		return ty, nil, err
+	}
 	if a.objectDefaultCandidate(f.Schema) {
 		ty, err := a.objectDefaultField(f, ordinary, name, nested, used)
 		return ty, nil, err
@@ -230,6 +234,18 @@ func (a *analyzer) modelDefault(f field, ty TypeRef, required bool) (string, *di
 		return "", nil // Final linked backing supplies the typed default plan.
 	}
 	pointer := naming.Pointer(f.Pointer, "default")
+	if a.primitiveUnionDefaultCandidate(f.Schema) {
+		validation := *a
+		validation.warnings = nil // Type planning owns source warnings.
+		initializer, err := validation.primitiveUnionDefaultInitializer(f)
+		if err != nil {
+			return "", err
+		}
+		if required || ty.Kind == PatchValue {
+			return "", nil
+		}
+		return initializer, nil
+	}
 	if a.objectDefaultCandidate(f.Schema) {
 		validation := *a
 		validation.warnings = nil // Type planning owns source warnings.

@@ -24,7 +24,7 @@ func TestNullableObjectMembersKeepOriginalNodesAndPhysicalVariants(t *testing.T)
 	}
 	catalog := get(get(root, "components"), "schemas")
 	product := get(catalog, "Product")
-	view, e := readUnion(product, "/components/schemas/Product")
+	view, e := a.readUnion(product, "/components/schemas/Product")
 	if e != nil || view == nil || !view.Nullable || view.HasNull || len(view.Branches) != 2 {
 		t.Fatal(view, e)
 	}

@@ -98,7 +98,7 @@ func (a *analyzer) requestNullable(v *document.Value, pointer string) (bool, *di
 	if err != nil {
 		return false, err
 	}
-	union, err := readUnion(v, pointer)
+	union, err := a.readUnion(v, pointer)
 	if err != nil {
 		return false, err
 	}

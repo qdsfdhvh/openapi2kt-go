@@ -141,7 +141,7 @@ func (a *analyzer) nominalSourceNullable(target *resolvedSchema) (bool, *diagnos
 		if target.Catalog != nil {
 			return false, nil
 		} // Standalone unions retain Null carriers.
-		view, err := readUnion(target.Schema, target.Pointer)
+		view, err := a.readUnion(target.Schema, target.Pointer)
 		if err != nil {
 			return false, err
 		}
