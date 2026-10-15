@@ -21,11 +21,6 @@ func TestReferencedObjectDefaultsGuards(t *testing.T) {
 			"E_SCHEMA_UNSUPPORTED", "/components/schemas/Inner/default",
 		},
 		{
-			"target referenced property",
-			`{"Leaf":{"type":"object","properties":{"z":{"type":"string"}}},"Inner":{"type":"object","properties":{"leaf":{"$ref":"#/components/schemas/Leaf"}}},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{"leaf":{"z":"1"}}}}}}`,
-			"E_SCHEMA_UNSUPPORTED", "/components/schemas/Inner/properties/leaf/$ref",
-		},
-		{
 			"unknown key",
 			`{"Inner":{"type":"object","properties":{"a":{"type":"string"}}},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{"zz":1}}}}}`,
 			"E_SCHEMA_INVALID", "/components/schemas/Holder/properties/value/default/zz",

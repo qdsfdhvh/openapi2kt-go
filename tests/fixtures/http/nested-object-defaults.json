@@ -70,6 +70,9 @@
                   "string",
                   "null"
                 ]
+              },
+              "leaf": {
+                "$ref": "#/components/schemas/LeafCfg"
               }
             },
             "default": {
@@ -88,7 +91,10 @@
               "child": {
                 "flag": false
               },
-              "note": null
+              "note": null,
+              "leaf": {
+                "z": "deep"
+              }
             }
           },
           "requiredCfg": {
@@ -180,6 +186,17 @@
         "required": [
           "value"
         ]
+      },
+      "LeafCfg": {
+        "type": "object",
+        "required": [
+          "z"
+        ],
+        "properties": {
+          "z": {
+            "type": "string"
+          }
+        }
       }
     }
   },

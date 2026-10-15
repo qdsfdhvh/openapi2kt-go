@@ -160,9 +160,14 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 		declared[member.Name] = true
 		childPointer := naming.Pointer(naming.Pointer(pointer, "properties"), member.Name)
 		var child *nestedDefaultNode
-		if objectDefaultCandidateSchema(member.Value) {
+		switch {
+		case has(member.Value, "$ref"):
+			// A referenced plain object property borrows its resolved target; the
+			// consuming DTO serializer still owns the nested codec.
+			child, err = a.objectDefaultPropertyReference(member.Value, childPointer, depth+1)
+		case objectDefaultCandidateSchema(member.Value):
 			child, err = a.objectDefaultNode(member.Value, childPointer, depth+1, true)
-		} else {
+		default:
 			// Leaf/container children are validated by the existing planner. It
 			// never creates declarations here, so identity stays with the field
 			// type plan performed before this walk.
@@ -209,6 +214,40 @@ func (a *analyzer) objectDefaultContainer(v *document.Value, pointer string, dep
 	node.ty = ty
 	if _, nullable, _ := schemaType(v, pointer); nullable {
 		node.ty = node.ty.Null()
+	}
+	return node, nil
+}
+
+// objectDefaultPropertyReference resolves an object property's direct local
+// `$ref`. Plain object targets recurse as objects; scalar/enum/collection
+// targets keep the existing leaf/container validation against the resolved
+// source. Reference chains stay with their separate roles.
+func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	if err := checkKeys(v, []string{"$ref", "nullable", "default"}, pointer); err != nil {
+		return nil, err
+	}
+	source, sourcePointer, err := a.defaultSource(text(get(v, "$ref")), pointer)
+	if err != nil {
+		return nil, err
+	}
+	var node *nestedDefaultNode
+	if objectDefaultCandidateSchema(source) {
+		node, err = a.objectDefaultNode(source, sourcePointer, depth, false)
+	} else {
+		node, err = a.nestedDefaultSchema(source, "Validation", sourcePointer, nil, nil, depth, false)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if has(v, "nullable") {
+		_, nullable, err := schemaType(v, pointer)
+		if err != nil {
+			return nil, err
+		}
+		node.ty = node.ty.WithoutRootNull()
+		if nullable {
+			node.ty = node.ty.Null()
+		}
 	}
 	return node, nil
 }

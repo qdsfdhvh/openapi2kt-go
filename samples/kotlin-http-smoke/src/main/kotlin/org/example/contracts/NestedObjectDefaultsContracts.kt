@@ -68,7 +68,7 @@ private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMa
     "name" to value?.name, "age" to value?.age, "status" to value?.status,
     "code" to value?.code, "when" to value?.`when`, "tags" to value?.tags,
     "counts" to value?.counts, "child" to value?.child, "childFlag" to value?.child?.flag,
-    "note" to value?.note,
+    "leaf" to value?.leaf?.z, "note" to value?.note,
 )
 
 private fun nestedObjectHolderFields(value: HolderDto): Map<String, Any?> = linkedMapOf(
@@ -93,6 +93,7 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.`when`?.toString() == "2024-01-02")
     check(value.cfg?.tags == listOf("a", "b") && value.cfg?.counts == mapOf("k" to 1))
     check(value.cfg?.child?.flag == false && value.cfg?.note == null)
+    check(value.cfg?.leaf?.z == "deep")
     check(value.requiredCfg.id == "x")
     // A required object default keeps its constructor argument and no initializer.
     check(!HolderDto.serializer().descriptor.isElementOptional(1))
