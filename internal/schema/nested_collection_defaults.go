@@ -32,6 +32,11 @@ type nestedDefaultNode struct {
 	// Native annotations reuse the original collection-leaf planner and exact
 	// membership checker; the mapped scalar TypeRef remains the type authority.
 	native *analyzer
+	// Plain inline ordinary DTO objects recurse through their declared
+	// properties. The ty JSON/nullable view carries only null intent; the actual
+	// nominal type binding lives with the consuming field plan.
+	object       bool
+	objectFields []objectDefaultProperty
 }
 
 func nestedCollectionDefaultSchema(v *document.Value) bool {
@@ -248,6 +253,9 @@ func (node *nestedDefaultNode) value(v *document.Value, pointer string) (string,
 			return "", invalid("A null default member requires explicit schema nullability.", pointer)
 		}
 		return "null", nil
+	}
+	if node.object {
+		return node.objectValue(v, pointer)
 	}
 	ty := node.ty.WithoutRootNull()
 	if node.enum != nil || node.stringEnum {

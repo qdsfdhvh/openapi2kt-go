@@ -58,6 +58,7 @@ func emitFile(declaration schema.Declaration, pkg, directory string, hints schem
 	emitDefaultHelpers(declaration, &out)
 	emitArrayDefaultHelpers(declaration, &out)
 	emitEnumDefaultHelpers(declaration, pkg, &out)
+	emitObjectDefaultHelpers(declaration, pkg, &out)
 	emitNullLiteralHelper(declaration, &out)
 	emitStructuredConstHelpers(declaration, &out)
 	if declarationHasUnique(declaration) {
@@ -199,7 +200,7 @@ func emitModelContext(model *schema.Model, indent int, owner, superType string, 
 			defaultNull = " = null"
 		}
 		if p.Default != "" {
-			defaultNull = " = " + enumDefaultExpression(model, p, owner)
+			defaultNull = " = " + defaultExpression(model, p, owner)
 		}
 		if p.Type.Kind == schema.PatchValue {
 			fmt.Fprintf(out, "%s    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)\n", pad)

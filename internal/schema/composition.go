@@ -151,6 +151,12 @@ func (a *analyzer) walkShapeMembers(v *document.Value, pointer string, depth int
 		return nil, err
 	}
 	keys := []string{"type", "nullable", "properties", "required", "allOf", "additionalProperties"}
+	if a.objectDefaultSchemas[v] {
+		// A direct ordinary field's own object default is validated by its
+		// dedicated planner; the shared type plan borrows the same source node
+		// and must not reject its annotation.
+		keys = append(keys, "default")
+	}
 	if counts && a.options.Validation {
 		keys = append(keys, "minProperties", "maxProperties")
 	}

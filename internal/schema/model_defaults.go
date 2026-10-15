@@ -84,6 +84,10 @@ func (a *analyzer) modelDefaultType(f field, ordinary bool, name string, nested 
 		ty, _, err := a.primitiveArrayDefault(f.Schema, name, f.Pointer, nested, used, f.Depth)
 		return ty, nil, err
 	}
+	if objectDefaultCandidateSchema(f.Schema) {
+		ty, err := a.objectDefaultField(f, ordinary, name, nested, used)
+		return ty, nil, err
+	}
 	if err := depthCheck(f.Depth, f.Pointer); err != nil {
 		return TypeRef{}, nil, err
 	}
@@ -254,6 +258,18 @@ func (a *analyzer) modelDefault(f field, ty TypeRef, required bool) (string, *di
 		validation := *a
 		validation.warnings = nil // Type planning owns source warnings.
 		_, initializer, err := validation.primitiveArrayDefault(f.Schema, "Validation", f.Pointer, nil, nil, f.Depth)
+		if err != nil {
+			return "", err
+		}
+		if required || ty.Kind == PatchValue {
+			return "", nil
+		}
+		return initializer, nil
+	}
+	if objectDefaultCandidateSchema(f.Schema) {
+		validation := *a
+		validation.warnings = nil // Type planning owns source warnings.
+		initializer, err := validation.objectDefaultInitializer(f)
 		if err != nil {
 			return "", err
 		}

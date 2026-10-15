@@ -24,7 +24,7 @@ func TestModelDefaultsValidateOriginalLiteralsAndRejectedRoles(t *testing.T) {
 		`{"type":["string","null"],"format":"byte","default":null}`,
 		`{"type":["string","null"],"format":"invalid","default":null}`,
 		`{"type":"array","items":{"type":"string"},"default":[]}`,
-		`{"properties":{"id":{"type":"string"}},"default":{}}`,
+		`{"properties":{"id":{"type":"string"}},"default":{"extra":1}}`,
 	} {
 		got, err := core.GenerateWithDiagnostics(request(fieldDoc(field), "Dto"))
 		if field == `{"type":"array","items":{"type":"string"},"default":[]}` {
