@@ -35,6 +35,8 @@ import kotlinx.serialization.json.JsonObject
 import org.example.uniondef.UnionDef
 import org.example.uniondef.api.models.WatchHoldersEventDto
 import org.example.uniondef.models.HolderDto
+import org.example.uniondef.models.RefObjUnionDto
+import org.example.uniondef.models.StringRefUnionDto
 import org.example.uniondef.models.RequiredCfgDto
 
 @OptIn(io.ktor.utils.io.InternalAPI::class)
@@ -65,6 +67,7 @@ private fun unionFieldDefaultsFields(value: HolderDto): Map<String, Any?> = link
     "pinEnum" to value.pinEnum, "pinConst" to value.pinConst,
     "rows" to value.rows, "rowMap" to value.rowMap, "refPin" to value.refPin,
     "objUnion" to value.objUnion, "constUnion" to value.constUnion, "presUnion" to value.presUnion,
+    "refUnion" to value.refUnion, "refObjUnion" to value.refObjUnion,
 )
 
 suspend fun unionFieldDefaultsContracts(checked: Boolean) {
@@ -83,6 +86,8 @@ suspend fun unionFieldDefaultsContracts(checked: Boolean) {
     check(value.objUnion is HolderDto.ObjUnion.A && (value.objUnion as HolderDto.ObjUnion.A).a == "x")
     check(value.constUnion is HolderDto.ConstUnion.A && (value.constUnion as HolderDto.ConstUnion.A).a == "x")
     check(value.presUnion is HolderDto.PresUnion.Variant1 && (value.presUnion as HolderDto.PresUnion.Variant1).a == "x")
+    check(value.refUnion is StringRefUnionDto && (value.refUnion as StringRefUnionDto).value == "x")
+    check(value.refObjUnion is RefObjUnionDto.A && (value.refObjUnion as RefObjUnionDto.A).a == "x")
     check(!HolderDto.serializer().descriptor.isElementOptional(5))
     for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }

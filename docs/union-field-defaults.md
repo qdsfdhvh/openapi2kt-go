@@ -25,7 +25,9 @@ Only the consuming ordinary DTO field's own `default` grants this role, and only
 - String branches with a `format` (temporal/byte/uuid spellings);
 - composed `TagCombinations` object unions, closed subtype unions (`SerialNames`) and content object unions with neither tags nor presence;
 - per-branch `nullable`, same-kind unions that fold to a scalar;
-- request-context operation unions and root unions.
+- request-context operation unions (those use the separate raw `JsonElement` carrier) and root unions without a direct local `$ref` consumer.
+
+An ordinary DTO field whose direct local `$ref` resolves to a root union component may also carry its own default. The component union is replanned on a silenced copy to obtain its declaration, the value is validated exactly as for an inline union (kinds, pins, object-union variant selection), and the helper binds the actual component type. Reference chains to such a component stay excluded.
 
 The same field-own default role also covers an inline union used as a container element (`array` items or typed `Map` values) or as a property of a defaulted object: the field helper decodes the whole collection/object through the final serializer, and each union member is validated against its kinds and pins with the element/member Pointer. The element union's own `default` annotation is not used.
 

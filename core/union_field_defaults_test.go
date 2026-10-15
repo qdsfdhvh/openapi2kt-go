@@ -237,3 +237,34 @@ func TestUnionFieldDefaultsNullBranch(t *testing.T) {
 		t.Fatal(text)
 	}
 }
+
+func TestReferencedUnionComponentDefaults(t *testing.T) {
+	// A `$ref` field to a root primitive or object union component may carry its
+	// own default; the helper binds the actual component type.
+	for name, tc := range map[string]struct{ schemas, want string }{
+		"primitive": {`{"V":{"oneOf":[{"type":"string"},{"type":"integer","format":"int32"}]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/V","default":"x"}}}}`, `"\"x\""`},
+		"object":    {`{"V":{"oneOf":[{"type":"object","required":["kind","a"],"properties":{"kind":{"type":"string","enum":["a"]},"a":{"type":"string"}}},{"type":"object","required":["kind","b"],"properties":{"kind":{"type":"string","enum":["b"]},"b":{"type":"integer"}}}]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/V","default":{"kind":"a","a":"x"}}}}}`, `{\"a\":\"x\",\"kind\":\"a\"}`},
+	} {
+		t.Run(name, func(t *testing.T) {
+			got, err := core.GenerateWithDiagnostics(request(schemas(tc.schemas), "Dto"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			text := source(t, got, "HolderDto")
+			if !strings.Contains(text, "`openapi-kt model default org example models models VDto`(") || !strings.Contains(text, tc.want) {
+				t.Fatal("referenced union default", text)
+			}
+		})
+	}
+	// A non-member and an alias chain stay rejected.
+	for _, input := range []string{
+		`{"V":{"oneOf":[{"type":"string"},{"type":"integer"}]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/V","default":true}}}}`,
+		`{"V":{"oneOf":[{"type":"string"},{"type":"integer"}]},"Alias":{"$ref":"#/components/schemas/V"},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias","default":"x"}}}}`,
+	} {
+		r := request(schemas(input), "Dto")
+		r.Options.Validation = true
+		if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
+			t.Fatal("excluded referenced union default leaked", input, err)
+		}
+	}
+}

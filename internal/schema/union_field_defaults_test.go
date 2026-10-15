@@ -61,7 +61,7 @@ func TestUnionFieldDefaultSelectorMirror(t *testing.T) {
 	if !slices.Contains(union.Kinds, PrimitiveInteger) || !slices.Contains(union.Kinds, PrimitiveNumber) {
 		t.Fatal(union.Kinds)
 	}
-	encoded, err := a.primitiveUnionDefaultValue(integral, union)
+	encoded, err := a.primitiveUnionEncoded(get(integral.Schema, "default"), "/v/default", integral.Schema, integral.Pointer, integral.Depth, union)
 	if err != nil || encoded != "1" {
 		t.Fatal(encoded, err)
 	}
@@ -73,7 +73,7 @@ func TestUnionFieldDefaultSelectorMirror(t *testing.T) {
 		t.Fatal(floatType, err)
 	}
 	floatUnion := floatNested[0].(*PrimitiveUnion)
-	encoded, err = a2.primitiveUnionDefaultValue(floatToken, floatUnion)
+	encoded, err = a2.primitiveUnionEncoded(get(floatToken.Schema, "default"), "/v/default", floatToken.Schema, floatToken.Pointer, floatToken.Depth, floatUnion)
 	if err != nil || encoded != "1.0" {
 		t.Fatal("float token must be preserved", encoded, err)
 	}

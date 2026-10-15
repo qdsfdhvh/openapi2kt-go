@@ -295,6 +295,11 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 
 func (a *analyzer) planReferencedFieldDefaults() *diagnostic.Diagnostic {
 	for _, plan := range *a.referencedDefaults {
+		if handled, err := a.planReferencedUnionDefault(plan); err != nil {
+			return err
+		} else if handled {
+			continue
+		}
 		node, err := a.referencedDefaultSchema(plan.Field.Schema, plan.Field.Pointer, plan.Type, plan.Field.Depth, true)
 		if err != nil {
 			return err
