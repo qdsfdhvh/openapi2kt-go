@@ -159,25 +159,34 @@ func (a *analyzer) objectUnionDefaultEncoded(f field, union *ObjectUnion) (strin
 		}
 		return "null", nil
 	}
-	if !union.Content() || union.TagField == "" || len(union.Tags) == 0 || len(union.TagCombinations) != 0 || len(union.Presence) != 0 {
+	if !union.Content() || len(union.TagCombinations) != 0 || len(union.Tags) == 0 && len(union.Presence) == 0 {
 		return "", unsupported(at)
 	}
 	if value.Kind() != document.Object {
 		return "", invalid("A union default must be a JSON object.", at)
 	}
-	tag, ok := get(value, union.TagField).Text()
-	if !ok {
-		return "", invalid("A union default must carry its discriminator string.", at)
-	}
+	// Mirror the emitted selector: discriminator tags first, then presence.
 	index := -1
-	for _, rule := range union.Tags {
-		if rule.Value == tag {
-			index = rule.Index
-			break
+	if union.TagField != "" {
+		if tag, ok := get(value, union.TagField).Text(); ok {
+			for _, rule := range union.Tags {
+				if rule.Value == tag {
+					index = rule.Index
+					break
+				}
+			}
+		}
+	}
+	if index < 0 {
+		for _, rule := range union.Presence {
+			if has(value, rule.Value) {
+				index = rule.Index
+				break
+			}
 		}
 	}
 	if index < 0 || index >= len(union.Variants) {
-		return "", invalid("A union default discriminator must select a known variant.", at)
+		return "", invalid("A union default must select a known variant.", at)
 	}
 	variant := union.Variants[index]
 	source := a.modelOrigins[variant]

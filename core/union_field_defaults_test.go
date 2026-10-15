@@ -140,11 +140,10 @@ func TestUnionObjectFieldDefaults(t *testing.T) {
 		t.Fatal(err)
 	}
 	for name, tc := range map[string]struct{ field, pointer string }{
-		"unknown tag":   {union + `"default":{"kind":"zz","a":"x"}}`, "/components/schemas/Holder/properties/v/default"},
-		"missing req":   {union + `"default":{"kind":"a"}}`, "/components/schemas/Holder/properties/v/default"},
-		"unknown key":   {union + `"default":{"kind":"a","a":"x","zz":1}}`, "/components/schemas/Holder/properties/v/default/zz"},
-		"wrong kind":    {union + `"default":"x"}`, "/components/schemas/Holder/properties/v/default"},
-		"presence only": {`{"oneOf":[{"type":"object","required":["a"],"properties":{"a":{"type":"string"}}},{"type":"object","required":["b"],"properties":{"b":{"type":"integer"}}}],"default":{"a":"x"}}`, ""},
+		"unknown tag": {union + `"default":{"kind":"zz","a":"x"}}`, "/components/schemas/Holder/properties/v/default"},
+		"missing req": {union + `"default":{"kind":"a"}}`, "/components/schemas/Holder/properties/v/default"},
+		"unknown key": {union + `"default":{"kind":"a","a":"x","zz":1}}`, "/components/schemas/Holder/properties/v/default/zz"},
+		"wrong kind":  {union + `"default":"x"}`, "/components/schemas/Holder/properties/v/default"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			r := request(schemas(`{"Holder":{"properties":{"v":`+tc.field+`}}}`), "Dto")
@@ -160,6 +159,22 @@ func TestUnionObjectFieldDefaults(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestUnionPresenceObjectFieldDefaults(t *testing.T) {
+	union := `{"oneOf":[{"type":"object","required":["a"],"properties":{"a":{"type":"string"}}},{"type":"object","required":["b"],"properties":{"b":{"type":"integer"}}}],`
+	got, err := core.GenerateWithDiagnostics(request(schemas(`{"Holder":{"properties":{"v":`+union+`"default":{"a":"x"}}}}}`), "Dto"))
+	if err != nil || !strings.Contains(source(t, got, "HolderDto"), "`openapi-kt model default org example models models HolderDto V`(") {
+		t.Fatal(got, err)
+	}
+	// A default that selects no variant by tag or presence is rejected.
+	bad := schemas(`{"Holder":{"properties":{"v":` + union + `"default":{"z":1}}}}}`)
+	r := request(bad, "Dto")
+	r.Options.Validation = true
+	report, err := core.GenerateWithDiagnostics(r)
+	if err == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
+		t.Fatal("unselected presence union default admitted", err)
 	}
 }
 

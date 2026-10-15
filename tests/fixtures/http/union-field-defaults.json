@@ -277,6 +277,35 @@
               "kind": "a",
               "a": "x"
             }
+          },
+          "presUnion": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "a"
+                ],
+                "properties": {
+                  "a": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "b"
+                ],
+                "properties": {
+                  "b": {
+                    "type": "integer"
+                  }
+                }
+              }
+            ],
+            "default": {
+              "a": "x"
+            }
           }
         },
         "required": [
