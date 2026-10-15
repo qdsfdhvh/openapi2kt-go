@@ -1,0 +1,59 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "String enum collection defaults", "version": "1"},
+  "components": {"schemas": {
+    "Holder": {
+      "type": "object",
+      "properties": {
+        "required": {"type": "array", "items": {"type": "string", "enum": ["one", "two"]}, "default": ["one"]},
+        "codes": {"type": "array", "items": {"type": ["string", "null"], "enum": ["one", null, "two"]}, "default": ["one", null, "two"]},
+        "labels": {"additionalProperties": {"enum": ["yes", "no"]}, "default": {"a/~": "yes", "$ref": "no"}},
+        "special": {"type": "array", "items": {"enum": ["quote\"$😀", "two"]}, "default": ["quote\"$😀"]},
+        "empty": {"type": "array", "items": {"enum": ["empty"]}, "default": []},
+        "emptyMap": {"type": "object", "additionalProperties": {"type": "string", "enum": ["empty"]}, "default": {}},
+        "nil": {"type": ["object", "null"], "additionalProperties": {"type": "string", "enum": ["yes"]}, "default": null},
+        "nested": {"type": "object", "properties": {
+          "labels": {"type": "object", "additionalProperties": {"enum": ["nested", null], "nullable": true}, "default": {"one": "nested", "nil": null}}
+        }},
+        "kotlin": {"type": "string"},
+        "kotlinx": {"type": "string"},
+        "labelsInner": {"type": "string"}
+      },
+      "required": ["required"]
+    },
+    "RequiredMaps": {
+      "type": "object",
+      "properties": {
+        "labels": {"additionalProperties": {"enum": ["yes", "no"]}, "default": {"a": "yes"}},
+        "nullableLabels": {"type": "object", "nullable": true, "additionalProperties": {"enum": ["yes"]}, "default": null}
+      },
+      "required": ["labels", "nullableLabels"]
+    }
+  }},
+  "paths": {
+    "/holder": {"post": {
+      "operationId": "send", "tags": ["defaults"],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}},
+      "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}
+    }},
+    "/patch": {"patch": {
+      "operationId": "patch", "tags": ["defaults"],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "type": "object",
+        "properties": {
+          "codes": {"type": "array", "nullable": true, "items": {"type": "string", "enum": ["one", "two"]}, "default": ["one"]},
+          "labels": {"type": "object", "nullable": true, "additionalProperties": {"enum": ["yes", "no"]}, "default": {"yes": "yes"}},
+          "required": {"type": "array", "nullable": true, "items": {"type": "string", "enum": ["one", "two"]}, "default": ["one"]}
+        },
+        "required": ["required"]
+      }}}},
+      "responses": {"204": {"description": "Updated"}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch", "tags": ["defaults"],
+      "responses": {"200": {"description": "Events", "content": {"text/event-stream": {"schema": {
+        "type": "object", "properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}, "required": ["event", "data"]
+      }}}}}
+    }}
+  }
+}

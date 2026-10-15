@@ -1,0 +1,450 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RootBorrowedBuiltin",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "TextAlias": {
+        "$ref": "#/components/schemas/Source/properties/text"
+      },
+      "TextFalse": {
+        "$ref": "#/components/schemas/TextAlias",
+        "nullable": false
+      },
+      "FlagAlias": {
+        "$ref": "#/components/schemas/Source/properties/flag"
+      },
+      "FlagFalse": {
+        "$ref": "#/components/schemas/FlagAlias",
+        "nullable": false
+      },
+      "CountAlias": {
+        "$ref": "#/components/schemas/Source/properties/count"
+      },
+      "CountFalse": {
+        "$ref": "#/components/schemas/CountAlias",
+        "nullable": false
+      },
+      "WideAlias": {
+        "$ref": "#/components/schemas/Source/properties/wide"
+      },
+      "WideFalse": {
+        "$ref": "#/components/schemas/WideAlias",
+        "nullable": false
+      },
+      "RatioAlias": {
+        "$ref": "#/components/schemas/Source/properties/ratio"
+      },
+      "RatioFalse": {
+        "$ref": "#/components/schemas/RatioAlias",
+        "nullable": false
+      },
+      "MeasureAlias": {
+        "$ref": "#/components/schemas/Source/properties/measure"
+      },
+      "MeasureFalse": {
+        "$ref": "#/components/schemas/MeasureAlias",
+        "nullable": false
+      },
+      "Hops": {
+        "properties": {
+          "text": {
+            "$ref": "#/components/schemas/Source/properties/text"
+          },
+          "flag": {
+            "$ref": "#/components/schemas/Source/properties/flag"
+          },
+          "count": {
+            "$ref": "#/components/schemas/Source/properties/count"
+          },
+          "wide": {
+            "$ref": "#/components/schemas/Source/properties/wide"
+          },
+          "ratio": {
+            "$ref": "#/components/schemas/Source/properties/ratio"
+          },
+          "measure": {
+            "$ref": "#/components/schemas/Source/properties/measure"
+          },
+          "textFalse": {
+            "$ref": "#/components/schemas/Hops/properties/text",
+            "nullable": false
+          },
+          "again": {
+            "$ref": "#/components/schemas/TextBridgeFalse",
+            "nullable": true
+          }
+        }
+      },
+      "TextBridge": {
+        "$ref": "#/components/schemas/Hops/properties/text"
+      },
+      "FlagBridge": {
+        "$ref": "#/components/schemas/Hops/properties/flag"
+      },
+      "CountBridge": {
+        "$ref": "#/components/schemas/Hops/properties/count"
+      },
+      "WideBridge": {
+        "$ref": "#/components/schemas/Hops/properties/wide"
+      },
+      "RatioBridge": {
+        "$ref": "#/components/schemas/Hops/properties/ratio"
+      },
+      "MeasureBridge": {
+        "$ref": "#/components/schemas/Hops/properties/measure"
+      },
+      "TextBridgeFalse": {
+        "$ref": "#/components/schemas/Hops/properties/text",
+        "nullable": false
+      },
+      "AgainBridge": {
+        "$ref": "#/components/schemas/Hops/properties/again"
+      },
+      "Holder": {
+        "properties": {
+          "text": {
+            "$ref": "#/components/schemas/TextBridge"
+          },
+          "flag": {
+            "$ref": "#/components/schemas/FlagBridge"
+          },
+          "count": {
+            "$ref": "#/components/schemas/CountBridge"
+          },
+          "wide": {
+            "$ref": "#/components/schemas/WideBridge"
+          },
+          "ratio": {
+            "$ref": "#/components/schemas/RatioBridge"
+          },
+          "measure": {
+            "$ref": "#/components/schemas/MeasureBridge"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/TextBridgeFalse"
+          },
+          "again": {
+            "$ref": "#/components/schemas/AgainBridge"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hops/properties/wide",
+              "nullable": false
+            }
+          },
+          "entries": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Hops/properties/measure"
+            }
+          }
+        },
+        "required": [
+          "text",
+          "flag",
+          "count",
+          "wide",
+          "ratio",
+          "measure",
+          "narrow",
+          "again",
+          "rows",
+          "entries"
+        ]
+      },
+      "BuiltinChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "count",
+                "type": "string"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Hops/properties/count",
+                "nullable": false
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "text",
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        ]
+      },
+      "Source": {
+        "properties": {
+          "text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "flag": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "wide": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "ratio": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "measure": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "echoBuiltinHolder",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/text": {
+      "post": {
+        "operationId": "echoBuiltin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TextBridgeFalse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TextBridgeFalse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/text-again": {
+      "post": {
+        "operationId": "echoBuiltin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TextFalse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TextFalse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/count": {
+      "post": {
+        "operationId": "echoBuiltin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CountFalse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountFalse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patchBuiltin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "text": {
+                    "$ref": "#/components/schemas/Hops/properties/text"
+                  },
+                  "wide": {
+                    "$ref": "#/components/schemas/Hops/properties/wide"
+                  },
+                  "count": {
+                    "$ref": "#/components/schemas/Hops/properties/count"
+                  },
+                  "narrow": {
+                    "$ref": "#/components/schemas/Hops/properties/textFalse"
+                  }
+                },
+                "required": [
+                  "count",
+                  "narrow"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "ok"
+          }
+        }
+      }
+    },
+    "/query": {
+      "get": {
+        "operationId": "queryBuiltin",
+        "parameters": [
+          {
+            "name": "wide",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Hops/properties/wide",
+              "nullable": false
+            }
+          },
+          {
+            "name": "text",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Hops/properties/text"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "ok"
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watchBuiltin",
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "wide"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Hops/properties/wide"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "count"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Hops/properties/count",
+                          "nullable": false
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

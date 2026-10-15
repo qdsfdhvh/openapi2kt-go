@@ -1,0 +1,205 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Hoist Reservations",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Response": {
+        "type": "object",
+        "properties": {
+          "component": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "component"
+        ]
+      },
+      "Response2": {
+        "type": "object",
+        "properties": {
+          "different": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "different"
+        ]
+      },
+      "Amount": {
+        "type": "integer",
+        "x-native-type": "bigint"
+      }
+    }
+  },
+  "paths": {
+    "/alpha": {
+      "post": {
+        "operationId": "alpha",
+        "parameters": [
+          {
+            "name": "patch",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fast",
+                "safe"
+              ]
+            }
+          },
+          {
+            "name": "patchSerializer",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fast",
+                "safe"
+              ]
+            }
+          },
+          {
+            "name": "longAsStringSerializer",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fast",
+                "safe"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "amount": {
+                      "$ref": "#/components/schemas/Amount"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "amount"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/beta": {
+      "post": {
+        "operationId": "beta",
+        "parameters": [
+          {
+            "name": "patch",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fast",
+                "safe"
+              ]
+            }
+          },
+          {
+            "name": "patchSerializer",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fast",
+                "safe"
+              ]
+            }
+          },
+          {
+            "name": "longAsStringSerializer",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fast",
+                "safe"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "amount": {
+                      "$ref": "#/components/schemas/Amount"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "amount"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

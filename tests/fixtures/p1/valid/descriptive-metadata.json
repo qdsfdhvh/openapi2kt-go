@@ -1,0 +1,38 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Synthetic fixture",
+    "version": "1.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Record": {
+        "type": "object",
+        "title": "A title",
+        "description": "*/ ${notCode}\nclass Injected",
+        "example": {
+          "$ref": "https://example.test/not-a-schema",
+          "oneOf": false
+        },
+        "examples": [
+          {
+            "const": 1
+          }
+        ],
+        "externalDocs": {
+          "url": "https://example.test/docs"
+        },
+        "deprecated": true,
+        "$comment": "note",
+        "properties": {
+          "value": {
+            "type": "string",
+            "example": "text",
+            "description": "ignored"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "BooleanHttp", "version": "1"},
+  "components": {
+    "requestBodies": {"Any": {"required": true, "content": {"application/json": {"schema": true}}}},
+    "responses": {"Any": {"description": "synthetic", "content": {"application/json": {"schema": true}}}}
+  },
+  "paths": {
+    "/echo": {"post": {"operationId": "echo", "requestBody": {"required": true, "content": {"application/json": {"schema": true}}}, "responses": {"200": {"description": "synthetic", "content": {"application/json": {"schema": true}}}}}},
+    "/optional": {"post": {"operationId": "optional", "requestBody": {"content": {"application/vnd.example+json": {"schema": true}}}, "responses": {"200": {"description": "synthetic", "content": {"application/json": {"schema": true}}}}}},
+    "/priority": {"get": {"operationId": "priority", "responses": {"200": {"description": "synthetic", "content": {"application/json": {"schema": true}, "application/vnd.example+json": {"schema": {"type": "integer"}}}}, "201": {"description": "synthetic", "content": {"application/json": {"schema": {"type": "string"}}}}}}},
+    "/borrowed": {"post": {"operationId": "borrowed", "requestBody": {"$ref": "#/components/requestBodies/Any"}, "responses": {"200": {"$ref": "#/components/responses/Any"}}}},
+    "/errors": {"get": {"operationId": "errors", "responses": {"200": {"description": "synthetic", "content": {"application/json": {"schema": true}}}, "400": {"description": "synthetic", "content": {"application/json": {"schema": true}}}}}},
+    "/watch": {"post": {"operationId": "watch", "requestBody": {"required": true, "content": {"application/json": {"schema": true}}}, "responses": {"200": {"description": "synthetic", "content": {"text/event-stream": {"schema": {"oneOf": [{"type": "object", "required": ["event", "data"], "properties": {"event": {"type": "string", "const": "sample"}, "data": true}}]}}}}}}}
+  }
+}

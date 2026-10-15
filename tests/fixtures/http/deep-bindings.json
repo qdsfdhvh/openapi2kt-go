@@ -1,0 +1,24 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Deep Binding", "version": "1.0"},
+  "servers": [{"url": "https://api.example.test"}],
+  "paths": {
+    "/scan": {"get": {
+      "parameters": [
+        {"name": "filter", "in": "query", "style": "deepObject", "schema": {"type": "object", "properties": {"memo": {"type": "string"}}}},
+        {"name": "id", "in": "query", "required": true, "schema": {"type": "string"}}
+      ], "responses": {"204": {}}
+    }},
+    "/scan/{id}": {"get": {
+      "parameters": [
+        {"name": "filter", "in": "query", "style": "deepObject", "schema": {"type": "object", "properties": {"memo": {"type": "string"}}}},
+        {"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}
+      ], "responses": {"204": {}}
+    }},
+    "/inherited": {
+      "parameters": [{"name": "f", "in": "query", "style": "deepObject", "schema": {"type": "object", "properties": {"memo": {"type": ["string", "null"]}}}}],
+      "get": {"responses": {"204": {}}},
+      "post": {"responses": {"204": {}}}
+    }
+  }
+}

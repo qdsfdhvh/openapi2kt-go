@@ -1,0 +1,29 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/unit": {"get": {"operationId": "emptyResult", "responses": {
+      "200": {"content": {"application/json": {"schema": {"anyOf": [{}, {"not": {}}]}}}},
+      "201": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Record"}}}}
+    }}},
+    "/object": {"get": {"operationId": "oneObject", "responses": {"200": {"content": {"application/json": {"schema": {"oneOf": [
+      {"not": {}}, {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}, "memo": {"type": ["string", "null"]}}}
+    ]}}}}}}},
+    "/ref": {"get": {"operationId": "oneRef", "responses": {"200": {"content": {"application/json": {"schema": {"anyOf": [
+      {"$ref": "#/components/schemas/Record"}, {}
+    ]}}}}}}},
+    "/scalar": {"get": {"operationId": "scalarRaw", "responses": {"200": {"content": {"application/json": {"schema": {"anyOf": [
+      {"type": "string"}, {"not": {}}
+    ]}}}}}}},
+    "/many": {"get": {"operationId": "manyRaw", "responses": {"200": {"content": {"application/json": {"schema": {"oneOf": [
+      {"type": "object", "required": ["left"], "properties": {"left": {"type": "string"}}},
+      {}, {"type": "object", "required": ["right"], "properties": {"right": {"type": "integer"}}}
+    ]}}}}}}},
+    "/typed-empty": {"get": {"operationId": "typedEmpty", "responses": {"200": {"content": {"application/json": {"schema": {"anyOf": [
+      {"type": "object"}, {}
+    ]}}}}}}},
+    "/single-empty": {"get": {"operationId": "singleEmpty", "responses": {"200": {"content": {"application/json": {"schema": {"oneOf": [
+      {"description": "No typed payload information"}
+    ]}}}}}}}
+  },
+  "components": {"schemas": {"Record": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}}}}}
+}

@@ -1,0 +1,18 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Synthetic root JSON-kind unions", "version": "1.0.0" },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "NativeId": { "type": "integer", "format": "int64" },
+      "PrimitiveChoice": { "oneOf": [{ "type": "string" }, { "$ref": "#/components/schemas/NativeId" }, { "type": "number" }, { "type": "boolean" }] },
+      "MixedChoice": { "anyOf": [{ "type": "object", "properties": { "message": { "type": "string" } }, "required": ["message"] }, { "type": "string" }, { "type": "integer" }] },
+      "NullableChoice": { "oneOf": [{ "type": "string" }, { "type": "integer" }, { "type": "null" }] },
+      "NullableLong": { "anyOf": [{ "$ref": "#/components/schemas/NativeId" }, { "type": "null" }] },
+      "AnnotatedChoice": { "nullable": true, "anyOf": [{ "type": "boolean" }, { "type": "string" }] },
+      "NullableTagged": { "oneOf": [{ "type": "object", "properties": { "type": { "type": "string", "const": "left" }, "amount": { "type": "integer" } }, "required": ["amount"] }, { "type": "object", "properties": { "type": { "type": "string", "const": "right" }, "caption": { "type": "string" } }, "required": ["caption"] }, { "type": "null" }] },
+      "NullablePoly": { "anyOf": [{ "type": "object", "properties": { "flag": { "type": "boolean" } }, "required": ["flag"] }, { "type": "object", "properties": { "flag": { "type": "boolean" } }, "required": ["flag"] }, { "type": "null" }] },
+      "Carrier": { "type": "object", "properties": { "choice": { "$ref": "#/components/schemas/PrimitiveChoice" }, "mixed": { "$ref": "#/components/schemas/MixedChoice" }, "nullable": { "$ref": "#/components/schemas/NullableChoice" }, "longs": { "type": "array", "items": { "$ref": "#/components/schemas/NullableLong" } }, "tagged": { "$ref": "#/components/schemas/NullableTagged" }, "poly": { "$ref": "#/components/schemas/NullablePoly" }, "optionalBoxed": { "$ref": "#/components/schemas/NullableChoice", "nullable": true } }, "required": ["choice", "mixed", "nullable", "longs", "tagged", "poly"] }
+    }
+  }
+}

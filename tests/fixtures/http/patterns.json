@@ -1,0 +1,15 @@
+{
+ "openapi":"3.1.0",
+ "components":{"schemas":{
+  "Code":{"type":"string","x-kotlin-value-class":true,"pattern":"^[A-Z]{2}[0-9]+$"},
+  "Search":{"type":"string","x-kotlin-value-class":true,"pattern":"cat|dog"},
+  "Escaped":{"type":"string","x-kotlin-value-class":true,"pattern":"^a\"\\\\$"},
+  "Record":{"type":"object","required":["value","kotlin"],"properties":{"value":{"type":"string","pattern":"a+b","minLength":2},"kotlin":{"type":"string","pattern":"^ok$"},"note":{"type":["string","null"],"pattern":"cat|dog"},"code":{"$ref":"#/components/schemas/Code"}}}
+ }},
+ "paths":{
+  "/code":{"get":{"tags":["Patterns"],"operationId":"code","responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Code"}}}}}}},
+  "/record":{"post":{"tags":["Patterns"],"operationId":"record","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Record"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Record"}}}}}}},
+  "/patch":{"post":{"tags":["Patterns"],"operationId":"patch","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"value":{"type":"string","nullable":true,"pattern":"a+b"}}}}}},"responses":{"204":{}}}},
+  "/events":{"get":{"tags":["Patterns"],"operationId":"watch","responses":{"200":{"content":{"text/event-stream":{"schema":{"type":"object","required":["data"],"properties":{"data":{"$ref":"#/components/schemas/Code"}}}}}}}}}
+ }
+}

@@ -1,0 +1,17 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Presence Collision", "version": "1.0"},
+  "servers": [{"url": "https://api.example.test"}],
+  "paths": {
+    "/edit": {"post": {
+      "parameters": [{"name": "x", "in": "query", "required": true, "schema": {"type": "string"}}],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "properties": {"memo": {"type": ["string", "null"]}}}}}},
+      "responses": {"204": {}}
+    }},
+    "/edit/{x}": {"post": {
+      "parameters": [{"name": "x", "in": "path", "required": true, "schema": {"type": "string"}}],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "properties": {"memo": {"type": ["string", "null"]}}}}}},
+      "responses": {"204": {}}
+    }}
+  }
+}

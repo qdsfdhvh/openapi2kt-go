@@ -1,0 +1,49 @@
+{
+  "openapi": "3.1.0", "info": {"title": "Root Special Alias API", "version": "1"},
+  "components": {"schemas": {
+    "AStatus": {"$ref": "#/components/schemas/BStatus"},
+    "BStatus": {"$ref": "#/components/schemas/ZStatus"},
+    "AId": {"$ref": "#/components/schemas/ZId"},
+    "ALongId": {"$ref": "#/components/schemas/ZLongId"},
+    "AConst": {"$ref": "#/components/schemas/ZConst"},
+    "ANumber": {"$ref": "#/components/schemas/ZNumber"},
+    "ADate": {"$ref": "#/components/schemas/ZDate"},
+    "ABig": {"$ref": "#/components/schemas/ZBig"},
+    "ABytes": {"$ref": "#/components/schemas/ZBytes"},
+    "AMoney": {"$ref": "#/components/schemas/ZMoney"},
+    "Holder": {"properties": {
+      "status": {"$ref": "#/components/schemas/AStatus"},
+      "id": {"$ref": "#/components/schemas/AId"},
+      "longId": {"$ref": "#/components/schemas/ALongId"},
+      "pin": {"$ref": "#/components/schemas/AConst", "nullable": true},
+      "number": {"$ref": "#/components/schemas/ANumber"},
+      "date": {"$ref": "#/components/schemas/ADate"},
+      "big": {"$ref": "#/components/schemas/ABig"},
+      "bytes": {"$ref": "#/components/schemas/ABytes"},
+      "money": {"$ref": "#/components/schemas/AMoney"},
+      "statuses": {"type": "array", "items": {"$ref": "#/components/schemas/AStatus"}},
+      "ids": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/AId"}},
+      "bigList": {"type": "array", "items": {"$ref": "#/components/schemas/ABig"}}
+    }, "required": ["status", "id", "longId", "number", "date", "big", "bytes", "money", "statuses", "ids", "bigList"]},
+    "ZStatus": {"type": "string", "enum": ["ready", "done"]},
+    "ZId": {"type": "string", "x-kotlin-value-class": true},
+    "ZLongId": {"type": "integer", "format": "int64", "x-kotlin-value-class": true},
+    "ZConst": {"type": "integer", "const": 7},
+    "ZNumber": {"type": "integer", "enum": [1, 2]},
+    "ZDate": {"type": "string", "format": "date"},
+    "ZBig": {"type": "string", "x-native-type": "bigint"},
+    "ZBytes": {"type": "string", "format": "byte"},
+    "ZMoney": {"x-native-type": "org.example.scalarvalues.Money"}
+  }},
+  "paths": {
+    "/alias": {"post": {"operationId": "echo", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AId"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/AId"}}}}}}},
+    "/direct": {"post": {"operationId": "echo", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ZId"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ZId"}}}}}}},
+    "/big": {"post": {"operationId": "echoBig", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ABig"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ABig"}}}}}}},
+    "/bytes": {"post": {"operationId": "echoBytes", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ABytes"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ABytes"}}}}}}},
+    "/patch": {"patch": {"operationId": "submit", "requestBody": {"required": true, "content": {"application/json": {"schema": {"properties": {"id": {"$ref": "#/components/schemas/AId", "nullable": true}, "big": {"$ref": "#/components/schemas/ABig", "nullable": true}, "pin": {"$ref": "#/components/schemas/AConst"}}}}}}, "responses": {"204": {}}}},
+    "/events": {"get": {"operationId": "watch", "responses": {"200": {"content": {"text/event-stream": {"schema": {"oneOf": [
+      {"properties": {"event": {"type": "string", "const": "id"}, "data": {"$ref": "#/components/schemas/AId"}}, "required": ["data"]},
+      {"properties": {"event": {"type": "string", "const": "status"}, "data": {"$ref": "#/components/schemas/AStatus"}}, "required": ["data"]}
+    ]}}}}}}}
+  }
+}

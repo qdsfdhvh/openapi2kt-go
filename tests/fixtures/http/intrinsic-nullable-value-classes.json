@@ -1,0 +1,462 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Intrinsic Nullable Value Class API",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "AInherited": {
+        "$ref": "#/components/schemas/BNullable"
+      },
+      "BNullable": {
+        "$ref": "#/components/schemas/ZName"
+      },
+      "AFalse": {
+        "$ref": "#/components/schemas/AInherited",
+        "nullable": false
+      },
+      "ATrue": {
+        "$ref": "#/components/schemas/AFalse",
+        "nullable": true
+      },
+      "Holder": {
+        "properties": {
+          "inherited": {
+            "$ref": "#/components/schemas/AInherited"
+          },
+          "forcedFalse": {
+            "$ref": "#/components/schemas/AInherited",
+            "nullable": false
+          },
+          "forcedTrue": {
+            "$ref": "#/components/schemas/AFalse",
+            "nullable": true
+          },
+          "wrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            ]
+          },
+          "wrapperFalse": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AInherited"
+              },
+              {
+                "nullable": false
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          "count": {
+            "$ref": "#/components/schemas/LInherited"
+          },
+          "countFalse": {
+            "$ref": "#/components/schemas/LFalse"
+          },
+          "countTrue": {
+            "$ref": "#/components/schemas/LTrue"
+          },
+          "direct": {
+            "$ref": "#/components/schemas/ZName"
+          },
+          "directFalse": {
+            "$ref": "#/components/schemas/ZName",
+            "nullable": false
+          },
+          "directWrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ZName"
+              }
+            ]
+          },
+          "directWrapperFalse": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ZName"
+              }
+            ],
+            "nullable": false
+          },
+          "directCount": {
+            "$ref": "#/components/schemas/ZCount"
+          },
+          "directCountFalse": {
+            "$ref": "#/components/schemas/ZCount",
+            "nullable": false
+          }
+        },
+        "required": [
+          "inherited",
+          "forcedFalse",
+          "forcedTrue",
+          "wrapper",
+          "wrapperFalse",
+          "items",
+          "values",
+          "count",
+          "countFalse",
+          "countTrue",
+          "direct",
+          "directFalse",
+          "directWrapper",
+          "directWrapperFalse",
+          "directCount",
+          "directCountFalse"
+        ]
+      },
+      "ZName": {
+        "type": "string",
+        "x-kotlin-value-class": true,
+        "minLength": 1,
+        "maxLength": 8,
+        "nullable": true
+      },
+      "ZCount": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "format": "int64",
+        "x-kotlin-value-class": true,
+        "minimum": 1,
+        "maximum": 5
+      },
+      "LNullable": {
+        "$ref": "#/components/schemas/ZCount"
+      },
+      "LInherited": {
+        "$ref": "#/components/schemas/LNullable"
+      },
+      "LFalse": {
+        "$ref": "#/components/schemas/LInherited",
+        "nullable": false
+      },
+      "LTrue": {
+        "$ref": "#/components/schemas/LFalse",
+        "nullable": true
+      }
+    }
+  },
+  "paths": {
+    "/alias": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/direct": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZName",
+                "nullable": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZName",
+                  "nullable": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/optional": {
+      "post": {
+        "operationId": "optional",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ATrue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ATrue"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/AInherited"
+                  },
+                  "requiredFalse": {
+                    "$ref": "#/components/schemas/AInherited",
+                    "nullable": false
+                  },
+                  "inherited": {
+                    "$ref": "#/components/schemas/AInherited"
+                  },
+                  "forcedFalse": {
+                    "$ref": "#/components/schemas/AInherited",
+                    "nullable": false
+                  },
+                  "forcedTrue": {
+                    "$ref": "#/components/schemas/AFalse",
+                    "nullable": true
+                  },
+                  "wrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AInherited"
+                      }
+                    ]
+                  },
+                  "wrapperFalse": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AInherited"
+                      },
+                      {
+                        "nullable": false
+                      }
+                    ]
+                  },
+                  "count": {
+                    "$ref": "#/components/schemas/LInherited"
+                  },
+                  "countFalse": {
+                    "$ref": "#/components/schemas/LFalse"
+                  },
+                  "countTrue": {
+                    "$ref": "#/components/schemas/LTrue"
+                  },
+                  "direct": {
+                    "$ref": "#/components/schemas/ZName"
+                  },
+                  "directFalse": {
+                    "$ref": "#/components/schemas/ZName",
+                    "nullable": false
+                  },
+                  "directWrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ZName"
+                      }
+                    ]
+                  },
+                  "directWrapperFalse": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ZName"
+                      }
+                    ],
+                    "nullable": false
+                  },
+                  "directCount": {
+                    "$ref": "#/components/schemas/ZCount"
+                  },
+                  "directCountFalse": {
+                    "$ref": "#/components/schemas/ZCount",
+                    "nullable": false
+                  }
+                },
+                "required": [
+                  "requiredNull",
+                  "requiredFalse"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "nullable"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/AInherited"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/AInherited",
+                          "nullable": false
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "count"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/LInherited"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "countNarrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/LInherited",
+                          "nullable": false
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/count": {
+      "post": {
+        "operationId": "echoCount",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/count-direct": {
+      "post": {
+        "operationId": "echoCount",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZCount",
+                "nullable": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZCount",
+                  "nullable": false
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

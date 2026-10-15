@@ -1,0 +1,469 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Intrinsic Nullable Bytes API",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "AInherited": {
+        "$ref": "#/components/schemas/BNullable"
+      },
+      "BNullable": {
+        "$ref": "#/components/schemas/ZBytes"
+      },
+      "AFalse": {
+        "$ref": "#/components/schemas/AInherited",
+        "nullable": false
+      },
+      "ATrue": {
+        "$ref": "#/components/schemas/AFalse",
+        "nullable": true
+      },
+      "Holder": {
+        "properties": {
+          "inherited": {
+            "$ref": "#/components/schemas/AInherited"
+          },
+          "forcedFalse": {
+            "$ref": "#/components/schemas/AInherited",
+            "nullable": false
+          },
+          "forcedTrue": {
+            "$ref": "#/components/schemas/AFalse",
+            "nullable": true
+          },
+          "wrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            ]
+          },
+          "wrapperFalse": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AInherited"
+              },
+              {
+                "nullable": false
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          "binary": {
+            "$ref": "#/components/schemas/LInherited"
+          },
+          "binaryFalse": {
+            "$ref": "#/components/schemas/LFalse"
+          },
+          "binaryTrue": {
+            "$ref": "#/components/schemas/LTrue"
+          },
+          "native": {
+            "$ref": "#/components/schemas/NativeMaybe"
+          },
+          "direct": {
+            "$ref": "#/components/schemas/ZBytes"
+          },
+          "directFalse": {
+            "$ref": "#/components/schemas/ZBytes",
+            "nullable": false
+          },
+          "directWrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ZBytes"
+              }
+            ]
+          },
+          "directWrapperFalse": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ZBytes"
+              }
+            ],
+            "nullable": false
+          },
+          "directBinary": {
+            "$ref": "#/components/schemas/ZBinary"
+          },
+          "directBinaryFalse": {
+            "$ref": "#/components/schemas/ZBinary",
+            "nullable": false
+          }
+        },
+        "required": [
+          "inherited",
+          "forcedFalse",
+          "forcedTrue",
+          "wrapper",
+          "wrapperFalse",
+          "items",
+          "values",
+          "binary",
+          "binaryFalse",
+          "binaryTrue",
+          "native",
+          "direct",
+          "directFalse",
+          "directWrapper",
+          "directWrapperFalse",
+          "directBinary",
+          "directBinaryFalse"
+        ]
+      },
+      "ZBytes": {
+        "type": "string",
+        "format": "byte",
+        "nullable": true
+      },
+      "ZBinary": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "binary"
+      },
+      "LNullable": {
+        "$ref": "#/components/schemas/ZBinary"
+      },
+      "LInherited": {
+        "$ref": "#/components/schemas/LNullable"
+      },
+      "LFalse": {
+        "$ref": "#/components/schemas/LInherited",
+        "nullable": false
+      },
+      "LTrue": {
+        "$ref": "#/components/schemas/LFalse",
+        "nullable": true
+      },
+      "ZByteAgain": {
+        "type": "string",
+        "format": "byte",
+        "nullable": true
+      },
+      "NativeMaybe": {
+        "$ref": "#/components/schemas/ZByteAgain"
+      }
+    }
+  },
+  "paths": {
+    "/alias": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/direct": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZBytes",
+                "nullable": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZBytes",
+                  "nullable": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/optional": {
+      "post": {
+        "operationId": "optional",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ATrue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ATrue"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/AInherited"
+                  },
+                  "requiredFalse": {
+                    "$ref": "#/components/schemas/AInherited",
+                    "nullable": false
+                  },
+                  "inherited": {
+                    "$ref": "#/components/schemas/AInherited"
+                  },
+                  "forcedFalse": {
+                    "$ref": "#/components/schemas/AInherited",
+                    "nullable": false
+                  },
+                  "forcedTrue": {
+                    "$ref": "#/components/schemas/AFalse",
+                    "nullable": true
+                  },
+                  "wrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AInherited"
+                      }
+                    ]
+                  },
+                  "wrapperFalse": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AInherited"
+                      },
+                      {
+                        "nullable": false
+                      }
+                    ]
+                  },
+                  "binary": {
+                    "$ref": "#/components/schemas/LInherited"
+                  },
+                  "binaryFalse": {
+                    "$ref": "#/components/schemas/LFalse"
+                  },
+                  "binaryTrue": {
+                    "$ref": "#/components/schemas/LTrue"
+                  },
+                  "direct": {
+                    "$ref": "#/components/schemas/ZBytes"
+                  },
+                  "directFalse": {
+                    "$ref": "#/components/schemas/ZBytes",
+                    "nullable": false
+                  },
+                  "directWrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ZBytes"
+                      }
+                    ]
+                  },
+                  "directWrapperFalse": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ZBytes"
+                      }
+                    ],
+                    "nullable": false
+                  },
+                  "directBinary": {
+                    "$ref": "#/components/schemas/ZBinary"
+                  },
+                  "directBinaryFalse": {
+                    "$ref": "#/components/schemas/ZBinary",
+                    "nullable": false
+                  }
+                },
+                "required": [
+                  "requiredNull",
+                  "requiredFalse"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "nullable"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/AInherited"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/AInherited",
+                          "nullable": false
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "binary"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/LInherited"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "binaryNarrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/LInherited",
+                          "nullable": false
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/binary": {
+      "post": {
+        "operationId": "echoBinary",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/binary-direct": {
+      "post": {
+        "operationId": "echoBinary",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZBinary",
+                "nullable": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZBinary",
+                  "nullable": false
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

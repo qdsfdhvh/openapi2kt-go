@@ -1,0 +1,19 @@
+{
+  "openapi": "3.1.0",
+  "components": {"schemas": {
+    "LooseA": {"type":"object","properties":{"status":{"type":"string","enum":["fast","safe"]},"meta":{"type":"object","properties":{"active":{"type":"boolean"}},"required":["active"]}},"required":["status","meta"]},
+    "LooseZ": {"type":"object","properties":{"status":{"type":"string","enum":["fast","safe"]},"meta":{"type":"object","properties":{"active":{"type":"boolean"}},"required":["active"]}},"required":["status","meta"]},
+    "StatusA": {"type":"string","enum":["fast","safe"]},
+    "StatusZ": {"type":"string","enum":["fast","safe"]},
+    "StatusDifferent": {"type":"string","enum":["safe","fast"]},
+    "CountA": {"type":"object","properties":{"n":{"type":"integer"}},"required":["n"],"minProperties":1},
+    "CountZ": {"type":"object","properties":{"n":{"type":"integer"}},"required":["n"],"minProperties":2},
+    "ConstA": {"type":"object","properties":{"value":{"type":"string"},"kind":{"type":"string","const":"a"}},"required":["value"]},
+    "ConstZ": {"type":"object","properties":{"value":{"type":"string"},"kind":{"type":"string","const":"z"}},"required":["value"]}
+  }},
+  "paths": {
+    "/aa": {"post":{"operationId":"submit","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/LooseA"}}}},"responses":{"204":{"description":"synthetic"}}}},
+    "/bb": {"post":{"operationId":"submit","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/LooseZ"}}}},"responses":{"204":{"description":"synthetic"}}}},
+    "/cc": {"post":{"operationId":"submit2","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/LooseA"}}}},"responses":{"204":{"description":"synthetic"}}}}
+  }
+}

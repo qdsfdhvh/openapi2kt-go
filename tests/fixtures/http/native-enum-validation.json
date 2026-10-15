@@ -1,0 +1,199 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Native Enum Checks"
+  },
+  "components": {
+    "schemas": {
+      "Record": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "enum": [
+              1,
+              2
+            ]
+          },
+          "wide": {
+            "type": "integer",
+            "format": "int64",
+            "enum": [
+              -9223372036854775808,
+              3
+            ]
+          },
+          "ratio": {
+            "type": "number",
+            "format": "float",
+            "enum": [
+              1,
+              1.0,
+              2.5
+            ]
+          },
+          "flag": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "optional": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "enum": [
+              1,
+              2
+            ],
+            "default": 2
+          },
+          "kotlin": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "count",
+          "wide",
+          "ratio",
+          "flag"
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            }
+          },
+          "map": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Record"
+            }
+          }
+        }
+      },
+      "Mapped": {
+        "properties": {
+          "value": {
+            "type": "number",
+            "format": "float",
+            "enum": [
+              16777216,
+              16777217
+            ]
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/apply": {
+      "post": {
+        "operationId": "applyChecked",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "required": {
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2
+                    ]
+                  },
+                  "patch": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "enum": [
+                      1,
+                      2
+                    ],
+                    "default": 2
+                  },
+                  "flag": {
+                    "type": "boolean",
+                    "enum": [
+                      true
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/read": {
+      "get": {
+        "operationId": "readChecked",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watchChecked",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Record"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

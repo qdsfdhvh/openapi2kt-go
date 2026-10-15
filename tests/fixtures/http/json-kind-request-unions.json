@@ -1,0 +1,41 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/raw": {"post": {
+      "operationId": "rawChoice", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "oneOf": [{"type": "string"}, {"type": "boolean"}, {"type": "integer"}, {"type": "number"}, {"type": "array", "items": {"type": "string"}}]
+      }}}}, "responses": {"204": {}}
+    }},
+    "/tagged": {"post": {
+      "operationId": "taggedChoice", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "anyOf": [{"type": "string"}, {"type": "object", "required": ["kind", "value"], "properties": {
+          "kind": {"type": "string", "const": "known"}, "value": {"type": "integer"}, "memo": {"type": ["string", "null"]}
+        }}]
+      }}}}, "responses": {"204": {}}
+    }},
+    "/presence": {"post": {
+      "operationId": "presenceChoice", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "oneOf": [{"type": "array", "items": {"type": "boolean"}}, {"type": "object", "required": ["label"], "properties": {"label": {"type": "string"}}}]
+      }}}}, "responses": {"204": {}}
+    }},
+    "/optional": {"post": {
+      "operationId": "optionalRaw", "requestBody": {"content": {"application/json": {"schema": {
+        "anyOf": [{"$ref": "#/components/schemas/Text"}, {"type": "boolean"}, {"type": "null"}]
+      }}}}, "responses": {"204": {}}
+    }},
+    "/pinned": {"post": {
+      "operationId": "pinnedChoice", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "anyOf": [{"type": "string", "enum": ["fixed"]}, {"enum": ["free"]}, {"const": "literal"}, {"type": "boolean"}]
+      }}}}, "responses": {"204": {}}
+    }},
+    "/shared": {"post": {
+      "operationId": "sharedChoice", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "anyOf": [{"type": "integer"}, {"$ref": "#/components/schemas/Record"}]
+      }}}}, "responses": {"204": {}}
+    }}
+  },
+  "components": {"schemas": {
+    "Text": {"type": "string"},
+    "Record": {"type": "object", "properties": {"code": {"type": "integer"}}, "required": ["code"]}
+  }}
+}

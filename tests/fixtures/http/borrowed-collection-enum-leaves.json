@@ -1,0 +1,260 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Borrowed Collection Enum Leaves",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "State": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          "ready",
+          "done"
+        ]
+      },
+      "StateAlias": {
+        "$ref": "#/components/schemas/State"
+      },
+      "Owner": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed"
+            ]
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "Source": {
+        "properties": {
+          "rows": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/StateAlias"
+            }
+          },
+          "map": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/OwnerStateAlias"
+            }
+          },
+          "hop": {
+            "$ref": "#/components/schemas/Source/properties/rows",
+            "nullable": false
+          }
+        }
+      },
+      "RowsAlias": {
+        "$ref": "#/components/schemas/Source/properties/rows"
+      },
+      "RowsBridge": {
+        "$ref": "#/components/schemas/Source/properties/hop"
+      },
+      "MapBridge": {
+        "$ref": "#/components/schemas/Source/properties/map"
+      },
+      "AgainBridge": {
+        "$ref": "#/components/schemas/RowsBridge"
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/RowsBridge"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/MapBridge"
+          },
+          "direct": {
+            "$ref": "#/components/schemas/Source/properties/rows"
+          }
+        },
+        "required": [
+          "rows",
+          "mapping"
+        ]
+      },
+      "OwnerStateAlias": {
+        "$ref": "#/components/schemas/Owner/properties/state",
+        "nullable": true
+      },
+      "CollectionChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "rows"
+              },
+              "values": {
+                "$ref": "#/components/schemas/RowsBridge"
+              }
+            },
+            "required": [
+              "values"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "map"
+              },
+              "mapping": {
+                "$ref": "#/components/schemas/MapBridge"
+              }
+            },
+            "required": [
+              "mapping"
+            ]
+          }
+        ]
+      },
+      "MapAlias": {
+        "$ref": "#/components/schemas/MapBridge",
+        "nullable": true
+      }
+    }
+  },
+  "paths": {
+    "/rows": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RowsBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RowsBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/map": {
+      "post": {
+        "operationId": "echoMap",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/RowsAlias"
+                  },
+                  "required": {
+                    "$ref": "#/components/schemas/RowsBridge"
+                  },
+                  "optional": {
+                    "$ref": "#/components/schemas/RowsAlias"
+                  },
+                  "map": {
+                    "$ref": "#/components/schemas/MapBridge",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "requiredNull",
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "rows"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/RowsBridge"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "map"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/MapBridge"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

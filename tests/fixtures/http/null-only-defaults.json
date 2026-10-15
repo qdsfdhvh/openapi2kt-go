@@ -1,0 +1,422 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Null-only DTO Defaults"
+  },
+  "components": {
+    "schemas": {
+      "PinnedNull": {
+        "const": null
+      },
+      "NullVocabulary": {
+        "enum": [
+          null
+        ]
+      },
+      "NullAlias": {
+        "$ref": "#/components/schemas/NullVocabulary"
+      },
+      "Holder": {
+        "properties": {
+          "kotlinx": {
+            "type": "string"
+          },
+          "fixed": {
+            "const": null
+          },
+          "borrowedFixed": {
+            "$ref": "#/components/schemas/PinnedNull"
+          },
+          "requiredNull": {
+            "enum": [
+              null
+            ],
+            "default": null
+          },
+          "optional": {
+            "$ref": "#/components/schemas/NullAlias"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "const": null
+            }
+          },
+          "map": {
+            "type": "object",
+            "additionalProperties": {
+              "enum": [
+                null
+              ]
+            }
+          },
+          "nested": {
+            "properties": {
+              "kotlinx": {
+                "type": "boolean"
+              },
+              "fixed": {
+                "const": null
+              }
+            }
+          }
+        },
+        "required": [
+          "requiredNull"
+        ]
+      },
+      "Only": {
+        "properties": {
+          "fixed": {
+            "const": null
+          },
+          "kotlinx": {
+            "const": "shadow"
+          }
+        }
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "properties": {
+              "tag": {
+                "const": null
+              },
+              "kotlinx": {
+                "const": "shadow"
+              },
+              "kotlin": {
+                "const": "shadow"
+              }
+            }
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "other"
+              }
+            }
+          }
+        ]
+      },
+      "EnumChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  null
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "tag"
+            ]
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "other"
+              }
+            }
+          }
+        ]
+      },
+      "Defaults": {
+        "properties": {
+          "required": {
+            "type": "null",
+            "default": null
+          },
+          "requiredNullable": {
+            "type": "null",
+            "nullable": true,
+            "default": null
+          },
+          "optional": {
+            "type": "null",
+            "default": null
+          },
+          "inferred": {
+            "enum": [
+              null
+            ],
+            "default": null
+          },
+          "kotlinx": {
+            "type": "string"
+          },
+          "kotlin": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "required",
+          "requiredNullable"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    },
+    "/literal": {
+      "post": {
+        "operationId": "literal",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinnedNull"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NullAlias"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    },
+    "/inline": {
+      "post": {
+        "operationId": "inline",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "const": null
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    },
+    "/query": {
+      "get": {
+        "operationId": "query",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                null
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    },
+    "/patch": {
+      "patch": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "requiredNull": {
+                    "enum": [
+                      null
+                    ],
+                    "nullable": true,
+                    "default": null
+                  },
+                  "note": {
+                    "enum": [
+                      null
+                    ],
+                    "nullable": true,
+                    "default": null
+                  },
+                  "fixed": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "requiredNull"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "pinned"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/PinnedNull"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "vocabulary"
+                        },
+                        "data": {
+                          "enum": [
+                            null
+                          ]
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    },
+    "/default-holder": {
+      "post": {
+        "operationId": "defaultHolder",
+        "tags": [
+          "null-literals"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Defaults"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Defaults"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/default-events": {
+      "get": {
+        "operationId": "defaultWatch",
+        "tags": [
+          "null-literals"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "defaults"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Defaults"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

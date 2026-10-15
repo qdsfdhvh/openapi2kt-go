@@ -1,0 +1,65 @@
+{
+  "openapi": "3.1.0", "info": {"title": "Nullable Array API", "version": "1"},
+  "components": {"schemas": {
+    "ACarrier": {
+      "properties": {
+        "inherited": {"$ref": "#/components/schemas/Rows"},
+        "wrapped": {"allOf": [{"$ref": "#/components/schemas/Rows"}]},
+        "narrow": {"$ref": "#/components/schemas/Rows", "nullable": false},
+        "wrappedNarrow": {"allOf": [{"$ref": "#/components/schemas/Rows"}], "nullable": false},
+        "states": {"$ref": "#/components/schemas/States", "nullable": false},
+        "values": {"$ref": "#/components/schemas/ZValues", "nullable": false},
+        "nested": {"type": "array", "items": {"$ref": "#/components/schemas/ZValues"}}
+      }, "required": ["inherited", "wrapped", "narrow", "wrappedNarrow", "states", "values"]
+    },
+    "Rows": {
+      "type": "array", "nullable": true, "minItems": 1,
+      "items": {"properties": {
+        "id": {"type": "string", "minLength": 1},
+        "children": {"$ref": "#/components/schemas/Rows"}
+      }, "required": ["id"]}
+    },
+    "States": {"type": ["array", "null"], "items": {"type": "string", "enum": ["open", "closed"]}},
+    "ZValues": {
+      "type": ["array", "null"], "minItems": 1, "maxItems": 3, "uniqueItems": true,
+      "items": {"type": ["string", "null"], "minLength": 2, "maxLength": 3, "pattern": "^[a-z]+$"}
+    }
+  }},
+  "paths": {
+    "/rows": {"post": {
+      "operationId": "echoRows",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Rows"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Rows"}}}}}
+    }},
+    "/narrow": {"post": {
+      "operationId": "echoNarrow",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Rows", "nullable": false}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Rows", "nullable": false}}}}}
+    }},
+    "/states": {"post": {
+      "operationId": "echoStates",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/States", "nullable": false}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/States", "nullable": false}}}}}
+    }},
+    "/patch": {"patch": {
+      "operationId": "submit",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "properties": {
+          "optional": {"$ref": "#/components/schemas/ZValues"},
+          "wrapped": {"allOf": [{"$ref": "#/components/schemas/ZValues"}]},
+          "requiredNull": {"$ref": "#/components/schemas/Rows"},
+          "requiredNarrow": {"allOf": [{"$ref": "#/components/schemas/Rows"}], "nullable": false}
+        }, "required": ["requiredNull", "requiredNarrow"]
+      }}}}, "responses": {"204": {}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch",
+      "responses": {"200": {"content": {"text/event-stream": {"schema": {
+        "oneOf": [
+          {"properties": {"event": {"type": "string", "const": "rows"}, "data": {"$ref": "#/components/schemas/Rows"}}, "required": ["data"]},
+          {"properties": {"event": {"type": "string", "const": "narrow"}, "data": {"$ref": "#/components/schemas/Rows", "nullable": false}}, "required": ["data"]}
+        ]
+      }}}}}
+    }}
+  }
+}

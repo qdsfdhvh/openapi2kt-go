@@ -1,0 +1,33 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Flag": {"type": "object", "properties": {"kind": {"const": "flag"}}},
+      "Record": {
+        "type": "object",
+        "required": ["id", "nested", "flags", "ref"],
+        "properties": {
+          "id": {"type": "string"},
+          "ordinary": {"type": "string", "nullable": true},
+          "kind": {"const": "note"},
+          "numericText": {"type": "string", "const": "1"},
+          "double": {"type": "number", "const": 1},
+          "float": {"type": "number", "format": "float", "const": 1},
+          "flag": {"const": true, "nullable": true},
+          "count": {"const": 1},
+          "minInt": {"type": "integer", "format": "int32", "const": -2147483648},
+          "maxInt": {"type": "integer", "format": "int32", "const": 2147483647},
+          "fraction": {"const": 1.25},
+          "negativeZero": {"type": "number", "const": -0.0},
+          "booleanLiteral": {"type": "boolean", "const": false},
+          "low": {"type": "integer", "format": "int64", "const": -9223372036854775808},
+          "high": {"type": "integer", "format": "int64", "const": 9223372036854775807},
+          "quote": {"const": "line\"\n$\\"},
+          "nested": {"type": "object", "properties": {"kind": {"const": "inner"}}},
+          "flags": {"type": "array", "items": {"type": "object", "properties": {"kind": {"const": "item"}}}},
+          "ref": {"$ref": "#/components/schemas/Flag"}
+        }
+      }
+    }
+  }
+}

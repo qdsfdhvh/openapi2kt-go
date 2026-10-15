@@ -1,0 +1,3 @@
+# Keep text checkouts deterministic, including Windows with core.autocrlf=true.
+# Binary files remain untouched through Git's automatic text detection.
+* text=auto eol=lf

@@ -1,0 +1,21 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Vocabulary": {
+        "type": "string",
+        "enum": ["active", "camelCase", "status", "unknown", "Unrecognized", "Serializer", "companion", "high-priority", "high priority", "high_priority", "1", ">=", "", " ", "_", "☃", "🚀", "\u0085", "serialName", "fromSerialName", "entries"]
+      },
+      "TOKEN": {"type": "string", "enum": ["TOKEN"]},
+      "Record": {
+        "type": "object",
+        "required": ["vocabulary", "operator", "tokens"],
+        "properties": {
+          "vocabulary": {"$ref": "#/components/schemas/Vocabulary"},
+          "operator": {"type": "string", "enum": [">=", ">", ""]},
+          "tokens": {"type": "array", "items": {"type": "string", "enum": ["a-b", "a b", "A_B"]}}
+        }
+      }
+    }
+  }
+}

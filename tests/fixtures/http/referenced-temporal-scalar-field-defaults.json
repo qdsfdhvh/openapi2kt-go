@@ -1,0 +1,37 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Referenced temporal defaults", "version": "1"},
+  "components": {"schemas": {
+    "Alias": {"$ref": "#/components/schemas/Stamp", "nullable": true},
+    "Bridge": {"$ref": "#/components/schemas/Hops/properties/narrow"},
+    "Day": {"type": "string", "format": "date"},
+    "Hops": {"properties": {
+      "entry": {"$ref": "#/components/schemas/Alias"},
+      "narrow": {"$ref": "#/components/schemas/Hops/properties/entry", "nullable": false}
+    }},
+    "Holder": {"required": ["required"], "properties": {
+      "required": {"$ref": "#/components/schemas/Day", "default": "2024-02-29"},
+      "day": {"$ref": "#/components/schemas/Day", "default": "2024-02-29"},
+      "stamp": {"$ref": "#/components/schemas/Alias", "default": "2024-02-29T12:34:56.123456789+02:30"},
+      "internal": {"$ref": "#/components/schemas/Hops/properties/narrow", "default": "2024-02-29T00:00:00Z"},
+      "bridge": {"$ref": "#/components/schemas/Bridge", "default": "2024-02-29T18:00:00+18:00"},
+      "nil": {"$ref": "#/components/schemas/Alias", "default": null},
+      "kotlin": {"type": "string"},
+      "kotlinx": {"type": "string"}
+    }},
+    "RequiredNullable": {"required": ["value"], "properties": {
+      "value": {"$ref": "#/components/schemas/Alias", "default": "2024-02-29T00:00:00Z"}
+    }},
+    "Stamp": {"type": ["string", "null"], "format": "date-time"}
+  }},
+  "paths": {
+    "/holder": {"post": {"tags": ["defaults"], "operationId": "send", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}}},
+    "/patch": {"patch": {"tags": ["defaults"], "operationId": "patch", "requestBody": {"required": true, "content": {"application/json": {"schema": {"required": ["required"], "properties": {
+      "required": {"$ref": "#/components/schemas/Alias", "default": "2024-02-29T00:00:00Z"},
+      "stamp": {"$ref": "#/components/schemas/Alias", "default": "2024-02-29T00:00:00Z"},
+      "clear": {"$ref": "#/components/schemas/Alias", "default": null},
+      "ordinary": {"$ref": "#/components/schemas/Bridge", "default": "2024-02-29T00:00:00Z"}
+    }}}}}, "responses": {"204": {}}}},
+    "/events": {"get": {"tags": ["defaults"], "operationId": "watch", "responses": {"200": {"content": {"text/event-stream": {"schema": {"oneOf": [{"required": ["event", "data"], "properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}}]}}}}}}}
+  }
+}

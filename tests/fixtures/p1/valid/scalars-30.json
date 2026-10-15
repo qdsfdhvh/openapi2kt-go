@@ -1,0 +1,60 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Synthetic fixture",
+    "version": "1.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Record": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "small": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "large": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "number": {
+            "type": "number"
+          },
+          "precise": {
+            "type": "number",
+            "format": "double"
+          },
+          "ratio": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "required": [
+          "text",
+          "uuid",
+          "enabled",
+          "count",
+          "small",
+          "large",
+          "number",
+          "precise",
+          "ratio"
+        ]
+      }
+    }
+  }
+}

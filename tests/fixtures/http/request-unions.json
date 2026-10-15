@@ -1,0 +1,47 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Union Presence", "version": "1.0"},
+  "servers": [{"url": "https://api.example.test"}],
+  "paths": {
+    "/choice": {"post": {
+      "operationId": "choose",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"oneOf": [
+        {"type": "object", "required": ["kind", "token"], "properties": {
+          "kind": {"type": "string", "const": "left"}, "token": {"type": ["string", "null"]},
+          "note": {"type": ["string", "null"]},
+          "child": {"type": "object", "properties": {"memo": {"type": ["string", "null"]}}}
+        }},
+        {"type": "object", "required": ["kind", "token"], "properties": {
+          "kind": {"type": "string", "const": "right"}, "token": {"type": ["string", "null"]}, "note": {"type": ["string", "null"]}
+        }}
+      ]}}}},
+      "responses": {"204": {}}
+    }},
+    "/envelope": {"post": {
+      "operationId": "envelope",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "required": ["payload"], "properties": {
+        "payload": {"anyOf": [
+          {"type": "object", "required": ["kind", "token"], "properties": {
+            "kind": {"type": "string", "const": "left"}, "token": {"type": ["string", "null"]},
+            "note": {"type": ["string", "null"]},
+            "child": {"type": "object", "properties": {"memo": {"type": ["string", "null"]}}},
+            "rows": {"type": "array", "items": {"type": "object", "properties": {"memo": {"type": ["string", "null"]}}}},
+            "attributes": {"type": "object", "additionalProperties": {"type": "object", "properties": {"flag": {"type": ["boolean", "null"]}}}}
+          }},
+          {"type": "object", "required": ["kind", "token"], "properties": {
+            "kind": {"type": "string", "const": "right"}, "token": {"type": ["string", "null"]}, "note": {"type": ["string", "null"]}
+          }}
+        ]}
+      }}}}},
+      "responses": {"204": {}}
+    }},
+    "/maybe": {"post": {
+      "operationId": "maybe",
+      "requestBody": {"content": {"application/json": {"schema": {"anyOf": [
+        {"type": "object", "required": ["token"], "properties": {"token": {"type": ["string", "null"]}, "memo": {"type": ["string", "null"]}}},
+        {"type": "null"}
+      ]}}}},
+      "responses": {"204": {}}
+    }}
+  }
+}

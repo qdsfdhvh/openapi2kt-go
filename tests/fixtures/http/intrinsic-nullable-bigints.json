@@ -1,0 +1,495 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Intrinsic Nullable Bigint API",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "AInherited": {
+        "$ref": "#/components/schemas/BNullable"
+      },
+      "BNullable": {
+        "$ref": "#/components/schemas/ZAmount"
+      },
+      "AFalse": {
+        "$ref": "#/components/schemas/AInherited",
+        "nullable": false
+      },
+      "ATrue": {
+        "$ref": "#/components/schemas/AFalse",
+        "nullable": true
+      },
+      "Holder": {
+        "properties": {
+          "inherited": {
+            "$ref": "#/components/schemas/AInherited"
+          },
+          "forcedFalse": {
+            "$ref": "#/components/schemas/AInherited",
+            "nullable": false
+          },
+          "forcedTrue": {
+            "$ref": "#/components/schemas/AFalse",
+            "nullable": true
+          },
+          "wrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            ]
+          },
+          "wrapperFalse": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AInherited"
+              },
+              {
+                "nullable": false
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          "amount": {
+            "$ref": "#/components/schemas/LInherited"
+          },
+          "amountFalse": {
+            "$ref": "#/components/schemas/LFalse"
+          },
+          "amountTrue": {
+            "$ref": "#/components/schemas/LTrue"
+          },
+          "native": {
+            "$ref": "#/components/schemas/NativeMaybe"
+          },
+          "direct": {
+            "$ref": "#/components/schemas/ZAmount"
+          },
+          "directFalse": {
+            "$ref": "#/components/schemas/ZAmount",
+            "nullable": false
+          },
+          "directWrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ZAmount"
+              }
+            ]
+          },
+          "directWrapperFalse": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ZAmount"
+              }
+            ],
+            "nullable": false
+          },
+          "directOmitted": {
+            "$ref": "#/components/schemas/ZOmitted"
+          },
+          "directOmittedFalse": {
+            "$ref": "#/components/schemas/ZOmitted",
+            "nullable": false
+          }
+        },
+        "required": [
+          "inherited",
+          "forcedFalse",
+          "forcedTrue",
+          "wrapper",
+          "wrapperFalse",
+          "items",
+          "values",
+          "amount",
+          "amountFalse",
+          "amountTrue",
+          "native",
+          "direct",
+          "directFalse",
+          "directWrapper",
+          "directWrapperFalse",
+          "directOmitted",
+          "directOmittedFalse"
+        ]
+      },
+      "ZAmount": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-native-type": "bigint"
+      },
+      "ZOmitted": {
+        "x-native-type": "bigint",
+        "nullable": true
+      },
+      "LNullable": {
+        "$ref": "#/components/schemas/ZOmitted"
+      },
+      "LInherited": {
+        "$ref": "#/components/schemas/LNullable"
+      },
+      "LFalse": {
+        "$ref": "#/components/schemas/LInherited",
+        "nullable": false
+      },
+      "LTrue": {
+        "$ref": "#/components/schemas/LFalse",
+        "nullable": true
+      },
+      "ZInteger": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-native-type": "bigint"
+      },
+      "NativeMaybe": {
+        "$ref": "#/components/schemas/ZInteger"
+      }
+    }
+  },
+  "paths": {
+    "/alias": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/direct": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZAmount",
+                "nullable": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZAmount",
+                  "nullable": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/optional": {
+      "post": {
+        "operationId": "optional",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ATrue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ATrue"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/AInherited"
+                  },
+                  "requiredFalse": {
+                    "$ref": "#/components/schemas/AInherited",
+                    "nullable": false
+                  },
+                  "inherited": {
+                    "$ref": "#/components/schemas/AInherited"
+                  },
+                  "forcedFalse": {
+                    "$ref": "#/components/schemas/AInherited",
+                    "nullable": false
+                  },
+                  "forcedTrue": {
+                    "$ref": "#/components/schemas/AFalse",
+                    "nullable": true
+                  },
+                  "wrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AInherited"
+                      }
+                    ]
+                  },
+                  "wrapperFalse": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AInherited"
+                      },
+                      {
+                        "nullable": false
+                      }
+                    ]
+                  },
+                  "amount": {
+                    "$ref": "#/components/schemas/LInherited"
+                  },
+                  "amountFalse": {
+                    "$ref": "#/components/schemas/LFalse"
+                  },
+                  "amountTrue": {
+                    "$ref": "#/components/schemas/LTrue"
+                  },
+                  "direct": {
+                    "$ref": "#/components/schemas/ZAmount"
+                  },
+                  "directFalse": {
+                    "$ref": "#/components/schemas/ZAmount",
+                    "nullable": false
+                  },
+                  "directWrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ZAmount"
+                      }
+                    ]
+                  },
+                  "directWrapperFalse": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ZAmount"
+                      }
+                    ],
+                    "nullable": false
+                  },
+                  "directOmitted": {
+                    "$ref": "#/components/schemas/ZOmitted"
+                  },
+                  "directOmittedFalse": {
+                    "$ref": "#/components/schemas/ZOmitted",
+                    "nullable": false
+                  }
+                },
+                "required": [
+                  "requiredNull",
+                  "requiredFalse"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "nullable"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/AInherited"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/AInherited",
+                          "nullable": false
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "amount"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/LInherited"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "amountNarrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/LInherited",
+                          "nullable": false
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/amount": {
+      "post": {
+        "operationId": "echoAmount",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/amount-direct": {
+      "post": {
+        "operationId": "echoAmount",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZOmitted",
+                "nullable": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZOmitted",
+                  "nullable": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query": {
+      "get": {
+        "operationId": "query",
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/LFalse"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

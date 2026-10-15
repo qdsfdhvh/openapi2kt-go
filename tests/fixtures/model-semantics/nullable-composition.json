@@ -1,0 +1,22 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Node": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}}},
+      "Status": {"type": "string", "enum": ["ready", "done"]},
+      "Record": {
+        "type": "object",
+        "required": ["one", "any", "ref", "list", "items", "status"],
+        "properties": {
+          "one": {"oneOf": [{"type": "string"}, {"type": "null"}]},
+          "any": {"anyOf": [{"type": "null"}, {"type": "integer", "format": "int64"}]},
+          "ref": {"anyOf": [{"$ref": "#/components/schemas/Node"}, {"type": "null"}]},
+          "list": {"oneOf": [{"type": "array", "items": {"type": "string"}}, {"type": "null"}]},
+          "items": {"type": "array", "items": {"anyOf": [{"type": "boolean"}, {"type": "null"}]}},
+          "status": {"anyOf": [{"$ref": "#/components/schemas/Status"}, {"type": "null"}]},
+          "nested": {"anyOf": [{"type": "object", "properties": {"label": {"type": "string"}}}, {"type": "null"}]}
+        }
+      }
+    }
+  }
+}

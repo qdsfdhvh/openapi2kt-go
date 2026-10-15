@@ -1,0 +1,86 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "NodeAlias": {"$ref": "#/components/schemas/Tree~1key~0/properties/node"},
+      "ChainAlias": {"$ref": "#/components/schemas/NodeAlias"},
+      "OptionalAlias": {"$ref": "#/components/schemas/NodeAlias", "nullable": true},
+      "MaybeAlias": {"$ref": "#/components/schemas/Tree~1key~0/properties/maybe"},
+      "NarrowAlias": {"$ref": "#/components/schemas/MaybeAlias", "nullable": false},
+      "HopAlias": {"$ref": "#/components/schemas/Tree~1key~0/properties/hop", "nullable": false},
+      "RowAlias": {"$ref": "#/components/schemas/RootRows/items"},
+      "MapAlias": {"$ref": "#/components/schemas/RootMap/additionalProperties"},
+      "Consumer": {
+        "type": "object",
+        "required": ["node", "narrowed", "nodes", "mapping"],
+        "properties": {
+          "node": {"$ref": "#/components/schemas/ChainAlias"},
+          "narrowed": {"$ref": "#/components/schemas/NarrowAlias"},
+          "inherited": {"allOf": [{"$ref": "#/components/schemas/MaybeAlias"}]},
+          "nodes": {"type": "array", "items": {"$ref": "#/components/schemas/HopAlias"}},
+          "mapping": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/NodeAlias"}}
+        }
+      },
+      "RootRows": {
+        "type": "array", "nullable": true,
+        "items": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}}}
+      },
+      "RootMap": {
+        "type": "object", "nullable": true,
+        "additionalProperties": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}}}
+      },
+      "Tree/key~": {
+        "type": "object",
+        "properties": {
+          "hop": {"$ref": "#/components/schemas/Tree~1key~0/properties/node", "nullable": true},
+          "node": {
+            "type": "object", "required": ["id"],
+            "properties": {
+              "id": {"type": "string"},
+              "peer": {"$ref": "#/components/schemas/MaybeAlias"},
+              "child": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}}}
+            }
+          },
+          "maybe": {
+            "type": ["object", "null"], "required": ["label"],
+            "properties": {
+              "label": {"type": "string"},
+              "back": {"$ref": "#/components/schemas/ChainAlias"}
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/echo": {"post": {
+      "operationId": "echo",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Consumer"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Consumer"}}}}}
+    }},
+    "/direct": {"post": {
+      "operationId": "direct",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/NodeAlias"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ChainAlias"}}}}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch",
+      "responses": {"200": {"content": {"text/event-stream": {"schema": {
+        "type": "object", "required": ["data"],
+        "properties": {"event": {"type": "string", "const": "node"}, "data": {"$ref": "#/components/schemas/ChainAlias"}}
+      }}}}}
+    }},
+    "/submit": {"post": {
+      "operationId": "submit",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "type": "object", "required": ["requiredNull", "requiredFalse"],
+        "properties": {
+          "optional": {"$ref": "#/components/schemas/MaybeAlias"},
+          "requiredNull": {"$ref": "#/components/schemas/MaybeAlias"},
+          "requiredFalse": {"$ref": "#/components/schemas/MaybeAlias", "nullable": false}
+        }
+      }}}},
+      "responses": {"204": {}}
+    }}
+  }
+}

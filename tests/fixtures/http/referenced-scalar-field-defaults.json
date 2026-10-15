@@ -1,0 +1,50 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Synthetic referenced scalar defaults", "version": "1"},
+  "components": {"schemas": {
+    "Count": {"type": "integer", "format": "int64", "nullable": true},
+    "Alias": {"$ref": "#/components/schemas/Count"},
+    "Label": {"type": "string", "nullable": true},
+    "Flag": {"type": "boolean", "nullable": true},
+    "Integer": {"type": "integer", "nullable": true},
+    "Ratio": {"type": "number", "format": "float", "nullable": true},
+    "DoubleValue": {"type": "number", "nullable": true},
+    "Hops": {"properties": {
+      "entry": {"$ref": "#/components/schemas/Alias", "nullable": true},
+      "narrow": {"$ref": "#/components/schemas/Hops/properties/entry", "nullable": false},
+      "inline": {"type": "integer", "format": "int64"}
+    }},
+    "Holder": {"required": ["required"], "properties": {
+      "required": {"$ref": "#/components/schemas/Hops/properties/narrow", "default": 2},
+      "count": {"$ref": "#/components/schemas/Alias", "default": 2},
+      "label": {"$ref": "#/components/schemas/Label", "default": "quote\"$😀"},
+      "flag": {"$ref": "#/components/schemas/Flag", "default": false},
+      "integer": {"$ref": "#/components/schemas/Integer", "default": -2147483648},
+      "minimum": {"$ref": "#/components/schemas/Alias", "default": -9223372036854775808},
+      "ratio": {"$ref": "#/components/schemas/Ratio", "default": 1.000000001},
+      "doubleValue": {"$ref": "#/components/schemas/DoubleValue", "default": 1.25},
+      "internal": {"$ref": "#/components/schemas/Hops/properties/inline", "default": 3},
+      "nil": {"$ref": "#/components/schemas/Alias", "default": null},
+      "kotlin": {"type": "string"}
+    }},
+    "RequiredNullable": {"required": ["value"], "properties": {
+      "value": {"$ref": "#/components/schemas/Alias", "default": 2}
+    }}
+  }},
+  "paths": {
+    "/holder": {"post": {"tags": ["defaults"], "operationId": "send", "requestBody": {
+      "required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}
+    }, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}}},
+    "/patch": {"patch": {"tags": ["defaults"], "operationId": "patch", "requestBody": {
+      "required": true, "content": {"application/json": {"schema": {"required": ["required"], "properties": {
+        "required": {"$ref": "#/components/schemas/Alias", "default": 2},
+        "count": {"$ref": "#/components/schemas/Alias", "default": 2},
+        "clear": {"$ref": "#/components/schemas/Alias", "default": null},
+        "ordinary": {"$ref": "#/components/schemas/Alias", "nullable": false, "default": 2}
+      }}}}
+    }, "responses": {"204": {}}}},
+    "/events": {"get": {"tags": ["defaults"], "operationId": "watch", "responses": {"200": {"content": {"text/event-stream": {"schema": {
+      "properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}, "required": ["data"]
+    }}}}}}}
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "openapi":"3.1.0",
+  "info":{"title":"PrimitiveTuple","version":"synthetic"},
+  "components":{"schemas":{
+    "StringTuple":{"type":"array","prefixItems":[{"type":"string"},{"type":"string"}]},
+    "LongTuple":{"type":"array","prefixItems":[{"type":"integer","format":"int64"},{"type":"integer","format":"int64"}]},
+    "MixedTuple":{"type":"array","prefixItems":[{"type":"string"},{"type":"boolean"}]},
+    "PriorityTuple":{"type":"array","prefixItems":[{"type":"integer"}],"items":{"type":"string"}},
+    "Holder":{"type":"object","properties":{
+      "strings":{"$ref":"#/components/schemas/StringTuple"},
+      "longs":{"$ref":"#/components/schemas/LongTuple"},
+      "mixed":{"$ref":"#/components/schemas/MixedTuple"},
+      "priority":{"$ref":"#/components/schemas/PriorityTuple"},
+      "nullable":{"type":["array","null"],"prefixItems":[{"type":["string","null"]}]},
+      "mapping":{"type":"object","additionalProperties":{"type":"array","prefixItems":[{"type":"boolean"}]}}
+    },"required":["strings","longs","mixed","priority","nullable","mapping"]}
+  }},
+  "paths":{
+    "/echo":{"post":{"operationId":"echo","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Holder"}}}},"responses":{"200":{"description":"synthetic","content":{"application/json":{"schema":{"$ref":"#/components/schemas/Holder"}}}}}}},
+    "/patch":{"post":{"operationId":"patch","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"values":{"type":["array","null"],"prefixItems":[{"type":"integer"}]},"requiredNullable":{"type":["array","null"],"prefixItems":[{"type":"string"}]}},"required":["requiredNullable"]}}}},"responses":{"204":{"description":"synthetic"}}}},
+    "/simple":{"post":{"operationId":"simple","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"array","prefixItems":[{"type":"number","format":"double"}]}}}},"responses":{"200":{"description":"synthetic","content":{"application/json":{"schema":{"type":"array","prefixItems":[{"type":"number","format":"double"}]}}}}}}},
+    "/watch":{"get":{"operationId":"watch","responses":{"200":{"description":"synthetic","content":{"text/event-stream":{"schema":{"oneOf":[{"type":"object","properties":{"event":{"const":"sample"},"data":{"$ref":"#/components/schemas/Holder"}},"required":["event","data"]}]}}}}}}}
+  }
+}

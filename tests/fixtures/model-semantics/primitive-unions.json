@@ -1,0 +1,17 @@
+{
+  "openapi":"3.1.0",
+  "components":{"schemas":{
+    "ObjectBase":{"type":"object","required":["id"],"properties":{"id":{"type":"string"},"tag":{"const":"object"}}},
+    "LongScalar":{"type":"integer","format":"int64"},
+    "Record":{"type":"object","required":["value","mixed","items","binary","onlyString"],"properties":{
+      "value":{"oneOf":[{"type":"number","format":"float"},{"type":"string"},{"type":"integer","format":"int32"},{"type":"boolean"}]},
+      "mixed":{"anyOf":[{"$ref":"#/components/schemas/ObjectBase"},{"type":"string"}]},
+      "items":{"type":"array","items":{"oneOf":[{"type":"boolean"},{"$ref":"#/components/schemas/LongScalar"},{"type":"null"}]}},
+      "binary":{"oneOf":[{"type":"integer"},{"type":"boolean"}]},
+      "onlyString":{"oneOf":[{"type":"string"},{"type":"string"}]},
+      "nullable":{"anyOf":[{"type":"integer"},{"type":"number"},{"type":"null"}]},
+      "nested":{"type":"object","required":["value"],"properties":{"value":{"oneOf":[{"type":"string"},{"type":"boolean"}]}}},
+      "constantObject":{"anyOf":[{"properties":{"tag":{"const":"empty"}}},{"type":"string"}]}
+    }}
+  }}
+}

@@ -1,0 +1,28 @@
+{
+  "openapi":"3.1.0", "info":{"title":"Synthetic standalone root union contracts","version":"1.0"},
+  "components":{"schemas":{
+    "State":{"oneOf":[
+      {"type":"object","properties":{"kind":{"type":"string","enum":["warm"]},"id":{"type":"string"}},"required":["kind","id"]},
+      {"type":"object","properties":{"kind":{"type":"string","enum":["cool","colder"]},"id":{"type":"string"}},"required":["kind"]}
+    ]},
+    "Untyped":{"anyOf":[
+      {"type":"object","properties":{"shared":{"type":"string"}}},
+      {"type":"object","properties":{"shared":{"type":"integer"}}}
+    ]},
+    "Keys":{"oneOf":[
+      {"type":"object","properties":{"a":{"type":"integer","format":"int64"}},"required":["a"]},
+      {"type":"object","properties":{"b":{"type":"boolean"}},"required":["b"]}
+    ]},
+    "Local/a~b":{"type":"object","properties":{"type":{"type":"string"},"a":{"type":"string"}},"required":["type","a"]},
+    "Other":{"type":"object","properties":{"type":{"type":"string"},"b":{"type":"integer"}},"required":["type","b"]},
+    "Implicit":{"oneOf":[{"$ref":"#/components/schemas/Local~1a~0b"},{"$ref":"#/components/schemas/Other"}]},
+    "Tagged":{"anyOf":[
+      {"type":"object","properties":{"type":{"type":"string","const":"idle"}}},
+      {"type":"object","properties":{"type":{"type":"string","const":"busy"},"values":{"type":"array","items":{"type":"integer"}}},"required":["values"]}
+    ]},
+    "Holder":{"type":"object","properties":{
+      "state":{"$ref":"#/components/schemas/State"},"states":{"type":"array","items":{"$ref":"#/components/schemas/State"}},
+      "self":{"$ref":"#/components/schemas/Holder"}
+    },"required":["state","states"]}
+  }}
+}

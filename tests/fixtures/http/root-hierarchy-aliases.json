@@ -1,0 +1,25 @@
+{
+ "openapi":"3.1.0", "info":{"title":"Root Hierarchy Alias API","version":"1"},
+ "components":{"schemas":{
+  "ASignal":{"$ref":"#/components/schemas/BSignal"},
+  "BSignal":{"$ref":"#/components/schemas/ZSignal"},
+  "AChannel":{"$ref":"#/components/schemas/ZChannel"},
+  "AFlux":{"$ref":"#/components/schemas/BFlux"},
+  "BFlux":{"$ref":"#/components/schemas/ZFlux"},
+  "AQuiet":{"$ref":"#/components/schemas/ZQuiet"},
+  "AStatus/a~b":{"$ref":"#/components/schemas/ZStatus"},
+  "ZSignal":{"oneOf":[{"$ref":"#/components/schemas/AChannel"},{"$ref":"#/components/schemas/AStatus~1a~0b"}],"discriminator":{"propertyName":"family","mapping":{"stream":"AChannel","state":"#/components/schemas/AStatus~1a~0b"}}},
+  "ZChannel":{"anyOf":[{"$ref":"#/components/schemas/AFlux"},{"$ref":"#/components/schemas/AQuiet"}],"discriminator":{"propertyName":"phase","mapping":{"dawn":"#/components/schemas/BFlux","ignored-alias":"AFlux","night":"AQuiet"}}},
+  "ZFlux":{"properties":{"family":{"type":"string","const":"stream"},"phase":{"type":"string","enum":["dawn","noon"],"nullable":true},"note":{"type":"string"},"samples":{"type":"array","items":{"type":"integer","format":"int64"}}},"required":["note","samples"]},
+  "ZQuiet":{"properties":{"family":{"type":"string","const":"stream"},"phase":{"type":"string","const":"night"}}},
+  "ZStatus":{"properties":{"family":{"type":"string","const":"state"},"online":{"type":"boolean"}},"required":["online"]},
+  "Holder":{"properties":{"signal":{"$ref":"#/components/schemas/ASignal"},"signals":{"type":"array","items":{"$ref":"#/components/schemas/ASignal"}},"leaf":{"$ref":"#/components/schemas/AFlux"},"leaves":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/AFlux"}}},"required":["signal","signals","leaf","leaves"]}
+ }},
+ "paths":{
+  "/alias":{"post":{"operationId":"echo","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ASignal"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ASignal"}}}}}}},
+  "/direct":{"post":{"operationId":"echo","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ZSignal"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ZSignal"}}}}}}},
+  "/leaf":{"post":{"operationId":"echoLeaf","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AFlux"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AFlux"}}}}}}},
+  "/patch":{"patch":{"operationId":"submit","requestBody":{"required":true,"content":{"application/json":{"schema":{"properties":{"signal":{"$ref":"#/components/schemas/ASignal","nullable":true},"leaf":{"$ref":"#/components/schemas/AFlux","nullable":true}}}}}},"responses":{"204":{}}}},
+  "/events":{"get":{"operationId":"watch","responses":{"200":{"content":{"text/event-stream":{"schema":{"oneOf":[{"properties":{"event":{"type":"string","const":"signal"},"data":{"$ref":"#/components/schemas/ASignal"}},"required":["data"]},{"properties":{"event":{"type":"string","const":"leaf"},"data":{"$ref":"#/components/schemas/AFlux"}},"required":["data"]}]}}}}}}}
+ }
+}

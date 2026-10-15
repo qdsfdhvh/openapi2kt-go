@@ -1,0 +1,50 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Widget API", "version": "1.0"},
+  "servers": [{"url": "https://api.example.test/v1"}],
+  "paths": {
+    "/widgets/{id}": {
+      "parameters": [
+        {"name": "id", "in": "path", "required": true, "schema": {"type": "string"}},
+        {"name": "limit", "in": "query", "schema": {"type": "integer"}}
+      ],
+      "get": {
+        "tags": ["widgets", "ignored"],
+        "operationId": "widgets.item.get",
+        "parameters": [
+          {"name": "limit", "in": "query", "schema": {"type": "integer", "format": "int64"}},
+          {"name": "state", "in": "query", "schema": {"$ref": "#/components/schemas/State"}},
+          {"name": "X-Trace-Id", "in": "header", "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {"description": "Empty candidate"},
+          "202": {"description": "Widget", "content": {"application/widget+json; charset=utf-8": {"schema": {"$ref": "#/components/schemas/Widget"}}}},
+          "default": {"description": "Other response"}
+        }
+      },
+      "delete": {
+        "tags": ["widgets"], "operationId": "widgets.delete",
+        "responses": {"204": {"description": "Removed"}}
+      }
+    },
+    "/health": {"get": {"responses": {"204": {"description": "Healthy"}}}},
+    "/edge/{client}/$count": {"get": {
+      "tags": ["widgets"], "operationId": "edge",
+      "parameters": [
+        {"name": "client", "in": "path", "required": true, "schema": {"type": "string"}},
+        {"name": "method", "in": "query", "required": true, "schema": {"type": "string"}},
+        {"name": "basePath", "in": "query", "schema": {"type": "string"}},
+        {"name": "when", "in": "query", "schema": {"type": "boolean"}},
+        {"name": "requestBuilder", "in": "query", "schema": {"type": "string"}},
+        {"name": "client", "in": "header", "schema": {"type": "string"}}
+      ],
+      "responses": {"204": {"description": "No body"}}
+    }},
+    "/admin/status": {"get": {"tags": ["user admin"], "operationId": "batchGet", "responses": {"200": {"description": "Count", "content": {"application/json": {"schema": {"type": "integer"}}}}}}},
+    "/admin/ready": {"get": {"tags": ["UserAdmin"], "operationId": "ready", "responses": {"204": {"description": "Ready"}}}}
+  },
+  "components": {"schemas": {
+    "State": {"type": "string", "enum": ["active", "on hold"]},
+    "Widget": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}, "label": {"type": "string"}}}
+  }}
+}

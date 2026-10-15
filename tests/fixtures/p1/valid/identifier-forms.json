@@ -1,0 +1,35 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Synthetic fixture",
+    "version": "1.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "123-record": {
+        "type": "object",
+        "properties": {
+          "when": {
+            "type": "string"
+          },
+          "class": {
+            "type": "string"
+          },
+          "1st-value": {
+            "type": "string"
+          },
+          "display-label": {
+            "type": "string"
+          },
+          "snake_case": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "when"
+        ]
+      }
+    }
+  }
+}

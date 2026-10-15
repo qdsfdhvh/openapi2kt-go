@@ -1,0 +1,29 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Synthetic fixture",
+    "version": "1.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Zebra": {
+        "type": "object",
+        "properties": {
+          "z": {
+            "type": "integer"
+          },
+          "a": {
+            "type": "string"
+          },
+          "m": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Alpha": {
+        "type": "object"
+      }
+    }
+  }
+}

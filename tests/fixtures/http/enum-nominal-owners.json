@@ -1,0 +1,386 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Enum Nominal Owners",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Owner": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "new",
+              "done"
+            ],
+            "nullable": true
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ]
+            }
+          },
+          "entries": {
+            "additionalProperties": {
+              "enum": [
+                "yes",
+                "no"
+              ]
+            }
+          }
+        }
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "a"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "waiting"
+                ]
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "b"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      },
+      "NestedState": {
+        "$ref": "#/components/schemas/Owner/properties/state"
+      },
+      "NestedStateFalse": {
+        "$ref": "#/components/schemas/NestedState",
+        "nullable": false
+      },
+      "RowState": {
+        "$ref": "#/components/schemas/Owner/properties/rows/items"
+      },
+      "MapState": {
+        "$ref": "#/components/schemas/Owner/properties/entries/additionalProperties"
+      },
+      "VariantState": {
+        "$ref": "#/components/schemas/Choice/oneOf/0/properties/state"
+      },
+      "RootRows": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "first",
+            "last"
+          ]
+        }
+      },
+      "RootRowState": {
+        "$ref": "#/components/schemas/RootRows/items"
+      },
+      "NamedState": {
+        "enum": [
+          "on",
+          "off"
+        ],
+        "nullable": true
+      },
+      "NamedAlias": {
+        "$ref": "#/components/schemas/NamedState"
+      },
+      "Hops": {
+        "properties": {
+          "nested": {
+            "$ref": "#/components/schemas/NestedState"
+          },
+          "named": {
+            "$ref": "#/components/schemas/NamedAlias"
+          },
+          "next": {
+            "$ref": "#/components/schemas/Hops/properties/nested"
+          }
+        }
+      },
+      "NestedBridge": {
+        "$ref": "#/components/schemas/Hops/properties/next"
+      },
+      "NamedBridge": {
+        "$ref": "#/components/schemas/Hops/properties/named",
+        "nullable": false
+      },
+      "Holder": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/NestedState"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/NestedStateFalse"
+          },
+          "variant": {
+            "$ref": "#/components/schemas/VariantState"
+          },
+          "named": {
+            "$ref": "#/components/schemas/NamedBridge"
+          }
+        },
+        "required": [
+          "narrow",
+          "variant",
+          "named"
+        ]
+      },
+      "BorrowOwner": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Owner"
+          },
+          {
+            "properties": {
+              "extra": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "RootMap": {
+        "additionalProperties": {
+          "enum": [
+            "up",
+            "down"
+          ]
+        }
+      },
+      "RootMapState": {
+        "$ref": "#/components/schemas/RootMap/additionalProperties"
+      },
+      "EnumConsumerChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Owner/properties/state",
+                "nullable": false
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "b"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/enums": {
+      "post": {
+        "operationId": "echoEnumHolder",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enum-nullable": {
+      "post": {
+        "operationId": "nullableEnum",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NestedState"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestedState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enum-false": {
+      "post": {
+        "operationId": "falseEnum",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NestedStateFalse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NestedStateFalse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enum-patch": {
+      "patch": {
+        "operationId": "patchEnum",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "required": {
+                    "$ref": "#/components/schemas/NestedState"
+                  },
+                  "narrow": {
+                    "$ref": "#/components/schemas/NestedStateFalse"
+                  },
+                  "value": {
+                    "$ref": "#/components/schemas/Owner/properties/state"
+                  }
+                },
+                "required": [
+                  "required",
+                  "narrow"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/enum-watch": {
+      "get": {
+        "operationId": "watchEnum",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "nullable"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/NestedState"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/NestedStateFalse"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "holder"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

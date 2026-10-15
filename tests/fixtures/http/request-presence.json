@@ -1,0 +1,49 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Presence", "version": "1.0"},
+  "servers": [{"url": "https://api.example.test"}],
+  "paths": {
+    "/list": {"post": {
+      "operationId": "sendList",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "array", "items": {"type": "string"}}}}},
+      "responses": {"204": {}}
+    }},
+    "/dictionary": {"post": {
+      "operationId": "dictionary",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "type": "object", "additionalProperties": {"type": "object", "properties": {"memo": {"type": ["string", "null"]}}}
+      }}}},
+      "responses": {"204": {}}
+    }},
+    "/value-map": {"post": {
+      "operationId": "valueMap",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "type": "object", "additionalProperties": {"type": ["string", "null"]}
+      }}}},
+      "responses": {"204": {}}
+    }},
+    "/record": {"patch": {
+      "operationId": "modify",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "type": "object", "required": ["token"], "properties": {
+          "token": {"type": ["string", "null"]},
+          "title": {"type": ["string", "null"]},
+          "note": {"type": "string"},
+          "inherited": {"$ref": "#/components/schemas/Maybe"},
+          "disabled": {"$ref": "#/components/schemas/Maybe", "nullable": false},
+          "child": {"type": "object", "properties": {"memo": {"type": ["string", "null"]}}},
+          "rows": {"type": "array", "items": {"type": "object", "properties": {"memo": {"type": ["string", "null"]}}}},
+          "attributes": {"type": "object", "additionalProperties": {"type": "object", "properties": {"flag": {"type": ["boolean", "null"]}}}},
+          "shared": {"$ref": "#/components/schemas/Shared"},
+          "state": {"anyOf": [{"$ref": "#/components/schemas/State"}, {"type": "null"}]}
+        }
+      }}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Shared"}}}}}
+    }}
+  },
+  "components": {"schemas": {
+    "Maybe": {"type": "object", "nullable": true, "additionalProperties": {"type": "string"}},
+    "Shared": {"type": "object", "properties": {"title": {"type": ["string", "null"]}}},
+    "State": {"type": "string", "enum": ["ready", "waiting"]}
+  }}
+}

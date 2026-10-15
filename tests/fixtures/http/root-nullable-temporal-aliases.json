@@ -1,0 +1,423 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Root Nullable Temporal Alias API",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "AInherited": {
+        "$ref": "#/components/schemas/BNullable"
+      },
+      "BNullable": {
+        "$ref": "#/components/schemas/ZStamp",
+        "nullable": true
+      },
+      "AFalse": {
+        "$ref": "#/components/schemas/AInherited",
+        "nullable": false
+      },
+      "ATrue": {
+        "$ref": "#/components/schemas/AFalse",
+        "nullable": true
+      },
+      "Holder": {
+        "properties": {
+          "inherited": {
+            "$ref": "#/components/schemas/AInherited"
+          },
+          "forcedFalse": {
+            "$ref": "#/components/schemas/AInherited",
+            "nullable": false
+          },
+          "forcedTrue": {
+            "$ref": "#/components/schemas/AFalse",
+            "nullable": true
+          },
+          "wrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            ]
+          },
+          "wrapperFalse": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AInherited"
+              },
+              {
+                "nullable": false
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          "day": {
+            "$ref": "#/components/schemas/LInherited"
+          },
+          "dayFalse": {
+            "$ref": "#/components/schemas/LFalse"
+          },
+          "dayTrue": {
+            "$ref": "#/components/schemas/LTrue"
+          },
+          "native": {
+            "$ref": "#/components/schemas/NativeMaybe"
+          }
+        },
+        "required": [
+          "inherited",
+          "forcedFalse",
+          "forcedTrue",
+          "wrapper",
+          "wrapperFalse",
+          "items",
+          "values",
+          "day",
+          "dayFalse",
+          "dayTrue",
+          "native"
+        ]
+      },
+      "ZStamp": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "ZDay": {
+        "type": "string",
+        "format": "date"
+      },
+      "LNullable": {
+        "$ref": "#/components/schemas/ZDay",
+        "nullable": true
+      },
+      "LInherited": {
+        "$ref": "#/components/schemas/LNullable"
+      },
+      "LFalse": {
+        "$ref": "#/components/schemas/LInherited",
+        "nullable": false
+      },
+      "LTrue": {
+        "$ref": "#/components/schemas/LFalse",
+        "nullable": true
+      },
+      "ZNative": {
+        "x-native-type": "date"
+      },
+      "NativeMaybe": {
+        "$ref": "#/components/schemas/ZNative",
+        "nullable": true
+      }
+    }
+  },
+  "paths": {
+    "/alias": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/direct": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZStamp"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZStamp"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/optional": {
+      "post": {
+        "operationId": "optional",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ATrue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ATrue"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/AInherited"
+                  },
+                  "requiredFalse": {
+                    "$ref": "#/components/schemas/AInherited",
+                    "nullable": false
+                  },
+                  "inherited": {
+                    "$ref": "#/components/schemas/AInherited"
+                  },
+                  "forcedFalse": {
+                    "$ref": "#/components/schemas/AInherited",
+                    "nullable": false
+                  },
+                  "forcedTrue": {
+                    "$ref": "#/components/schemas/AFalse",
+                    "nullable": true
+                  },
+                  "wrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AInherited"
+                      }
+                    ]
+                  },
+                  "wrapperFalse": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AInherited"
+                      },
+                      {
+                        "nullable": false
+                      }
+                    ]
+                  },
+                  "day": {
+                    "$ref": "#/components/schemas/LInherited"
+                  },
+                  "dayFalse": {
+                    "$ref": "#/components/schemas/LFalse"
+                  },
+                  "dayTrue": {
+                    "$ref": "#/components/schemas/LTrue"
+                  }
+                },
+                "required": [
+                  "requiredNull",
+                  "requiredFalse"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "nullable"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/AInherited"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/AInherited",
+                          "nullable": false
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "day"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/LInherited"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "dayNarrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/LInherited",
+                          "nullable": false
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/day": {
+      "post": {
+        "operationId": "echoDay",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/day-direct": {
+      "post": {
+        "operationId": "echoDay",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZDay"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZDay"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query": {
+      "get": {
+        "operationId": "query",
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          {
+            "name": "day",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/LFalse"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

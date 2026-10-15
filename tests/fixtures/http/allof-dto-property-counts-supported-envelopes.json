@@ -1,0 +1,319 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Record": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "minLength": 2,
+                "pattern": "^[a-z]+$"
+              }
+            },
+            "required": [
+              "value"
+            ],
+            "minProperties": 2
+          },
+          {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "maxLength": 3,
+                "pattern": "^[a-z]+$"
+              },
+              "kind": {
+                "type": "string",
+                "const": "record"
+              }
+            },
+            "maxProperties": 3
+          }
+        ],
+        "maxProperties": 2,
+        "additionalProperties": true
+      },
+      "Node": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              }
+            },
+            "minProperties": 1
+          },
+          {
+            "type": "object",
+            "properties": {
+              "next": {
+                "$ref": "#/components/schemas/Node",
+                "nullable": true
+              }
+            },
+            "maxProperties": 2
+          }
+        ]
+      },
+      "Zero": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "type": "string"
+              }
+            },
+            "minProperties": 0
+          }
+        ]
+      },
+      "Envelope": {
+        "type": "object",
+        "properties": {
+          "nullable": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "v": {
+                    "type": "string"
+                  }
+                },
+                "nullable": true,
+                "minProperties": 0
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "v": {
+                    "type": "string"
+                  }
+                },
+                "nullable": false,
+                "maxProperties": 0
+              }
+            ]
+          },
+          "rootFalse": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "v": {
+                    "type": "string"
+                  }
+                },
+                "nullable": true,
+                "minProperties": 0
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "v": {
+                    "type": "string"
+                  }
+                },
+                "nullable": false,
+                "maxProperties": 0
+              }
+            ],
+            "nullable": false
+          },
+          "rootTrue": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "v": {
+                    "type": "string"
+                  }
+                },
+                "nullable": false,
+                "minProperties": 0
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "v": {
+                    "type": "string"
+                  }
+                },
+                "nullable": false,
+                "maxProperties": 0
+              }
+            ],
+            "nullable": true
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            }
+          },
+          "index": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Record"
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/records": {
+      "post": {
+        "tags": [
+          "Counts"
+        ],
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Record"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "tags": [
+          "Counts"
+        ],
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "payload": {
+                    "allOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string",
+                            "minLength": 2,
+                            "pattern": "^[a-z]+$"
+                          }
+                        },
+                        "required": [
+                          "value"
+                        ],
+                        "minProperties": 2
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string",
+                            "maxLength": 3,
+                            "pattern": "^[a-z]+$"
+                          },
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "minLength": 2,
+                            "maxLength": 3
+                          },
+                          "kind": {
+                            "type": "string",
+                            "const": "patch"
+                          }
+                        },
+                        "maxProperties": 3
+                      }
+                    ],
+                    "maxProperties": 2
+                  },
+                  "requiredNull": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "root"
+                  }
+                },
+                "required": [
+                  "payload",
+                  "requiredNull"
+                ],
+                "minProperties": 1,
+                "maxProperties": 4
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "tags": [
+          "Counts"
+        ],
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Record"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

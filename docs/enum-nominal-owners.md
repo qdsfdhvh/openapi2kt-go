@@ -1,0 +1,17 @@
+# References to retained String-enum vocabularies
+
+Typed local schema Pointers, finite internal chains and component-root aliases may refer to actual retained plain String-enum declarations. Ordinary nested properties, list items and typed dictionary values use their physical containing scope; union-variant properties use the actual variant scope. Root collection peers use their top-level classifier. Finite internal chains can also end at existing named plain String enums and their supported aliases.
+
+For example, a reference to `#/components/schemas/Owner/properties/state` binds `OwnerDto.State`. Aliases preserve the canonical entries, fromSerialName, serializer and `Unrecognized` owner. Construct future values with the canonical owner's `Unrecognized`, rather than inventing an alias-owned nested type.
+
+## Identity and nullable intent
+
+Successful enum planning records original schema node, Pointer, declaration and nullable typed view. The shared final ownership barrier authorizes exactly one retained declaration under the original catalog's actual lexical scope. Borrowed allOf/union copies keep their existing vocabularies; they cannot replace the source owner's enum. No copied schema, expanded reference tree, fabricated catalog entry or predicted name authorizes a type.
+
+Nearest alias/ref true or false intent is inherited; an explicit typed consumer wins. Canonical vocabularies and direct companion serializers remain non-null. Reified nullable serializers decode JSON null as Kotlin null, and false narrowing restores the non-null canonical codec. Shared optional/default-null and inline request required-nullable/Patch states retain their existing contracts. Every transparent named/internal source hop remains in cached height; nullable wrappers do not reset the source budget.
+
+## Boundaries and verification
+
+Only plain typed or typeless String enums are included. Null enum members, formatted/caller-native/numeric/const/value-class projections, shape borrowing and general ambiguous ownership retain separate policies. Discarded overrides, fixed extras scratch declarations, repeated occurrences and scalar/raw projections cannot authorize a classifier. Invalid source and transparent cycles reject before artifacts are returned. Source depth remains 48, ownership work 16,384, enum members and serialization slots 240.
+
+The [synthetic fixture](../tests/fixtures/http/enum-nominal-owners.json), [core contracts](../core/enum_nominal_owners_test.go), [ownership/resource guards](../core/enum_nominal_owners_guards_test.go), [private identity tests](../internal/schema/enum_nominal_owners_test.go) and [native output preservation](../internal/cli/enum_nominal_owners_process_test.go) define the binding and failure contract. `bash scripts/test.sh feature enum-nominal-owners` generates fresh Data/Plain × validation projects with optimization flags on Plain, four Json configurations, canonical entries/unknown/nullable/false codecs, Patch/controlled HTTP/live fragmented SSE closure/reuse and independent 240-member/240-field/48-source probes. [The Kotlin consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/EnumNominalOwnersContracts.kt) also runs in the full HTTP suite. Invalid enum members retain their original `E_SCHEMA_INVALID` Pointer; earlier rejected plain enum inputs are preserved and explicitly graduated to precise canonical-owner positives. This contract does not establish full F04/F07/M08 or additional platform support.

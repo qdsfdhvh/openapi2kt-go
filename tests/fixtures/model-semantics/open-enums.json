@@ -1,0 +1,26 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Synthetic enum contracts", "version": "1.0"},
+  "components": {
+    "schemas": {
+      "Status": {
+        "type": "string",
+        "enum": ["ready", "in-progress", "1", "quote\"$\\line\n"]
+      },
+      "Record": {
+        "type": "object",
+        "required": ["status", "states", "mode"],
+        "properties": {
+          "status": {"$ref": "#/components/schemas/Status"},
+          "states": {"type": "array", "items": {"type": ["string", "null"], "enum": ["on", "off"]}},
+          "mode": {"type": "string", "enum": ["fast", "safe"]},
+          "optionalStatus": {"$ref": "#/components/schemas/Status", "nullable": true},
+          "nested": {
+            "type": "object",
+            "properties": {"mode": {"type": "string", "enum": ["local", "remote"]}}
+          }
+        }
+      }
+    }
+  }
+}

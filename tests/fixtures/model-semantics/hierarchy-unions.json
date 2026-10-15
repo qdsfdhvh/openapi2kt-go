@@ -1,0 +1,32 @@
+{
+  "openapi":"3.1.0", "info":{"title":"Synthetic hierarchy contracts","version":"1.0"},
+  "components":{"schemas":{
+    "Signal":{"oneOf":[{"$ref":"#/components/schemas/Channel"},{"$ref":"#/components/schemas/Status"}],"discriminator":{"propertyName":"family","mapping":{"stream":"#/components/schemas/Channel","state":"#/components/schemas/Status"}}},
+    "Channel":{"anyOf":[{"$ref":"#/components/schemas/Flux"},{"$ref":"#/components/schemas/Quiet"}],"discriminator":{"propertyName":"phase","mapping":{"dawn":"#/components/schemas/Flux","alias-only":"#/components/schemas/Flux","night":"#/components/schemas/Quiet"}}},
+    "Flux":{"type":"object","properties":{"family":{"type":"string","const":"stream"},"phase":{"type":"string","enum":["dawn","noon"],"nullable":true},"samples":{"type":"array","items":{"type":"integer","format":"int64"}},"note":{"type":"string","nullable":true}},"required":["samples","note"]},
+    "Quiet":{"type":"object","properties":{"family":{"type":"string","const":"stream"},"phase":{"type":"string","const":"night"}}},
+    "Status":{"type":"object","properties":{"family":{"type":"string","const":"state"},"online":{"type":"boolean"}},"required":["online"]},
+    "InferredRoot":{"oneOf":[{"$ref":"#/components/schemas/InferredGroup"},{"$ref":"#/components/schemas/InferredOther"}],"discriminator":{"propertyName":"family","mapping":{"inferred":"#/components/schemas/InferredGroup","other":"#/components/schemas/InferredOther"}}},
+    "InferredGroup":{"anyOf":[{"$ref":"#/components/schemas/RangeLeaf"},{"$ref":"#/components/schemas/PinLeaf"}]},
+    "RangeLeaf":{"type":"object","properties":{"family":{"type":"string","const":"inferred"},"zone":{"type":"string","enum":["near","far"]},"distance":{"type":"number"}},"required":["distance"]},
+    "PinLeaf":{"type":"object","properties":{"family":{"type":"string","const":"inferred"},"zone":{"type":"string","const":"near"}}},
+    "InferredOther":{"type":"object","properties":{"family":{"type":"string","const":"other"}}},
+    "PlainRoot":{"oneOf":[{"$ref":"#/components/schemas/PlainGroup"},{"$ref":"#/components/schemas/PlainOther"}],"discriminator":{"propertyName":"family","mapping":{"plain":"#/components/schemas/PlainGroup","other":"#/components/schemas/PlainOther"}}},
+    "PlainGroup":{"anyOf":[{"$ref":"#/components/schemas/PlainLeft"},{"$ref":"#/components/schemas/PlainRight"}]},
+    "PlainLeft":{"type":"object","properties":{"family":{"type":"string","const":"plain"},"left":{"type":"string"}},"required":["left"]},
+    "PlainRight":{"type":"object","properties":{"family":{"type":"string","const":"plain"},"right":{"type":"integer"}},"required":["right"]},
+    "PlainOther":{"type":"object","properties":{"family":{"type":"string","const":"other"}}},
+    "Holder":{"type":"object","properties":{"signal":{"$ref":"#/components/schemas/Signal"},"signals":{"type":"array","items":{"$ref":"#/components/schemas/Signal"}}},"required":["signal","signals"]},
+    "Base":{"type":"object","properties":{"tag":{"type":"string"}},"required":["tag"]},
+    "AlphaNode":{"allOf":[{"$ref":"#/components/schemas/Base"},{"type":"object","properties":{"label":{"type":"string"}},"required":["label"]}]},
+    "BetaNode":{"allOf":[{"$ref":"#/components/schemas/Base"},{"type":"object","properties":{"count":{"type":"integer"}},"required":["count"]}]},
+    "Flat":{"oneOf":[{"$ref":"#/components/schemas/AlphaNode"},{"$ref":"#/components/schemas/BetaNode"}],"discriminator":{"propertyName":"tag","mapping":{"a/b~wire":"AlphaNode","ignored-alias":"AlphaNode"}}},
+    "DeepRoot":{"oneOf":[{"$ref":"#/components/schemas/DeepMiddle"},{"$ref":"#/components/schemas/DeepOther"}],"discriminator":{"propertyName":"kind","mapping":{"deep":"DeepMiddle","other":"DeepOther"}}},
+    "DeepMiddle":{"oneOf":[{"$ref":"#/components/schemas/DeepInner"},{"$ref":"#/components/schemas/DeepSibling"}],"discriminator":{"propertyName":"step","mapping":{"nested":"DeepInner","sibling":"DeepSibling"}}},
+    "DeepInner":{"oneOf":[{"$ref":"#/components/schemas/DeepFirst"},{"$ref":"#/components/schemas/DeepSecond"}],"discriminator":{"propertyName":"phase","mapping":{"first":"DeepFirst","second":"DeepSecond"}}},
+    "DeepFirst":{"type":"object","properties":{"kind":{"type":"string","const":"deep"},"step":{"type":"string","const":"nested"},"phase":{"type":"string","const":"first"}}},
+    "DeepSecond":{"type":"object","properties":{"kind":{"type":"string","const":"deep"},"step":{"type":"string","const":"nested"},"phase":{"type":"string","const":"second"}}},
+    "DeepSibling":{"type":"object","properties":{"kind":{"type":"string","const":"deep"},"step":{"type":"string","const":"sibling"}}},
+    "DeepOther":{"type":"object","properties":{"kind":{"type":"string","const":"other"}}}
+  }}
+}

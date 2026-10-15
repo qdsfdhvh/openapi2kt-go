@@ -1,0 +1,261 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Token": {
+        "type": "string",
+        "minLength": 1
+      },
+      "Link": {
+        "$ref": "#/components/schemas/Token"
+      },
+      "Bag": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "minItems": 1
+        }
+      },
+      "Record": {
+        "type": "object",
+        "required": [
+          "strings",
+          "ints",
+          "longs",
+          "bools",
+          "nullable",
+          "aliases",
+          "bag"
+        ],
+        "properties": {
+          "strings": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "maxItems": 4
+          },
+          "ints": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "integer"
+            }
+          },
+          "longs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "bools": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "boolean"
+            }
+          },
+          "nullable": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "aliases": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/Link",
+              "nullable": true
+            },
+            "minItems": 1,
+            "maxItems": 4
+          },
+          "bag": {
+            "$ref": "#/components/schemas/Bag"
+          },
+          "optional": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "noop": {
+            "type": "array",
+            "uniqueItems": false,
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "kotlin": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "compareTo": {
+            "type": "string"
+          },
+          "openapi-kt uniqueItems": {
+            "type": "string"
+          },
+          "nullableLongs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/values": {
+      "post": {
+        "tags": [
+          "Unique"
+        ],
+        "operationId": "values",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "minItems": 1,
+                "maxItems": 4
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "minItems": 1,
+                  "maxItems": 4
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "tags": [
+          "Unique"
+        ],
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rows": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "tags": [
+          "Unique"
+        ],
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "uniqueItems": true,
+                      "items": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

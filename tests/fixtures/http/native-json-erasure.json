@@ -1,0 +1,139 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Native JSON Erasure Probe",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "NativeElement": {
+        "x-native-type": "kotlinx.serialization.json.JsonElement"
+      },
+      "NativeObject": {
+        "x-native-type": "kotlinx.serialization.json.JsonObject"
+      },
+      "Raw": {
+        "properties": {}
+      },
+      "Bag": {
+        "additionalProperties": true
+      },
+      "ElementAlias": {
+        "$ref": "#/components/schemas/NativeElement"
+      },
+      "ObjectAlias": {
+        "$ref": "#/components/schemas/NativeObject"
+      }
+    }
+  },
+  "paths": {
+    "/a-element": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NativeElement"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/b-raw": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Raw"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/c-element-alias": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElementAlias"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/d-object": {
+      "post": {
+        "operationId": "put",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NativeObject"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/e-bag": {
+      "post": {
+        "operationId": "put",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Bag"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/f-object-alias": {
+      "post": {
+        "operationId": "put",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectAlias"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

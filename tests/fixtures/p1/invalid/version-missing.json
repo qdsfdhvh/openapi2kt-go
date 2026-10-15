@@ -1,0 +1,9 @@
+{
+  "components": {
+    "schemas": {
+      "Record": {
+        "type": "object"
+      }
+    }
+  }
+}

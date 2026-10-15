@@ -1,0 +1,97 @@
+name: Release binaries
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+
+  package:
+    needs: verify
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [darwin-amd64, darwin-arm64, linux-amd64, linux-arm64, windows-amd64, windows-arm64]
+    env:
+      RELEASE_TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (Node.js 24)
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0 (Node.js 24)
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Prepare declared Go modules
+        shell: bash
+        run: env -u GOROOT GOTOOLCHAIN=local GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org go mod download
+      - name: Verify offline Go modules
+        shell: bash
+        run: env -u GOROOT GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off go mod verify
+      - name: Build allowlisted archive (requires LICENSE and matching CLI version)
+        run: python3 scripts/release/package.py --tag "$RELEASE_TAG" --target '${{ matrix.target }}'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: package-${{ matrix.target }}
+          path: |
+            build/release/*.tar.gz
+            build/release/*.zip
+          if-no-files-found: error
+          retention-days: 7
+
+  draft:
+    needs: package
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: package-*
+          merge-multiple: true
+          path: build/release
+      - name: Verify asset set and write checksums
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import os
+          from pathlib import Path
+          import re
+          tag = os.environ['RELEASE_TAG']
+          assert re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?', tag)
+          targets = ['darwin-amd64', 'darwin-arm64', 'linux-amd64', 'linux-arm64', 'windows-amd64', 'windows-arm64']
+          root = Path('build/release')
+          expected = {f'openapi-kt-{tag}-{target}' + ('.zip' if target.startswith('windows-') else '.tar.gz') for target in targets}
+          assert {p.name for p in root.iterdir()} == expected
+          assert all(p.is_file() and not p.is_symlink() for p in root.iterdir())
+          (root / 'SHA256SUMS').write_text(''.join(hashlib.sha256((root/name).read_bytes()).hexdigest() + '  ' + name + '\n' for name in sorted(expected)))
+          PY
+      - name: Create draft prerelease without overwriting an existing release
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo 'Refusing to overwrite an existing release.' >&2
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" build/release/*.tar.gz build/release/*.zip build/release/SHA256SUMS \
+            --verify-tag --draft --prerelease --title "$RELEASE_TAG" \
+            --notes 'Preview CLI binaries. Check SHA256SUMS before use. Generated Kotlin/platform compatibility is limited to the documented subset; cross-built targets are not runtime verification. Review this draft before publication.'

@@ -1,0 +1,546 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Intrinsic Nullable Caller Native",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "AInherited": {
+        "$ref": "#/components/schemas/BNullable"
+      },
+      "AFalse": {
+        "$ref": "#/components/schemas/AInherited",
+        "nullable": false
+      },
+      "ATrue": {
+        "$ref": "#/components/schemas/AFalse",
+        "nullable": true
+      },
+      "BNullable": {
+        "$ref": "#/components/schemas/ZMoney"
+      },
+      "ZMoney": {
+        "x-native-type": "org.example.scalarvalues.Money",
+        "nullable": true
+      },
+      "LMaybe": {
+        "$ref": "#/components/schemas/ZLong"
+      },
+      "ZLong": {
+        "x-native-type": "kotlin.Long",
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "BytesMaybe": {
+        "$ref": "#/components/schemas/ZBytes"
+      },
+      "ZBytes": {
+        "x-native-type": "kotlin.ByteArray",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "ElementMaybe": {
+        "$ref": "#/components/schemas/ZElement"
+      },
+      "ZElement": {
+        "x-native-type": "kotlinx.serialization.json.JsonElement",
+        "nullable": true
+      },
+      "ObjectMaybe": {
+        "$ref": "#/components/schemas/ZObject"
+      },
+      "ZObject": {
+        "x-native-type": "kotlinx.serialization.json.JsonObject",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "StringMaybe": {
+        "$ref": "#/components/schemas/ZString"
+      },
+      "ZString": {
+        "x-native-type": "kotlin.String",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "InstantMaybe": {
+        "$ref": "#/components/schemas/ZInstant"
+      },
+      "ZInstant": {
+        "x-native-type": "kotlin.time.Instant",
+        "nullable": true
+      },
+      "Holder": {
+        "properties": {
+          "inherited": {
+            "$ref": "#/components/schemas/AInherited"
+          },
+          "forcedTrue": {
+            "$ref": "#/components/schemas/AFalse",
+            "nullable": true
+          },
+          "forcedFalse": {
+            "$ref": "#/components/schemas/ATrue",
+            "nullable": false
+          },
+          "wrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            ]
+          },
+          "wrapperFalse": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            ],
+            "nullable": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          "values": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AInherited"
+            }
+          },
+          "requiredNull": {
+            "$ref": "#/components/schemas/AInherited"
+          },
+          "nativeLong": {
+            "$ref": "#/components/schemas/LMaybe"
+          },
+          "nativeBytes": {
+            "$ref": "#/components/schemas/BytesMaybe"
+          },
+          "nativeElement": {
+            "$ref": "#/components/schemas/ElementMaybe"
+          },
+          "nativeObject": {
+            "$ref": "#/components/schemas/ObjectMaybe"
+          },
+          "nativeString": {
+            "$ref": "#/components/schemas/StringMaybe"
+          },
+          "nativeInstant": {
+            "$ref": "#/components/schemas/InstantMaybe"
+          },
+          "directMoney": {
+            "$ref": "#/components/schemas/ZMoney"
+          },
+          "directFalse": {
+            "$ref": "#/components/schemas/ZMoney",
+            "nullable": false
+          },
+          "directWrapped": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ZMoney"
+              }
+            ]
+          }
+        },
+        "required": [
+          "forcedFalse",
+          "wrapperFalse",
+          "items",
+          "values",
+          "requiredNull",
+          "directFalse"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/echo-peer": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AFalse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AFalse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/long": {
+      "post": {
+        "operationId": "echoLong",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bytes": {
+      "post": {
+        "operationId": "echoBytes",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BytesMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BytesMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/element": {
+      "post": {
+        "operationId": "echoElement",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ElementMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/object": {
+      "post": {
+        "operationId": "echoObject",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/text": {
+      "post": {
+        "operationId": "echoText",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StringMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instant": {
+      "post": {
+        "operationId": "echoInstant",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstantMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstantMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/optional": {
+      "post": {
+        "operationId": "optional",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/submit": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "inherited": {
+                    "$ref": "#/components/schemas/AInherited"
+                  },
+                  "forcedTrue": {
+                    "$ref": "#/components/schemas/AFalse",
+                    "nullable": true
+                  },
+                  "forcedFalse": {
+                    "$ref": "#/components/schemas/ATrue",
+                    "nullable": false
+                  },
+                  "wrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AInherited"
+                      }
+                    ]
+                  },
+                  "wrapperFalse": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/AInherited"
+                      }
+                    ],
+                    "nullable": false
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AInherited"
+                    }
+                  },
+                  "values": {
+                    "additionalProperties": {
+                      "$ref": "#/components/schemas/AInherited"
+                    }
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/AInherited"
+                  },
+                  "nativeLong": {
+                    "$ref": "#/components/schemas/LMaybe"
+                  },
+                  "nativeBytes": {
+                    "$ref": "#/components/schemas/BytesMaybe"
+                  },
+                  "nativeElement": {
+                    "$ref": "#/components/schemas/ElementMaybe"
+                  },
+                  "nativeObject": {
+                    "$ref": "#/components/schemas/ObjectMaybe"
+                  },
+                  "nativeString": {
+                    "$ref": "#/components/schemas/StringMaybe"
+                  },
+                  "nativeInstant": {
+                    "$ref": "#/components/schemas/InstantMaybe"
+                  },
+                  "directMoney": {
+                    "$ref": "#/components/schemas/ZMoney"
+                  },
+                  "directFalse": {
+                    "$ref": "#/components/schemas/ZMoney",
+                    "nullable": false
+                  },
+                  "directWrapped": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ZMoney"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "items",
+                  "values",
+                  "requiredNull"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "money"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AInherited"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch-narrow": {
+      "get": {
+        "operationId": "watchNarrow",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "narrow"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AFalse"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

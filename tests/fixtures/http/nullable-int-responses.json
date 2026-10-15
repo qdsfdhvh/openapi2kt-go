@@ -1,0 +1,8 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/int": {"get": {"operationId":"number","responses":{"200":{"content":{"application/json":{"schema":{"type":"integer","format":"int32","nullable":true}}}}}}},
+    "/plain": {"get": {"operationId":"plain","responses":{"200":{"content":{"application/json":{"schema":{"type":"integer","format":"int32"}}}}}}},
+    "/text": {"get": {"operationId":"text","responses":{"200":{"content":{"application/json":{"schema":{"type":"string","nullable":true}}}}}}}
+  }
+}

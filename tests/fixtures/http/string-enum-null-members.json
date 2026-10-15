@@ -1,0 +1,372 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "String Enum Null Vocabulary Members"
+  },
+  "components": {
+    "schemas": {
+      "State": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          "ready",
+          null,
+          "done",
+          "null"
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/State"
+      },
+      "False": {
+        "$ref": "#/components/schemas/Alias",
+        "nullable": false
+      },
+      "Other": {
+        "nullable": true,
+        "enum": [
+          "on",
+          null,
+          "off"
+        ]
+      },
+      "Owner": {
+        "properties": {
+          "state": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "ready",
+              null,
+              "done",
+              "null"
+            ]
+          }
+        }
+      },
+      "Nested": {
+        "$ref": "#/components/schemas/Owner/properties/state"
+      },
+      "Source": {
+        "properties": {
+          "hop": {
+            "$ref": "#/components/schemas/Alias"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Alias"
+            }
+          },
+          "map": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Nested"
+            }
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Source/properties/hop"
+      },
+      "Rows": {
+        "$ref": "#/components/schemas/Source/properties/rows"
+      },
+      "Map": {
+        "$ref": "#/components/schemas/Source/properties/map"
+      },
+      "Record": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Alias"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/False"
+          },
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "map": {
+            "$ref": "#/components/schemas/Map"
+          },
+          "defaulted": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "ready",
+              null,
+              "done",
+              "null"
+            ],
+            "default": "ready"
+          },
+          "nullDefault": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "ready",
+              null,
+              "done",
+              "null"
+            ],
+            "default": null
+          },
+          "other": {
+            "nullable": true,
+            "enum": [
+              "on",
+              null,
+              "off"
+            ]
+          }
+        },
+        "required": [
+          "value",
+          "narrow"
+        ]
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "a",
+                  null
+                ]
+              },
+              "id": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  null,
+                  "b"
+                ]
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/direct": {
+      "post": {
+        "operationId": "applyState",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Alias"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Alias"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rows": {
+      "post": {
+        "operationId": "applyRows",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rows"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rows"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/record": {
+      "post": {
+        "operationId": "applyRecord",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Record"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "applyPatch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "state": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "ready",
+                      null,
+                      "done",
+                      "null"
+                    ],
+                    "default": "ready"
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/Alias"
+                  },
+                  "narrow": {
+                    "$ref": "#/components/schemas/False"
+                  }
+                },
+                "required": [
+                  "requiredNull",
+                  "narrow"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/projection": {
+      "get": {
+        "operationId": "projectState",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "enum": [
+                    "ready",
+                    null,
+                    "done",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watchState",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Alias"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "narrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/False"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

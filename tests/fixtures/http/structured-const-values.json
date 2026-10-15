@@ -1,0 +1,36 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Structured Const Values"},
+  "components": {"schemas": {
+    "Object": {"type": "object", "const": {"$ref": "data", "n": 1}},
+    "Array": {"type": "array", "const": [null, true]},
+    "Inferred": {"const": {"value": 1}},
+    "Alias": {"$ref": "#/components/schemas/Object"},
+    "Chain": {"$ref": "#/components/schemas/Alias"},
+    "ArrayAlias": {"$ref": "#/components/schemas/Array"},
+    "Holder": {"properties": {
+      "kotlinx": {"type": "string"},
+      "payload": {"$ref": "#/components/schemas/Chain", "nullable": true},
+      "rows": {"$ref": "#/components/schemas/ArrayAlias"},
+      "objects": {"type": "array", "items": {"$ref": "#/components/schemas/Object", "nullable": true}},
+      "arrays": {"additionalProperties": {"$ref": "#/components/schemas/ArrayAlias"}},
+      "inlineObjects": {"type": "array", "items": {"const": {"inline": true}}},
+      "inlineArrays": {"additionalProperties": {"type": "array", "const": [1, 2]}}
+    }}
+  }},
+  "paths": {
+    "/object": {"post": {"operationId": "sendObject", "tags": ["values"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Chain"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"type": "object", "const": {"expected": 1}}}}}}}},
+    "/array": {"post": {"operationId": "sendArray", "tags": ["values"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "array", "const": [false]}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ArrayAlias"}}}}}}},
+    "/holder": {"post": {"operationId": "sendHolder", "tags": ["values"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}}},
+    "/objects": {"get": {"operationId": "getObjects", "tags": ["values"], "responses": {"200": {"content": {"application/json": {"schema": {"type": "array", "items": {"type": "object", "const": {}}}}}}}}},
+    "/arrays": {"get": {"operationId": "getArrays", "tags": ["values"], "responses": {"200": {"content": {"application/json": {"schema": {"additionalProperties": {"type": "array", "const": []}}}}}}}},
+    "/params": {"get": {"operationId": "getParams", "tags": ["values"], "parameters": [
+      {"name": "object", "in": "query", "required": true, "schema": {"$ref": "#/components/schemas/Chain"}},
+      {"name": "array", "in": "query", "required": true, "schema": {"type": "array", "const": []}}
+    ], "responses": {"204": {}}}},
+    "/events": {"get": {"operationId": "watch", "tags": ["values"], "responses": {"200": {"content": {"text/event-stream": {"schema": {"oneOf": [
+      {"properties": {"event": {"const": "object"}, "data": {"$ref": "#/components/schemas/Chain"}}, "required": ["data"]},
+      {"properties": {"event": {"const": "array"}, "data": {"$ref": "#/components/schemas/ArrayAlias"}}, "required": ["data"]}
+    ]}}}}}}}
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Name Lock Lifecycle", "version": "1"},
+  "paths": {
+    "/beta": {
+      "get": {
+        "operationId": "beta",
+        "parameters": [{"name": "mode", "in": "query", "required": true, "schema": {"type": "string", "enum": ["fast", "safe"]}}],
+        "responses": {
+          "200": {"content": {"application/json": {"schema": {
+            "type": "object",
+            "required": ["id", "child"],
+            "properties": {
+              "id": {"type": "string"},
+              "child": {
+                "type": "object",
+                "required": ["status", "detail"],
+                "properties": {
+                  "status": {"type": "string", "enum": ["ready", "gone"]},
+                  "detail": {"type": "object", "required": ["enabled"], "properties": {"enabled": {"type": "boolean"}}}
+                }
+              }
+            }
+          }}}}
+        }
+      }
+    },
+    "/gamma": {
+      "get": {
+        "operationId": "gamma",
+        "parameters": [{"name": "mode", "in": "query", "required": true, "schema": {"type": "string", "enum": ["fast", "safe"]}}],
+        "responses": {
+          "200": {"content": {"application/json": {"schema": {
+            "type": "object",
+            "required": ["id", "child"],
+            "properties": {
+              "id": {"type": "string"},
+              "child": {
+                "type": "object",
+                "required": ["status", "detail"],
+                "properties": {
+                  "status": {"type": "string", "enum": ["ready", "gone"]},
+                  "detail": {"type": "object", "required": ["enabled"], "properties": {"enabled": {"type": "boolean"}}}
+                }
+              }
+            }
+          }}}}
+        }
+      }
+    }
+  }
+}

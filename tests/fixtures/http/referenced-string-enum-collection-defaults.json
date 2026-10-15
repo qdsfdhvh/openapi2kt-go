@@ -1,0 +1,492 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Referenced String enum collection field own defaults",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "$ref": "#/components/schemas/Required",
+            "default": [
+              [
+                "on"
+              ]
+            ]
+          },
+          "rows": {
+            "$ref": "#/components/schemas/RowsAlias",
+            "default": [
+              [
+                "on",
+                null,
+                "off"
+              ],
+              null,
+              []
+            ]
+          },
+          "listMaps": {
+            "$ref": "#/components/schemas/ListMaps",
+            "default": [
+              {
+                "z": null,
+                "a/~": "off",
+                "$ref": "on"
+              },
+              null,
+              {}
+            ]
+          },
+          "mapLists": {
+            "$ref": "#/components/schemas/MapLists",
+            "default": {
+              "z": null,
+              "b": [],
+              "a": [
+                "on",
+                null,
+                "off"
+              ]
+            }
+          },
+          "mapMaps": {
+            "$ref": "#/components/schemas/MapMaps",
+            "default": {
+              "z": {},
+              "a": {
+                "z": null,
+                "a": "on"
+              }
+            }
+          },
+          "inline": {
+            "$ref": "#/components/schemas/Inlines",
+            "default": [
+              "on",
+              "a~z",
+              "off"
+            ]
+          },
+          "typeless": {
+            "$ref": "#/components/schemas/Typeless",
+            "default": [
+              "wire",
+              "raw"
+            ]
+          },
+          "modes": {
+            "$ref": "#/components/schemas/Modes",
+            "default": [
+              "raw",
+              "wire"
+            ]
+          },
+          "empty": {
+            "$ref": "#/components/schemas/Empty",
+            "default": []
+          },
+          "nil": {
+            "$ref": "#/components/schemas/Nil",
+            "default": null
+          },
+          "nested": {
+            "properties": {
+              "value": {
+                "$ref": "#/components/schemas/NestedRows",
+                "default": [
+                  [
+                    "on"
+                  ],
+                  [
+                    "off",
+                    "on"
+                  ]
+                ]
+              }
+            }
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/BorrowedBridge",
+            "default": [
+              "off"
+            ]
+          },
+          "repeatedRows": {
+            "$ref": "#/components/schemas/RowsAlias",
+            "default": [
+              [
+                "on",
+                null,
+                "off"
+              ],
+              null,
+              []
+            ]
+          },
+          "requiredModes": {
+            "$ref": "#/components/schemas/RequiredModes",
+            "default": [
+              "off"
+            ]
+          },
+          "kotlin": {
+            "type": "string"
+          },
+          "kotlinx": {
+            "type": "string"
+          },
+          "companion": {
+            "type": "string"
+          },
+          "serializer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "required",
+          "requiredModes"
+        ]
+      },
+      "RequiredNullable": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/NullableModes",
+            "default": null
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Status": {
+        "type": "string",
+        "enum": [
+          "on",
+          "off",
+          "a~z"
+        ]
+      },
+      "Mode": {
+        "enum": [
+          "raw",
+          "wire"
+        ]
+      },
+      "NullableStatus": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          "on",
+          "off"
+        ]
+      },
+      "Required": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Status"
+          }
+        }
+      },
+      "Rows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/NullableRows"
+        }
+      },
+      "NullableRows": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "on",
+            "off"
+          ]
+        }
+      },
+      "ListMaps": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "$ref": "#/components/schemas/NullableStatus"
+          }
+        }
+      },
+      "MapLists": {
+        "additionalProperties": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "$ref": "#/components/schemas/NullableStatus"
+          }
+        }
+      },
+      "MapMaps": {
+        "type": "object",
+        "additionalProperties": {
+          "additionalProperties": {
+            "$ref": "#/components/schemas/NullableStatus"
+          }
+        }
+      },
+      "Inlines": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "on",
+            "a~z",
+            "off"
+          ]
+        }
+      },
+      "Typeless": {
+        "type": "array",
+        "items": {
+          "enum": [
+            "raw",
+            "wire"
+          ]
+        }
+      },
+      "Empty": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/NullableStatus"
+        }
+      },
+      "Nil": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": {
+          "$ref": "#/components/schemas/NullableStatus"
+        }
+      },
+      "Hops": {
+        "properties": {
+          "entry": {
+            "$ref": "#/components/schemas/Rows",
+            "nullable": true
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/Hops/properties/entry",
+            "nullable": false
+          },
+          "mode": {
+            "$ref": "#/components/schemas/Mode"
+          }
+        }
+      },
+      "RowsAlias": {
+        "$ref": "#/components/schemas/Hops/properties/narrow"
+      },
+      "Sources": {
+        "properties": {
+          "strings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "namedcol": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Status"
+            }
+          }
+        }
+      },
+      "NestedRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Sources/properties/namedcol"
+        }
+      },
+      "Modes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Mode"
+        }
+      },
+      "BorrowedBridge": {
+        "$ref": "#/components/schemas/Sources/properties/namedcol"
+      },
+      "RequiredModes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/NullableStatus"
+        }
+      },
+      "NullableModes": {
+        "type": "array",
+        "nullable": true,
+        "items": {
+          "$ref": "#/components/schemas/Mode"
+        }
+      },
+      "PatchRows": {
+        "type": "array",
+        "nullable": true,
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Status"
+          }
+        }
+      },
+      "PatchLabels": {
+        "type": "object",
+        "nullable": true,
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Mode"
+          }
+        }
+      },
+      "PatchRequired": {
+        "type": "array",
+        "nullable": true,
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Status"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "rows": {
+                    "$ref": "#/components/schemas/PatchRows",
+                    "default": [
+                      [
+                        "on"
+                      ]
+                    ]
+                  },
+                  "labels": {
+                    "$ref": "#/components/schemas/PatchLabels",
+                    "default": {
+                      "a": [
+                        "raw"
+                      ]
+                    }
+                  },
+                  "required": {
+                    "$ref": "#/components/schemas/PatchRequired",
+                    "default": [
+                      [
+                        "off"
+                      ]
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "holder"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "openapi": "3.1.0",
+  "components": {"schemas": {
+    "Mode": {"enum":["alpha","beta","1","true"]},
+    "Record": {"type":"object","required":["mode","count","wide","ratio","small","enabled","modes","counts"],"properties": {
+      "mode":{"$ref":"#/components/schemas/Mode"},
+      "count":{"type":"integer","enum":[1,2]},
+      "wide":{"type":"integer","format":"int64","enum":[-9223372036854775808,9223372036854775807]},
+      "ratio":{"type":"number","enum":[1.0,2.5]},
+      "small":{"type":"number","format":"float","enum":[1.0,2.5]},
+      "enabled":{"type":"boolean","enum":[true]},
+      "local":{"enum":["first","second"]},
+      "modes":{"type":"array","items":{"enum":["plain","quoted"]}},
+      "counts":{"type":"array","items":{"type":["integer","null"],"enum":[1,2]}},
+      "folded":{"oneOf":[{"type":"boolean","enum":[true]},{"type":"null"}]},
+      "nested":{"type":"object","required":["enabled"],"properties":{"enabled":{"type":"boolean","enum":[false]}}},
+      "payload":{"description":"Ignored metadata","examples":[{"enum":[{"type":"wrong"}]}]}
+    }}
+  }}
+}

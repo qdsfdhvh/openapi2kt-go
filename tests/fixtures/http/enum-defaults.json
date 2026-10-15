@@ -1,0 +1,341 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Synthetic enum defaults",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Record": {
+        "properties": {
+          "state": {
+            "enum": [
+              "ready",
+              "busy"
+            ],
+            "default": "ready",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "ready",
+              "busy"
+            ],
+            "default": "busy"
+          },
+          "count": {
+            "type": "integer",
+            "enum": [
+              1,
+              2
+            ],
+            "default": 2
+          },
+          "ratio": {
+            "type": "number",
+            "enum": [
+              1.25,
+              2.5
+            ],
+            "default": 1.25
+          },
+          "flag": {
+            "type": "boolean",
+            "enum": [
+              false,
+              true
+            ],
+            "default": true
+          },
+          "nullable": {
+            "enum": [
+              "ready",
+              "busy"
+            ],
+            "default": "busy",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "nullValue": {
+            "enum": [
+              "ready",
+              "busy"
+            ],
+            "default": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "required": {
+            "enum": [
+              "ready",
+              "busy"
+            ],
+            "default": "ready",
+            "type": "string"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            }
+          },
+          "map": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Record"
+            }
+          }
+        }
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "state": {
+                "enum": [
+                  "ready",
+                  "busy"
+                ],
+                "default": "ready",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "state": {
+                "enum": [
+                  "ready",
+                  "busy"
+                ],
+                "default": "busy",
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "Shadow": {
+        "properties": {
+          "kotlin": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "ready",
+              "busy"
+            ],
+            "default": "ready",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kotlin"
+        ]
+      },
+      "Merged": {
+        "allOf": [
+          {
+            "properties": {
+              "state": {
+                "enum": [
+                  "ready",
+                  "busy"
+                ],
+                "default": "ready",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "properties": {
+              "state": {
+                "enum": [
+                  "ready",
+                  "busy"
+                ],
+                "default": "busy",
+                "type": "string"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/defaults": {
+      "post": {
+        "operationId": "applyEnums",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "required": {
+                    "enum": [
+                      "ready",
+                      "busy"
+                    ],
+                    "default": "ready",
+                    "type": "string"
+                  },
+                  "requiredNullable": {
+                    "enum": [
+                      "ready",
+                      "busy"
+                    ],
+                    "default": "busy",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "patch": {
+                    "enum": [
+                      "ready",
+                      "busy"
+                    ],
+                    "default": "ready",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "clear": {
+                    "enum": [
+                      "ready",
+                      "busy"
+                    ],
+                    "default": null,
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "optional": {
+                    "enum": [
+                      "ready",
+                      "busy"
+                    ],
+                    "default": "ready",
+                    "type": "string"
+                  },
+                  "nested": {
+                    "properties": {
+                      "state": {
+                        "enum": [
+                          "ready",
+                          "busy"
+                        ],
+                        "default": "ready",
+                        "type": "string"
+                      },
+                      "patch": {
+                        "enum": [
+                          "ready",
+                          "busy"
+                        ],
+                        "default": "ready",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    }
+                  },
+                  "shared": {
+                    "$ref": "#/components/schemas/Record"
+                  }
+                },
+                "required": [
+                  "required",
+                  "requiredNullable"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "readEnums",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready",
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watchEnums",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Record"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

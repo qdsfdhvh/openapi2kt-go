@@ -1,0 +1,23 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Synthetic numeric bounds", "version": "1"},
+  "components": {"schemas": {
+    "Even": {"type":"integer","format":"int64","minimum":-9223372036854775808,"exclusiveMaximum":9223372036854775807,"multipleOf":2},
+    "Window": {"type":"integer","format":"int64","x-kotlin-value-class":true,"exclusiveMinimum":-9223372036854775808,"exclusiveMaximum":9223372036854775807,"multipleOf":2},
+    "Record": {"type":"object","required":["kotlin","even","steps","fraction","matrix"],"properties": {
+      "kotlin": {"type":"string"},
+      "even": {"$ref":"#/components/schemas/Even"},
+      "steps": {"type":"integer","exclusiveMinimum":2,"exclusiveMaximum":10,"multipleOf":2},
+      "fraction": {"type":"number","minimum":0,"exclusiveMinimum":0,"maximum":1,"exclusiveMaximum":1,"multipleOf":0.25},
+      "tenthsDouble": {"type":"number","multipleOf":0.1},
+      "tenthsFloat": {"type":"number","format":"float","multipleOf":0.1},
+      "matrix": {"type":"object","additionalProperties":{"type":"array","items":{"type":["integer","null"],"exclusiveMinimum":0,"exclusiveMaximum":6,"multipleOf":2}}}
+    }}
+  }},
+  "paths": {
+    "/count": {"get":{"tags":["Numbers"],"operationId":"count","parameters":[{"name":"value","in":"query","required":true,"schema":{"$ref":"#/components/schemas/Even"}}],"responses":{"204":{}}}},
+    "/echo": {"post":{"tags":["Numbers"],"operationId":"echo","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/Even"}}}}},"responses":{"200":{"content":{"application/json":{"schema":{"type":"object","additionalProperties":{"type":"array","items":{"type":"integer","exclusiveMinimum":0,"exclusiveMaximum":6,"multipleOf":2}}}}}}}}},
+    "/patch": {"post":{"tags":["Numbers"],"operationId":"patch","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"steps":{"type":"integer","nullable":true,"exclusiveMinimum":2,"exclusiveMaximum":10,"multipleOf":2}}}}}},"responses":{"204":{}}}},
+    "/watch": {"get":{"tags":["Numbers"],"operationId":"watch","responses":{"200":{"content":{"text/event-stream":{"schema":{"type":"object","required":["data"],"properties":{"data":{"type":"array","items":{"type":"integer","exclusiveMinimum":0,"exclusiveMaximum":6,"multipleOf":2}}}}}}}}}}
+  }
+}

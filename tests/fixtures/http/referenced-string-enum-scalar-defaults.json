@@ -1,0 +1,62 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Status": {"type": "string", "enum": ["on", "off"]},
+      "Mode": {"enum": ["raw", "wire"]},
+      "NullableStatus": {"type": ["string", "null"], "enum": ["on", "off"]},
+      "Words": {"type": "string", "enum": ["line\n$\"\\", "😀"]},
+      "Source": {"properties": {"code": {"type": "string", "enum": ["raw", "wire"]}}},
+      "Bridge": {"$ref": "#/components/schemas/Source/properties/code"},
+      "Alias": {"$ref": "#/components/schemas/Bridge"},
+      "Hops": {"properties": {
+        "entry": {"$ref": "#/components/schemas/Status", "nullable": true},
+        "narrow": {"$ref": "#/components/schemas/Hops/properties/entry", "nullable": false}
+      }},
+      "NarrowAlias": {"$ref": "#/components/schemas/Hops/properties/narrow"},
+      "Holder": {
+        "required": ["required", "requiredNullable"],
+        "properties": {
+          "required": {"$ref": "#/components/schemas/Status", "default": "on"},
+          "requiredNullable": {"$ref": "#/components/schemas/Status", "nullable": true, "default": null},
+          "status": {"$ref": "#/components/schemas/Status", "default": "on"},
+          "mode": {"$ref": "#/components/schemas/Mode", "default": "raw"},
+          "borrowed": {"$ref": "#/components/schemas/Alias", "default": "raw"},
+          "narrowed": {"$ref": "#/components/schemas/NarrowAlias", "default": "off"},
+          "nil": {"$ref": "#/components/schemas/NullableStatus", "default": null},
+          "words": {"$ref": "#/components/schemas/Words", "default": "line\n$\"\\"},
+          "nested": {"properties": {"status": {"$ref": "#/components/schemas/Status", "default": "off"}}},
+          "kotlin": {"type": "string"},
+          "kotlinx": {"type": "string"},
+          "StatusDto": {"type": "string"},
+          "serializer": {"type": "string"}
+        }
+      }
+    }
+  },
+  "paths": {
+    "/holder": {"post": {
+      "operationId": "send", "tags": ["defaults"],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}},
+      "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}
+    }},
+    "/patch": {"patch": {
+      "operationId": "patch", "tags": ["defaults"],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "required": ["required"],
+        "properties": {
+          "required": {"$ref": "#/components/schemas/Status", "nullable": true, "default": "off"},
+          "value": {"$ref": "#/components/schemas/Status", "nullable": true, "default": "on"}
+        }
+      }}}},
+      "responses": {"204": {"description": "Updated"}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch", "tags": ["defaults"],
+      "responses": {"200": {"description": "Events", "content": {"text/event-stream": {"schema": {
+        "required": ["event", "data"],
+        "properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}
+      }}}}}
+    }}
+  }
+}

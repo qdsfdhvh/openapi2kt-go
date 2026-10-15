@@ -1,0 +1,288 @@
+{
+  "host": {
+    "os": "Darwin",
+    "release": "27.2.0",
+    "architecture": "arm64",
+    "cpu": "Apple M2 Pro"
+  },
+  "toolchain": {
+    "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "cargo": "cargo 1.97.1 (c980f4866 2026-06-30)",
+    "python": "3.14.7",
+    "binary_version": "openapi-kt 0.1.0"
+  },
+  "profile": "release (caller-built binary; profile is not inferred)",
+  "binary": {
+    "bytes": 1367616,
+    "sha256": "4a507a79e23c8a3952decd78991b4d55ccf769da9d7afa87b28316b48874c499",
+    "stripped_copy": {
+      "bytes": 1141184,
+      "sha256": "e2cb691362299cc12a680587f0b79b788fedbf1e9e93273097c032ecb44e8dfd",
+      "flags": [
+        "-S",
+        "-x"
+      ]
+    }
+  },
+  "seed": 17,
+  "fields_per_synthetic_component": 16,
+  "warmup_per_mode": 2,
+  "iterations_per_mode": 7,
+  "timing_boundary": "subprocess launch through captured CLI completion; verification and cleanup excluded",
+  "cache_policy": "warm OS cache; no OS cache flushing; clean means a new output directory, not cold disk",
+  "rss_policy": "one additional successful /usr/bin/time run per mode; not a distribution",
+  "mode_notes": {
+    "validate": "read/parse/analyze/emit plus process startup, no output commit; not pure-core timing",
+    "clean": "new output directory",
+    "no-op": "existing identical output, hashes and ownership checked",
+    "check": "read-only comparison"
+  },
+  "workloads": [
+    {
+      "input": "synthetic-100.json",
+      "input_sha256": "024b34c04210e037ffc3d683b56622e85df1dcf41dd3d99e4053bb808c227f65",
+      "input_bytes": 95246,
+      "components": 100,
+      "output": {
+        "source_bytes": 227776,
+        "files": 100,
+        "fingerprint_sha256": "90abdcb0f0a83592a0b13569ac93e9913f72cf1d5b19dcfe6980570ef052d934"
+      },
+      "modes": {
+        "validate": {
+          "samples_ms": [
+            7.818,
+            7.75125,
+            7.800292,
+            7.347542,
+            6.8565,
+            6.903291,
+            6.822833
+          ],
+          "median_ms": 7.347542,
+          "p95_ms": 7.818,
+          "min_ms": 6.822833,
+          "max_ms": 7.818,
+          "peak_rss_bytes_single_run": 5652480
+        },
+        "clean": {
+          "samples_ms": [
+            38.122125,
+            67.387,
+            24.813208,
+            24.924959,
+            25.322625,
+            25.213875,
+            23.443334
+          ],
+          "median_ms": 25.213875,
+          "p95_ms": 67.387,
+          "min_ms": 23.443334,
+          "max_ms": 67.387,
+          "peak_rss_bytes_single_run": 6946816
+        },
+        "no-op": {
+          "samples_ms": [
+            16.351541,
+            16.966583,
+            16.496875,
+            16.787041,
+            17.41375,
+            16.676417,
+            16.367375
+          ],
+          "median_ms": 16.676417,
+          "p95_ms": 17.41375,
+          "min_ms": 16.351541,
+          "max_ms": 17.41375,
+          "peak_rss_bytes_single_run": 6619136
+        },
+        "check": {
+          "samples_ms": [
+            11.8715,
+            11.7155,
+            12.392208,
+            13.110375,
+            12.78825,
+            13.545375,
+            12.13025
+          ],
+          "median_ms": 12.392208,
+          "p95_ms": 13.545375,
+          "min_ms": 11.7155,
+          "max_ms": 13.545375,
+          "peak_rss_bytes_single_run": 6537216
+        }
+      }
+    },
+    {
+      "input": "synthetic-1000.json",
+      "input_sha256": "f5eb8675c0154546e991e328c096f0270a45ac33ae0ddd4599021f3a3f49e21c",
+      "input_bytes": 950926,
+      "components": 1000,
+      "output": {
+        "source_bytes": 2278152,
+        "files": 1000,
+        "fingerprint_sha256": "0ff29b1b3c7d6aa27d1b966188eadc813d6aeb0ebcab972ea811db9b07014e04"
+      },
+      "modes": {
+        "validate": {
+          "samples_ms": [
+            37.404125,
+            36.893583,
+            36.779542,
+            36.482209,
+            36.655042,
+            37.295666,
+            39.374292
+          ],
+          "median_ms": 36.893583,
+          "p95_ms": 39.374292,
+          "min_ms": 36.482209,
+          "max_ms": 39.374292,
+          "peak_rss_bytes_single_run": 28590080
+        },
+        "clean": {
+          "samples_ms": [
+            259.422042,
+            224.475917,
+            207.241708,
+            218.751166,
+            231.534125,
+            235.141625,
+            231.737584
+          ],
+          "median_ms": 231.534125,
+          "p95_ms": 259.422042,
+          "min_ms": 207.241708,
+          "max_ms": 259.422042,
+          "peak_rss_bytes_single_run": 39960576
+        },
+        "no-op": {
+          "samples_ms": [
+            135.906333,
+            139.034792,
+            141.698292,
+            160.438542,
+            137.937083,
+            136.147375,
+            135.692625
+          ],
+          "median_ms": 137.937083,
+          "p95_ms": 160.438542,
+          "min_ms": 135.692625,
+          "max_ms": 160.438542,
+          "peak_rss_bytes_single_run": 36323328
+        },
+        "check": {
+          "samples_ms": [
+            92.026042,
+            92.684084,
+            91.5055,
+            92.8865,
+            92.05975,
+            94.089333,
+            91.579
+          ],
+          "median_ms": 92.05975,
+          "p95_ms": 94.089333,
+          "min_ms": 91.5055,
+          "max_ms": 94.089333,
+          "peak_rss_bytes_single_run": 36208640
+        }
+      }
+    },
+    {
+      "input": "synthetic-8000.json",
+      "input_sha256": "f34b7e82f59a148e489ab848b8560a51bfe3b86bc9df05e2873c8c75c60c7edd",
+      "input_bytes": 7607526,
+      "components": 8000,
+      "output": {
+        "source_bytes": 18224472,
+        "files": 8000,
+        "fingerprint_sha256": "f9a40e3aa9197dc6cf211a439622885c2be80136e9dec4748e0a3918cbcfd960"
+      },
+      "modes": {
+        "validate": {
+          "samples_ms": [
+            297.21025,
+            306.131875,
+            302.36825,
+            318.723792,
+            307.904708,
+            300.349583,
+            300.205542
+          ],
+          "median_ms": 302.36825,
+          "p95_ms": 318.723792,
+          "min_ms": 297.21025,
+          "max_ms": 318.723792,
+          "peak_rss_bytes_single_run": 206520320
+        },
+        "clean": {
+          "samples_ms": [
+            1696.299708,
+            1670.322834,
+            1968.38925,
+            1659.661458,
+            1702.648084,
+            1606.551042,
+            1595.188291
+          ],
+          "median_ms": 1670.322834,
+          "p95_ms": 1968.38925,
+          "min_ms": 1595.188291,
+          "max_ms": 1968.38925,
+          "peak_rss_bytes_single_run": 295976960
+        },
+        "no-op": {
+          "samples_ms": [
+            1099.043916,
+            1165.8545,
+            1165.528625,
+            1153.604542,
+            1174.817208,
+            1146.510333,
+            1262.996167
+          ],
+          "median_ms": 1165.528625,
+          "p95_ms": 1262.996167,
+          "min_ms": 1099.043916,
+          "max_ms": 1262.996167,
+          "peak_rss_bytes_single_run": 267796480
+        },
+        "check": {
+          "samples_ms": [
+            723.756041,
+            717.460208,
+            730.455125,
+            725.237833,
+            738.1375,
+            739.696041,
+            760.097042
+          ],
+          "median_ms": 730.455125,
+          "p95_ms": 760.097042,
+          "min_ms": 717.460208,
+          "max_ms": 760.097042,
+          "peak_rss_bytes_single_run": 266272768
+        }
+      }
+    }
+  ],
+  "source_fingerprint_sha256": "3830f51bbffb060b933407e6a09651329cc55d403f10bb4ff3b6fc5ef71f8494",
+  "source_fingerprint_files": [
+    "Cargo.toml",
+    "Cargo.lock",
+    "crates/openapi-kt-cli/Cargo.toml",
+    "crates/openapi-kt-core/Cargo.toml",
+    "crates/openapi-kt-cli/src/main.rs",
+    "crates/openapi-kt-cli/src/output.rs",
+    "crates/openapi-kt-core/src/document.rs",
+    "crates/openapi-kt-core/src/kotlin.rs",
+    "crates/openapi-kt-core/src/lib.rs",
+    "crates/openapi-kt-core/src/naming.rs",
+    "crates/openapi-kt-core/src/schema.rs"
+  ],
+  "scope": "Synthetic workloads only; one macOS ARM64 baseline, not a cross-platform promise."
+}

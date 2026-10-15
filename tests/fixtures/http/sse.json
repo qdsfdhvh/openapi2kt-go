@@ -1,0 +1,28 @@
+{
+  "openapi":"3.1.0",
+  "components":{"schemas":{
+    "Payload":{"type":"object","required":["text"],"properties":{"text":{"type":"string"}}},
+    "Done":{"type":"object","properties":{"event":{"type":"string","const":"done"},"id":{"type":"string"}}}
+  }},
+  "paths":{
+    "/events/{room}":{"post":{"operationId":"events","tags":["Stream"],"parameters":[
+      {"name":"room","in":"path","required":true,"schema":{"type":"string"}},
+      {"name":"labels","in":"query","schema":{"type":"array","items":{"type":"string"}}},
+      {"name":"Last-Event-ID","in":"header","schema":{"type":"string"}}
+    ],"requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","required":["query"],"properties":{"query":{"type":"string"},"note":{"type":["string","null"]}}}}}},
+    "responses":{"200":{"content":{"text/event-stream":{"schema":{"oneOf":[
+      {"type":"object","required":["data"],"properties":{"event":{"type":"string","const":"update"},"data":{"$ref":"#/components/schemas/Payload"},"id":{"type":"string"}}},
+      {"type":"object","required":["data"],"properties":{"event":{"type":"string","const":"count"},"data":{"type":"integer"}}},
+      {"type":"object","required":["data"],"properties":{"event":{"type":"string","const":"inline"},"data":{"type":"object","required":["value"],"properties":{"value":{"type":"string"}}}}},
+      {"type":"object","required":["data"],"properties":{"event":{"type":"string","const":"choice"},"data":{"oneOf":[{"type":"string"},{"type":"integer"}]}}},
+      {"type":"object","properties":{"event":{"type":"string","const":"optional"},"data":{"type":["string","null"]}}},
+      {"type":"object","required":["data"],"properties":{"data":{"type":"string"}}},
+      {"type":"object","required":["data"],"properties":{"event":{"type":"string","const":"rows"},"data":{"type":"array","items":{"type":"object","required":["value"],"properties":{"value":{"type":"string"}}}}}},
+      {"type":"object","required":["data"],"properties":{"event":{"type":"string","const":"lookup"},"data":{"type":"object","additionalProperties":{"type":"object","required":["value"],"properties":{"value":{"type":"string"}}}}}},
+      {"$ref":"#/components/schemas/Done"}
+    ]}}}}}
+    }},
+    "/heartbeat":{"get":{"operationId":"heartbeat","tags":["Stream"],"responses":{"200":{"content":{"text/event-stream; charset=utf-8":{"schema":{"type":"object","properties":{"event":{"type":"string","const":"heartbeat"}}}}}}}}},
+    "/ping":{"get":{"operationId":"ping","tags":["Stream"],"responses":{"204":{}}}}
+  }
+}

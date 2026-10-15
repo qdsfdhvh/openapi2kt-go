@@ -1,0 +1,423 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Referenced builtin collection field defaults",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "$ref": "#/components/schemas/Required",
+            "default": [
+              [
+                1
+              ]
+            ]
+          },
+          "rows": {
+            "$ref": "#/components/schemas/RowsAlias",
+            "default": [
+              [
+                -9223372036854775808,
+                null,
+                9223372036854775807
+              ],
+              null,
+              []
+            ]
+          },
+          "listMaps": {
+            "$ref": "#/components/schemas/ListMaps",
+            "default": [
+              {
+                "z": null,
+                "a/~": "quote\"$😀",
+                "$ref": "data"
+              },
+              null,
+              {}
+            ]
+          },
+          "mapLists": {
+            "$ref": "#/components/schemas/MapLists",
+            "default": {
+              "z": null,
+              "b": [],
+              "a": [
+                true,
+                null,
+                false
+              ]
+            }
+          },
+          "mapMaps": {
+            "$ref": "#/components/schemas/MapMaps",
+            "default": {
+              "z": {},
+              "a": {
+                "z": null,
+                "a": 1.000000001
+              }
+            }
+          },
+          "ints": {
+            "$ref": "#/components/schemas/Ints",
+            "default": [
+              {
+                "min": -2147483648,
+                "max": 2147483647
+              }
+            ]
+          },
+          "doubles": {
+            "$ref": "#/components/schemas/Doubles",
+            "default": {
+              "one": [
+                1.25,
+                -0.0
+              ]
+            }
+          },
+          "empty": {
+            "$ref": "#/components/schemas/Empty",
+            "default": []
+          },
+          "nil": {
+            "$ref": "#/components/schemas/Nil",
+            "default": null
+          },
+          "nested": {
+            "properties": {
+              "value": {
+                "$ref": "#/components/schemas/NestedRows",
+                "default": [
+                  [
+                    "nested"
+                  ]
+                ]
+              }
+            }
+          },
+          "kotlin": {
+            "type": "string"
+          },
+          "kotlinx": {
+            "type": "string"
+          },
+          "repeatedRows": {
+            "$ref": "#/components/schemas/RowsAlias",
+            "default": [
+              [
+                -9223372036854775808,
+                null,
+                9223372036854775807
+              ],
+              null,
+              []
+            ]
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "RequiredNullable": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Nil",
+            "default": null
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Required": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "Rows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/NullableLongs"
+        }
+      },
+      "ListMaps": {
+        "type": "array",
+        "items": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "MapLists": {
+        "additionalProperties": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "MapMaps": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/InnerFloatMap"
+        }
+      },
+      "Ints": {
+        "type": "array",
+        "items": {
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      },
+      "Doubles": {
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "Empty": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "Nil": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "Hops": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "chain": {
+            "$ref": "#/components/schemas/Hops/properties/rows"
+          }
+        }
+      },
+      "RowsAlias": {
+        "$ref": "#/components/schemas/Hops/properties/chain"
+      },
+      "NullableLongs": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        }
+      },
+      "InnerFloatMap": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/BuiltinFloat"
+        }
+      },
+      "BuiltinFloat": {
+        "type": "number",
+        "format": "float",
+        "nullable": true
+      },
+      "Sources": {
+        "properties": {
+          "strings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "NestedRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Sources/properties/strings"
+        }
+      },
+      "PatchRows": {
+        "type": "array",
+        "nullable": true,
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "PatchLabels": {
+        "type": "object",
+        "nullable": true,
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "PatchRequired": {
+        "type": "array",
+        "nullable": true,
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "rows": {
+                    "$ref": "#/components/schemas/PatchRows",
+                    "default": [
+                      [
+                        1
+                      ]
+                    ]
+                  },
+                  "labels": {
+                    "$ref": "#/components/schemas/PatchLabels",
+                    "default": {
+                      "a": [
+                        "yes"
+                      ]
+                    }
+                  },
+                  "required": {
+                    "$ref": "#/components/schemas/PatchRequired",
+                    "default": [
+                      [
+                        1
+                      ]
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "holder"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

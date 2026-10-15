@@ -1,0 +1,56 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Operation Types", "version": "1.0"},
+  "servers": [{"url": "https://api.example.test"}],
+  "paths": {
+    "/record": {"get": {
+      "operationId": "fetch",
+      "parameters": [
+        {"name": "order", "in": "query", "schema": {"type": "array", "items": {"type": "string", "enum": ["low", "high"]}}},
+        {"name": "input", "in": "header", "schema": {"type": "string", "enum": ["brief", "full"]}}
+      ],
+      "responses": {"200": {"content": {"application/json": {"schema": {
+        "type": "object", "required": ["id", "state"], "properties": {
+          "id": {"type": "string"}, "state": {"$ref": "#/components/schemas/State"},
+          "detail": {"type": "object", "properties": {"note": {"type": "string"}}}
+        }
+      }}}}}
+    }},
+    "/records": {"get": {
+      "operationId": "list",
+      "responses": {"200": {"content": {"application/json": {"schema": {
+        "type": "array", "items": {"type": "object", "required": ["record"], "properties": {"record": {"$ref": "#/components/schemas/Record"}}}
+      }}}}}
+    }},
+    "/lookup": {"get": {
+      "operationId": "lookup",
+      "responses": {"200": {"content": {"application/json": {"schema": {
+        "type": "object", "additionalProperties": {"type": "array", "items": {"$ref": "#/components/schemas/Record"}}
+      }}}}}
+    }},
+    "/peers": {"get": {
+      "operationId": "peers",
+      "responses": {"200": {"content": {"application/json": {"schema": {
+        "type": "object", "additionalProperties": {"type": "object", "required": ["label"], "properties": {"label": {"type": "string"}}}
+      }}}}}
+    }},
+    "/maybe-rows": {"get": {
+      "operationId": "maybeRows",
+      "responses": {"200": {"content": {"application/json": {"schema": {
+        "type": ["array", "null"], "items": {"type": ["object", "null"], "properties": {"id": {"type": "string"}}}
+      }}}}}
+    }},
+    "/nullable-map": {"get": {
+      "operationId": "nullableMap",
+      "responses": {"200": {"content": {"application/json": {"schema": {"type": ["object", "null"], "additionalProperties": {"type": "integer"}}}}}}
+    }},
+    "/numbers": {"get": {
+      "operationId": "numbers",
+      "responses": {"200": {"content": {"application/json": {"schema": {"type": "array", "items": {"type": "integer"}}}}}}
+    }}
+  },
+  "components": {"schemas": {
+    "State": {"type": "string", "enum": ["ready", "waiting"]},
+    "Record": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}}}
+  }}
+}

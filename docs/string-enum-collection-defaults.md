@@ -1,0 +1,33 @@
+# String enum collection defaults on DTO fields
+
+Direct ordinary DTO List and typed Map fields accept defaults whose direct leaves are plain String enums, including typeless String vocabularies. Finite direct inline trees with additional List/typed Map layers use the separate [nested String enum collection-default contract](nested-string-enum-collection-defaults.md); nested enum String bounds/patterns remain excluded. The field retains its real lexical enum classifier: `List<CodesInner>` or `Map<String, LabelsValue>`, with the same entries, `fromSerialName`, serializer and open `Unrecognized` API as the corresponding field without a default.
+
+```json
+{
+  "type": "object",
+  "additionalProperties": {"enum": ["ready", "waiting"]},
+  "default": {"first": "ready"}
+}
+```
+
+On an optional `labels` property this produces `Map<String, LabelsValue>?` with a typed initializer. Missing JSON uses that default, explicit null stays null, and supplied dictionaries replace it. Array defaults behave the same way. Private file-level helpers bind the actual enum owner after relocation and decode a fresh collection for each initialization, including empty defaults. Fields named `kotlin`, `kotlinx`, `companion` or `serializer` cannot shadow their enum or package names. Kotlin List/Map interfaces remain read-only without a deep immutability guarantee.
+
+Required fields retain required constructor arguments; their annotations are validated without supplying an initializer. Optional explicitly nullable inline request fields retain `Patch.Absent`, `Patch.Null` and `Patch.Value`. A default never converts a missing request key into an update. Required nullable request fields retain the existing `explicitNulls` behavior. Container nullability and member nullability remain independent: null defaults require explicit container nullability, and null members require nullable items/values. Existing explicit nullable String enum null-member grammar, original member indices and the raw vocabulary limit of 240 remain unchanged.
+
+## Annotation membership and open runtime vocabularies
+
+Every non-null default member must be a String in the original vocabulary in both validation modes, including annotations on required and Patch fields. An unknown default is rejected even though callers and decoders may supply the same unknown String through `Unrecognized` at runtime. Enabling validation does not close the String vocabulary or introduce native enum membership checks.
+
+Invalid default members fail at their original `/default/index` or escaped `/default/<key>` Pointer. Dictionary members validate in source order; successful entries sort by key for deterministic emission and default identity. Keys such as `$ref`, `type`, `/` and `~` remain opaque data. Empty/null defaults still require a valid entire leaf vocabulary and schema.
+
+Validation-enabled `minItems`/`maxItems` and `minProperties`/`maxProperties` apply to annotations and supplied collections in constructors, data-class copies, JSON decoding, typed HTTP and SSE consumers. Null bypasses only its own container or member checks. These count keywords remain unsupported without validation. String enum leaves on these direct ordinary DTO fields accept opt-in String bounds and portable patterns under their [bounds contract](string-enum-collection-bounds.md), with or without defaults. Numeric bounds and other enum roles retain their exclusions; enum `uniqueItems: true` remains unsupported. No checks may be silently discarded, including overridden allOf fields.
+
+## Ownership, compatibility and boundaries
+
+The profile applies to direct fields in ordinary shared/nested DTOs, supported ordinary allOf models, inline request/response DTOs and SSE payload DTOs. Original enum declarations remain authoritative for separate references to those source leaves. Every discarded annotation is validated before output commits. Existing later-field override and lost-check rejection rules remain.
+
+Effective defaults and actual enum types participate in deduplication, hoisting, merging and name-lock identity. Reordering dictionary keys does not change a frozen default; changing effective values cannot reuse a frozen different shape. Optimized helpers refer to canonical lexical declarations. Existing accepted non-default outputs, enum wires and persisted lock formats are unchanged. This additively admits inputs previously rejected with `E_SCHEMA_UNSUPPORTED`; generated consumers of newly admitted inputs should be regenerated and compiled. It does not change existing runtime open-enum behavior.
+
+Root, named/reference/composition-wrapper defaults, default annotations on collection leaf schemas, formatted/native/const/value-class leaves and pinned union/hierarchy fields remain excluded. The direct local `$ref` field role for plain String enum collection leaves has its own [referenced contract](referenced-string-enum-collection-defaults.md). [Direct nested String enum trees](nested-string-enum-collection-defaults.md) grant only the ordinary outer field's own default after full original-schema validation, with per-layer nullable/count checks and the existing tree budgets; this single-layer contract does not grant nested String leaf bounds. References to DTOs that themselves have supported direct fields keep their existing behavior; this does not grant defaults to reference leaves. General allOf constraint aggregation and broader default roles remain D03 work.
+
+This extends M01/M03/M04/M07/M08 and existing V05/M12/A03/A05/A08 consumers, without completing those matrix entries. The [synthetic fixture](../tests/fixtures/http/string-enum-collection-defaults.json), [core regressions](../core/string_enum_collection_defaults_test.go), [optimization/source checks](../core/string_enum_collection_defaults_optimization_test.go), [native failure preservation](../internal/cli/string_enum_collection_defaults_process_test.go) and [Kotlin consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/StringEnumCollectionDefaultsContracts.kt) define the contract. `bash scripts/test.sh feature string-enum-collection-defaults` generates fresh Data/Plain × validation off/on projects, including actual dedup/merge and combined hoist/name-lock profiles. Four Json configurations exercise construction, missing/null/supplied/unknown Strings, required/Patch states, HTTP and fragmented SSE failure closure/reuse. The full `http` route includes the baseline consumer. These JVM profiles do not establish Android/KMP, minimum dependencies, other engines or combined resource maxima.

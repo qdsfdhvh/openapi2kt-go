@@ -1,0 +1,265 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NullableProductUnions",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "nullable": true,
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "a"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "b"
+                  },
+                  "ok": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "ok"
+                ]
+              }
+            ]
+          },
+          {
+            "properties": {
+              "stamp": {
+                "const": "shared"
+              }
+            }
+          }
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Product"
+      },
+      "Maybe": {
+        "$ref": "#/components/schemas/Alias",
+        "nullable": true
+      },
+      "False": {
+        "$ref": "#/components/schemas/Maybe",
+        "nullable": false
+      },
+      "Box": {
+        "properties": {
+          "value": {
+            "nullable": true,
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "a"
+                      },
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "b"
+                      },
+                      "ok": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "ok"
+                    ]
+                  }
+                ]
+              },
+              {
+                "properties": {
+                  "stamp": {
+                    "const": "shared"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "NestedAlias": {
+        "$ref": "#/components/schemas/Box/properties/value"
+      },
+      "NestedFalse": {
+        "$ref": "#/components/schemas/NestedAlias",
+        "nullable": false
+      },
+      "Holder": {
+        "properties": {
+          "direct": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "maybe": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/False"
+          },
+          "box": {
+            "$ref": "#/components/schemas/Box"
+          }
+        },
+        "required": [
+          "direct",
+          "maybe",
+          "narrow",
+          "box"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "nullable": true,
+                    "allOf": [
+                      {
+                        "oneOf": [
+                          {
+                            "properties": {
+                              "kind": {
+                                "const": "a"
+                              },
+                              "id": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id"
+                            ]
+                          },
+                          {
+                            "properties": {
+                              "kind": {
+                                "const": "b"
+                              },
+                              "ok": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "ok"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "stamp": {
+                            "const": "shared"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Product"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

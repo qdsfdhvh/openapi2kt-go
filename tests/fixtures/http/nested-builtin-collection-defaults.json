@@ -1,0 +1,29 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Finite nested builtin defaults", "version": "1"},
+  "components": {"schemas": {
+    "Holder": {"type": "object", "properties": {
+      "required": {"type": "array", "items": {"type": "array", "items": {"type": "integer", "format": "int64"}}, "default": [[1]]},
+      "rows": {"type": "array", "items": {"type": ["array", "null"], "items": {"type": ["integer", "null"], "format": "int64"}}, "default": [[-9223372036854775808, null, 9223372036854775807], null, []]},
+      "listMaps": {"type": "array", "items": {"type": ["object", "null"], "additionalProperties": {"type": ["string", "null"]}}, "default": [{"z": null, "a/~": "quote\"$😀", "$ref": "data"}, null, {}]},
+      "mapLists": {"additionalProperties": {"type": "array", "nullable": true, "items": {"type": "boolean", "nullable": true}}, "default": {"z": null, "b": [], "a": [true, null, false]}},
+      "mapMaps": {"type": "object", "additionalProperties": {"additionalProperties": {"type": "number", "format": "float", "nullable": true}}, "default": {"z": {}, "a": {"z": null, "a": 1.000000001}}},
+      "ints": {"type": "array", "items": {"additionalProperties": {"type": "integer"}}, "default": [{"min": -2147483648, "max": 2147483647}]},
+      "doubles": {"additionalProperties": {"type": "array", "items": {"type": "number", "format": "double"}}, "default": {"one": [1.25, -0.0]}},
+      "empty": {"type": "array", "items": {"type": "array", "items": {"type": "string"}}, "default": []},
+      "nil": {"type": ["object", "null"], "additionalProperties": {"type": "array", "items": {"type": "integer"}}, "default": null},
+      "nested": {"properties": {"value": {"type": "array", "items": {"type": "array", "items": {"type": "string"}}, "default": [["nested"]]}}},
+      "kotlin": {"type": "string"}, "kotlinx": {"type": "string"}
+    }, "required": ["required"]},
+    "RequiredNullable": {"properties": {"value": {"type": "object", "nullable": true, "additionalProperties": {"type": "array", "items": {"type": "integer"}}, "default": null}}, "required": ["value"]}
+  }},
+  "paths": {
+    "/holder": {"post": {"operationId": "send", "tags": ["defaults"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}, "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}}},
+    "/patch": {"patch": {"operationId": "patch", "tags": ["defaults"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"properties": {
+      "rows": {"type": "array", "nullable": true, "items": {"type": "array", "items": {"type": "integer", "format": "int64"}}, "default": [[1]]},
+      "labels": {"type": "object", "nullable": true, "additionalProperties": {"type": "array", "items": {"type": "string"}}, "default": {"a": ["yes"]}},
+      "required": {"type": "array", "nullable": true, "items": {"type": "array", "items": {"type": "integer", "format": "int64"}}, "default": [[1]]}
+    }, "required": ["required"]}}}}, "responses": {"204": {"description": "Updated"}}}},
+    "/events": {"get": {"operationId": "watch", "tags": ["defaults"], "responses": {"200": {"description": "Events", "content": {"text/event-stream": {"schema": {"properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}, "required": ["event", "data"]}}}}}}}
+  }
+}

@@ -1,0 +1,344 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Explicit Null Literals"
+  },
+  "components": {
+    "schemas": {
+      "PinnedNull": {
+        "type": "null",
+        "const": null
+      },
+      "NullVocabulary": {
+        "type": "null",
+        "enum": [
+          null
+        ]
+      },
+      "NullAlias": {
+        "$ref": "#/components/schemas/NullVocabulary"
+      },
+      "Holder": {
+        "properties": {
+          "kotlinx": {
+            "type": "string"
+          },
+          "fixed": {
+            "type": "null",
+            "const": null
+          },
+          "borrowedFixed": {
+            "$ref": "#/components/schemas/PinnedNull"
+          },
+          "requiredNull": {
+            "type": "null",
+            "enum": [
+              null
+            ]
+          },
+          "optional": {
+            "$ref": "#/components/schemas/NullAlias"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "null",
+              "const": null
+            }
+          },
+          "map": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "null",
+              "enum": [
+                null
+              ]
+            }
+          },
+          "nested": {
+            "properties": {
+              "kotlinx": {
+                "type": "boolean"
+              },
+              "fixed": {
+                "type": "null",
+                "const": null
+              }
+            }
+          }
+        },
+        "required": [
+          "requiredNull"
+        ]
+      },
+      "Only": {
+        "properties": {
+          "fixed": {
+            "type": "null",
+            "const": null
+          },
+          "kotlinx": {
+            "const": "shadow"
+          }
+        }
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "properties": {
+              "tag": {
+                "type": "null",
+                "const": null
+              },
+              "kotlinx": {
+                "const": "shadow"
+              },
+              "kotlin": {
+                "const": "shadow"
+              }
+            }
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "other"
+              }
+            }
+          }
+        ]
+      },
+      "EnumChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "tag": {
+                "type": "null",
+                "enum": [
+                  null
+                ]
+              }
+            },
+            "required": [
+              "tag"
+            ]
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "other"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    },
+    "/literal": {
+      "post": {
+        "operationId": "literal",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinnedNull"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NullAlias"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    },
+    "/inline": {
+      "post": {
+        "operationId": "inline",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "null",
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "null",
+                  "const": null
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    },
+    "/query": {
+      "get": {
+        "operationId": "query",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "null",
+              "enum": [
+                null
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    },
+    "/patch": {
+      "patch": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "requiredNull": {
+                    "type": "null",
+                    "enum": [
+                      null
+                    ],
+                    "nullable": true
+                  },
+                  "note": {
+                    "type": "null",
+                    "enum": [
+                      null
+                    ],
+                    "nullable": true
+                  },
+                  "fixed": {
+                    "type": "null",
+                    "const": null
+                  }
+                },
+                "required": [
+                  "requiredNull"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "pinned"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/PinnedNull"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "vocabulary"
+                        },
+                        "data": {
+                          "type": "null",
+                          "enum": [
+                            null
+                          ]
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "null-literals"
+        ]
+      }
+    }
+  }
+}

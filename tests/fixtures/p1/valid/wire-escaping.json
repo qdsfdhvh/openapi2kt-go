@@ -1,0 +1,23 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Synthetic fixture",
+    "version": "1.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Record": {
+        "type": "object",
+        "properties": {
+          "price$\"\n\\value\t\r\u0001  ": {
+            "type": "string"
+          },
+          "café-value": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

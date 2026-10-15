@@ -1,0 +1,20 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Structural Value", "version": "1.0"},
+  "servers": [{"url": "https://api.example.test"}],
+  "components": {"schemas": {"Record": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}}}}},
+  "paths": {
+    "/rows": {"post": {"operationId": "sendRows", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+      "type": "array", "items": {"type": "object", "properties": {"memo": {"type": ["string", "null"]}}}
+    }}}}, "responses": {"204": {}}}},
+    "/nested": {"get": {"operationId": "nested", "responses": {"200": {"content": {"application/json": {"schema": {
+      "type": "array", "items": {"type": "array", "items": {"type": ["object", "null"], "properties": {"id": {"type": "string"}}}}
+    }}}}}}},
+    "/refs": {"post": {"operationId": "sendRefs", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+      "type": "array", "items": {"type": "array", "items": {"$ref": "#/components/schemas/Record"}}
+    }}}}, "responses": {"204": {}}}},
+    "/maps": {"post": {"operationId": "sendMaps", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+      "type": "array", "items": {"type": "object", "additionalProperties": {"type": ["string", "null"], "enum": ["a", "b"]}}
+    }}}}, "responses": {"204": {}}}}
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Body API", "version": "1.0"},
+  "servers": [{"url": "https://api.example.test"}],
+  "paths": {
+    "/required": {"post": {"operationId": "create", "parameters": [{"in": "query", "name": "input", "schema": {"type": "string"}}], "requestBody": {"required": true, "content": {"application/widget+json": {"schema": {"$ref": "#/components/schemas/Widget"}}}}, "responses": {"204": {}}}},
+    "/optional": {"put": {"operationId": "optional", "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Widget"}}}}, "responses": {"204": {}}}},
+    "/number": {"post": {"operationId": "number", "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "integer"}}}}, "responses": {"204": {}}}},
+    "/string": {"post": {"operationId": "text", "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "string"}}}}, "responses": {"204": {}}}}
+  },
+  "components": {"schemas": {"Widget": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}, "label": {"type": "string", "nullable": true}}}}}
+}

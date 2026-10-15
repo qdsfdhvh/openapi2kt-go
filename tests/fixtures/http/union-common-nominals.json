@@ -1,0 +1,422 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "UnionCommonNominals",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Record": {
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "RecordAlias": {
+        "$ref": "#/components/schemas/Record"
+      },
+      "Maybe": {
+        "$ref": "#/components/schemas/Record",
+        "nullable": true
+      },
+      "Value": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "id"
+              },
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "flag"
+              },
+              "flag": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "flag"
+            ]
+          }
+        ]
+      },
+      "Native": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "Parent": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/First"
+          },
+          {
+            "$ref": "#/components/schemas/Second"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "First": {
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Second": {
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ]
+      },
+      "Direct": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/RecordAlias"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Record"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "ObjectChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Value"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Value"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "NativeChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Native"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Native"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "NullableChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Maybe"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Maybe"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "HierarchyChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Parent"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Parent"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Mismatch": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Record"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "$ref": "#/components/schemas/First"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Product": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Direct"
+          },
+          {
+            "properties": {
+              "stamp": {
+                "const": "shared"
+              }
+            }
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "direct": {
+            "$ref": "#/components/schemas/Direct"
+          },
+          "objectChoice": {
+            "$ref": "#/components/schemas/ObjectChoice"
+          },
+          "nativeChoice": {
+            "$ref": "#/components/schemas/NativeChoice"
+          },
+          "nullableChoice": {
+            "$ref": "#/components/schemas/NullableChoice"
+          },
+          "hierarchyChoice": {
+            "$ref": "#/components/schemas/HierarchyChoice"
+          },
+          "mismatch": {
+            "$ref": "#/components/schemas/Mismatch"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          }
+        },
+        "required": [
+          "direct",
+          "objectChoice",
+          "nativeChoice",
+          "nullableChoice",
+          "hierarchyChoice",
+          "mismatch",
+          "product"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "sample",
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/Record",
+                    "nullable": true
+                  },
+                  "choice": {
+                    "$ref": "#/components/schemas/Value",
+                    "nullable": true
+                  },
+                  "requiredNullable": {
+                    "$ref": "#/components/schemas/Record",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "requiredNullable"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

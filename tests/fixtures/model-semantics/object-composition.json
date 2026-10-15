@@ -1,0 +1,20 @@
+{
+  "openapi": "3.1.0",
+  "components": {"schemas": {
+    "Base": {"type":"object", "required":["id"], "properties": {
+      "id":{"type":"string"}, "score":{"type":"integer"}, "kind":{"type":"string","const":"base"}
+    }},
+    "Extended": {"allOf":[
+      {"$ref":"#/components/schemas/Base"},
+      {"properties":{"score":{"type":"integer","format":"int64"},"enabled":{"type":"boolean"}},"required":["enabled"]}
+    ], "properties":{"kind":{"type":"string","const":"extended"},"label":{"type":"string"}}, "required":["label"]},
+    "Final": {"allOf":[{"$ref":"#/components/schemas/Extended"},{"properties":{"note":{"type":"string"}}}]},
+    "LongScalar":{"type":"integer","format":"int64"},
+    "Holder": {"type":"object","required":["wrapped","native","merged","entries"],"properties": {
+      "wrapped":{"allOf":[{"$ref":"#/components/schemas/Base"},{"description":"An annotation only."}],"nullable":true},
+      "native":{"allOf":[{"$ref":"#/components/schemas/LongScalar"}]},
+      "merged":{"allOf":[{"$ref":"#/components/schemas/Base"},{"properties":{"extra":{"type":"string"}},"nullable":true}]},
+      "entries":{"type":"array","items":{"allOf":[{"properties":{"id":{"type":"string"}},"required":["id"]},{"properties":{"tag":{"const":"entry"}}}]}}
+    }}
+  }}
+}

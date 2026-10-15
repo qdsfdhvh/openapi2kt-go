@@ -1,0 +1,50 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Namespace", "version": "1"},
+  "servers": [{"url": "https://example.test/v1"}],
+  "paths": {
+    "/plain": {"get": {
+      "operationId": "plain", "tags": ["Shadows"],
+      "parameters": [
+        {"name": "org", "in": "query", "schema": {"type": "string"}},
+        {"name": "io", "in": "query", "schema": {"type": "string"}},
+        {"name": "kotlinx", "in": "query", "schema": {"type": "string"}}
+      ], "responses": {"204": {}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch", "tags": ["Shadows"],
+      "parameters": [
+        {"name": "org", "in": "query", "schema": {"type": "string"}},
+        {"name": "io", "in": "query", "schema": {"type": "string"}},
+        {"name": "kotlinx", "in": "query", "schema": {"type": "string"}}
+      ],
+      "responses": {"200": {"content": {"text/event-stream": {"schema": {
+        "type": "object", "properties": {
+          "event": {"type": "string", "const": "tick"}, "data": {"type": "string"}
+        }, "required": ["data"]
+      }}}}}
+    }},
+    "/reserved-method": {"get": {"operationId": "OpenapiKtHttpMethodImport", "tags": ["Shadows"], "responses": {"204": {}}}},
+    "/reserved-flow": {"get": {"operationId": "OpenapiKtFlowImport", "tags": ["Shadows"], "responses": {"204": {}}}},
+    "/reserved-event": {"get": {"operationId": "OpenapiKtSSEEventImport1", "tags": ["Shadows"], "responses": {"204": {}}}},
+    "/echo": {"post": {
+      "operationId": "echo", "tags": ["Shadows"],
+      "parameters": [{"name": "io", "in": "query", "schema": {"type": "string"}}],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "string"}}}},
+      "responses": {"204": {}}
+    }},
+    "/posted": {"post": {
+      "operationId": "posted", "tags": ["Shadows"],
+      "parameters": [
+        {"name": "io", "in": "query", "schema": {"type": "string"}},
+        {"name": "kotlinx", "in": "query", "schema": {"type": "string"}}
+      ],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "string"}}}},
+      "responses": {"200": {"content": {"text/event-stream": {"schema": {
+        "type": "object", "properties": {
+          "event": {"type": "string", "const": "tick"}, "data": {"type": "string"}
+        }, "required": ["data"]
+      }}}}}
+    }}
+  }
+}

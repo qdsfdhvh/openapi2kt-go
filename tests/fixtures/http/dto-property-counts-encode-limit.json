@@ -1,0 +1,30 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/limited": {
+      "post": {
+        "tags": ["Limit"],
+        "operationId": "limited",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 2,
+                "maxProperties": 2,
+                "required": ["id"],
+                "properties": {
+                  "id": {"type": "string"},
+                  "note": {"type": ["string", "null"]},
+                  "kind": {"type": "string", "const": "limited"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {"204": {}}
+      }
+    }
+  }
+}

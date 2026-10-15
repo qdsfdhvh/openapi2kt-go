@@ -1,0 +1,77 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/a": {
+      "get": {
+        "operationId": "alpha",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/b": {
+      "get": {
+        "operationId": "beta",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/c": {
+      "get": {
+        "operationId": "gamma",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "busy"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

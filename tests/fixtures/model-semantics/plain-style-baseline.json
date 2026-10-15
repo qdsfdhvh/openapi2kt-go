@@ -1,0 +1,25 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Plain Style Baseline", "version": "1" },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Sample": {
+        "type": "object",
+        "required": ["flag", "single", "wide", "bytes", "providerBytes", "values", "entries"],
+        "properties": {
+          "flag": { "type": "boolean" },
+          "single": { "type": "number", "format": "float" },
+          "wide": { "type": "number", "format": "double" },
+          "bytes": { "type": "string", "format": "binary" },
+          "providerBytes": { "type": "string", "x-native-type": "org.example.plainprobe.ProviderBytes" },
+          "values": { "type": "array", "items": { "type": "number", "format": "double" } },
+          "entries": { "type": "object", "additionalProperties": { "type": "integer", "format": "int64" } },
+          "optionalSingle": { "type": "number", "format": "float", "nullable": true },
+          "optionalWide": { "type": "number", "format": "double", "nullable": true },
+          "optionalBytes": { "type": "string", "format": "byte", "nullable": true }
+        }
+      }
+    }
+  }
+}

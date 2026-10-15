@@ -1,0 +1,268 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BorrowedCollectionDtoLeaves",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Node": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Node"
+            }
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "NodeAlias": {
+        "$ref": "#/components/schemas/Node"
+      },
+      "Owner": {
+        "properties": {
+          "node": {
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        }
+      },
+      "Source": {
+        "properties": {
+          "rows": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/NodeAlias"
+            }
+          },
+          "map": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Owner/properties/node",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "rowsHop": {
+            "$ref": "#/components/schemas/Source/properties/rows",
+            "nullable": false
+          },
+          "again": {
+            "$ref": "#/components/schemas/RowsBridge",
+            "nullable": true
+          }
+        }
+      },
+      "RowsBridge": {
+        "$ref": "#/components/schemas/Source/properties/rowsHop"
+      },
+      "MapBridge": {
+        "$ref": "#/components/schemas/Source/properties/map",
+        "nullable": false
+      },
+      "AgainBridge": {
+        "$ref": "#/components/schemas/Source/properties/again",
+        "nullable": false
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/RowsBridge"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/MapBridge"
+          },
+          "direct": {
+            "$ref": "#/components/schemas/Source/properties/rows"
+          }
+        },
+        "required": [
+          "rows",
+          "mapping"
+        ]
+      },
+      "CollectionChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "rows"
+              },
+              "rows": {
+                "$ref": "#/components/schemas/RowsBridge"
+              }
+            },
+            "required": [
+              "rows"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "map"
+              },
+              "mapping": {
+                "$ref": "#/components/schemas/MapBridge"
+              }
+            },
+            "required": [
+              "mapping"
+            ]
+          }
+        ]
+      },
+      "RowsAlias": {
+        "$ref": "#/components/schemas/Source/properties/rows"
+      },
+      "MapAlias": {
+        "$ref": "#/components/schemas/Source/properties/map"
+      }
+    }
+  },
+  "paths": {
+    "/rows": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RowsBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RowsBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "$ref": "#/components/schemas/Source/properties/rows"
+                  },
+                  "required": {
+                    "$ref": "#/components/schemas/RowsBridge"
+                  },
+                  "map": {
+                    "$ref": "#/components/schemas/Source/properties/map"
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/Source/properties/rows"
+                  }
+                },
+                "required": [
+                  "required",
+                  "requiredNull"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "rows"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/RowsBridge"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "map"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/MapBridge"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/map": {
+      "post": {
+        "operationId": "echoMap",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Nullable Structured Const"},
+  "components": {"schemas": {
+    "Object": {"type": ["object", "null"], "const": {"n": 1}},
+    "Array": {"type": "array", "nullable": true, "const": [null]},
+    "Alias": {"$ref": "#/components/schemas/Object"},
+    "Narrow": {"$ref": "#/components/schemas/Alias", "nullable": false},
+    "Reopen": {"$ref": "#/components/schemas/Narrow", "nullable": true},
+    "ArrayAlias": {"$ref": "#/components/schemas/Array"},
+    "ArrayNarrow": {"$ref": "#/components/schemas/ArrayAlias", "nullable": false},
+    "Holder": {"properties": {
+      "label": {"type": "string"},
+      "fixed": {"$ref": "#/components/schemas/Alias"},
+      "fixedArray": {"$ref": "#/components/schemas/ArrayAlias"},
+      "items": {"type": "array", "items": {"$ref": "#/components/schemas/Alias"}},
+      "narrowItems": {"type": "array", "items": {"$ref": "#/components/schemas/Alias", "nullable": false}},
+      "literalItems": {"additionalProperties": {"const": {}, "nullable": true}}
+    }}
+  }},
+  "paths": {
+    "/object": {"post": {"operationId": "sendObject", "tags": ["nullable"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Reopen"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Alias"}}}}}}},
+    "/narrow": {"post": {"operationId": "sendNarrow", "tags": ["nullable"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Narrow"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Reopen", "nullable": false}}}}}}},
+    "/array": {"post": {"operationId": "sendArray", "tags": ["nullable"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "array", "nullable": true, "const": []}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ArrayAlias"}}}}}}},
+    "/array-narrow": {"post": {"operationId": "sendArrayNarrow", "tags": ["nullable"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ArrayNarrow"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ArrayAlias", "nullable": false}}}}}}},
+    "/holder": {"post": {"operationId": "sendHolder", "tags": ["nullable"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}}},
+    "/events": {"get": {"operationId": "watch", "tags": ["nullable"], "responses": {"200": {"content": {"text/event-stream": {"schema": {"oneOf": [
+      {"properties": {"event": {"const": "object"}, "data": {"$ref": "#/components/schemas/Alias"}}, "required": ["data"]},
+      {"properties": {"event": {"const": "array"}, "data": {"$ref": "#/components/schemas/ArrayAlias"}}, "required": ["data"]},
+      {"properties": {"event": {"const": "narrow"}, "data": {"$ref": "#/components/schemas/Narrow"}}, "required": ["data"]}
+    ]}}}}}}}
+  }
+}

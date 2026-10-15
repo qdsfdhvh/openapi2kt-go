@@ -1,0 +1,406 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "UnionCommonDictionaries",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Direct": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Named": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/MappingAlias"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Mapping"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Mapping": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Record"
+        }
+      },
+      "MappingAlias": {
+        "$ref": "#/components/schemas/Mapping"
+      },
+      "Record": {
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Optional": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "NullableValues": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Raw": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Mixed": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "additionalProperties": {
+                  "type": "integer"
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Checked": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Product": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Direct"
+          },
+          {
+            "properties": {
+              "stamp": {
+                "const": "shared"
+              }
+            }
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "direct": {
+            "$ref": "#/components/schemas/Direct"
+          },
+          "named": {
+            "$ref": "#/components/schemas/Named"
+          },
+          "optional": {
+            "$ref": "#/components/schemas/Optional"
+          },
+          "nullableValues": {
+            "$ref": "#/components/schemas/NullableValues"
+          },
+          "raw": {
+            "$ref": "#/components/schemas/Raw"
+          },
+          "mixed": {
+            "$ref": "#/components/schemas/Mixed"
+          },
+          "checked": {
+            "$ref": "#/components/schemas/Checked"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          }
+        },
+        "required": [
+          "direct",
+          "named",
+          "optional",
+          "nullableValues",
+          "raw",
+          "mixed",
+          "checked",
+          "product"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "sample",
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/Direct",
+                    "nullable": true
+                  },
+                  "map": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "nullable": true
+                  },
+                  "requiredNullable": {
+                    "$ref": "#/components/schemas/Direct",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "requiredNullable"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

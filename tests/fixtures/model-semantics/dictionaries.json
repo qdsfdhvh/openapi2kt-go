@@ -1,0 +1,36 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Counts": {"type": "object", "additionalProperties": {"type": "integer", "format": "int64"}},
+      "Open": {"type": "object", "additionalProperties": true},
+      "Labels": {"type": "object", "additionalProperties": {"enum": ["ready", "done"]}},
+      "Choices": {"type": "object", "additionalProperties": {"oneOf": [{"type": "string"}, {"type": "boolean"}]}},
+      "Lists": {"type": "object", "additionalProperties": {"type": "array", "items": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}}}}},
+      "Objects": {"type": "object", "additionalProperties": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}}}},
+      "Nullable": {"type": ["object", "null"], "additionalProperties": {"type": "string"}},
+      "Tree": {"type": "object", "additionalProperties": {"type": "object", "properties": {"children": {"$ref": "#/components/schemas/Tree"}}}},
+      "Closed": {"type": "object", "additionalProperties": false},
+      "Fixed": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}}, "additionalProperties": {"type": "integer"}},
+      "Holder": {
+        "type": "object",
+        "required": ["counts", "nullableValues", "list", "inline", "statuses", "nested", "open", "objects", "choice"],
+        "properties": {
+          "counts": {"$ref": "#/components/schemas/Counts"},
+          "nullableValues": {"type": "object", "additionalProperties": {"type": ["integer", "null"]}},
+          "list": {"type": "array", "items": {"type": "object", "additionalProperties": {"type": "boolean"}}},
+          "inline": {"additionalProperties": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}}}},
+          "statuses": {"type": "object", "additionalProperties": {"enum": ["ready", "done"]}},
+          "nested": {"type": "object", "additionalProperties": {"type": "object", "additionalProperties": {"type": "array", "items": {"type": "number"}}}},
+          "open": {"$ref": "#/components/schemas/Open"},
+          "objects": {"$ref": "#/components/schemas/Objects"},
+          "optional": {"type": "object", "additionalProperties": {"type": "string"}},
+          "nullable": {"$ref": "#/components/schemas/Nullable"},
+          "wrapped": {"allOf": [{"$ref": "#/components/schemas/Counts"}], "nullable": true},
+          "choice": {"type": "object", "additionalProperties": {"oneOf": [{"type": "string"}, {"type": "boolean"}]}},
+          "folded": {"anyOf": [{"type": "object", "additionalProperties": {"type": "string"}}, {"type": "null"}]}
+        }
+      }
+    }
+  }
+}

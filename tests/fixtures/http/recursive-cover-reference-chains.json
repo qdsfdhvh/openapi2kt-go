@@ -1,0 +1,531 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Recursive Cover Reference Chains",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "AInherited": {
+        "$ref": "#/components/schemas/BNullable"
+      },
+      "AFalse": {
+        "$ref": "#/components/schemas/AInherited",
+        "nullable": false
+      },
+      "ATrue": {
+        "$ref": "#/components/schemas/AFalse",
+        "nullable": true
+      },
+      "BNullable": {
+        "$ref": "#/components/schemas/ZRaw",
+        "nullable": true
+      },
+      "CEmpty": {
+        "$ref": "#/components/schemas/ZEmpty",
+        "nullable": true
+      },
+      "ZRaw": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToEmpty"
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ZEmpty"
+            }
+          }
+        ]
+      },
+      "ZEmpty": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToRaw"
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ZRaw"
+            }
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "inherited": {
+            "$ref": "#/components/schemas/AgainBridge"
+          },
+          "forcedTrue": {
+            "$ref": "#/components/schemas/Hops/properties/AFalse",
+            "nullable": true
+          },
+          "forcedFalse": {
+            "$ref": "#/components/schemas/Hops/properties/ATrue",
+            "nullable": false
+          },
+          "wrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Hops/properties/AInherited"
+              }
+            ]
+          },
+          "wrapperFalse": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Hops/properties/AInherited"
+              }
+            ],
+            "nullable": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hops/properties/AInherited"
+            }
+          },
+          "values": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Hops/properties/AInherited"
+            }
+          },
+          "requiredNull": {
+            "$ref": "#/components/schemas/Hops/properties/AInherited"
+          },
+          "any": {
+            "$ref": "#/components/schemas/SelfBridge"
+          },
+          "anyFalse": {
+            "$ref": "#/components/schemas/SelfFalseBridge"
+          }
+        },
+        "required": [
+          "forcedFalse",
+          "wrapperFalse",
+          "items",
+          "values",
+          "requiredNull",
+          "anyFalse"
+        ]
+      },
+      "ZAny": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ZAny"
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ZAny"
+            }
+          }
+        ]
+      },
+      "AnyMaybe": {
+        "$ref": "#/components/schemas/ZAny",
+        "nullable": true
+      },
+      "AnyFalse": {
+        "$ref": "#/components/schemas/AnyMaybe",
+        "nullable": false
+      },
+      "Hops": {
+        "properties": {
+          "AFalse": {
+            "$ref": "#/components/schemas/AFalse"
+          },
+          "AInherited": {
+            "$ref": "#/components/schemas/AInherited"
+          },
+          "ATrue": {
+            "$ref": "#/components/schemas/ATrue"
+          },
+          "AnyFalse": {
+            "$ref": "#/components/schemas/AnyFalse"
+          },
+          "AnyMaybe": {
+            "$ref": "#/components/schemas/AnyMaybe"
+          },
+          "BNullable": {
+            "$ref": "#/components/schemas/BNullable"
+          },
+          "CEmpty": {
+            "$ref": "#/components/schemas/CEmpty"
+          },
+          "ZAny": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "ZEmpty": {
+            "$ref": "#/components/schemas/ZEmpty"
+          },
+          "ZRaw": {
+            "$ref": "#/components/schemas/ZRaw"
+          },
+          "again": {
+            "$ref": "#/components/schemas/Hops/properties/AInherited",
+            "nullable": false
+          },
+          "back": {
+            "$ref": "#/components/schemas/CoverBridge",
+            "nullable": true
+          }
+        }
+      },
+      "AgainBridge": {
+        "$ref": "#/components/schemas/Hops/properties/back"
+      },
+      "JSONChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Hops/properties/AInherited",
+                "nullable": false
+              }
+            },
+            "required": [
+              "kind",
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "b"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Hops/properties/AnyFalse"
+              }
+            },
+            "required": [
+              "kind",
+              "value"
+            ]
+          }
+        ]
+      },
+      "ToEmpty": {
+        "$ref": "#/components/schemas/ZEmpty"
+      },
+      "ToRaw": {
+        "$ref": "#/components/schemas/ZRaw"
+      },
+      "CoverBridge": {
+        "$ref": "#/components/schemas/Hops/properties/AInherited"
+      },
+      "CoverFalseBridge": {
+        "$ref": "#/components/schemas/Hops/properties/again"
+      },
+      "SelfBridge": {
+        "$ref": "#/components/schemas/Hops/properties/AnyMaybe"
+      },
+      "SelfFalseBridge": {
+        "$ref": "#/components/schemas/Hops/properties/AnyFalse"
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoverBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/AInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/echo-peer": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hops/properties/AFalse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/AFalse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submit": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "inherited": {
+                    "$ref": "#/components/schemas/Hops/properties/AInherited"
+                  },
+                  "forcedTrue": {
+                    "$ref": "#/components/schemas/Hops/properties/AFalse",
+                    "nullable": true
+                  },
+                  "forcedFalse": {
+                    "$ref": "#/components/schemas/Hops/properties/ATrue",
+                    "nullable": false
+                  },
+                  "wrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Hops/properties/AInherited"
+                      }
+                    ]
+                  },
+                  "wrapperFalse": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Hops/properties/AInherited"
+                      }
+                    ],
+                    "nullable": false
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Hops/properties/AInherited"
+                    }
+                  },
+                  "values": {
+                    "additionalProperties": {
+                      "$ref": "#/components/schemas/Hops/properties/AInherited"
+                    }
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/Hops/properties/AInherited"
+                  }
+                },
+                "required": [
+                  "items",
+                  "values",
+                  "requiredNull"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "raw"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Hops/properties/AInherited"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch-narrow": {
+      "get": {
+        "operationId": "watch-narrow",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "narrow"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Hops/properties/AFalse"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/true": {
+      "post": {
+        "operationId": "echoTrue",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelfBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelfBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch-true": {
+      "get": {
+        "operationId": "watchTrue",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "any"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/SelfBridge"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query": {
+      "get": {
+        "operationId": "query",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/CoverBridge"
+            }
+          },
+          {
+            "name": "any",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SelfFalseBridge"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

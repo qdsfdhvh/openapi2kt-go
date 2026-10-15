@@ -1,0 +1,21 @@
+package cli_test
+
+import (
+	"path/filepath"
+	"reflect"
+	"testing"
+)
+
+func TestAllOfNominalTerminalsNativePreservation(t *testing.T) {
+	p := newProject(t)
+	put(t, p.Input, read(t, filepath.Join(repo, "tests/fixtures/http/allof-nominal-terminals.json")))
+	result(t, p.generate(t, "--model-name-suffix=Dto"), 0)
+	before := snapshot(t, p.Output)
+	p.change(t, func(d map[string]any) {
+		schemas(d)["AllModel"].(map[string]any)["allOf"].([]any)[0].(map[string]any)["properties"].(map[string]any)["id"].(map[string]any)["format"] = "invalid"
+	})
+	fails(t, p.generate(t, "--model-name-suffix=Dto"), 1, "E_SCHEMA_UNSUPPORTED")
+	if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+		t.Fatal("invalid allOf terminal modified output")
+	}
+}

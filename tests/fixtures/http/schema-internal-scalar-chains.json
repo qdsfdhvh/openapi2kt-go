@@ -1,0 +1,49 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Scalar Chain API", "version": "1"},
+  "components": {"schemas": {
+    "Source": {"type": "object", "properties": {
+      "leaf/key~": {"type": ["string", "null"], "minLength": 2, "maxLength": 3, "pattern": "^[a-z]+$"},
+      "nonNull": {"$ref": "#/components/schemas/Source/properties/leaf~1key~0", "nullable": false},
+      "nullable": {"$ref": "#/components/schemas/Source/properties/nonNull", "nullable": true},
+      "inherited": {"$ref": "#/components/schemas/Source/properties/nullable"},
+      "list": {"type": "array", "items": {"$ref": "#/components/schemas/Source/properties/inherited"}, "minItems": 1, "uniqueItems": true}
+    }},
+    "Record": {"type": "object", "required": ["value", "nullable", "list", "map"], "properties": {
+      "value": {"$ref": "#/components/schemas/Source/properties/nonNull"},
+      "nullable": {"$ref": "#/components/schemas/Source/properties/inherited"},
+      "list": {"$ref": "#/components/schemas/Source/properties/list"},
+      "map": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Source/properties/inherited"}}
+    }}
+  }},
+  "paths": {
+    "/records": {"post": {
+      "operationId": "echo",
+      "parameters": [{"name": "code", "in": "query", "required": true, "schema": {"$ref": "#/components/schemas/Source/properties/nonNull"}}],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Record"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Record"}}}}}
+    }},
+    "/submit": {"post": {
+      "operationId": "submit",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "type": "object", "required": ["requiredNull", "requiredFalse"], "properties": {
+          "requiredNull": {"$ref": "#/components/schemas/Source/properties/inherited"},
+          "requiredFalse": {"$ref": "#/components/schemas/Source/properties/inherited", "nullable": false},
+          "inherited": {"$ref": "#/components/schemas/Source/properties/inherited"},
+          "wrapped": {"allOf": [{"$ref": "#/components/schemas/Source/properties/inherited"}]},
+          "memberFalse": {"allOf": [{"$ref": "#/components/schemas/Source/properties/inherited", "nullable": false}]}
+        }
+      }}}},
+      "responses": {"204": {}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch",
+      "responses": {"200": {"content": {"text/event-stream": {"schema": {
+        "type": "object", "required": ["event", "data"], "properties": {
+          "event": {"type": "string", "const": "record"},
+          "data": {"$ref": "#/components/schemas/Record"}
+        }
+      }}}}}
+    }}
+  }
+}

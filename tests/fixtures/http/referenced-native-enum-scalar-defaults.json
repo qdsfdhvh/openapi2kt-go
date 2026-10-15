@@ -1,0 +1,64 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Code": {"type": "integer", "format": "int32", "enum": [1, 2]},
+      "LongCode": {"type": "integer", "format": "int64", "enum": [1, 2]},
+      "FloatCode": {"type": "number", "format": "float", "enum": [1, 1.5]},
+      "DoubleCode": {"type": "number", "format": "double", "enum": [1.25, 2.5]},
+      "BoolCode": {"type": "boolean", "enum": [true]},
+      "MinInt": {"type": "integer", "format": "int32", "enum": [-2147483648, 1]},
+      "MinLong": {"type": "integer", "format": "int64", "enum": [-9223372036854775808, 1]},
+      "Holder": {
+        "required": ["required", "requiredNullable"],
+        "properties": {
+          "required": {"$ref": "#/components/schemas/Code", "default": 1},
+          "requiredNullable": {"$ref": "#/components/schemas/Code", "nullable": true, "default": null},
+          "i": {"$ref": "#/components/schemas/Code", "default": 2},
+          "l": {"$ref": "#/components/schemas/LongCode", "default": 2},
+          "f": {"$ref": "#/components/schemas/FloatCode", "default": 1.5},
+          "d": {"$ref": "#/components/schemas/DoubleCode", "default": 1.25},
+          "b": {"$ref": "#/components/schemas/BoolCode", "default": true},
+          "nil": {"$ref": "#/components/schemas/Code", "nullable": true, "default": null},
+          "minInt": {"$ref": "#/components/schemas/MinInt", "default": -2147483648},
+          "minLong": {"$ref": "#/components/schemas/MinLong", "default": -9223372036854775808},
+          "nested": {"properties": {"value": {"$ref": "#/components/schemas/FloatCode", "default": 1.5}}},
+          "kotlin": {"type": "string"},
+          "companion": {"type": "string"},
+          "serializer": {"type": "string"}
+        }
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "send", "tags": ["defaults"],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}},
+        "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch", "tags": ["defaults"],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {
+          "required": ["required"],
+          "properties": {
+            "required": {"$ref": "#/components/schemas/Code", "nullable": true, "default": 1},
+            "value": {"$ref": "#/components/schemas/Code", "nullable": true, "default": 2}
+          }
+        }}}},
+        "responses": {"204": {"description": "Updated"}}
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch", "tags": ["defaults"],
+        "responses": {"200": {"description": "Events", "content": {"text/event-stream": {"schema": {
+          "required": ["event", "data"],
+          "properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}
+        }}}}}
+      }
+    }
+  }
+}

@@ -1,0 +1,388 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Synthetic inline errors",
+    "version": "1"
+  },
+  "components": {
+    "responses": {
+      "Borrowed": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "state": {
+                  "enum": [
+                    "ready",
+                    "busy"
+                  ],
+                  "default": "ready"
+                },
+                "nested": {
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "message"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/a": {
+      "get": {
+        "operationId": "alpha",
+        "responses": {
+          "204": {},
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    },
+                    "nested": {
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "reason"
+                  ]
+                }
+              }
+            }
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    },
+                    "nested": {
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    },
+                    "nested": {
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/b": {
+      "get": {
+        "operationId": "beta",
+        "responses": {
+          "204": {},
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    },
+                    "nested": {
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "reason"
+                  ]
+                }
+              }
+            }
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    },
+                    "nested": {
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    },
+                    "nested": {
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/borrowed": {
+      "get": {
+        "operationId": "borrowed",
+        "responses": {
+          "204": {},
+          "400": {
+            "$ref": "#/components/responses/Borrowed"
+          }
+        }
+      }
+    },
+    "/fallback/{id}": {
+      "get": {
+        "tags": [
+          "Left"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    },
+                    "nested": {
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Left"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    },
+                    "nested": {
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

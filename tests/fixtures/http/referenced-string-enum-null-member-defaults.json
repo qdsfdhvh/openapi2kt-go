@@ -1,0 +1,57 @@
+{
+  "openapi": "3.1.0",
+  "components": {"schemas": {
+    "Status": {"type": ["string", "null"], "enum": [null, "on", "off", "null"]},
+    "Mode": {"nullable": true, "enum": ["raw", null, "wire"]},
+    "Source": {"properties": {"code": {"type": ["string", "null"], "enum": ["raw", null, "wire"]}}},
+    "Alias": {"$ref": "#/components/schemas/Source/properties/code"},
+    "Rows": {"type": "array", "items": {"$ref": "#/components/schemas/Status"}},
+    "Maps": {"additionalProperties": {"$ref": "#/components/schemas/Status"}},
+    "Nested": {"type": "array", "items": {"$ref": "#/components/schemas/Rows"}},
+    "NarrowRows": {"type": "array", "items": {"$ref": "#/components/schemas/Status", "nullable": false}},
+    "Holder": {
+      "required": ["required"],
+      "properties": {
+        "required": {"$ref": "#/components/schemas/Status", "default": "on"},
+        "scalar": {"$ref": "#/components/schemas/Status", "default": "on"},
+        "textNull": {"$ref": "#/components/schemas/Status", "default": "null"},
+        "nil": {"$ref": "#/components/schemas/Mode", "default": null},
+        "borrowed": {"$ref": "#/components/schemas/Alias", "default": "raw"},
+        "rows": {"$ref": "#/components/schemas/Rows", "default": [null, "on", "null"]},
+        "maps": {"$ref": "#/components/schemas/Maps", "default": {"a/~": null, "$ref": "null"}},
+        "nested": {"$ref": "#/components/schemas/Nested", "default": [[null, "off"], []]},
+        "narrow": {"$ref": "#/components/schemas/NarrowRows", "default": ["on"]},
+        "child": {"properties": {"scalar": {"$ref": "#/components/schemas/Status", "default": "off"}}},
+        "kotlin": {"type": "string"},
+        "kotlinx": {"type": "string"},
+        "serializer": {"type": "string"}
+      }
+    }
+  }},
+  "paths": {
+    "/holder": {"post": {
+      "operationId": "send", "tags": ["defaults"],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}},
+      "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}
+    }},
+    "/patch": {"patch": {
+      "operationId": "patch", "tags": ["defaults"],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "required": ["required"],
+        "properties": {
+          "required": {"$ref": "#/components/schemas/Status", "default": "on"},
+          "value": {"$ref": "#/components/schemas/Status", "nullable": true, "default": "on"},
+          "rows": {"$ref": "#/components/schemas/Rows", "nullable": true, "default": [null, "on"]}
+        }
+      }}}},
+      "responses": {"204": {"description": "Updated"}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch", "tags": ["defaults"],
+      "responses": {"200": {"description": "Events", "content": {"text/event-stream": {"schema": {
+        "required": ["event", "data"],
+        "properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}
+      }}}}}
+    }}
+  }
+}

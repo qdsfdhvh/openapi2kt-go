@@ -1,0 +1,671 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Caller Native Reference Chains API",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "AInherited": {
+        "$ref": "#/components/schemas/BNullable"
+      },
+      "AFalse": {
+        "$ref": "#/components/schemas/AInherited",
+        "nullable": false
+      },
+      "ATrue": {
+        "$ref": "#/components/schemas/AFalse",
+        "nullable": true
+      },
+      "BNullable": {
+        "$ref": "#/components/schemas/ZMoney"
+      },
+      "ZMoney": {
+        "x-native-type": "org.example.scalarvalues.Money",
+        "nullable": true
+      },
+      "LMaybe": {
+        "$ref": "#/components/schemas/ZLong"
+      },
+      "ZLong": {
+        "x-native-type": "kotlin.Long",
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "BytesMaybe": {
+        "$ref": "#/components/schemas/ZBytes"
+      },
+      "ZBytes": {
+        "x-native-type": "kotlin.ByteArray",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "ElementMaybe": {
+        "$ref": "#/components/schemas/ZElement"
+      },
+      "ZElement": {
+        "x-native-type": "kotlinx.serialization.json.JsonElement",
+        "nullable": true
+      },
+      "ObjectMaybe": {
+        "$ref": "#/components/schemas/ZObject"
+      },
+      "ZObject": {
+        "x-native-type": "kotlinx.serialization.json.JsonObject",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "StringMaybe": {
+        "$ref": "#/components/schemas/ZString"
+      },
+      "ZString": {
+        "x-native-type": "kotlin.String",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "InstantMaybe": {
+        "$ref": "#/components/schemas/ZInstant"
+      },
+      "ZInstant": {
+        "x-native-type": "kotlin.time.Instant",
+        "nullable": true
+      },
+      "Holder": {
+        "properties": {
+          "inherited": {
+            "$ref": "#/components/schemas/AgainBridge"
+          },
+          "forcedTrue": {
+            "$ref": "#/components/schemas/Hops/properties/AFalse",
+            "nullable": true
+          },
+          "forcedFalse": {
+            "$ref": "#/components/schemas/Hops/properties/ATrue",
+            "nullable": false
+          },
+          "wrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Hops/properties/AInherited"
+              }
+            ]
+          },
+          "wrapperFalse": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Hops/properties/AInherited"
+              }
+            ],
+            "nullable": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hops/properties/AInherited"
+            }
+          },
+          "values": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Hops/properties/AInherited"
+            }
+          },
+          "requiredNull": {
+            "$ref": "#/components/schemas/Hops/properties/AInherited"
+          },
+          "nativeLong": {
+            "$ref": "#/components/schemas/Hops/properties/LMaybe"
+          },
+          "nativeBytes": {
+            "$ref": "#/components/schemas/Hops/properties/BytesMaybe"
+          },
+          "nativeElement": {
+            "$ref": "#/components/schemas/Hops/properties/ElementMaybe"
+          },
+          "nativeObject": {
+            "$ref": "#/components/schemas/Hops/properties/ObjectMaybe"
+          },
+          "nativeString": {
+            "$ref": "#/components/schemas/Hops/properties/StringMaybe"
+          },
+          "nativeInstant": {
+            "$ref": "#/components/schemas/Hops/properties/InstantMaybe"
+          },
+          "directMoney": {
+            "$ref": "#/components/schemas/Hops/properties/ZMoney"
+          },
+          "directFalse": {
+            "$ref": "#/components/schemas/Hops/properties/ZMoney",
+            "nullable": false
+          },
+          "directWrapped": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Hops/properties/ZMoney"
+              }
+            ]
+          }
+        },
+        "required": [
+          "forcedFalse",
+          "wrapperFalse",
+          "items",
+          "values",
+          "requiredNull",
+          "directFalse"
+        ]
+      },
+      "Hops": {
+        "properties": {
+          "AFalse": {
+            "$ref": "#/components/schemas/AFalse"
+          },
+          "AInherited": {
+            "$ref": "#/components/schemas/AInherited"
+          },
+          "ATrue": {
+            "$ref": "#/components/schemas/ATrue"
+          },
+          "BNullable": {
+            "$ref": "#/components/schemas/BNullable"
+          },
+          "BytesMaybe": {
+            "$ref": "#/components/schemas/BytesMaybe"
+          },
+          "ElementMaybe": {
+            "$ref": "#/components/schemas/ElementMaybe"
+          },
+          "InstantMaybe": {
+            "$ref": "#/components/schemas/InstantMaybe"
+          },
+          "LMaybe": {
+            "$ref": "#/components/schemas/LMaybe"
+          },
+          "ObjectMaybe": {
+            "$ref": "#/components/schemas/ObjectMaybe"
+          },
+          "StringMaybe": {
+            "$ref": "#/components/schemas/StringMaybe"
+          },
+          "ZBytes": {
+            "$ref": "#/components/schemas/ZBytes"
+          },
+          "ZElement": {
+            "$ref": "#/components/schemas/ZElement"
+          },
+          "ZInstant": {
+            "$ref": "#/components/schemas/ZInstant"
+          },
+          "ZLong": {
+            "$ref": "#/components/schemas/ZLong"
+          },
+          "ZMoney": {
+            "$ref": "#/components/schemas/ZMoney"
+          },
+          "ZObject": {
+            "$ref": "#/components/schemas/ZObject"
+          },
+          "ZString": {
+            "$ref": "#/components/schemas/ZString"
+          },
+          "again": {
+            "$ref": "#/components/schemas/Hops/properties/AInherited",
+            "nullable": false
+          },
+          "back": {
+            "$ref": "#/components/schemas/MoneyBridge",
+            "nullable": true
+          }
+        }
+      },
+      "MoneyBridge": {
+        "$ref": "#/components/schemas/Hops/properties/AInherited"
+      },
+      "MoneyFalseBridge": {
+        "$ref": "#/components/schemas/Hops/properties/again"
+      },
+      "AgainBridge": {
+        "$ref": "#/components/schemas/Hops/properties/back"
+      },
+      "LongBridge": {
+        "$ref": "#/components/schemas/Hops/properties/LMaybe"
+      },
+      "BytesBridge": {
+        "$ref": "#/components/schemas/Hops/properties/BytesMaybe"
+      },
+      "ElementBridge": {
+        "$ref": "#/components/schemas/Hops/properties/ElementMaybe"
+      },
+      "ObjectBridge": {
+        "$ref": "#/components/schemas/Hops/properties/ObjectMaybe"
+      },
+      "StringBridge": {
+        "$ref": "#/components/schemas/Hops/properties/StringMaybe"
+      },
+      "InstantBridge": {
+        "$ref": "#/components/schemas/Hops/properties/InstantMaybe"
+      },
+      "NativeChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Hops/properties/AInherited",
+                "nullable": false
+              }
+            },
+            "required": [
+              "kind",
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "b"
+              },
+              "flag": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "kind",
+              "flag"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoneyBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/AInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/echo-peer": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hops/properties/AFalse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/AFalse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/long": {
+      "post": {
+        "operationId": "echoLong",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hops/properties/LMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/LMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bytes": {
+      "post": {
+        "operationId": "echoBytes",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hops/properties/BytesMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/BytesMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/element": {
+      "post": {
+        "operationId": "echoElement",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hops/properties/ElementMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/ElementMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/object": {
+      "post": {
+        "operationId": "echoObject",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hops/properties/ObjectMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/ObjectMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/text": {
+      "post": {
+        "operationId": "echoText",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hops/properties/StringMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/StringMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instant": {
+      "post": {
+        "operationId": "echoInstant",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hops/properties/InstantMaybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/InstantMaybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/optional": {
+      "post": {
+        "operationId": "optional",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hops/properties/AInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/submit": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "inherited": {
+                    "$ref": "#/components/schemas/Hops/properties/AInherited"
+                  },
+                  "forcedTrue": {
+                    "$ref": "#/components/schemas/Hops/properties/AFalse",
+                    "nullable": true
+                  },
+                  "forcedFalse": {
+                    "$ref": "#/components/schemas/Hops/properties/ATrue",
+                    "nullable": false
+                  },
+                  "wrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Hops/properties/AInherited"
+                      }
+                    ]
+                  },
+                  "wrapperFalse": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Hops/properties/AInherited"
+                      }
+                    ],
+                    "nullable": false
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Hops/properties/AInherited"
+                    }
+                  },
+                  "values": {
+                    "additionalProperties": {
+                      "$ref": "#/components/schemas/Hops/properties/AInherited"
+                    }
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/Hops/properties/AInherited"
+                  },
+                  "nativeLong": {
+                    "$ref": "#/components/schemas/Hops/properties/LMaybe"
+                  },
+                  "nativeBytes": {
+                    "$ref": "#/components/schemas/Hops/properties/BytesMaybe"
+                  },
+                  "nativeElement": {
+                    "$ref": "#/components/schemas/Hops/properties/ElementMaybe"
+                  },
+                  "nativeObject": {
+                    "$ref": "#/components/schemas/Hops/properties/ObjectMaybe"
+                  },
+                  "nativeString": {
+                    "$ref": "#/components/schemas/Hops/properties/StringMaybe"
+                  },
+                  "nativeInstant": {
+                    "$ref": "#/components/schemas/Hops/properties/InstantMaybe"
+                  },
+                  "directMoney": {
+                    "$ref": "#/components/schemas/Hops/properties/ZMoney"
+                  },
+                  "directFalse": {
+                    "$ref": "#/components/schemas/Hops/properties/ZMoney",
+                    "nullable": false
+                  },
+                  "directWrapped": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Hops/properties/ZMoney"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "items",
+                  "values",
+                  "requiredNull"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "money"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Hops/properties/AInherited"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch-narrow": {
+      "get": {
+        "operationId": "watchNarrow",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "narrow"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Hops/properties/AFalse"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

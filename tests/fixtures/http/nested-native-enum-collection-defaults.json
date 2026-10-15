@@ -1,0 +1,66 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Direct finite nested native enum own defaults", "version": "1"},
+  "components": {"schemas": {
+    "Holder": {"properties": {
+      "required": {"type": "array", "items": {"type": "array", "items": {"type": "integer", "format": "int32", "enum": [1, 2, 3]}}, "default": [[2]]},
+      "intRows": {"type": "array", "items": {"type": ["array", "null"], "items": {"type": ["integer", "null"], "format": "int32", "enum": [1, 2, 3]}}, "default": [[2, null], null, []]},
+      "longRows": {"type": "array", "items": {"type": ["array", "null"], "items": {"type": ["integer", "null"], "format": "int64", "enum": [1, 2, 3]}}, "default": [[2, null], null, []]},
+      "floatRows": {"type": "array", "items": {"type": ["array", "null"], "items": {"type": ["number", "null"], "format": "float", "enum": [0.5, 1, 1.5]}}, "default": [[1, null], null, []]},
+      "doubleRows": {"type": "array", "items": {"type": ["array", "null"], "items": {"type": ["number", "null"], "format": "double", "enum": [0.5, 1, 1.5]}}, "default": [[1, null], null, []]},
+      "boolRows": {"type": "array", "items": {"type": ["array", "null"], "items": {"type": ["boolean", "null"], "enum": [true]}}, "default": [[true, null], null, []]},
+      "intListMap": {"type": "array", "items": {"type": ["object", "null"], "additionalProperties": {"type": "integer", "format": "int32", "nullable": true, "enum": [1, 2, 3]}}, "default": [{"$ref": 2, "a/~": null}, null, {}]},
+      "longListMap": {"type": "array", "items": {"type": ["object", "null"], "additionalProperties": {"type": "integer", "format": "int64", "nullable": true, "enum": [1, 2, 3]}}, "default": [{"$ref": 2, "a/~": null}, null, {}]},
+      "floatListMap": {"type": "array", "items": {"type": ["object", "null"], "additionalProperties": {"type": "number", "format": "float", "nullable": true, "enum": [0.5, 1, 1.5]}}, "default": [{"$ref": 1, "a/~": null}, null, {}]},
+      "doubleListMap": {"type": "array", "items": {"type": ["object", "null"], "additionalProperties": {"type": "number", "format": "double", "nullable": true, "enum": [0.5, 1, 1.5]}}, "default": [{"$ref": 1, "a/~": null}, null, {}]},
+      "boolListMap": {"type": "array", "items": {"type": ["object", "null"], "additionalProperties": {"type": "boolean", "nullable": true, "enum": [true]}}, "default": [{"$ref": true, "a/~": null}, null, {}]},
+      "intMapList": {"additionalProperties": {"type": "array", "nullable": true, "items": {"type": ["integer", "null"], "format": "int32", "enum": [1, 2, 3]}}, "default": {"a": [2, null], "nil": null, "empty": []}},
+      "longMapList": {"additionalProperties": {"type": "array", "nullable": true, "items": {"type": ["integer", "null"], "format": "int64", "enum": [1, 2, 3]}}, "default": {"a": [2, null], "nil": null, "empty": []}},
+      "floatMapList": {"additionalProperties": {"type": "array", "nullable": true, "items": {"type": ["number", "null"], "format": "float", "enum": [0.5, 1, 1.5]}}, "default": {"a": [1, null], "nil": null, "empty": []}},
+      "doubleMapList": {"additionalProperties": {"type": "array", "nullable": true, "items": {"type": ["number", "null"], "format": "double", "enum": [0.5, 1, 1.5]}}, "default": {"a": [1, null], "nil": null, "empty": []}},
+      "boolMapList": {"additionalProperties": {"type": "array", "nullable": true, "items": {"type": ["boolean", "null"], "enum": [true]}}, "default": {"a": [true, null], "nil": null, "empty": []}},
+      "intMapMap": {"type": "object", "additionalProperties": {"type": ["object", "null"], "additionalProperties": {"type": "integer", "format": "int32", "nullable": true, "enum": [1, 2, 3]}}, "default": {"a": {"$ref": 2, "a/~": null}, "nil": null, "empty": {}}},
+      "longMapMap": {"type": "object", "additionalProperties": {"type": ["object", "null"], "additionalProperties": {"type": "integer", "format": "int64", "nullable": true, "enum": [1, 2, 3]}}, "default": {"a": {"$ref": 2, "a/~": null}, "nil": null, "empty": {}}},
+      "floatMapMap": {"type": "object", "additionalProperties": {"type": ["object", "null"], "additionalProperties": {"type": "number", "format": "float", "nullable": true, "enum": [0.5, 1, 1.5]}}, "default": {"a": {"$ref": 1, "a/~": null}, "nil": null, "empty": {}}},
+      "doubleMapMap": {"type": "object", "additionalProperties": {"type": ["object", "null"], "additionalProperties": {"type": "number", "format": "double", "nullable": true, "enum": [0.5, 1, 1.5]}}, "default": {"a": {"$ref": 1, "a/~": null}, "nil": null, "empty": {}}},
+      "boolMapMap": {"type": "object", "additionalProperties": {"type": ["object", "null"], "additionalProperties": {"type": "boolean", "nullable": true, "enum": [true]}}, "default": {"a": {"$ref": true, "a/~": null}, "nil": null, "empty": {}}},
+      "intMixed": {"type": "array", "items": {"additionalProperties": {"type": "array", "items": {"additionalProperties": {"type": "integer", "format": "int32", "enum": [1, 2, 3]}}}}, "default": [{"$ref": [{"a/~": 2}]}]},
+      "longMixed": {"type": "array", "items": {"additionalProperties": {"type": "array", "items": {"additionalProperties": {"type": "integer", "format": "int64", "enum": [1, 2, 3]}}}}, "default": [{"$ref": [{"a/~": 2}]}]},
+      "floatMixed": {"type": "array", "items": {"additionalProperties": {"type": "array", "items": {"additionalProperties": {"type": "number", "format": "float", "enum": [0.5, 1, 1.5]}}}}, "default": [{"$ref": [{"a/~": 1}]}]},
+      "doubleMixed": {"type": "array", "items": {"additionalProperties": {"type": "array", "items": {"additionalProperties": {"type": "number", "format": "double", "enum": [0.5, 1, 1.5]}}}}, "default": [{"$ref": [{"a/~": 1}]}]},
+      "boolMixed": {"type": "array", "items": {"additionalProperties": {"type": "array", "items": {"additionalProperties": {"type": "boolean", "enum": [true]}}}}, "default": [{"$ref": [{"a/~": true}]}]},
+      "longEnds": {"additionalProperties": {"type": "array", "items": {"type": "integer", "format": "int64", "enum": [-9223372036854775808, 9223372036854775807]}}, "default": {"type": [-9223372036854775808, 9223372036854775807]}},
+      "rounded": {"type": "array", "items": {"additionalProperties": {"type": "number", "format": "float", "enum": [1.000000001, 2]}}, "default": [{"type": 1.000000001}]},
+      "empty": {"type": "array", "items": {"type": "array", "items": {"type": "boolean", "enum": [true]}}, "default": []},
+      "emptyMap": {"additionalProperties": {"additionalProperties": {"type": "integer", "format": "int32", "enum": [1, 2]}}, "default": {}},
+      "nil": {"type": ["object", "null"], "additionalProperties": {"type": "array", "items": {"type": "boolean", "enum": [true]}}, "default": null},
+      "nested": {"properties": {"value": {"type": "array", "items": {"additionalProperties": {"type": "boolean", "enum": [true]}}, "default": [{"type": true}]}}},
+      "kotlin": {"type": "string"}, "kotlinx": {"type": "string"},
+      "companion": {"type": "string"}, "serializer": {"type": "string"}
+    }, "required": ["required"]},
+    "RequiredTrees": {"properties": {
+      "rows": {"type": "array", "items": {"type": "array", "items": {"type": "integer", "format": "int32", "enum": [1, 2, 3]}}, "default": [[2]]},
+      "listMap": {"type": "array", "items": {"additionalProperties": {"type": "integer", "format": "int64", "enum": [1, 2, 3]}}, "default": [{"a": 2}]},
+      "mapList": {"additionalProperties": {"type": "array", "items": {"type": "number", "format": "float", "enum": [0.5, 1, 1.5]}}, "default": {"a": [1]}},
+      "mapMap": {"additionalProperties": {"additionalProperties": {"type": "number", "format": "double", "enum": [0.5, 1, 1.5]}}, "default": {"a": {"b": 1}}},
+      "mixed": {"type": "array", "items": {"additionalProperties": {"type": "array", "items": {"additionalProperties": {"type": "boolean", "enum": [true]}}}}, "default": [{"a": [{"b": true}]}]}
+    }, "required": ["rows", "listMap", "mapList", "mapMap", "mixed"]},
+    "RequiredNullable": {"properties": {"value": {"type": "object", "nullable": true, "additionalProperties": {"type": "array", "items": {"type": "integer", "format": "int64", "enum": [1, 2, 3]}}, "default": null}}, "required": ["value"]}
+  }},
+  "paths": {
+    "/holder": {"post": {"operationId": "send", "tags": ["defaults"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}, "responses": {"200": {"description": "Holder", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}}},
+    "/inline": {"get": {"operationId": "fetch", "tags": ["defaults"], "responses": {"200": {"description": "Inline default", "content": {"application/json": {"schema": {"properties": {
+      "value": {"type": "array", "items": {"additionalProperties": {"type": "integer", "format": "int64", "enum": [1, 2, 3]}}, "default": [{"a": 2}]}
+    }}}}}}}},
+    "/patch": {"patch": {"operationId": "patch", "tags": ["defaults"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"properties": {
+      "rows": {"type": "array", "nullable": true, "items": {"type": "array", "items": {"type": "integer", "format": "int32", "enum": [1, 2, 3]}}, "default": [[2]]},
+      "listMap": {"type": "array", "nullable": true, "items": {"additionalProperties": {"type": "integer", "format": "int64", "enum": [1, 2, 3]}}, "default": [{"a": 2}]},
+      "mapList": {"type": "object", "nullable": true, "additionalProperties": {"type": "array", "items": {"type": "number", "format": "float", "enum": [0.5, 1, 1.5]}}, "default": {"a": [1]}},
+      "mapMap": {"type": "object", "nullable": true, "additionalProperties": {"additionalProperties": {"type": "number", "format": "double", "enum": [0.5, 1, 1.5]}}, "default": {"a": {"b": 1}}},
+      "mixed": {"type": "array", "nullable": true, "items": {"additionalProperties": {"type": "array", "items": {"additionalProperties": {"type": "boolean", "enum": [true]}}}}, "default": [{"a": [{"b": true}]}]},
+      "required": {"type": "array", "nullable": true, "items": {"type": "array", "items": {"type": "integer", "format": "int32", "enum": [1, 2, 3]}}, "default": [[2]]}
+    }, "required": ["required"]}}}}, "responses": {"204": {"description": "Updated"}}}},
+    "/native": {"post": {"operationId": "applyNative", "tags": ["defaults"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "array", "items": {"additionalProperties": {"type": "array", "items": {"additionalProperties": {"type": "integer", "format": "int32", "enum": [1, 2, 3]}}}}}}}}, "responses": {"200": {"description": "Native tree", "content": {"application/json": {"schema": {"type": "array", "items": {"additionalProperties": {"type": "array", "items": {"additionalProperties": {"type": "integer", "format": "int32", "enum": [1, 2, 3]}}}}}}}}}}},
+    "/events": {"get": {"operationId": "watch", "tags": ["defaults"], "responses": {"200": {"description": "Events", "content": {"text/event-stream": {"schema": {"properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}, "required": ["event", "data"]}}}}}}}
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Checked Array Defaults"},
+  "components": {"schemas": {
+    "Holder": {
+      "properties": {
+        "required": {"type": "array", "minItems": 1, "items": {"type": "integer", "minimum": 0}, "default": [2]},
+        "values": {"type": "array", "minItems": 1, "maxItems": 3, "uniqueItems": true, "items": {"type": "integer", "nullable": true, "minimum": 0, "multipleOf": 2}, "default": [2, null]},
+        "names": {"type": "array", "items": {"type": "string", "minLength": 1, "pattern": "^[a-z]+$"}, "default": ["ready"]},
+        "floats": {"type": "array", "items": {"type": "number", "format": "float", "minimum": 1}, "default": [1.000000001]},
+        "dates": {"type": "array", "minItems": 1, "maxItems": 2, "items": {"type": "string", "format": "date"}, "default": ["2024-02-29"]},
+        "kotlin": {"type": "string"},
+        "kotlinx": {"type": "string"}
+      },
+      "required": ["required"]
+    }
+  }},
+  "paths": {
+    "/holder": {"post": {
+      "operationId": "send", "tags": ["defaults"],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}
+    }},
+    "/patch": {"patch": {
+      "operationId": "patch", "tags": ["defaults"],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"properties": {
+        "values": {"type": "array", "nullable": true, "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}, "default": [2]},
+        "dates": {"type": "array", "nullable": true, "minItems": 1, "items": {"type": "string", "format": "date"}, "default": ["2024-02-29"]}
+      }}}}},
+      "responses": {"204": {}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch", "tags": ["defaults"],
+      "responses": {"200": {"content": {"text/event-stream": {"schema": {"properties": {
+        "event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}
+      }, "required": ["data"]}}}}}
+    }}
+  }
+}

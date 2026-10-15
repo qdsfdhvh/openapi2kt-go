@@ -1,0 +1,385 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Collection Pointer API",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Record": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "$ref": "#/components/schemas/Source/properties/list",
+            "nullable": false
+          },
+          "entries": {
+            "$ref": "#/components/schemas/Source/properties/map"
+          },
+          "inherited": {
+            "$ref": "#/components/schemas/Source/properties/list"
+          },
+          "falseOuter": {
+            "$ref": "#/components/schemas/Source/properties/list",
+            "nullable": false
+          },
+          "trueOuter": {
+            "$ref": "#/components/schemas/Source/properties/map",
+            "nullable": true
+          },
+          "wrapped": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Source/properties/list"
+              }
+            ]
+          },
+          "folded": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Source/properties/list",
+                "nullable": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mixed": {
+            "$ref": "#/components/schemas/Source/properties/mixed"
+          }
+        },
+        "required": [
+          "values",
+          "entries"
+        ],
+        "minProperties": 2,
+        "maxProperties": 8
+      },
+      "Source": {
+        "type": "object",
+        "properties": {
+          "leaf": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 2,
+            "maxLength": 3,
+            "pattern": "^[a-z]+$"
+          },
+          "list": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 2,
+              "maxLength": 3,
+              "pattern": "^[a-z]+$"
+            },
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true
+          },
+          "map": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1,
+              "maximum": 9
+            },
+            "minProperties": 1,
+            "maxProperties": 3
+          },
+          "mixed": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 2,
+                "items": {
+                  "$ref": "#/components/schemas/Source/properties/leaf",
+                  "nullable": false
+                }
+              },
+              "minProperties": 1,
+              "maxProperties": 2
+            }
+          },
+          "counts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "maxItems": 3
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/list": {
+      "post": {
+        "tags": [
+          "CollectionPointers"
+        ],
+        "operationId": "sendList",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Source/properties/list",
+                "nullable": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Source/properties/list",
+                  "nullable": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/map": {
+      "post": {
+        "tags": [
+          "CollectionPointers"
+        ],
+        "operationId": "sendMap",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Source/properties/map"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Source/properties/map"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/record": {
+      "post": {
+        "tags": [
+          "CollectionPointers"
+        ],
+        "operationId": "sendRecord",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Record"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "tags": [
+          "CollectionPointers"
+        ],
+        "operationId": "patchCollections",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "values": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Source/properties/list"
+                      }
+                    ]
+                  },
+                  "entries": {
+                    "$ref": "#/components/schemas/Source/properties/map",
+                    "nullable": true
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/Source/properties/list"
+                  },
+                  "falseOuter": {
+                    "$ref": "#/components/schemas/Source/properties/list",
+                    "nullable": false
+                  },
+                  "trueOuter": {
+                    "$ref": "#/components/schemas/Source/properties/map",
+                    "nullable": true
+                  },
+                  "nested": {
+                    "type": "object",
+                    "properties": {
+                      "values": {
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/Source/properties/list"
+                          }
+                        ]
+                      }
+                    },
+                    "required": []
+                  }
+                },
+                "required": [
+                  "requiredNull"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/parameters": {
+      "get": {
+        "tags": [
+          "CollectionPointers"
+        ],
+        "operationId": "parameters",
+        "parameters": [
+          {
+            "name": "values",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Source/properties/list",
+              "nullable": false
+            }
+          },
+          {
+            "name": "entries",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Source/properties/map"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events/list": {
+      "get": {
+        "tags": [
+          "CollectionPointers"
+        ],
+        "operationId": "watchList",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "values"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Source/properties/list"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/map": {
+      "get": {
+        "tags": [
+          "CollectionPointers"
+        ],
+        "operationId": "watchMap",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "values"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Source/properties/map"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

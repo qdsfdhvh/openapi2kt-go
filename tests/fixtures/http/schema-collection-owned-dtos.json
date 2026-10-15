@@ -1,0 +1,76 @@
+{
+  "openapi": "3.1.0",
+  "components": {"schemas": {
+    "Consumer": {
+      "type": "object",
+      "required": ["row", "root", "narrowed", "mixed", "child", "rows", "mapping"],
+      "properties": {
+        "row": {"$ref": "#/components/schemas/NestedOwner~1key~0/properties/rows/items"},
+        "root": {"$ref": "#/components/schemas/RootRows/items"},
+        "nullableValue": {"$ref": "#/components/schemas/RootMap/additionalProperties"},
+        "narrowed": {"$ref": "#/components/schemas/RootMap/additionalProperties", "nullable": false},
+        "mixed": {"$ref": "#/components/schemas/NestedOwner~1key~0/properties/batches/items/additionalProperties/items"},
+        "child": {"$ref": "#/components/schemas/NestedOwner~1key~0/properties/batches/items/additionalProperties/items/properties/child"},
+        "rows": {"type": "array", "items": {"$ref": "#/components/schemas/RootRows/items"}},
+        "mapping": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/NestedOwner~1key~0/properties/rows/items"}}
+      }
+    },
+    "Hops": {"properties": {
+      "row": {"$ref": "#/components/schemas/RootRows/items"},
+      "next": {"$ref": "#/components/schemas/Hops/properties/row"},
+      "value": {"$ref": "#/components/schemas/RootMap/additionalProperties"}
+    }},
+    "NestedOwner/key~": {"type": "object", "properties": {
+      "rows": {"type": "array", "items": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}}}},
+      "entries": {"type": "object", "additionalProperties": {"type": ["object", "null"], "required": ["id"], "properties": {"id": {"type": "string"}}}},
+      "batches": {"type": "array", "items": {"type": "object", "additionalProperties": {"type": "array", "items": {
+        "type": "object", "required": ["id"], "properties": {
+          "id": {"type": "string"},
+          "child": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}}}
+        }
+      }}}}
+    }},
+    "RootRows": {"type": "array", "nullable": true, "items": {
+      "type": "object", "required": ["id"], "properties": {
+        "id": {"type": "string"},
+        "children": {"$ref": "#/components/schemas/RootRows"}
+      }
+    }},
+    "RootMap": {"type": "object", "nullable": true, "additionalProperties": {
+      "type": ["object", "null"], "required": ["id"], "properties": {"id": {"type": "string"}}
+    }}
+  }},
+  "paths": {
+    "/echo": {"post": {
+      "operationId": "echo",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Consumer"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Consumer"}}}}}
+    }},
+    "/direct": {"post": {
+      "operationId": "direct",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Hops/properties/next"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/RootRows/items"}}}}}
+    }},
+    "/submit": {"post": {
+      "operationId": "submit",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "type": "object", "required": ["requiredNull", "requiredFalse"],
+        "properties": {
+          "optional": {"$ref": "#/components/schemas/NestedOwner~1key~0/properties/entries/additionalProperties"},
+          "requiredNull": {"$ref": "#/components/schemas/RootMap/additionalProperties"},
+          "requiredFalse": {"$ref": "#/components/schemas/RootMap/additionalProperties", "nullable": false}
+        }
+      }}}},
+      "responses": {"204": {}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch",
+      "responses": {"200": {"content": {"text/event-stream": {"schema": {
+        "type": "object", "required": ["data"], "properties": {
+          "event": {"type": "string", "const": "row"},
+          "data": {"$ref": "#/components/schemas/Hops/properties/next"}
+        }
+      }}}}}
+    }}
+  }
+}

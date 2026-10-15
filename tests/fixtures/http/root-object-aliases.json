@@ -1,0 +1,47 @@
+{
+  "openapi": "3.1.0", "info": {"title": "Root Alias API", "version": "1"},
+  "components": {"schemas": {
+    "ARecord": {"$ref": "#/components/schemas/BRecord", "description": "Forward transparent root binding"},
+    "BRecord": {"$ref": "#/components/schemas/ZRecord"},
+    "Holder": {
+      "properties": {
+        "value": {"$ref": "#/components/schemas/ARecord"},
+        "wrapped": {"allOf": [{"$ref": "#/components/schemas/ARecord"}]},
+        "list": {"type": "array", "items": {"$ref": "#/components/schemas/ARecord"}},
+        "entries": {"additionalProperties": {"$ref": "#/components/schemas/BRecord"}}
+      }, "required": ["value", "wrapped"]
+    },
+    "ZRecord": {"properties": {
+      "id": {"type": "string"},
+      "child": {"$ref": "#/components/schemas/ARecord"}
+    }, "required": ["id"]}
+  }},
+  "paths": {
+    "/alias": {"post": {
+      "operationId": "echo",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ARecord"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/BRecord"}}}}}
+    }},
+    "/direct": {"post": {
+      "operationId": "echo",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ZRecord"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ZRecord"}}}}}
+    }},
+    "/patch": {"patch": {
+      "operationId": "submit",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "properties": {
+          "optional": {"$ref": "#/components/schemas/ARecord", "nullable": true},
+          "requiredNull": {"$ref": "#/components/schemas/BRecord", "nullable": true}
+        }, "required": ["requiredNull"]
+      }}}}, "responses": {"204": {}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch",
+      "responses": {"200": {"content": {"text/event-stream": {"schema": {
+        "properties": {"event": {"type": "string", "const": "record"}, "data": {"$ref": "#/components/schemas/ARecord"}},
+        "required": ["data"]
+      }}}}}
+    }}
+  }
+}

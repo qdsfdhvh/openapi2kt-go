@@ -1,0 +1,287 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Record": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "minLength": 2,
+                "pattern": "^[a-z]+$"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "maxLength": 3,
+                "pattern": "^[a-z]+$"
+              }
+            }
+          }
+        ]
+      },
+      "ZNumbers": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kotlin": {
+                "type": "string"
+              },
+              "long": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": -9223372036854775808
+              },
+              "steps": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": 0,
+                "multipleOf": 2
+              },
+              "fraction": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMinimum": 0,
+                "multipleOf": 0.25
+              },
+              "floatTie": {
+                "type": "number",
+                "format": "float",
+                "minimum": 0.300000004
+              },
+              "doubleTie": {
+                "type": "number",
+                "minimum": 0.300000000000000004
+              },
+              "tenths": {
+                "type": "number",
+                "multipleOf": 0.1
+              }
+            },
+            "required": [
+              "kotlin",
+              "long",
+              "steps",
+              "fraction",
+              "floatTie",
+              "doubleTie"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kotlin": {
+                "type": "string"
+              },
+              "long": {
+                "type": "integer",
+                "format": "int64",
+                "maximum": 9223372036854775807
+              },
+              "steps": {
+                "type": "integer",
+                "maximum": 8,
+                "exclusiveMaximum": 8,
+                "multipleOf": 2
+              },
+              "fraction": {
+                "type": "number",
+                "maximum": 1,
+                "exclusiveMaximum": 1,
+                "multipleOf": 0.25
+              },
+              "floatTie": {
+                "type": "number",
+                "format": "float",
+                "exclusiveMinimum": 0.300000001
+              },
+              "doubleTie": {
+                "type": "number",
+                "exclusiveMinimum": 0.300000000000000001
+              },
+              "tenths": {
+                "type": "number",
+                "multipleOf": 0.1
+              }
+            }
+          }
+        ]
+      },
+      "ZNullable": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 2
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 3
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/records": {
+      "post": {
+        "tags": [
+          "Bounds"
+        ],
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Record"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "tags": [
+          "Bounds"
+        ],
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "payload"
+                ],
+                "properties": {
+                  "payload": {
+                    "type": "object",
+                    "allOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "minLength": 2
+                          },
+                          "requiredNull": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "minLength": 2
+                          }
+                        },
+                        "required": [
+                          "requiredNull"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 3
+                          },
+                          "requiredNull": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "maxLength": 3
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "tags": [
+          "Bounds"
+        ],
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Record"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

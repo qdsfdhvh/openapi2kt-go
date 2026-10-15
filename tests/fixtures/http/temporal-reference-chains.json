@@ -1,0 +1,450 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TemporalReferenceChains",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Stamp": {
+        "type": "string",
+        "format": "date-time",
+        "nullable": true
+      },
+      "Day": {
+        "type": "string",
+        "format": "date"
+      },
+      "Native": {
+        "x-native-type": "date"
+      },
+      "StampAlias": {
+        "$ref": "#/components/schemas/Stamp"
+      },
+      "DayMaybe": {
+        "$ref": "#/components/schemas/Day",
+        "nullable": true
+      },
+      "NativeAlias": {
+        "$ref": "#/components/schemas/Native"
+      },
+      "Hops": {
+        "properties": {
+          "stamp": {
+            "$ref": "#/components/schemas/StampAlias"
+          },
+          "falseStamp": {
+            "$ref": "#/components/schemas/Hops/properties/stamp",
+            "nullable": false
+          },
+          "day": {
+            "$ref": "#/components/schemas/DayMaybe"
+          },
+          "native": {
+            "$ref": "#/components/schemas/NativeAlias"
+          },
+          "again": {
+            "$ref": "#/components/schemas/StampFalseBridge"
+          }
+        }
+      },
+      "StampBridge": {
+        "$ref": "#/components/schemas/Hops/properties/stamp"
+      },
+      "StampFalseBridge": {
+        "$ref": "#/components/schemas/Hops/properties/falseStamp"
+      },
+      "DayBridge": {
+        "$ref": "#/components/schemas/Hops/properties/day"
+      },
+      "DayFalse": {
+        "$ref": "#/components/schemas/DayBridge",
+        "nullable": false
+      },
+      "NativeBridge": {
+        "$ref": "#/components/schemas/Hops/properties/native"
+      },
+      "AgainBridge": {
+        "$ref": "#/components/schemas/Hops/properties/again"
+      },
+      "Holder": {
+        "properties": {
+          "stamp": {
+            "$ref": "#/components/schemas/StampBridge"
+          },
+          "falseStamp": {
+            "$ref": "#/components/schemas/StampFalseBridge"
+          },
+          "day": {
+            "$ref": "#/components/schemas/DayBridge"
+          },
+          "native": {
+            "$ref": "#/components/schemas/NativeBridge"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StampBridge"
+            }
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/DayFalse"
+            }
+          }
+        },
+        "required": [
+          "stamp",
+          "falseStamp",
+          "day",
+          "native",
+          "rows",
+          "values"
+        ]
+      },
+      "TemporalChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "time"
+              },
+              "stamp": {
+                "$ref": "#/components/schemas/Hops/properties/falseStamp"
+              }
+            },
+            "required": [
+              "stamp"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "echoTemporalHolder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stamp": {
+      "post": {
+        "operationId": "echoStamp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StampBridge"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StampBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/false": {
+      "post": {
+        "operationId": "echoFalseStamp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StampFalseBridge"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StampFalseBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/day": {
+      "post": {
+        "operationId": "echoDay",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DayBridge"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DayBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/native": {
+      "post": {
+        "operationId": "echoNative",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NativeBridge"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query": {
+      "get": {
+        "operationId": "queryTemporal",
+        "parameters": [
+          {
+            "name": "stamp",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StampFalseBridge"
+            }
+          },
+          {
+            "name": "day",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/DayBridge"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "done"
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patchTemporal",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "stamp": {
+                    "$ref": "#/components/schemas/StampBridge"
+                  },
+                  "day": {
+                    "$ref": "#/components/schemas/DayBridge"
+                  },
+                  "requiredStamp": {
+                    "$ref": "#/components/schemas/StampBridge"
+                  },
+                  "falseStamp": {
+                    "$ref": "#/components/schemas/StampFalseBridge"
+                  }
+                },
+                "required": [
+                  "requiredStamp",
+                  "falseStamp"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "done"
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watchTemporal",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "stamp"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/StampBridge"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/StampFalseBridge"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "day"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/DayBridge"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/erasure-left": {
+      "post": {
+        "operationId": "echoTime",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StampFalseBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StampFalseBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/erasure-right": {
+      "post": {
+        "operationId": "echoTime",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NativeBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

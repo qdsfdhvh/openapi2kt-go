@@ -1,0 +1,82 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Consumer": {
+        "type": "object",
+        "required": ["node", "narrowed", "nodes", "mapping"],
+        "properties": {
+          "node": {"$ref": "#/components/schemas/Tree~1key~0/properties/node"},
+          "narrowed": {"$ref": "#/components/schemas/Tree~1key~0/properties/maybe", "nullable": false},
+          "inherited": {"allOf": [{"$ref": "#/components/schemas/Tree~1key~0/properties/maybe"}]},
+          "nodes": {"type": "array", "items": {"$ref": "#/components/schemas/Tree~1key~0/properties/node"}},
+          "mapping": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Tree~1key~0/properties/node"}}
+        }
+      },
+      "Tree/key~": {
+        "type": "object",
+        "properties": {
+          "node": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": {"type": "string"},
+              "peer": {"$ref": "#/components/schemas/Tree~1key~0/properties/maybe"},
+              "child": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}}}
+            }
+          },
+          "maybe": {
+            "type": ["object", "null"],
+            "required": ["label"],
+            "properties": {
+              "label": {"type": "string"},
+              "back": {"$ref": "#/components/schemas/Tree~1key~0/properties/node"}
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Consumer"}}}},
+        "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Consumer"}}}}}
+      }
+    },
+    "/direct": {
+      "post": {
+        "operationId": "direct",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Tree~1key~0/properties/node"}}}},
+        "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Tree~1key~0/properties/node"}}}}}
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {"200": {"content": {"text/event-stream": {"schema": {
+          "type": "object", "required": ["data"],
+          "properties": {
+            "event": {"type": "string", "const": "node"},
+            "data": {"$ref": "#/components/schemas/Tree~1key~0/properties/node"}
+          }
+        }}}}}
+      }
+    },
+    "/submit": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {
+          "type": "object", "required": ["requiredNull", "requiredFalse"],
+          "properties": {
+            "optional": {"$ref": "#/components/schemas/Tree~1key~0/properties/maybe"},
+            "requiredNull": {"$ref": "#/components/schemas/Tree~1key~0/properties/maybe"},
+            "requiredFalse": {"$ref": "#/components/schemas/Tree~1key~0/properties/maybe", "nullable": false}
+          }
+        }}}},
+        "responses": {"204": {}}
+      }
+    }
+  }
+}

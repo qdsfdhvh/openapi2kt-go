@@ -1,0 +1,16 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Nullable Union", "version": "1.0"},
+  "servers": [{"url": "https://api.example.test"}],
+  "paths": {
+    "/required": {"post": {"operationId": "requiredChoice", "requestBody": {"required": true, "content": {"application/json": {"schema": {"anyOf": [
+      {"type": "object", "required": ["kind", "memo"], "properties": {"kind": {"const": "left"}, "memo": {"type": ["string", "null"]}}},
+      {"type": "object", "required": ["kind", "memo"], "properties": {"kind": {"const": "right"}, "memo": {"type": ["string", "null"]}}},
+      {"type": "null"}
+    ]}}}}, "responses": {"204": {}}}},
+    "/optional": {"post": {"operationId": "optionalChoice", "requestBody": {"content": {"application/json": {"schema": {"nullable": true, "oneOf": [
+      {"type": "object", "properties": {"left": {"type": "string"}}},
+      {"type": "object", "properties": {"right": {"type": "string"}}}
+    ]}}}}, "responses": {"204": {}}}}
+  }
+}

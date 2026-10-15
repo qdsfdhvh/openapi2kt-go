@@ -1,0 +1,283 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Primitive map defaults",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "default": {
+              "count": 2
+            },
+            "minProperties": 1,
+            "maxProperties": 3
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "nullable": true,
+              "minimum": 0,
+              "multipleOf": 2
+            },
+            "default": {
+              "a/~": 2,
+              "nil": null
+            },
+            "minProperties": 1,
+            "maxProperties": 3
+          },
+          "names": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": {
+              "$ref": "#/data",
+              "quote\"": "a\n$😀"
+            }
+          },
+          "longs": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "default": {
+              "min": -9223372036854775808
+            }
+          },
+          "floats": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "float",
+              "minimum": 1
+            },
+            "default": {
+              "one": 1
+            }
+          },
+          "doubles": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "default": {
+              "half": 0.5
+            }
+          },
+          "flags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "default": {
+              "yes": true
+            }
+          },
+          "empty": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": {}
+          },
+          "nullable": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "default": null,
+            "nullable": true
+          },
+          "dates": {
+            "type": "object",
+            "additionalProperties": {
+              "type": ["string", "null"],
+              "format": "date"
+            },
+            "default": {"a/~": "2024-02-29", "nil": null},
+            "minProperties": 1,
+            "maxProperties": 2
+          },
+          "times": {
+            "type": "object",
+            "additionalProperties": {"type": "string", "format": "date-time"},
+            "default": {"stamp": "2024-02-29T12:34:56.123456789+02:30"},
+            "minProperties": 1,
+            "maxProperties": 2
+          },
+          "edgeTimes": {
+            "type": "object",
+            "additionalProperties": {"type": "string", "format": "date-time", "nullable": true},
+            "default": {
+              "fraction": "2024-02-29T12:34:56.100Z",
+              "east": "2024-02-29T12:34:56+18:00",
+              "west": "2024-02-29T12:34:56-18:00",
+              "zero": "2024-02-29T12:34:56-00:00",
+              "year": "0000-01-01T00:00:00Z",
+              "nil": null
+            }
+          },
+          "emptyDates": {
+            "type": "object",
+            "additionalProperties": {"type": "string", "format": "date"},
+            "default": {}
+          },
+          "nullableDates": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {"type": "string", "format": "date"},
+            "default": null
+          },
+          "kotlin": {
+            "type": "string"
+          },
+          "kotlinx": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "RequiredDates": {
+        "type": "object",
+        "properties": {
+          "dates": {
+            "type": "object",
+            "additionalProperties": {"type": "string", "format": "date"},
+            "default": {"day": "2024-02-29"}
+          }
+        },
+        "required": ["dates"]
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "default": {
+                      "count": 2
+                    },
+                    "nullable": true,
+                    "minProperties": 1
+                  },
+                  "dates": {
+                    "type": "object",
+                    "nullable": true,
+                    "additionalProperties": {"type": "string", "format": "date", "nullable": true},
+                    "default": {"day": "2024-02-29"},
+                    "minProperties": 1,
+                    "maxProperties": 2
+                  },
+                  "times": {
+                    "type": "object",
+                    "nullable": true,
+                    "additionalProperties": {"type": "string", "format": "date-time"},
+                    "default": {"stamp": "2024-02-29T12:34:56+02:30"},
+                    "minProperties": 1,
+                    "maxProperties": 2
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Empty"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "const": "holder"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

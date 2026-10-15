@@ -1,0 +1,17 @@
+{
+ "openapi":"3.1.0", "info":{"title":"Root Raw Alias API","version":"1"},
+ "components":{"schemas":{
+  "ARaw":{"$ref":"#/components/schemas/BRaw"},"BRaw":{"$ref":"#/components/schemas/ZRaw"},
+  "AOther":{"$ref":"#/components/schemas/ZOther"},
+  "Holder":{"properties":{"raw":{"$ref":"#/components/schemas/ARaw"},"other":{"$ref":"#/components/schemas/AOther"},"items":{"type":"array","items":{"$ref":"#/components/schemas/ARaw"}},"values":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/AOther"}}},"required":["raw","other","items","values"]},
+  "ZRaw":{"type":"object"},"ZOther":{"allOf":[{"type":"object"},{"type":"object"}]}
+ }},
+ "paths":{
+  "/alias":{"post":{"operationId":"echo","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ARaw"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ARaw"}}}}}}},
+  "/direct":{"post":{"operationId":"echo","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ZRaw"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ZRaw"}}}}}}},
+  "/other":{"post":{"operationId":"echo","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AOther"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AOther"}}}}}}},
+  "/native":{"post":{"operationId":"echo","requestBody":{"required":true,"content":{"application/json":{"schema":{}}}},"responses":{"200":{"content":{"application/json":{"schema":{}}}}}}},
+  "/patch":{"patch":{"operationId":"submit","requestBody":{"required":true,"content":{"application/json":{"schema":{"properties":{"raw":{"$ref":"#/components/schemas/ARaw","nullable":true}}}}}},"responses":{"204":{}}}},
+  "/events":{"get":{"operationId":"watch","responses":{"200":{"content":{"text/event-stream":{"schema":{"properties":{"event":{"type":"string","const":"raw"},"data":{"$ref":"#/components/schemas/ARaw"}},"required":["data"]}}}}}}}
+ }
+}

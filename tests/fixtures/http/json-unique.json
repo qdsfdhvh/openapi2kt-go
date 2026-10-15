@@ -1,0 +1,131 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Synthetic JSON uniqueness",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Record": {
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": true,
+            "uniqueItems": true
+          },
+          "objects": {
+            "type": "array",
+            "items": {
+              "additionalProperties": true
+            },
+            "uniqueItems": true
+          },
+          "nested": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": true,
+              "uniqueItems": true
+            }
+          },
+          "optional": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": true,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "values"
+        ]
+      },
+      "Rows": {
+        "type": "array",
+        "items": true,
+        "uniqueItems": true
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/unique": {
+      "post": {
+        "operationId": "applyUnique",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "required": {
+                    "type": "array",
+                    "items": true,
+                    "uniqueItems": true
+                  },
+                  "patch": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": true,
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watchUnique",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Record"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Catalog models", "version": "1.0.0" },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Item": {
+        "type": "object",
+        "required": ["id", "tags", "details", "score", "rating", "enabled"],
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "display_label": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": ["string", "null"] } },
+          "parent": { "$ref": "#/components/schemas/Item" },
+          "details": {
+            "type": "object",
+            "properties": {
+              "count": { "type": "integer", "format": "int32" },
+              "external-id": { "type": "string", "format": "uuid" }
+            }
+          },
+          "score": { "type": "number", "format": "double" },
+          "rating": { "type": "number", "format": "float" },
+          "enabled": { "type": "boolean" },
+          "when": { "type": "string", "nullable": true },
+          "1st-choice": { "type": "string" },
+          "price$\"\n\\label": { "type": "string" },
+          "metadata": { "type": "object" },
+          "payload": { "$ref": "#/components/schemas/Payload" },
+          "related": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": { "item": { "$ref": "#/components/schemas/Item" } }
+            }
+          }
+        }
+      },
+      "Payload": { "type": "object" }
+    }
+  }
+}

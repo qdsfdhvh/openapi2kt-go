@@ -1,0 +1,307 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Consumer": {
+        "type": "object",
+        "required": [
+          "node",
+          "narrowed",
+          "nodes",
+          "mapping"
+        ],
+        "properties": {
+          "node": {
+            "$ref": "#/components/schemas/Tree~1key~0/properties/nodeHop2"
+          },
+          "narrowed": {
+            "$ref": "#/components/schemas/Tree~1key~0/properties/maybeHop2",
+            "nullable": false
+          },
+          "inherited": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Tree~1key~0/properties/maybeHop2"
+              }
+            ]
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tree~1key~0/properties/nodeHop2"
+            }
+          },
+          "mapping": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Tree~1key~0/properties/nodeHop2"
+            }
+          }
+        }
+      },
+      "Tree/key~": {
+        "type": "object",
+        "properties": {
+          "node": {
+            "$ref": "#/components/schemas/Node"
+          },
+          "maybe": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "nodeHop": {
+            "$ref": "#/components/schemas/NodeAliasChain"
+          },
+          "nodeHop2": {
+            "$ref": "#/components/schemas/Tree~1key~0/properties/nodeHop",
+            "nullable": false
+          },
+          "maybeHop": {
+            "$ref": "#/components/schemas/MaybeAliasChain",
+            "nullable": true
+          },
+          "maybeHop2": {
+            "$ref": "#/components/schemas/Tree~1key~0/properties/maybeHop"
+          },
+          "rowHop": {
+            "$ref": "#/components/schemas/RowAliasChain"
+          },
+          "mapHop": {
+            "$ref": "#/components/schemas/MapAliasChain"
+          }
+        }
+      },
+      "ChainRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Tree~1key~0/properties/nodeHop2"
+        }
+      },
+      "Node": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "peer": {
+            "$ref": "#/components/schemas/Tree~1key~0/properties/maybeHop2"
+          },
+          "child": {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "Maybe": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "required": [
+          "label"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "back": {
+            "$ref": "#/components/schemas/Tree~1key~0/properties/nodeHop2"
+          }
+        }
+      },
+      "NodeAlias": {
+        "$ref": "#/components/schemas/Node"
+      },
+      "NodeAliasChain": {
+        "$ref": "#/components/schemas/NodeAlias"
+      },
+      "MaybeAlias": {
+        "$ref": "#/components/schemas/Maybe",
+        "nullable": true
+      },
+      "MaybeAliasChain": {
+        "$ref": "#/components/schemas/MaybeAlias"
+      },
+      "RootRows": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RootMap": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RowAlias": {
+        "$ref": "#/components/schemas/RootRows/items"
+      },
+      "RowAliasChain": {
+        "$ref": "#/components/schemas/RowAlias"
+      },
+      "MapAlias": {
+        "$ref": "#/components/schemas/RootMap/additionalProperties"
+      },
+      "MapAliasChain": {
+        "$ref": "#/components/schemas/MapAlias"
+      },
+      "CollectionAliasUse": {
+        "type": "object",
+        "required": [
+          "row",
+          "mapping"
+        ],
+        "properties": {
+          "row": {
+            "$ref": "#/components/schemas/Tree~1key~0/properties/rowHop"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/Tree~1key~0/properties/mapHop"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Consumer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Consumer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/direct": {
+      "post": {
+        "operationId": "direct",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Tree~1key~0/properties/nodeHop2"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tree~1key~0/properties/nodeHop2"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "node"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Tree~1key~0/properties/nodeHop2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submit": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "requiredNull",
+                  "requiredFalse"
+                ],
+                "properties": {
+                  "optional": {
+                    "$ref": "#/components/schemas/Tree~1key~0/properties/maybeHop2"
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/Tree~1key~0/properties/maybeHop2"
+                  },
+                  "requiredFalse": {
+                    "$ref": "#/components/schemas/Tree~1key~0/properties/maybeHop2",
+                    "nullable": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

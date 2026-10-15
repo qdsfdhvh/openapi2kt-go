@@ -1,0 +1,295 @@
+package cli
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"io"
+	"reflect"
+	"sort"
+	"strconv"
+
+	"openapi-kt/core"
+	"openapi-kt/internal/config"
+	"openapi-kt/internal/output"
+	"openapi-kt/internal/schema"
+)
+
+type rootMoveFile struct {
+	Before string   `json:"before"`
+	After  string   `json:"after"`
+	SHA256 string   `json:"sha256"`
+	Owners []string `json:"owners"`
+}
+type rootMoveLock struct {
+	Owner string `json:"owner,omitempty"`
+	Path  string `json:"path"`
+	ownerRenameLock
+}
+type rootMoveReport struct {
+	Version        uint32         `json:"version"`
+	Identity       bool           `json:"identity"`
+	ManifestSHA256 string         `json:"manifest_sha256"`
+	Files          []rootMoveFile `json:"files"`
+	NameLocks      []rootMoveLock `json:"name_locks"`
+	Impact         string         `json:"impact"`
+}
+
+func moveCandidate(s output.RootMoveState, generated map[string]core.GenerationArtifacts) *core.Diagnostic {
+	invalid := func() *core.Diagnostic {
+		return &core.Diagnostic{Code: "E_OUTPUT_ROOT_MOVE_INVALID", Message: "Move requires the complete original owner inventory in one root, without adoption, rename or partial selection."}
+	}
+	changed := func() *core.Diagnostic {
+		return &core.Diagnostic{Code: "E_OUTPUT_ROOT_MOVE_CHANGED", Message: "Move must preserve exact Kotlin membership and bytes and existing lock mode/profile/allocations/occurrences; update the spec separately."}
+	}
+	named := s.Version == 2 || s.Version == 4
+	if named {
+		if len(s.Owners) != len(generated) {
+			return invalid()
+		}
+		for owner := range s.Owners {
+			if _, ok := generated[owner]; !ok {
+				return invalid()
+			}
+		}
+	} else if len(generated) != 1 {
+		return invalid()
+	} else if _, ok := generated[""]; !ok {
+		return invalid()
+	}
+	files := map[string]core.GeneratedFile{}
+	for _, f := range s.Files {
+		files[f.Path] = f
+	}
+	for _, owner := range unionKeys(generated, generated) {
+		a := generated[owner]
+		paths := s.Owners[owner]
+		if !named {
+			for _, f := range s.Files {
+				paths = append(paths, f.Path)
+			}
+		}
+		desired := append([]core.GeneratedFile(nil), a.Files...)
+		sort.Slice(desired, func(i, j int) bool { return desired[i].Path < desired[j].Path })
+		if len(paths) != len(desired) {
+			return changed()
+		}
+		for i, path := range paths {
+			if files[path] != desired[i] {
+				return changed()
+			}
+		}
+		prior, locked := s.NameLocks[owner]
+		if locked != (a.NameLock != nil) {
+			return changed()
+		}
+		if locked {
+			// Generation validates the current profile. Semantic comparison permits
+			// noncanonical valid old serialization; commit copies its exact old bytes.
+			before := rootMoveLockState(prior)
+			p := before.Profile
+			after, e := schema.ParseNameLock(a.NameLock, p.Package, p.Suffix, p.Qualified)
+			if e != nil {
+				return e
+			}
+			if !reflect.DeepEqual(before, after) {
+				return changed()
+			}
+		}
+	}
+	return nil
+}
+
+func rootMoveLockState(data []byte) *schema.HoistedNameLock {
+	var envelope struct {
+		Profile schema.NameLockProfile `json:"profile"`
+	}
+	_ = json.Unmarshal(data, &envelope)
+	state, _ := schema.ParseNameLock(data, envelope.Profile.Package, envelope.Profile.Suffix, envelope.Profile.Qualified)
+	return state // ReadRootMoveState has already validated every owned payload.
+}
+
+func rootMoveInventory(s output.RootMoveState) rootMoveReport {
+	hash := func(data []byte) string { sum := sha256.Sum256(data); return hex.EncodeToString(sum[:]) }
+	r := rootMoveReport{Version: s.Version, ManifestSHA256: hash(s.Manifest), Files: []rootMoveFile{}, NameLocks: []rootMoveLock{}, Impact: "Complete manifest-owned output moves from the explicitly selected source to target with identical Kotlin and metadata bytes, file modes and mtimes, manifest version, owner names and shared membership. Update consumer source directories and keep the target for subsequent generation. Unowned files stay in each root. This point-in-time report is not an approval token, cross-root crash atomicity or automatic recovery guarantee."}
+	membership := map[string][]string{}
+	for _, owner := range unionKeys(s.Owners, s.Owners) {
+		for _, path := range s.Owners[owner] {
+			membership[path] = append(membership[path], owner)
+		}
+	}
+	for _, f := range s.Files {
+		owners := membership[f.Path]
+		if owners == nil {
+			owners = []string{}
+		}
+		r.Files = append(r.Files, rootMoveFile{Before: f.Path, After: f.Path, SHA256: hash([]byte(f.Content)), Owners: owners})
+	}
+	for _, owner := range unionKeys(s.NameLocks, s.NameLocks) {
+		data := s.NameLocks[owner]
+		// ReadRootMoveState already performed strict validation. Decode just the
+		// validated profile to select that same parser's expected profile.
+		state := rootMoveLockState(data)
+		path := ".openapi-kt-names.json"
+		if owner != "" {
+			path = ".openapi-kt-names-" + hash([]byte(owner)) + ".json"
+		}
+		ownedFiles := s.Files
+		if owner != "" {
+			ownedFiles = nil
+			wanted := map[string]bool{}
+			for _, p := range s.Owners[owner] {
+				wanted[p] = true
+			}
+			for _, f := range s.Files {
+				if wanted[f.Path] {
+					ownedFiles = append(ownedFiles, f)
+				}
+			}
+		}
+		r.NameLocks = append(r.NameLocks, rootMoveLock{Owner: owner, Path: path, ownerRenameLock: ownerRenameLock{SHA256: hash(data), Profile: state.Profile, Symbols: nameLockSymbols(state, ownedFiles)}})
+	}
+	return r
+}
+
+func executeDirectRootMove(args arguments, timer *metricCollector) (int, report) {
+	end := timer.phase("name_lock_read")
+	s, e := output.ReadRootMoveState(args.moveOutputFrom)
+	end()
+	if e != nil {
+		return 4, report{Status: "error", Files: []string{}, Diagnostics: core.Diagnostics{*e}}
+	}
+	if s.Version != 1 && s.Version != 3 {
+		return 4, failed("E_OUTPUT_ROOT_MOVE_INVALID", "Direct root move requires existing version1 or version3 single-owner output.")
+	}
+	s, e = output.BindRootMoveTarget(s, args.output, "")
+	if e != nil {
+		return 4, report{Status: "error", Files: []string{}, Diagnostics: core.Diagnostics{*e}}
+	}
+	prior, locked := s.NameLocks[""]
+	if locked != args.lockHoistedNames {
+		return 4, failed("E_OUTPUT_ROOT_MOVE_CHANGED", "Root move must preserve the existing name-lock mode.")
+	}
+	generated, code, diagnostics := readGeneratePrevious(args, timer, prior)
+	if code != 0 {
+		return code, report{Status: "error", Files: []string{}, Diagnostics: diagnostics}
+	}
+	timer.planned(generated.Artifacts)
+	return finishRootMove(args, s, map[string]core.GenerationArtifacts{"": generated.Artifacts}, report{Status: "ok", Files: []string{}, Diagnostics: core.Diagnostics{}, Warnings: generated.Warnings}, timer)
+}
+
+func executeConfigRootMove(args arguments, cfg config.Config, settings map[string]arguments, dir string, timer *metricCollector) (int, report) {
+	// Validate the full declared root inventory before reading any inputs/state.
+	// An explicit destination override cannot fill absent declarations or hide
+	// disjoint roots in the config.
+	roots := map[string]bool{}
+	base := args
+	base.explicit = nil
+	for _, spec := range cfg.Specs {
+		a := configArguments(base, config.Overlay(cfg.Defaults, spec.Settings), dir)
+		if a.output == "" {
+			return 4, failed("E_OUTPUT_ROOT_MOVE_INVALID", "Every configured spec must declare a nonempty output root before the move target override.")
+		}
+		roots[a.output] = true
+	}
+	if len(roots) != 1 || len(cfg.Specs) == 0 {
+		return 4, failed("E_OUTPUT_ROOT_MOVE_INVALID", "Configuration root move requires a complete nonempty inventory in one declared root.")
+	}
+	declared := ""
+	for root := range roots {
+		declared = root
+	}
+	end := timer.phase("name_lock_read")
+	s, e := output.ReadRootMoveState(args.moveOutputFrom)
+	end()
+	if e != nil {
+		return 4, report{Status: "error", Files: []string{}, Diagnostics: core.Diagnostics{*e}}
+	}
+	if s.Version != 2 && s.Version != 4 || len(s.Owners) != len(cfg.Specs) {
+		return 4, failed("E_OUTPUT_ROOT_MOVE_INVALID", "Configured root move requires the complete existing version2 or version4 named-owner inventory.")
+	}
+	for _, spec := range cfg.Specs {
+		if _, ok := s.Owners[spec.Name]; !ok {
+			return 4, failed("E_OUTPUT_ROOT_MOVE_INVALID", "Every configured spec must retain its original owner name; absent peers cannot be dropped.")
+		}
+	}
+	s, e = output.BindRootMoveTarget(s, args.output, declared)
+	if e != nil {
+		return 4, report{Status: "error", Files: []string{}, Diagnostics: core.Diagnostics{*e}}
+	}
+	generated := map[string]core.GenerationArtifacts{}
+	counts := map[string]output.OwnerUpdate{args.output: {Generated: generated}}
+	all := report{Status: "ok", Files: []string{}, Diagnostics: core.Diagnostics{}, Specs: []specReport{}}
+	for _, spec := range cfg.Specs {
+		a := settings[spec.Name]
+		prior, locked := s.NameLocks[spec.Name]
+		if locked != a.lockHoistedNames {
+			return 4, failed("E_OUTPUT_ROOT_MOVE_CHANGED", "Root move must preserve every owner's name-lock mode.")
+		}
+		g, code, diagnostics := readGeneratePrevious(a, timer, prior)
+		if code != 0 {
+			return code, report{Status: "error", Files: []string{}, Diagnostics: diagnostics, Spec: spec.Name}
+		}
+		generated[spec.Name] = g.Artifacts
+		entry := specReport{Name: spec.Name, Files: []string{}, Warnings: g.Warnings}
+		for _, f := range g.Artifacts.Files {
+			entry.Files = append(entry.Files, f.Path)
+		}
+		all.Specs = append(all.Specs, entry)
+		all.Warnings = append(all.Warnings, g.Warnings...)
+	}
+	timer.plannedConfig(counts)
+	return finishRootMove(args, s, generated, all, timer)
+}
+
+func finishRootMove(args arguments, s output.RootMoveState, generated map[string]core.GenerationArtifacts, all report, timer *metricCollector) (int, report) {
+	if args.denyWarnings {
+		end := timer.phase("warning_policy")
+		denied := deniedWarnings(all.Warnings, args.allowWarnings)
+		end()
+		if len(denied) != 0 {
+			all.Status = "error"
+			all.Diagnostics = denied
+			return 1, all
+		}
+	}
+	if e := moveCandidate(s, generated); e != nil {
+		return 4, report{Status: "error", Files: []string{}, Diagnostics: core.Diagnostics{*e}}
+	}
+	readonly := args.check || args.command == "validate"
+	phase := "commit"
+	if readonly {
+		phase = "check"
+	}
+	end := timer.phase(phase)
+	changed, e := output.MoveOutputRoot(args.moveOutputFrom, args.output, s, readonly)
+	end()
+	if e != nil {
+		return 4, report{Status: "error", Files: []string{}, Diagnostics: core.Diagnostics{*e}}
+	}
+	migration := rootMoveInventory(s)
+	migration.Identity = !changed
+	all.OutputRootMigration = &migration
+	for _, file := range s.Files {
+		all.Files = append(all.Files, file.Path)
+	}
+	if args.check && changed {
+		all.Status = "different"
+		return 3, all
+	}
+	return 0, all
+}
+
+func printRootMove(w io.Writer, r rootMoveReport) {
+	_, _ = fmt.Fprintf(w, "output root move (manifest v%d, identity=%t): SHA256=%s\n%s\n", r.Version, r.Identity, r.ManifestSHA256, r.Impact)
+	for _, f := range r.Files {
+		_, _ = fmt.Fprintf(w, "  source/%s -> target/%s: %s owners=%s\n", f.Before, f.After, f.SHA256, strconv.Quote(fmt.Sprint(f.Owners)))
+	}
+	for _, lock := range r.NameLocks {
+		_, _ = fmt.Fprintf(w, "  name-lock owner=%s path=%s SHA256=%s package=%s suffix=%s qualified=%t\n", lock.Owner, lock.Path, lock.SHA256, lock.Profile.Package, strconv.Quote(lock.Profile.Suffix), lock.Profile.Qualified)
+		for _, symbol := range lock.Symbols {
+			_, _ = fmt.Fprintf(w, "  %s %s; descriptor=%s shape=%s occurrences=%s\n", symbol.Role, symbol.Classifier, symbol.Descriptor, symbol.Shape, strconv.Quote(fmt.Sprint(symbol.Occurrences)))
+		}
+	}
+}

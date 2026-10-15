@@ -1,0 +1,31 @@
+# Explicit null literals
+
+Plain `{"type":"null","enum":[null]}` and `{"type":"null","const":null}` use the existing `kotlinx.serialization.json.JsonNull` carrier. They work with validation enabled or disabled in ordinary fields, supported scalar component aliases, typed List/Map leaves, JSON request payloads, typed responses and SSE data. No enum class, synthetic token, wrapper or extra membership helper is generated. JSON null and the String token `"null"` are different values.
+
+```json
+{"Holder":{"properties":{
+  "requiredNull":{"type":"null","enum":[null]},
+  "optional":{"type":"null","enum":[null]},
+  "fixed":{"type":"null","const":null}
+},"required":["requiredNull"]}}
+```
+
+`requiredNull` is a `JsonNull` constructor argument. `optional` keeps the ordinary `JsonNull? = null` field policy. `fixed` is a non-null, always-encoded body `val` initialized to JsonNull; it is absent from constructor/copy parameters. Ordinary const-only models retain serializable plain classes. Nullable use-site values retain the existing nullable codec: decoding JSON null into `JsonNull?` produces Kotlin null. Required-key decoding follows the existing serializer descriptor and caller's `explicitNulls` setting; this profile adds no separate presence validator.
+
+Optional nullable request properties retain `Patch.Absent`, `Patch.Null` and `Patch.Value(JsonNull)` as distinct Kotlin values. Absent is omitted. The latter two encode the same JSON null and decode as `Patch.Null`; they are not distinct wire states. Required nullable request fields retain their existing arguments and presence behavior. A nullable annotation does not turn a const body into a nullable or Patch field.
+
+The JsonNull codec accepts only JSON null in ordinary typed value positions. Consequently wrong scalar/object/array values fail decoding without a separate enum/const check. Scalar null aliases do not emit native-enum or scalar-const approximation warnings. This does not change the existing approximation of other scalar enum/const projections or ignored object extras.
+
+Object-union const-only singletons retain canonical output and the existing approximate tag dispatch. A null const is written directly as a JsonElement, so its output is null rather than a JsonPrimitive wrapping the object. Dispatch still uses canonical token text: the singleton null tag may also dispatch from the String token `"null"`, and its singleton decoder returns the canonical instance. A constructor-bearing null-enum tag uses its JsonNull codec and rejects that String token. `W_OBJECT_UNION_APPROXIMATION` remains; these codecs do not implement exact oneOf match counts or general pin validation. Unknown variants preserve their raw JSON.
+
+Generated const expressions and annotations remain valid when a field is named `kotlinx` or `kotlin`. A private file-level initializer and explicit symbol aliases keep package lookup outside shadowing scopes. Template substitution precedes formatting, so wire keys and user literal strings are never rewritten. These declarations add no instance fields or serialization slots and retain final owned scopes after hoisting/merging.
+
+Named typed HTTP payloads and responses use the JsonNull codec. Direct inline `type:null` success-response projection continues to return `Unit`; Ktor's Unit reader ignores response body contents. A null enum/const schema is checked before that projection. Query null values retain Ktor's existing `"null"` text representation. SSE known null data uses the typed codec; invalid known data terminates collection, closes a still-open fragmented stream and leaves the caller client reusable. Event/id transport fields and cold/repeated collection behavior are unchanged.
+
+The enum grammar requires exactly one actual null member. Empty/non-array, duplicate and non-null members fail at the original enum or member Pointer. The raw 240-member cap is checked before uniqueness; 240 repeated nulls therefore fail uniqueness at index 1, while 241 fail the member limit. Metadata, original nodes, indices and source hops are retained. Malformed discarded fields and fixed-field additionalProperties sources cannot hide errors.
+
+This explicitly typed profile has a separate [typeless null inference contract](inferred-null-literals.md) for plain const/enum sources. `type:["null"]`, nullable component roots, null-only union branches, general defaults, format/native/value-class extensions, additional constraints, structured const values and general enum composition remain outside these profiles. [Null-only field defaults](null-only-defaults.md) have separate direct DTO admission. Source depth stays 48, composition work 16,384, checked collection edges 16 and serialized/operation slots 240. JsonNull fields consume one serialized slot; const body fields still count toward the serialization constructor budget. Independent shallow 240-field/const/method and 48-source/16-checked probes do not establish a Cartesian resource guarantee or Android/KMP acceptance.
+
+Previously rejected explicit null literal inputs now generate canonical JsonNull APIs. Existing accepted input/output and ordinary const/default/Patch behavior remain covered by compatibility checks. Effective null-enum and plain type:null owned shapes share the existing scalar identity; changing an owned const's type/value changes reuse and name-lock fingerprints without a lock protocol migration.
+
+The [synthetic fixture](../tests/fixtures/http/explicit-null-literals.json), [Go contracts](../core/explicit_null_literals_test.go), [grammar guards](../core/explicit_null_literals_guards_test.go), [resource tests](../core/explicit_null_literals_resources_test.go), [owned reuse/lock tests](../core/explicit_null_literals_optimization_test.go), [original-source tests](../internal/schema/null_literals_test.go), [native output preservation](../internal/cli/explicit_null_literals_process_test.go) and [Kotlin consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ExplicitNullLiteralsContracts.kt) cover these boundaries. Run `bash scripts/test.sh feature explicit-null-literals` for fresh Data/Plain projects with validation off/on and four Json configurations; the full HTTP suite includes the consumer.

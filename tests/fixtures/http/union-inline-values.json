@@ -1,0 +1,558 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "UnionInlineValues",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Direct": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Rows": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "type": "array",
+                "items": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "type": "array",
+                "items": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Mapping": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "additionalProperties": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "additionalProperties": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Nullable": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "nullable": true
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "Mismatch": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "properties": {
+                  "ok": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "ok"
+                ]
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Nested": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "tag": {
+                        "const": "id"
+                      },
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "tag": {
+                        "const": "ok"
+                      },
+                      "ok": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "ok"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "tag": {
+                        "const": "id"
+                      },
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "tag": {
+                        "const": "ok"
+                      },
+                      "ok": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "ok"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "Product": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "a"
+                  },
+                  "value": {
+                    "allOf": [
+                      {
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "value"
+                ]
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "b"
+                  },
+                  "value": {
+                    "allOf": [
+                      {
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "value"
+                ]
+              }
+            ]
+          },
+          {
+            "properties": {
+              "stamp": {
+                "const": "shared"
+              }
+            }
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "direct": {
+            "$ref": "#/components/schemas/Direct"
+          },
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/Mapping"
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/Nullable"
+          },
+          "mismatch": {
+            "$ref": "#/components/schemas/Mismatch"
+          },
+          "nested": {
+            "$ref": "#/components/schemas/Nested"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          }
+        },
+        "required": [
+          "direct",
+          "rows",
+          "mapping",
+          "nullable",
+          "mismatch",
+          "nested",
+          "product"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ],
+                    "nullable": true
+                  },
+                  "choice": {
+                    "nullable": true,
+                    "oneOf": [
+                      {
+                        "properties": {
+                          "kind": {
+                            "const": "a"
+                          },
+                          "value": {
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "value"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "kind": {
+                            "const": "b"
+                          },
+                          "value": {
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "value"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Server Scope", "version": "1"},
+  "servers": [{
+    "url": "https://{host}/{version}",
+    "variables": {
+      "host": {"default": "api.example.test", "enum": ["api.example.test", "other.example.test"]},
+      "version": {"default": "v2"}
+    }
+  }],
+  "paths": {
+    "/root": {"get": {"operationId": "root", "tags": ["Servers"], "parameters": [{"name": "org", "in": "query", "schema": {"type": "string"}}], "responses": {"204": {}}}},
+    "/scoped/{id}": {
+      "servers": [{"url": "https://path.example.test/path"}],
+      "parameters": [{"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}],
+      "get": {"operationId": "pathScope", "tags": ["Servers"], "responses": {"204": {}}},
+      "post": {
+        "operationId": "operationScope", "tags": ["Servers"],
+        "servers": [{"url": "https://{host}/operation", "variables": {"host": {"default": "operation.example.test"}}}],
+        "responses": {"204": {}}
+      }
+    },
+    "/relative": {"get": {
+      "operationId": "relative", "tags": ["Servers"], "servers": [{"url": "/prefix"}], "responses": {"204": {}}
+    }},
+    "/empty": {"get": {
+      "operationId": "empty", "tags": ["Servers"], "servers": [], "responses": {"204": {}}
+    }},
+    "/events/{id}": {"get": {
+      "operationId": "watch", "tags": ["Servers"],
+      "servers": [{"url": "https://stream.example.test/stream"}],
+      "parameters": [
+        {"name": "id", "in": "path", "required": true, "schema": {"type": "string"}},
+        {"name": "org", "in": "query", "schema": {"type": "string"}}
+      ],
+      "responses": {"200": {"content": {"text/event-stream": {"schema": {
+        "type": "object", "properties": {
+          "event": {"type": "string", "const": "tick"},
+          "data": {"type": "string"}
+        }, "required": ["data"]
+      }}}}}
+    }}
+  }
+}

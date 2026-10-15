@@ -1,0 +1,28 @@
+{
+  "openapi": "3.0.3",
+  "components": {
+    "schemas": {
+      "AStrings": {"type":"array","items":{"type":"string"}},
+      "BInts": {"type":"array","items":{"type":"integer"}},
+      "MStrings": {"type":"object","additionalProperties":{"type":"string"}},
+      "MInts": {"type":"object","additionalProperties":{"type":"integer"}},
+      "ModelA": {"type":"object","properties":{"id":{"type":"string"}},"required":["id"]},
+      "ModelB": {"type":"object","properties":{"id":{"type":"integer"}},"required":["id"]},
+      "VStringA": {"type":"string","x-kotlin-value-class":true},
+      "VStringB": {"type":"string","x-kotlin-value-class":true}
+    }
+  },
+  "paths": {
+    "/a": {"post":{"operationId":"send","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AStrings"}}}},"responses":{"204":{"description":"empty"}}}},
+    "/b": {"post":{"operationId":"send","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/BInts"}}}},"responses":{"204":{"description":"empty"}}}},
+    "/c": {"post":{"operationId":"send","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"array","items":{"type":"boolean"}}}}},"responses":{"204":{"description":"empty"}}}},
+    "/d": {"post":{"operationId":"send","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AStrings","nullable":true}}}},"responses":{"204":{"description":"empty"}}}},
+    "/maps/a": {"post":{"operationId":"map","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/MStrings"}}}},"responses":{"204":{"description":"empty"}}}},
+    "/maps/b": {"post":{"operationId":"map","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/MInts"}}}},"responses":{"204":{"description":"empty"}}}},
+    "/models/a": {"post":{"operationId":"model","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ModelA"}}}},"responses":{"204":{"description":"empty"}}}},
+    "/models/b": {"post":{"operationId":"model","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ModelB"}}}},"responses":{"204":{"description":"empty"}}}},
+    "/wrapped/a": {"post":{"operationId":"wrapped","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/VStringA"}}}},"responses":{"204":{"description":"empty"}}}},
+    "/wrapped/b": {"post":{"operationId":"wrapped","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/VStringB"}}}},"responses":{"204":{"description":"empty"}}}},
+    "/z": {"post":{"operationId":"send2","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/BInts"}}}},"responses":{"204":{"description":"empty"}}}}
+  }
+}

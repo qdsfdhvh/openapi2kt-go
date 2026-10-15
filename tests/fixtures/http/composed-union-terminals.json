@@ -1,0 +1,550 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ComposedUnionTerminals",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "note"
+                  },
+                  "body": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "body"
+                ]
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "count"
+                  },
+                  "count": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "count"
+                ]
+              }
+            ]
+          },
+          {
+            "anyOf": [
+              {
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "const": "fast"
+                  },
+                  "fast": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "fast"
+                ]
+              },
+              {
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "const": "slow"
+                  },
+                  "slow": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "slow"
+                ]
+              }
+            ]
+          },
+          {
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        ]
+      },
+      "ProductAlias": {
+        "$ref": "#/components/schemas/Product"
+      },
+      "ProductMaybe": {
+        "$ref": "#/components/schemas/ProductAlias",
+        "nullable": true
+      },
+      "ProductFalse": {
+        "$ref": "#/components/schemas/ProductMaybe",
+        "nullable": false
+      },
+      "Box": {
+        "properties": {
+          "choice": {
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "note"
+                      },
+                      "body": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "body"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "count"
+                      },
+                      "count": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "count"
+                    ]
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "fast"
+                      },
+                      "fast": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "mode",
+                      "fast"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "slow"
+                      },
+                      "slow": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "mode",
+                      "slow"
+                    ]
+                  }
+                ]
+              },
+              {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "NestedAlias": {
+        "$ref": "#/components/schemas/Box/properties/choice"
+      },
+      "NestedMaybe": {
+        "$ref": "#/components/schemas/NestedAlias",
+        "nullable": true
+      },
+      "NestedFalse": {
+        "$ref": "#/components/schemas/NestedMaybe",
+        "nullable": false
+      },
+      "Rows": {
+        "type": "array",
+        "items": {
+          "allOf": [
+            {
+              "oneOf": [
+                {
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "note"
+                    },
+                    "body": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "body"
+                  ]
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "count"
+                    },
+                    "count": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "count"
+                  ]
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "properties": {
+                    "mode": {
+                      "type": "string",
+                      "const": "fast"
+                    },
+                    "fast": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "fast"
+                  ]
+                },
+                {
+                  "properties": {
+                    "mode": {
+                      "type": "string",
+                      "const": "slow"
+                    },
+                    "slow": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "slow"
+                  ]
+                }
+              ]
+            },
+            {
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          ]
+        }
+      },
+      "RowAlias": {
+        "$ref": "#/components/schemas/Rows/items"
+      },
+      "Map": {
+        "type": "object",
+        "additionalProperties": {
+          "allOf": [
+            {
+              "oneOf": [
+                {
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "note"
+                    },
+                    "body": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "body"
+                  ]
+                },
+                {
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "count"
+                    },
+                    "count": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "count"
+                  ]
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "properties": {
+                    "mode": {
+                      "type": "string",
+                      "const": "fast"
+                    },
+                    "fast": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "fast"
+                  ]
+                },
+                {
+                  "properties": {
+                    "mode": {
+                      "type": "string",
+                      "const": "slow"
+                    },
+                    "slow": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "slow"
+                  ]
+                }
+              ]
+            },
+            {
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          ]
+        }
+      },
+      "MapAlias": {
+        "$ref": "#/components/schemas/Map/additionalProperties"
+      },
+      "Hops": {
+        "properties": {
+          "root": {
+            "$ref": "#/components/schemas/ProductAlias"
+          },
+          "nested": {
+            "$ref": "#/components/schemas/Box/properties/choice"
+          },
+          "maybe": {
+            "$ref": "#/components/schemas/ProductMaybe"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/Hops/properties/maybe",
+            "nullable": false
+          }
+        }
+      },
+      "RootBridge": {
+        "$ref": "#/components/schemas/Hops/properties/root"
+      },
+      "NestedBridge": {
+        "$ref": "#/components/schemas/Hops/properties/nested"
+      },
+      "NarrowBridge": {
+        "$ref": "#/components/schemas/Hops/properties/narrow"
+      },
+      "Holder": {
+        "properties": {
+          "root": {
+            "$ref": "#/components/schemas/RootBridge"
+          },
+          "nested": {
+            "$ref": "#/components/schemas/NestedMaybe"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/NarrowBridge"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RowAlias"
+            }
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/MapAlias"
+            }
+          }
+        },
+        "required": [
+          "root",
+          "nested",
+          "narrow",
+          "rows",
+          "values"
+        ]
+      },
+      "AConsumer": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "left"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Hops/properties/root"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "right"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/product": {
+      "post": {
+        "operationId": "echoProduct",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RootBridge"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RootBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patchProduct",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/NestedMaybe"
+                  },
+                  "falseView": {
+                    "$ref": "#/components/schemas/NestedFalse"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "done"
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watchProduct",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "product"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ProductMaybe"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

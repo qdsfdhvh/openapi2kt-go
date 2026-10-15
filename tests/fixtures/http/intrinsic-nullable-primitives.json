@@ -1,0 +1,549 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "ZString": {
+        "type": "string",
+        "nullable": true
+      },
+      "ZBoolean": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "ZInt": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "format": "int32"
+      },
+      "ZLong": {
+        "type": "integer",
+        "format": "int64",
+        "nullable": true
+      },
+      "ZFloat": {
+        "type": "number",
+        "format": "float",
+        "nullable": true
+      },
+      "ZDouble": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "format": "double"
+      },
+      "AInherited": {
+        "$ref": "#/components/schemas/BNullable"
+      },
+      "BNullable": {
+        "$ref": "#/components/schemas/ZString",
+        "nullable": true
+      },
+      "AFalse": {
+        "$ref": "#/components/schemas/BNullable",
+        "nullable": false
+      },
+      "CFalseInherited": {
+        "$ref": "#/components/schemas/AFalse"
+      },
+      "ATrue": {
+        "$ref": "#/components/schemas/AFalse",
+        "nullable": true
+      },
+      "Holder": {
+        "type": "object",
+        "required": [
+          "string",
+          "boolean",
+          "int",
+          "long",
+          "float",
+          "double",
+          "inherited",
+          "wrapper",
+          "narrow",
+          "narrowInherited",
+          "forced",
+          "list",
+          "map"
+        ],
+        "properties": {
+          "string": {
+            "$ref": "#/components/schemas/ZString"
+          },
+          "boolean": {
+            "$ref": "#/components/schemas/ZBoolean"
+          },
+          "int": {
+            "$ref": "#/components/schemas/ZInt"
+          },
+          "long": {
+            "$ref": "#/components/schemas/ZLong"
+          },
+          "float": {
+            "$ref": "#/components/schemas/ZFloat"
+          },
+          "double": {
+            "$ref": "#/components/schemas/ZDouble"
+          },
+          "inherited": {
+            "$ref": "#/components/schemas/AInherited"
+          },
+          "wrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ZString"
+              }
+            ]
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/AFalse"
+          },
+          "narrowInherited": {
+            "$ref": "#/components/schemas/CFalseInherited"
+          },
+          "forced": {
+            "$ref": "#/components/schemas/ATrue"
+          },
+          "list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ZLong"
+            }
+          },
+          "map": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ZLong"
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/echoString": {
+      "post": {
+        "operationId": "echoString",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZString"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/echoBoolean": {
+      "post": {
+        "operationId": "echoBoolean",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZBoolean"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZBoolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/echoInt": {
+      "post": {
+        "operationId": "echoInt",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZInt"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZInt"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/echoLong": {
+      "post": {
+        "operationId": "echoLong",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZLong"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZLong"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/echoFloat": {
+      "post": {
+        "operationId": "echoFloat",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZFloat"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZFloat"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/echoDouble": {
+      "post": {
+        "operationId": "echoDouble",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZDouble"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZDouble"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/echoString2": {
+      "post": {
+        "operationId": "echoString",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AInherited"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submit": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "requiredNull",
+                  "requiredFalse"
+                ],
+                "properties": {
+                  "string": {
+                    "$ref": "#/components/schemas/ZString"
+                  },
+                  "boolean": {
+                    "$ref": "#/components/schemas/ZBoolean"
+                  },
+                  "int": {
+                    "$ref": "#/components/schemas/ZInt"
+                  },
+                  "long": {
+                    "$ref": "#/components/schemas/ZLong"
+                  },
+                  "float": {
+                    "$ref": "#/components/schemas/ZFloat"
+                  },
+                  "double": {
+                    "$ref": "#/components/schemas/ZDouble"
+                  },
+                  "inherited": {
+                    "$ref": "#/components/schemas/AInherited"
+                  },
+                  "wrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/ZString"
+                      }
+                    ]
+                  },
+                  "narrow": {
+                    "$ref": "#/components/schemas/AFalse"
+                  },
+                  "narrowInherited": {
+                    "$ref": "#/components/schemas/CFalseInherited"
+                  },
+                  "forced": {
+                    "$ref": "#/components/schemas/ATrue"
+                  },
+                  "list": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ZLong"
+                    }
+                  },
+                  "map": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "$ref": "#/components/schemas/ZLong"
+                    }
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/ZLong"
+                  },
+                  "requiredFalse": {
+                    "$ref": "#/components/schemas/ZLong",
+                    "nullable": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "string"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ZString"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "boolean"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ZBoolean"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "int"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ZInt"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "long"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ZLong"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "float"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ZFloat"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "double"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ZDouble"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrowString"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ZString",
+                          "nullable": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrowLong"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ZLong",
+                          "nullable": false
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query": {
+      "get": {
+        "operationId": "query",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ZLong"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

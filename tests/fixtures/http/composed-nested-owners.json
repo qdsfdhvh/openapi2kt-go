@@ -1,0 +1,1796 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Root": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "$ref": "#/components/schemas/Group"
+          },
+          {
+            "$ref": "#/components/schemas/Other"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "family",
+          "mapping": {
+            "group": "Group",
+            "other": "Other"
+          }
+        }
+      },
+      "Group": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Range",
+            "nullable": true
+          },
+          {
+            "$ref": "#/components/schemas/MaybeFirst"
+          },
+          {
+            "$ref": "#/components/schemas/FirstDuplicate"
+          },
+          {
+            "$ref": "#/components/schemas/Second"
+          }
+        ]
+      },
+      "First": {
+        "properties": {
+          "tag": {
+            "type": "string",
+            "const": "one"
+          },
+          "id": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "const": "fast"
+          },
+          "family": {
+            "type": "string",
+            "const": "group"
+          },
+          "ancestor": {
+            "$ref": "#/components/schemas/Hop~1key~0/properties/parentAlias"
+          },
+          "peer": {
+            "$ref": "#/components/schemas/Hop~1key~0/properties/leaf"
+          },
+          "node": {
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "parent": {
+                "$ref": "#/components/schemas/First/properties/node"
+              },
+              "peer": {
+                "$ref": "#/components/schemas/Second/properties/node"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "entries": {
+            "additionalProperties": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "node": {
+                  "$ref": "#/components/schemas/First/properties/node"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Second": {
+        "properties": {
+          "tag": {
+            "type": "string",
+            "const": "two"
+          },
+          "id": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "const": "slow"
+          },
+          "family": {
+            "type": "string",
+            "const": "group"
+          },
+          "node": {
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "peer": {
+                "$ref": "#/components/schemas/First/properties/node"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Other": {
+        "properties": {
+          "family": {
+            "type": "string",
+            "const": "other"
+          }
+        }
+      },
+      "ReusedRoot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ReusedGroup"
+          },
+          {
+            "$ref": "#/components/schemas/ReusedOther"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "tag",
+          "mapping": {
+            "one": "ReusedGroup",
+            "other": "ReusedOther"
+          }
+        }
+      },
+      "ReusedGroup": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ReusedFirst"
+          },
+          {
+            "$ref": "#/components/schemas/ReusedSecond"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "tag",
+          "mapping": {
+            "one": "ReusedFirst",
+            "two": "ReusedSecond"
+          }
+        }
+      },
+      "ReusedFirst": {
+        "properties": {
+          "tag": {
+            "type": "string",
+            "const": "one"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "ReusedSecond": {
+        "properties": {
+          "tag": {
+            "type": "string",
+            "const": "two"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "ReusedOther": {
+        "properties": {
+          "tag": {
+            "type": "string",
+            "const": "other"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Range": {
+        "properties": {
+          "tag": {
+            "enum": [
+              "one",
+              "three"
+            ]
+          },
+          "mode": {
+            "enum": [
+              "fast",
+              "slow"
+            ]
+          },
+          "family": {
+            "type": "string",
+            "const": "group"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "ReusedMissingRoot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ReusedMissingGroup"
+          },
+          {
+            "$ref": "#/components/schemas/ReusedMissingOther"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "tag",
+          "mapping": {
+            "one": "ReusedMissingGroup",
+            "other": "ReusedMissingOther"
+          }
+        }
+      },
+      "ReusedMissingGroup": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ReusedMissingFirst"
+          },
+          {
+            "$ref": "#/components/schemas/ReusedMissingSecond"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "tag",
+          "mapping": {
+            "one": "ReusedMissingFirst",
+            "two": "ReusedMissingSecond"
+          }
+        }
+      },
+      "ReusedMissingFirst": {
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "ReusedMissingSecond": {
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "ReusedMissingOther": {
+        "properties": {
+          "tag": {
+            "type": "string",
+            "const": "other"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "FirstDuplicate": {
+        "properties": {
+          "tag": {
+            "type": "string",
+            "const": "one"
+          },
+          "mode": {
+            "type": "string",
+            "const": "fast"
+          },
+          "family": {
+            "type": "string",
+            "const": "group"
+          },
+          "duplicate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "duplicate"
+        ]
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Root"
+          },
+          "reused": {
+            "$ref": "#/components/schemas/ReusedRoot"
+          },
+          "missing": {
+            "$ref": "#/components/schemas/ReusedMissingRoot"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Root"
+            }
+          }
+        },
+        "required": [
+          "value",
+          "reused",
+          "missing",
+          "rows"
+        ]
+      },
+      "ARoot": {
+        "$ref": "#/components/schemas/Root",
+        "nullable": true
+      },
+      "BRoot": {
+        "$ref": "#/components/schemas/ARoot"
+      },
+      "CRoot": {
+        "$ref": "#/components/schemas/BRoot",
+        "nullable": false
+      },
+      "DRoot": {
+        "$ref": "#/components/schemas/CRoot",
+        "nullable": true
+      },
+      "AGroup": {
+        "$ref": "#/components/schemas/Group",
+        "nullable": true
+      },
+      "AFirst": {
+        "$ref": "#/components/schemas/First",
+        "nullable": true
+      },
+      "AReused": {
+        "$ref": "#/components/schemas/ReusedRoot",
+        "nullable": true
+      },
+      "AReusedLeaf": {
+        "$ref": "#/components/schemas/ReusedFirst",
+        "nullable": true
+      },
+      "AliasHolder": {
+        "type": "object",
+        "properties": {
+          "inherited": {
+            "$ref": "#/components/schemas/BRoot"
+          },
+          "narrowed": {
+            "$ref": "#/components/schemas/CRoot"
+          },
+          "renull": {
+            "$ref": "#/components/schemas/DRoot"
+          },
+          "leaf": {
+            "$ref": "#/components/schemas/AFirst"
+          },
+          "group": {
+            "$ref": "#/components/schemas/AGroup"
+          },
+          "reused": {
+            "$ref": "#/components/schemas/AReused"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ARoot"
+            }
+          }
+        },
+        "required": [
+          "inherited",
+          "narrowed",
+          "renull",
+          "leaf",
+          "group",
+          "reused",
+          "rows"
+        ]
+      },
+      "ERoot": {
+        "$ref": "#/components/schemas/Root"
+      },
+      "FRoot": {
+        "$ref": "#/components/schemas/ERoot",
+        "nullable": false
+      },
+      "GRoot": {
+        "$ref": "#/components/schemas/FRoot",
+        "nullable": true
+      },
+      "EFirst": {
+        "$ref": "#/components/schemas/MaybeFirst"
+      },
+      "FFirst": {
+        "$ref": "#/components/schemas/EFirst",
+        "nullable": false
+      },
+      "EGroup": {
+        "$ref": "#/components/schemas/Group"
+      },
+      "FGroup": {
+        "$ref": "#/components/schemas/EGroup",
+        "nullable": false
+      },
+      "IntrinsicHolder": {
+        "type": "object",
+        "properties": {
+          "root": {
+            "$ref": "#/components/schemas/ParentBridgeChain"
+          },
+          "rootFalse": {
+            "$ref": "#/components/schemas/ParentBridgeChain",
+            "nullable": false
+          },
+          "group": {
+            "$ref": "#/components/schemas/GroupBridge"
+          },
+          "groupFalse": {
+            "$ref": "#/components/schemas/GroupBridge",
+            "nullable": false
+          },
+          "leaf": {
+            "$ref": "#/components/schemas/MaybeFirst"
+          },
+          "leafFalse": {
+            "$ref": "#/components/schemas/LeafBridge",
+            "nullable": false
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParentBridgeChain"
+            }
+          }
+        },
+        "required": [
+          "root",
+          "rootFalse",
+          "group",
+          "groupFalse",
+          "leaf",
+          "leafFalse",
+          "rows"
+        ]
+      },
+      "Hop/key~": {
+        "properties": {
+          "parent": {
+            "$ref": "#/components/schemas/Root"
+          },
+          "parentAlias": {
+            "$ref": "#/components/schemas/GRoot"
+          },
+          "parentFalse": {
+            "$ref": "#/components/schemas/FRoot"
+          },
+          "parentSecond": {
+            "$ref": "#/components/schemas/Hop~1key~0/properties/parentAlias"
+          },
+          "leaf": {
+            "$ref": "#/components/schemas/MaybeFirst"
+          },
+          "leafFalse": {
+            "$ref": "#/components/schemas/MaybeFirst",
+            "nullable": false
+          },
+          "group": {
+            "$ref": "#/components/schemas/Group"
+          },
+          "groupAgain": {
+            "$ref": "#/components/schemas/Hop~1key~0/properties/group",
+            "nullable": true
+          },
+          "node": {
+            "$ref": "#/components/schemas/First/properties/node"
+          }
+        }
+      },
+      "ParentBridge": {
+        "$ref": "#/components/schemas/Hop~1key~0/properties/parent"
+      },
+      "ParentBridgeChain": {
+        "$ref": "#/components/schemas/Hop~1key~0/properties/parentSecond"
+      },
+      "ParentFalse": {
+        "$ref": "#/components/schemas/Hop~1key~0/properties/parentAlias",
+        "nullable": false
+      },
+      "ParentReNull": {
+        "$ref": "#/components/schemas/Hop~1key~0/properties/parentFalse",
+        "nullable": true
+      },
+      "LeafBridge": {
+        "$ref": "#/components/schemas/Hop~1key~0/properties/leaf"
+      },
+      "LeafFalse": {
+        "$ref": "#/components/schemas/Hop~1key~0/properties/leafFalse"
+      },
+      "GroupBridge": {
+        "$ref": "#/components/schemas/Hop~1key~0/properties/groupAgain"
+      },
+      "ChainHolder": {
+        "properties": {
+          "parent": {
+            "$ref": "#/components/schemas/ParentBridge"
+          },
+          "false": {
+            "$ref": "#/components/schemas/ParentFalse"
+          },
+          "leaf": {
+            "$ref": "#/components/schemas/LeafBridge"
+          },
+          "leafFalse": {
+            "$ref": "#/components/schemas/LeafFalse"
+          },
+          "group": {
+            "$ref": "#/components/schemas/GroupBridge"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParentBridgeChain"
+            }
+          },
+          "map": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LeafBridge"
+            }
+          }
+        },
+        "required": [
+          "parent",
+          "false",
+          "leaf",
+          "leafFalse",
+          "group",
+          "rows",
+          "map"
+        ]
+      },
+      "MaybeFirst": {
+        "$ref": "#/components/schemas/First",
+        "nullable": true
+      },
+      "Node": {
+        "$ref": "#/components/schemas/First/properties/node"
+      },
+      "NodeMaybe": {
+        "$ref": "#/components/schemas/First/properties/node",
+        "nullable": true
+      },
+      "NodeFalse": {
+        "$ref": "#/components/schemas/NodeMaybe",
+        "nullable": false
+      },
+      "Row": {
+        "$ref": "#/components/schemas/First/properties/rows/items"
+      },
+      "Value": {
+        "$ref": "#/components/schemas/First/properties/entries/additionalProperties"
+      },
+      "NodeChain": {
+        "$ref": "#/components/schemas/Hop~1key~0/properties/node"
+      },
+      "NodeHolder": {
+        "properties": {
+          "node": {
+            "$ref": "#/components/schemas/NodeChain"
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/NodeMaybe"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/NodeFalse"
+          },
+          "row": {
+            "$ref": "#/components/schemas/Row"
+          },
+          "value": {
+            "$ref": "#/components/schemas/Value"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NodeMaybe"
+            }
+          },
+          "map": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/NodeMaybe"
+            }
+          }
+        },
+        "required": [
+          "node",
+          "nullable",
+          "narrow",
+          "row",
+          "value",
+          "rows",
+          "map"
+        ]
+      },
+      "Composed": {
+        "allOf": [
+          {
+            "properties": {
+              "node": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "peer": {
+                    "$ref": "#/components/schemas/Choice/oneOf/0/properties/node"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "rows": {
+                "type": "array",
+                "items": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "node": {
+                      "$ref": "#/components/schemas/ComposedNode"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              },
+              "entries": {
+                "additionalProperties": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "node": {
+                      "$ref": "#/components/schemas/ChoiceNode"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "node"
+            ]
+          },
+          {
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "first"
+              },
+              "node": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "peer": {
+                    "$ref": "#/components/schemas/Composed/allOf/0/properties/node"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            "required": [
+              "node"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "other"
+              },
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        ]
+      },
+      "ComposedNode": {
+        "$ref": "#/components/schemas/Composed/allOf/0/properties/node"
+      },
+      "ChoiceNode": {
+        "$ref": "#/components/schemas/Choice/oneOf/0/properties/node"
+      },
+      "MaybeComposedNode": {
+        "$ref": "#/components/schemas/ComposedNode",
+        "nullable": true
+      },
+      "NarrowChoiceNode": {
+        "$ref": "#/components/schemas/ChoiceNode",
+        "nullable": false
+      },
+      "ComposeHolder": {
+        "properties": {
+          "first": {
+            "$ref": "#/components/schemas/ComposedNode"
+          },
+          "choice": {
+            "$ref": "#/components/schemas/ChoiceNode"
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/MaybeComposedNode"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/NarrowChoiceNode"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaybeComposedNode"
+            }
+          },
+          "row": {
+            "$ref": "#/components/schemas/ComposedRow"
+          },
+          "entry": {
+            "$ref": "#/components/schemas/ComposedValue"
+          },
+          "mixed": {
+            "$ref": "#/components/schemas/MixedNode"
+          },
+          "any": {
+            "$ref": "#/components/schemas/AnyNode"
+          }
+        },
+        "required": [
+          "first",
+          "choice",
+          "nullable",
+          "narrow",
+          "rows",
+          "row",
+          "entry",
+          "mixed",
+          "any"
+        ]
+      },
+      "MixedChoice": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "node": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "peer": {
+                    "$ref": "#/components/schemas/ChoiceNode"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "node"
+            ]
+          }
+        ]
+      },
+      "AnyChoice": {
+        "anyOf": [
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "a"
+              },
+              "node": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            "required": [
+              "node"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "b"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      },
+      "ComposedRow": {
+        "$ref": "#/components/schemas/Composed/allOf/0/properties/rows/items"
+      },
+      "ComposedValue": {
+        "$ref": "#/components/schemas/Composed/allOf/0/properties/entries/additionalProperties"
+      },
+      "MixedNode": {
+        "$ref": "#/components/schemas/MixedChoice/oneOf/1/properties/node"
+      },
+      "AnyNode": {
+        "$ref": "#/components/schemas/AnyChoice/anyOf/0/properties/node"
+      },
+      "ChoiceBranch": {
+        "$ref": "#/components/schemas/Choice/oneOf/0"
+      },
+      "BorrowComposed": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Composed"
+          },
+          {
+            "properties": {
+              "borrowed": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "RootRows": {
+        "type": "array",
+        "items": {
+          "oneOf": [
+            {
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "const": "r"
+                },
+                "node": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              },
+              "required": [
+                "node"
+              ]
+            },
+            {
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "const": "other"
+                },
+                "label": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "RootMap": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "const": "m"
+                },
+                "node": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              },
+              "required": [
+                "node"
+              ]
+            },
+            {
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "const": "other"
+                },
+                "label": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "RootRowNode": {
+        "$ref": "#/components/schemas/RootRows/items/oneOf/0/properties/node"
+      },
+      "RootMapNode": {
+        "$ref": "#/components/schemas/RootMap/additionalProperties/anyOf/0/properties/node"
+      }
+    }
+  },
+  "info": {
+    "title": "Composed Nested Owners",
+    "version": "1"
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "event",
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "requiredNullable"
+                ],
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/ReusedRoot",
+                    "nullable": true
+                  },
+                  "requiredNullable": {
+                    "$ref": "#/components/schemas/ReusedRoot",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    },
+    "/aliases": {
+      "post": {
+        "operationId": "aliases",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AliasHolder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AliasHolder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nullable": {
+      "post": {
+        "operationId": "nullable",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParentBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParentBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/narrow": {
+      "post": {
+        "operationId": "narrow",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParentFalse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParentFalse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/optional": {
+      "post": {
+        "operationId": "optional",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParentBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParentBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alias-patch": {
+      "post": {
+        "operationId": "aliasPatch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/ParentBridgeChain"
+                  },
+                  "requiredFalse": {
+                    "$ref": "#/components/schemas/ParentFalse"
+                  },
+                  "value": {
+                    "$ref": "#/components/schemas/ParentBridgeChain"
+                  },
+                  "leaf": {
+                    "$ref": "#/components/schemas/LeafBridge"
+                  },
+                  "falseOptional": {
+                    "$ref": "#/components/schemas/ParentFalse"
+                  }
+                },
+                "required": [
+                  "requiredNull",
+                  "requiredFalse"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Synthetic"
+          }
+        }
+      }
+    },
+    "/alias-watch": {
+      "get": {
+        "operationId": "aliasWatch",
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "nullable"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ParentBridge"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ParentFalse"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "aliases"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/AliasHolder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intrinsic": {
+      "post": {
+        "operationId": "intrinsic",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParentBridgeChain"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParentBridgeChain"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intrinsic-false": {
+      "post": {
+        "operationId": "intrinsicFalse",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParentBridgeChain",
+                "nullable": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParentBridgeChain",
+                  "nullable": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intrinsic-holder": {
+      "post": {
+        "operationId": "intrinsicHolder",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntrinsicHolder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntrinsicHolder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intrinsic-leaf": {
+      "post": {
+        "operationId": "intrinsicLeaf",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeafBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeafBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intrinsic-watch": {
+      "get": {
+        "operationId": "intrinsicWatch",
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "root"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ParentBridgeChain"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "leaf"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/LeafBridge"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ParentBridgeChain",
+                          "nullable": false
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "holder"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/IntrinsicHolder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chain-holder": {
+      "post": {
+        "operationId": "chainHolder",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChainHolder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChainHolder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nodes": {
+      "post": {
+        "operationId": "nodes",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NodeHolder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NodeHolder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/node-patch": {
+      "patch": {
+        "operationId": "nodePatch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "required": {
+                    "$ref": "#/components/schemas/NodeMaybe"
+                  },
+                  "narrow": {
+                    "$ref": "#/components/schemas/NodeFalse"
+                  },
+                  "node": {
+                    "$ref": "#/components/schemas/NodeMaybe"
+                  }
+                },
+                "required": [
+                  "required",
+                  "narrow"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Synthetic"
+          }
+        }
+      }
+    },
+    "/node-watch": {
+      "get": {
+        "operationId": "nodeWatch",
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "node"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Node"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "nullable"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/NodeMaybe"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "holder"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/NodeHolder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/composed": {
+      "post": {
+        "operationId": "echoComposed",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComposeHolder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComposeHolder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/compose-patch": {
+      "patch": {
+        "operationId": "patchComposed",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/MaybeComposedNode"
+                  },
+                  "narrow": {
+                    "$ref": "#/components/schemas/NarrowChoiceNode"
+                  },
+                  "required": {
+                    "$ref": "#/components/schemas/MaybeComposedNode"
+                  }
+                },
+                "required": [
+                  "narrow",
+                  "required"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/compose-watch": {
+      "get": {
+        "operationId": "watchComposed",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "composed"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ComposedNode"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "nullable"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/MaybeComposedNode"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "holder"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ComposeHolder"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+"config_version" = 0x0_1
+['defaults']
+output_dir = """
+gen\
+    erated"""
+package_name = '''org.example.config'''
+validation = false
+model_name_suffix = 'Inherited'
+exclude_apis = [
+  'Unused', # synthetic entry; explicitly reset by each spec
+]
+[["specs"]]
+"na\u006de" = 'alpha'
+input = """
+Alpha\u0020\
+  file.json"""
+validation = true
+model_name_suffix = """"""
+exclude_apis = []
+[['specs']]
+name = '''beta'''
+input = '''Beta.json'''
+validation = true
+model_name_suffix = ''
+exclude_apis = []

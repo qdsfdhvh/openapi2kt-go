@@ -1,0 +1,397 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Schema Pointer API",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Source": {
+        "type": "object",
+        "properties": {
+          "a/b~c": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 3,
+            "pattern": "^[a-z]+$"
+          },
+          "~1": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 9
+          },
+          "flag": {
+            "type": "boolean"
+          },
+          "long": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9
+          },
+          "float": {
+            "type": "number",
+            "format": "float",
+            "minimum": 1,
+            "maximum": 9
+          },
+          "double": {
+            "type": "number",
+            "format": "double",
+            "minimum": 1,
+            "maximum": 9
+          },
+          "nullable": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 2,
+            "maxLength": 3,
+            "pattern": "^[a-z]+$"
+          },
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1,
+              "maximum": 9
+            }
+          },
+          "map": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 3,
+              "pattern": "^[a-z]+$"
+            }
+          },
+          "one": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 3,
+                  "pattern": "^[a-z]+$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "any": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 1,
+                  "maximum": 9
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "composed": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 3,
+                    "pattern": "^[a-z]+$"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Record": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Source/properties/a~1b~0c"
+          },
+          "integer": {
+            "$ref": "#/components/schemas/Source/properties/~01"
+          },
+          "flag": {
+            "$ref": "#/components/schemas/Source/properties/flag"
+          },
+          "long": {
+            "$ref": "#/components/schemas/Source/properties/long"
+          },
+          "float": {
+            "$ref": "#/components/schemas/Source/properties/float"
+          },
+          "double": {
+            "$ref": "#/components/schemas/Source/properties/double"
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/Source/properties/nullable"
+          },
+          "nonNull": {
+            "$ref": "#/components/schemas/Source/properties/nullable",
+            "nullable": false
+          },
+          "forceNull": {
+            "$ref": "#/components/schemas/Source/properties/a~1b~0c",
+            "nullable": true
+          },
+          "list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source/properties/list/items"
+            },
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true
+          },
+          "map": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Source/properties/map/additionalProperties"
+            }
+          },
+          "one": {
+            "$ref": "#/components/schemas/Source/properties/one/items/oneOf/0"
+          },
+          "any": {
+            "$ref": "#/components/schemas/Source/properties/any/items/anyOf/0"
+          },
+          "composed": {
+            "$ref": "#/components/schemas/Source/properties/composed/allOf/0/properties/value"
+          },
+          "nested": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "$ref": "#/components/schemas/Source/properties/a~1b~0c"
+              }
+            },
+            "required": [
+              "value"
+            ],
+            "nullable": true,
+            "minProperties": 1,
+            "maxProperties": 2
+          }
+        },
+        "required": [
+          "value",
+          "integer",
+          "flag",
+          "long",
+          "float",
+          "double",
+          "nonNull"
+        ],
+        "minProperties": 7,
+        "maxProperties": 16
+      },
+      "BoundString": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 3,
+        "pattern": "^[a-z]+$"
+      },
+      "BoundInt": {
+        "type": "integer",
+        "format": "int32",
+        "minimum": 1,
+        "maximum": 9
+      },
+      "BoundLong": {
+        "type": "integer",
+        "format": "int64",
+        "minimum": 1,
+        "maximum": 9
+      },
+      "BoundFloat": {
+        "type": "number",
+        "format": "float",
+        "minimum": 1,
+        "maximum": 9
+      },
+      "BoundDouble": {
+        "type": "number",
+        "format": "double",
+        "minimum": 1,
+        "maximum": 9
+      },
+      "BoundBoolean": {
+        "type": "boolean"
+      }
+    }
+  },
+  "paths": {
+    "/records": {
+      "post": {
+        "tags": [
+          "Pointers"
+        ],
+        "operationId": "send",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Source/properties/~01"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Record"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "tags": [
+          "Pointers"
+        ],
+        "operationId": "patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "payload": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "$ref": "#/components/schemas/Source/properties/a~1b~0c"
+                      },
+                      "note": {
+                        "$ref": "#/components/schemas/Source/properties/nullable"
+                      }
+                    },
+                    "required": [
+                      "value"
+                    ],
+                    "minProperties": 1,
+                    "maxProperties": 2
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/Source/properties/nullable"
+                  },
+                  "note": {
+                    "$ref": "#/components/schemas/Source/properties/nullable"
+                  },
+                  "nonNull": {
+                    "$ref": "#/components/schemas/Source/properties/nullable",
+                    "nullable": false
+                  }
+                },
+                "required": [
+                  "payload",
+                  "requiredNull"
+                ],
+                "minProperties": 2,
+                "maxProperties": 4
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/raw": {
+      "post": {
+        "tags": [
+          "Pointers"
+        ],
+        "operationId": "raw",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Source/properties/a~1b~0c"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Source/properties/a~1b~0c"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "tags": [
+          "Pointers"
+        ],
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Record"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Synthetic inline object union contracts", "version": "1.0"},
+  "components": {"schemas": {
+    "AlphaLabel": {"enum":["alpha"]},
+    "Counter": {"type":"integer","format":"int64"},
+    "Shared": {"type":"object", "properties":{"id":{"type":"string"}}, "required":["id"]},
+    "Envelope": {"type":"object", "properties": {
+      "fallbacks": {"oneOf":[
+        {"type":"object","properties":{"kind":{"type":"string","const":"a"},"values":{"type":"array","items":{"type":"number","format":"float"}},"raw":{},"f32":{"type":"number","format":"float"},"flag":{"type":"boolean"},"long":{"$ref":"#/components/schemas/Counter"},"label":{"type":"string","nullable":true},"maybe":{"$ref":"#/components/schemas/Counter","nullable":true}},"required":["values","raw","f32","flag","long","label","maybe"]},
+        {"type":"object","properties":{"kind":{"type":"string","const":"b"},"values":{"type":"array","items":{"type":"number","format":"float"}},"raw":{},"f32":{"type":"number","format":"float"},"flag":{"type":"boolean"},"long":{"$ref":"#/components/schemas/Counter"},"label":{"type":"string","nullable":true},"maybe":{"$ref":"#/components/schemas/Counter","nullable":true}},"required":["values","raw","f32","flag","long","label","maybe"]}
+      ]},
+      "refTags": {"oneOf":[
+        {"type":"object","properties":{"kind":{"$ref":"#/components/schemas/AlphaLabel"}}},
+        {"type":"object","properties":{"kind":{"type":"string","enum":["beta"]}}}
+      ]},
+      "tagged": {"oneOf": [
+        {"type":"object", "properties":{"kind":{"type":"string","const":"note"},"id":{"type":"string"},"count":{"type":"integer"},"payload":{"type":"object","properties":{"active":{"type":"boolean"}},"required":["active"]}},"required":["id","count","payload"]},
+        {"type":"object", "properties":{"kind":{"type":"string","enum":["batch","batch-more"]},"id":{"type":"string"},"count":{"type":"integer"},"values":{"type":"array","items":{"type":"string"}}},"required":["kind","id","values"]}
+      ]},
+      "presence": {"anyOf": [
+        {"allOf":[{"$ref":"#/components/schemas/Shared"},{"type":"object","properties":{"left":{"type":"integer","format":"int64"}},"required":["left"]}]},
+        {"type":"object","properties":{"id":{"type":"string"},"right":{"type":"boolean"}},"required":["id","right"]}
+      ]},
+      "mixed": {"oneOf": [
+        {"type":"object","properties":{"kind":{"type":"string","const":"fixed"},"shared":{"type":"string"}},"required":["shared"]},
+        {"type":"object","properties":{"body":{"$ref":"#/components/schemas/Shared"}},"required":["body"]},
+        {"type":"object","properties":{"extra":{"type":"string"}}}
+      ]},
+      "singleton": {"oneOf": [
+        {"type":"object","properties":{"kind":{"type":"string","const":"idle"},"revision":{"type":"integer","const":2}}},
+        {"type":"object","properties":{"kind":{"type":"string","enum":["ready"]}}}
+      ]},
+      "duplicates": {"anyOf": [
+        {"type":"object","properties":{"kind":{"type":"string","const":"same"},"value":{"type":"string"}}},
+        {"type":"object","properties":{"kind":{"type":"string","const":"same"},"value":{"type":"integer"}}}
+      ]},
+      "noKey": {"oneOf":[
+        {"type":"object","properties":{"value":{"type":"string"}}},
+        {"type":"object","properties":{"value":{"type":"integer"}}}
+      ]},
+      "items": {"type":"array","items":{"anyOf":[
+        {"type":"object","properties":{"kind":{"type":"string","const":"dice.check"}}},
+        {"type":"object","properties":{"kind":{"type":"string","const":"1"}}},
+        {"type":"null"}
+      ]}},
+      "nested": {"type":"object","properties":{"event":{"oneOf":[
+        {"type":"object","properties":{"type":{"type":"string","const":"companion"},"message":{"type":"string"}},"required":["message"]},
+        {"type":"object","properties":{"type":{"type":"string","const":"event"},"message":{"type":"string"}},"required":["message"]}
+      ]}},"required":["event"]}
+    },"required":["tagged","presence","singleton","items"]}
+  }}
+}

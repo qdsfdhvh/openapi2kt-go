@@ -1,0 +1,48 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Synthetic union decisions", "version": "1.0.0" },
+  "components": {
+    "schemas": {
+      "NativeFlag": { "type": "boolean", "const": false },
+      "PinnedChoice": {
+        "oneOf": [
+          { "type": "string", "enum": ["queued", "ready"] },
+          { "type": "integer", "format": "int32", "const": 12 },
+          { "type": "number", "format": "float", "enum": [1.5] },
+          { "$ref": "#/components/schemas/NativeFlag" },
+          { "type": "null" }
+        ]
+      },
+      "Record": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "oneOf": [
+              { "enum": ["queued", "ready"] },
+              { "type": "string", "enum": ["ready", "complete"] },
+              { "type": "string", "pattern": "^[a-z]+$", "minLength": 1 },
+              { "type": "null" }
+            ]
+          },
+          "states": {
+            "type": "array",
+            "items": { "anyOf": [ { "enum": ["scheduled", "complete"] }, { "type": "string" }, { "type": "null" } ] }
+          },
+          "details": {
+            "type": "object",
+            "properties": { "phase": { "anyOf": [ { "type": "string", "enum": ["ready"] }, { "type": "string" } ] } },
+            "required": ["phase"]
+          },
+          "rawText": { "anyOf": [ { "type": "string", "minLength": 2 }, { "type": "string", "pattern": "^[a-z]+$" } ] },
+          "range": { "oneOf": [ { "type": "integer", "minimum": -2147483649 }, { "type": "integer", "maximum": 2147483648 } ] },
+          "explicitInt": { "oneOf": [ { "type": "integer", "format": "int32", "minimum": 0 }, { "type": "integer", "format": "int32", "maximum": 120 } ] },
+          "floatChoice": { "anyOf": [ { "type": "integer", "format": "int64", "enum": [-9223372036854775808, 9223372036854775807] }, { "type": "number", "format": "float", "const": 1.25 } ] },
+          "inlinePinned": { "anyOf": [ { "type": "string", "const": "ready" }, { "type": "boolean", "enum": [true] } ] },
+          "choice": { "$ref": "#/components/schemas/PinnedChoice" },
+          "choices": { "type": "array", "items": { "$ref": "#/components/schemas/PinnedChoice" } }
+        },
+        "required": ["status", "states", "details", "rawText", "range", "explicitInt", "floatChoice", "inlinePinned", "choice", "choices"]
+      }
+    }
+  }
+}

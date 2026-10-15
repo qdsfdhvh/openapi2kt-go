@@ -1,0 +1,42 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "IntegerChoices": {"type": "integer", "enum": [-1, 0, 1]},
+      "LongChoices": {"type": "integer", "format": "int64", "enum": [-9223372036854775808, 9223372036854775807]},
+      "FloatChoices": {"type": "number", "format": "float", "enum": [-0.0, 1.25]},
+      "DoubleChoices": {"type": "number", "enum": [-0.0, 2.5]},
+      "BooleanChoices": {"type": "boolean", "enum": [false, true]},
+      "PinnedText": {"type": "string", "const": "line\n\"$\\"},
+      "PinnedLong": {"type": "integer", "format": "int64", "const": -9223372036854775808},
+      "PinnedFloat": {"type": "number", "format": "float", "const": -0.0},
+      "PinnedBoolean": {"const": true},
+      "PinnedCount": {"const": 17},
+      "Escaped/pin~key": {"type": "string", "const": "fixed"},
+      "LeftTag": {"type": "string", "const": "left"},
+      "RightTag": {"type": "string", "const": "right"},
+      "TaggedHolder": {"type":"object","properties":{"events":{"type":"array","items":{"oneOf":[{"type":"object","properties":{"kind":{"$ref":"#/components/schemas/LeftTag"},"id":{"type":"integer","format":"int64"}},"required":["id"]},{"type":"object","properties":{"kind":{"$ref":"#/components/schemas/RightTag"},"note":{"type":"string"}},"required":["note"]}]}}},"required":["events"]},
+      "Envelope": {
+        "type": "object",
+        "properties": {
+          "choice": {"$ref": "#/components/schemas/IntegerChoices"},
+          "wide": {"$ref": "#/components/schemas/LongChoices"},
+          "flag": {"$ref": "#/components/schemas/BooleanChoices"},
+          "floats": {"type": "array", "items": {"$ref": "#/components/schemas/FloatChoices", "nullable": true}},
+          "doubles": {"type": "array", "items": {"$ref": "#/components/schemas/DoubleChoices"}},
+          "text": {"$ref": "#/components/schemas/PinnedText", "nullable": true},
+          "count": {"$ref": "#/components/schemas/PinnedCount"},
+          "long": {"allOf": [{"$ref": "#/components/schemas/PinnedLong"}], "nullable": true},
+          "negativeZero": {"$ref": "#/components/schemas/PinnedFloat"},
+          "boolean": {"$ref": "#/components/schemas/PinnedBoolean"},
+          "escaped": {"$ref": "#/components/schemas/Escaped~1pin~0key"},
+          "pinnedItems": {"type": "array", "items": {"$ref": "#/components/schemas/PinnedLong", "nullable": true}},
+          "literalItems": {"type": "array", "items": {"type": "string", "const": "nominal", "nullable": true}}
+        },
+        "required": ["choice", "wide", "flag", "floats", "doubles", "text", "count", "long", "negativeZero", "boolean", "escaped", "pinnedItems", "literalItems"]
+      },
+      "RefOnly": {"type": "object", "properties": {"pin": {"$ref": "#/components/schemas/PinnedText"}}},
+      "Holder": {"type": "object", "properties": {"rows": {"type": "array", "items": {"$ref": "#/components/schemas/Envelope"}}}, "required": ["rows"]}
+    }
+  }
+}

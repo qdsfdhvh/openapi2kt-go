@@ -1,0 +1,363 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Nullable Native Enum Roots"
+  },
+  "components": {
+    "schemas": {
+      "Code": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "enum": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "minimum": 2,
+        "multipleOf": 2
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Source/properties/hop"
+      },
+      "Rows": {
+        "$ref": "#/components/schemas/Source/properties/rows"
+      },
+      "Flags": {
+        "$ref": "#/components/schemas/Source/properties/flags"
+      },
+      "Record": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/Alias"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "enum": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "minimum": 2,
+              "multipleOf": 2
+            }
+          },
+          "flags": {
+            "$ref": "#/components/schemas/Source/properties/flags"
+          },
+          "aliasedRows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "defaulted": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "minimum": 2,
+            "multipleOf": 2,
+            "default": null
+          },
+          "floating": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "float",
+            "enum": [
+              1,
+              2,
+              3
+            ],
+            "exclusiveMinimum": 1,
+            "maximum": 2
+          },
+          "longValue": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "enum": [
+              -9223372036854775808,
+              2,
+              4
+            ],
+            "minimum": 2,
+            "multipleOf": 2
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "BoolCode": {
+        "type": [
+          "boolean",
+          "null"
+        ],
+        "enum": [
+          true
+        ]
+      },
+      "CodeAlias": {
+        "$ref": "#/components/schemas/Code"
+      },
+      "Source": {
+        "properties": {
+          "hop": {
+            "$ref": "#/components/schemas/CodeAlias"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CodeAlias"
+            }
+          },
+          "flags": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/BoolCode"
+            }
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/CodeAlias",
+            "nullable": true
+          }
+        }
+      },
+      "NullableBridge": {
+        "$ref": "#/components/schemas/Source/properties/nullable"
+      },
+      "NonNullBridge": {
+        "$ref": "#/components/schemas/NullableBridge",
+        "nullable": false
+      },
+      "Views": {
+        "properties": {
+          "maybe": {
+            "$ref": "#/components/schemas/NullableBridge"
+          },
+          "value": {
+            "$ref": "#/components/schemas/NonNullBridge"
+          }
+        },
+        "required": [
+          "maybe",
+          "value"
+        ]
+      },
+      "OwnNullable": {
+        "$ref": "#/components/schemas/NonNullCode",
+        "nullable": true
+      },
+      "NonNullCode": {
+        "type": "integer",
+        "enum": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "minimum": 2,
+        "multipleOf": 2
+      },
+      "Holder": {
+        "properties": {
+          "inherited": {
+            "$ref": "#/components/schemas/Alias"
+          },
+          "own": {
+            "$ref": "#/components/schemas/OwnNullable"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/Alias",
+            "nullable": false
+          }
+        },
+        "required": [
+          "inherited",
+          "own",
+          "narrow"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/read": {
+      "get": {
+        "operationId": "readCode",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Alias"
+            }
+          },
+          {
+            "name": "values",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "enum": [
+                  1,
+                  2,
+                  3,
+                  4
+                ],
+                "minimum": 2,
+                "multipleOf": 2
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Alias"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rows": {
+      "post": {
+        "operationId": "applyRows",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rows"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rows"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "applyPatch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "code": {
+                    "$ref": "#/components/schemas/Alias",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Alias"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/direct": {
+      "post": {
+        "operationId": "applyCode",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Alias"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Alias"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watchCode",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Alias"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

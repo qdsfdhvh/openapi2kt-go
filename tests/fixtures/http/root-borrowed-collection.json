@@ -1,0 +1,311 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RootBorrowedCollection",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Source": {
+        "properties": {
+          "leaf/key~": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "leafHop": {
+            "$ref": "#/components/schemas/Source/properties/leaf~1key~0"
+          },
+          "list": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Source/properties/leafHop"
+            }
+          },
+          "falseHop": {
+            "$ref": "#/components/schemas/Source/properties/list",
+            "nullable": false
+          },
+          "trueHop": {
+            "$ref": "#/components/schemas/Source/properties/falseHop",
+            "nullable": true
+          },
+          "map": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Source/properties/falseHop"
+            },
+            "nullable": true
+          },
+          "mixed": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source/properties/map",
+              "nullable": true
+            }
+          }
+        }
+      },
+      "ListAlias": {
+        "$ref": "#/components/schemas/Source/properties/list"
+      },
+      "ListFalse": {
+        "$ref": "#/components/schemas/ListAlias",
+        "nullable": false
+      },
+      "MapAlias": {
+        "$ref": "#/components/schemas/Source/properties/map"
+      },
+      "MixedAlias": {
+        "$ref": "#/components/schemas/Source/properties/mixed"
+      },
+      "Hops": {
+        "properties": {
+          "list": {
+            "$ref": "#/components/schemas/ListAlias"
+          },
+          "map": {
+            "$ref": "#/components/schemas/MapAlias"
+          },
+          "mixed": {
+            "$ref": "#/components/schemas/MixedAlias"
+          },
+          "again": {
+            "$ref": "#/components/schemas/ListBridge",
+            "nullable": true
+          }
+        }
+      },
+      "ListBridge": {
+        "$ref": "#/components/schemas/Hops/properties/list"
+      },
+      "ListFalseBridge": {
+        "$ref": "#/components/schemas/Hops/properties/list",
+        "nullable": false
+      },
+      "MapBridge": {
+        "$ref": "#/components/schemas/Hops/properties/map",
+        "nullable": false
+      },
+      "MixedBridge": {
+        "$ref": "#/components/schemas/Hops/properties/mixed"
+      },
+      "AgainBridge": {
+        "$ref": "#/components/schemas/Hops/properties/again",
+        "nullable": false
+      },
+      "Holder": {
+        "properties": {
+          "list": {
+            "$ref": "#/components/schemas/ListBridge"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/ListFalseBridge"
+          },
+          "map": {
+            "$ref": "#/components/schemas/MapBridge"
+          },
+          "mixed": {
+            "$ref": "#/components/schemas/MixedBridge"
+          }
+        },
+        "required": [
+          "narrow",
+          "map",
+          "mixed"
+        ]
+      },
+      "CollectionChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "list"
+              },
+              "values": {
+                "$ref": "#/components/schemas/ListFalseBridge"
+              }
+            },
+            "required": [
+              "values"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "map"
+              },
+              "mapping": {
+                "$ref": "#/components/schemas/MapBridge"
+              }
+            },
+            "required": [
+              "mapping"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/values": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/map": {
+      "post": {
+        "operationId": "echoMap",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mixed": {
+      "post": {
+        "operationId": "echoMixed",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MixedBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MixedBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "$ref": "#/components/schemas/ListBridge"
+                  },
+                  "map": {
+                    "$ref": "#/components/schemas/MapAlias"
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/ListBridge"
+                  },
+                  "requiredNarrow": {
+                    "$ref": "#/components/schemas/ListFalseBridge"
+                  }
+                },
+                "required": [
+                  "requiredNull",
+                  "requiredNarrow"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "values"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ListBridge"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "map"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/MapBridge"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Lifecycle Descriptor Aliases", "version": "1"},
+  "components": {
+    "schemas": {
+      "Anchor": {
+        "type": "object",
+        "properties": {"id": {"type": "string"}},
+        "required": ["id"]
+      },
+      "Mode": {"type": "string", "enum": ["fast", "safe"]}
+    }
+  },
+  "paths": {
+    "/alpha": {
+      "post": {
+        "operationId": "alpha",
+        "parameters": [
+          {"name": "mode", "in": "query", "required": true,
+           "schema": {"type": "string", "enum": ["fast", "safe"]}}
+        ],
+        "responses": {
+          "200": {"content": {"application/json": {"schema": {
+            "type": "object",
+            "properties": {"id": {"type": "string"}},
+            "required": ["id"]
+          }}}}
+        }
+      }
+    },
+    "/beta": {
+      "post": {
+        "operationId": "beta",
+        "parameters": [
+          {"name": "mode", "in": "query", "required": true,
+           "schema": {"type": "string", "enum": ["fast", "safe"]}}
+        ],
+        "responses": {
+          "200": {"content": {"application/json": {"schema": {
+            "type": "object",
+            "properties": {"id": {"type": "string"}},
+            "required": ["id"]
+          }}}}
+        }
+      }
+    }
+  }
+}

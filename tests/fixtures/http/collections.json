@@ -1,0 +1,26 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Collection API", "version": "1.0"},
+  "servers": [{"url": "https://api.example.test"}],
+  "paths": {
+    "/collections/{ids}": {"get": {
+      "operationId": "search",
+      "parameters": [
+        {"in": "path", "name": "ids", "required": true, "schema": {"type": "array", "items": {"type": "string"}}},
+        {"in": "query", "name": "repeat", "schema": {"type": "array", "items": {"$ref": "#/components/schemas/State"}}},
+        {"in": "query", "name": "csv", "explode": false, "schema": {"type": "array", "items": {"type": "integer"}}},
+        {"in": "query", "name": "spaces", "style": "spaceDelimited", "schema": {"type": "array", "items": {"type": "string"}}},
+        {"in": "query", "name": "pipes", "style": "pipeDelimited", "schema": {"type": "array", "items": {"type": "string"}}},
+        {"in": "query", "name": "indexed", "style": "deepObject", "schema": {"type": "array", "items": {"type": "boolean"}}},
+        {"in": "query", "name": "expanded", "style": "pipeDelimited", "explode": true, "schema": {"type": "array", "items": {"type": "string"}}},
+        {"in": "query", "name": "attributes", "schema": {"type": "object", "additionalProperties": {"type": "string"}}},
+        {"in": "header", "name": "X-States", "schema": {"type": "array", "items": {"$ref": "#/components/schemas/State"}}}
+      ],
+      "responses": {"204": {"description": "No content"}}
+    }},
+    "/nullable": {"get": {"operationId": "nullable", "parameters": [{"in": "query", "name": "values", "required": true, "schema": {"type": "array", "nullable": true, "items": {"type": "string"}}}], "responses": {"204": {}}}},
+    "/a": {"get": {"operationId": "same", "parameters": [{"in": "query", "name": "values", "schema": {"type": "array", "items": {"type": "string"}}}], "responses": {"204": {}}}},
+    "/b": {"get": {"operationId": "same", "parameters": [{"in": "query", "name": "values", "schema": {"type": "array", "items": {"type": "integer"}}}], "responses": {"204": {}}}}
+  },
+  "components": {"schemas": {"State": {"type": "string", "enum": ["ready", "on hold"]}}}
+}

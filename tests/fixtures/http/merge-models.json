@@ -1,0 +1,303 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Merge"
+  },
+  "components": {
+    "schemas": {
+      "Alpha": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Zeta": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "ChildA": {
+        "type": "object",
+        "properties": {
+          "n": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "n"
+        ]
+      },
+      "ChildZ": {
+        "type": "object",
+        "properties": {
+          "n": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "n"
+        ]
+      },
+      "ParentA": {
+        "type": "object",
+        "properties": {
+          "child": {
+            "$ref": "#/components/schemas/ChildA"
+          }
+        },
+        "required": [
+          "child"
+        ]
+      },
+      "ParentZ": {
+        "type": "object",
+        "properties": {
+          "child": {
+            "$ref": "#/components/schemas/ChildZ"
+          }
+        },
+        "required": [
+          "child"
+        ]
+      },
+      "NestedA": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "fast",
+              "safe"
+            ]
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "active": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "active"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "meta"
+        ]
+      },
+      "NestedZ": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "fast",
+              "safe"
+            ]
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "active": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "active"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "meta"
+        ]
+      },
+      "Provider": {
+        "type": "string",
+        "x-native-type": "org.example.merge.models.NestedZDto.Status"
+      },
+      "Different": {
+        "type": "object",
+        "properties": {
+          "n": {
+            "type": "integer",
+            "minimum": 2
+          }
+        },
+        "required": [
+          "n"
+        ]
+      },
+      "RecursiveA": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "$ref": "#/components/schemas/RecursiveA"
+          }
+        },
+        "required": []
+      },
+      "RecursiveZ": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "$ref": "#/components/schemas/RecursiveZ"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  "paths": {
+    "/one": {
+      "get": {
+        "operationId": "one",
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "value"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/two": {
+      "get": {
+        "operationId": "two",
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "value"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/parent": {
+      "get": {
+        "operationId": "parent",
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParentZ"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "apply",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Zeta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "description": "synthetic stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "update"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/ParentZ"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

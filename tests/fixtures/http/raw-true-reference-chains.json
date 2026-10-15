@@ -1,0 +1,452 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Raw True Reference Chains API",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "AInherited": {
+        "$ref": "#/components/schemas/BNullable"
+      },
+      "AFalse": {
+        "$ref": "#/components/schemas/AInherited",
+        "nullable": false
+      },
+      "ATrue": {
+        "$ref": "#/components/schemas/AFalse",
+        "nullable": true
+      },
+      "BNullable": {
+        "$ref": "#/components/schemas/ZRaw"
+      },
+      "CEmpty": {
+        "$ref": "#/components/schemas/ZEmpty",
+        "nullable": true
+      },
+      "ZRaw": {
+        "type": "object",
+        "nullable": true
+      },
+      "ZEmpty": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {}
+      },
+      "Holder": {
+        "properties": {
+          "inherited": {
+            "$ref": "#/components/schemas/AgainBridge"
+          },
+          "forcedTrue": {
+            "$ref": "#/components/schemas/Hops/properties/AFalse",
+            "nullable": true
+          },
+          "forcedFalse": {
+            "$ref": "#/components/schemas/Hops/properties/ATrue",
+            "nullable": false
+          },
+          "wrapper": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Hops/properties/AInherited"
+              }
+            ]
+          },
+          "wrapperFalse": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Hops/properties/AInherited"
+              }
+            ],
+            "nullable": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hops/properties/AInherited"
+            }
+          },
+          "values": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Hops/properties/AInherited"
+            }
+          },
+          "requiredNull": {
+            "$ref": "#/components/schemas/Hops/properties/AInherited"
+          },
+          "any": {
+            "$ref": "#/components/schemas/TrueBridge"
+          },
+          "anyFalse": {
+            "$ref": "#/components/schemas/TrueFalseBridge"
+          }
+        },
+        "required": [
+          "forcedFalse",
+          "wrapperFalse",
+          "items",
+          "values",
+          "requiredNull",
+          "anyFalse"
+        ]
+      },
+      "ZAny": true,
+      "AnyMaybe": {
+        "$ref": "#/components/schemas/ZAny",
+        "nullable": true
+      },
+      "AnyFalse": {
+        "$ref": "#/components/schemas/AnyMaybe",
+        "nullable": false
+      },
+      "Hops": {
+        "properties": {
+          "AFalse": {
+            "$ref": "#/components/schemas/AFalse"
+          },
+          "AInherited": {
+            "$ref": "#/components/schemas/AInherited"
+          },
+          "ATrue": {
+            "$ref": "#/components/schemas/ATrue"
+          },
+          "AnyFalse": {
+            "$ref": "#/components/schemas/AnyFalse"
+          },
+          "AnyMaybe": {
+            "$ref": "#/components/schemas/AnyMaybe"
+          },
+          "BNullable": {
+            "$ref": "#/components/schemas/BNullable"
+          },
+          "CEmpty": {
+            "$ref": "#/components/schemas/CEmpty"
+          },
+          "ZAny": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "ZEmpty": {
+            "$ref": "#/components/schemas/ZEmpty"
+          },
+          "ZRaw": {
+            "$ref": "#/components/schemas/ZRaw"
+          },
+          "again": {
+            "$ref": "#/components/schemas/Hops/properties/AInherited",
+            "nullable": false
+          },
+          "back": {
+            "$ref": "#/components/schemas/RawBridge",
+            "nullable": true
+          }
+        }
+      },
+      "RawBridge": {
+        "$ref": "#/components/schemas/Hops/properties/AInherited"
+      },
+      "RawFalseBridge": {
+        "$ref": "#/components/schemas/Hops/properties/again"
+      },
+      "AgainBridge": {
+        "$ref": "#/components/schemas/Hops/properties/back"
+      },
+      "TrueBridge": {
+        "$ref": "#/components/schemas/Hops/properties/AnyMaybe"
+      },
+      "TrueFalseBridge": {
+        "$ref": "#/components/schemas/Hops/properties/AnyFalse"
+      },
+      "JSONChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Hops/properties/AInherited",
+                "nullable": false
+              }
+            },
+            "required": [
+              "kind",
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "b"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Hops/properties/AnyFalse"
+              }
+            },
+            "required": [
+              "kind",
+              "value"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RawBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/AInherited"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/echo-peer": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hops/properties/AFalse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hops/properties/AFalse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submit": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "inherited": {
+                    "$ref": "#/components/schemas/Hops/properties/AInherited"
+                  },
+                  "forcedTrue": {
+                    "$ref": "#/components/schemas/Hops/properties/AFalse",
+                    "nullable": true
+                  },
+                  "forcedFalse": {
+                    "$ref": "#/components/schemas/Hops/properties/ATrue",
+                    "nullable": false
+                  },
+                  "wrapper": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Hops/properties/AInherited"
+                      }
+                    ]
+                  },
+                  "wrapperFalse": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Hops/properties/AInherited"
+                      }
+                    ],
+                    "nullable": false
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Hops/properties/AInherited"
+                    }
+                  },
+                  "values": {
+                    "additionalProperties": {
+                      "$ref": "#/components/schemas/Hops/properties/AInherited"
+                    }
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/Hops/properties/AInherited"
+                  }
+                },
+                "required": [
+                  "items",
+                  "values",
+                  "requiredNull"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "raw"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Hops/properties/AInherited"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch-narrow": {
+      "get": {
+        "operationId": "watch-narrow",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "narrow"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Hops/properties/AFalse"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/true": {
+      "post": {
+        "operationId": "echoTrue",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrueBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrueBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch-true": {
+      "get": {
+        "operationId": "watchTrue",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "any"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TrueBridge"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query": {
+      "get": {
+        "operationId": "query",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/RawBridge"
+            }
+          },
+          {
+            "name": "any",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/TrueFalseBridge"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

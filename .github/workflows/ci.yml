@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  GOFLAGS: "-buildvcs=false"
+
+jobs:
+  go:
+    name: Go lint/tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      GOTOOLCHAIN: local
+      GOPROXY: "off"
+      GOSUMDB: "off"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (Node.js 24)
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0 (Node.js 24)
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Prepare declared Go modules
+        shell: bash
+        run: env -u GOROOT GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org go mod download
+      - name: Verify offline Go modules
+        shell: bash
+        run: env -u GOROOT go mod verify
+      - name: Go format
+        shell: bash
+        run: |
+          formatting="$(gofmt -l core internal cmd)"
+          if [[ -n "$formatting" ]]; then
+            printf '%s\n' "$formatting"
+            exit 1
+          fi
+      - name: Go vet
+        shell: bash
+        run: env -u GOROOT go vet ./...
+      - name: Go test
+        shell: bash
+        run: env -u GOROOT go test ./...
+      - name: Go race test
+        shell: bash
+        run: env -u GOROOT go test -race ./...
+
+  gen_kt:
+    name: Kotlin generation/check (${{ matrix.os }})
+    needs: go
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      GOTOOLCHAIN: local
+      GOPROXY: "off"
+      GOSUMDB: "off"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (Node.js 24)
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0 (Node.js 24)
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Prepare declared Go modules
+        shell: bash
+        run: env -u GOROOT GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org go mod download
+      - name: Verify offline Go modules
+        shell: bash
+        run: env -u GOROOT go mod verify
+      - name: Source installation and native Kotlin generation/check
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import subprocess
+          binary_dir = Path('build/install').resolve()
+          environment = dict(os.environ, GOBIN=str(binary_dir))
+          environment.pop('GOROOT', None)
+          subprocess.run(['go', 'install', './cmd/openapi-kt'], env=environment, check=True)
+          binary = binary_dir / ('openapi-kt.exe' if os.name == 'nt' else 'openapi-kt')
+          subprocess.run([str(binary), '--version'], check=True)
+          args = [str(binary), 'generate', '--input', 'tests/fixtures/catalog.json', '--output', 'build/install-smoke', '--package-name', 'org.example.install']
+          subprocess.run(args, check=True)
+          subprocess.run(args + ['--check'], check=True)
+          PY
+      - name: Python tooling checks
+        shell: bash
+        run: |
+          test_bash="$BASH"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            test_bash="$(cygpath -w "$test_bash")"
+          fi
+          export OPENAPI_KT_TEST_BASH="$test_bash"
+          python -m unittest discover -s scripts/tests -p 'test_*.py'
+      - name: Native archive installation and file/stdin smoke
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          import importlib.util
+          from pathlib import Path
+          import subprocess
+          spec = importlib.util.spec_from_file_location('verify_package', 'scripts/release/verify.py')
+          verify = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(verify)
+          version = '0.2.0-alpha.1'
+          target = verify.native_target()
+          output = Path('build/native-package')
+          subprocess.run(['python', 'scripts/release/package.py', '--tag', 'v' + version, '--target', target, '--output', str(output)], check=True)
+          suffix = '.zip' if target.startswith('windows-') else '.tar.gz'
+          archive = output / ('openapi-kt-v' + version + '-' + target + suffix)
+          checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
+          subprocess.run(['python', 'scripts/release/verify.py', str(archive), '--sha256', checksum, '--version', version, '--work-dir', 'build/native-install'], check=True)
+          PY
+      - name: Publication candidate scan (not a history/privacy certification)
+        run: python scripts/publication/check.py

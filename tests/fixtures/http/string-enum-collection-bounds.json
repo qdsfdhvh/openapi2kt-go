@@ -1,0 +1,61 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "String enum collection bounds", "version": "1"},
+  "components": {"schemas": {
+    "Holder": {
+      "type": "object",
+      "properties": {
+        "required": {"type": "array", "minItems": 1, "items": {"type": "string", "enum": ["one", "two", "x", "toolong", "BAD"], "minLength": 2, "maxLength": 6, "pattern": "^[a-z]+$"}, "default": ["one"]},
+        "codes": {"type": "array", "maxItems": 3, "items": {"type": ["string", "null"], "enum": ["one", null, "two", "x", "toolong", "BAD"], "minLength": 2, "maxLength": 6, "pattern": "^[a-z]+$"}, "default": ["one", null, "two"]},
+        "labels": {"maxProperties": 2, "additionalProperties": {"enum": ["yes", "no", "x", "toolong", "BAD"], "minLength": 2, "maxLength": 6, "pattern": "^[a-z]+$"}, "default": {"a/~": "yes", "$ref": "no"}},
+        "bareCodes": {"type": "array", "items": {"enum": ["one", "x"], "minLength": 2, "maxLength": 6}},
+        "bareLabels": {"additionalProperties": {"enum": ["hotdog", "cat", "bad", null], "nullable": true, "pattern": "cat|dog"}},
+        "special": {"type": "array", "items": {"enum": ["quote\"$😀", "two"], "minLength": 8, "maxLength": 8}, "default": ["quote\"$😀"]},
+        "empty": {"type": "array", "items": {"enum": ["empty"], "minLength": 6}, "default": []},
+        "emptyMap": {"type": "object", "additionalProperties": {"type": "string", "enum": ["empty"], "pattern": "^other$"}, "default": {}},
+        "nil": {"type": ["object", "null"], "minProperties": 1, "additionalProperties": {"type": "string", "enum": ["yes"], "maxLength": 2}, "default": null},
+        "nested": {"type": "object", "properties": {
+          "labels": {"type": "object", "additionalProperties": {"enum": ["nested", null], "nullable": true, "minLength": 6, "maxLength": 6}, "default": {"one": "nested", "nil": null}}
+        }},
+        "kotlin": {"type": "string"},
+        "kotlinx": {"type": "string"},
+        "labelsInner": {"type": "string"}
+      },
+      "required": ["required"]
+    },
+    "RequiredMaps": {
+      "type": "object",
+      "properties": {
+        "labels": {"additionalProperties": {"enum": ["yes", "no"], "minLength": 2, "maxLength": 6}, "default": {"a": "yes"}},
+        "nullableLabels": {"type": "object", "nullable": true, "additionalProperties": {"enum": ["yes"], "minLength": 2}, "default": null}
+      },
+      "required": ["labels", "nullableLabels"]
+    }
+  }},
+  "paths": {
+    "/holder": {"post": {
+      "operationId": "send", "tags": ["defaults"],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}},
+      "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}
+    }},
+    "/patch": {"patch": {
+      "operationId": "patch", "tags": ["defaults"],
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "type": "object",
+        "properties": {
+          "codes": {"type": "array", "nullable": true, "minItems": 1, "items": {"type": "string", "enum": ["one", "two", "x"], "minLength": 2, "maxLength": 6, "pattern": "^[a-z]+$"}, "default": ["one"]},
+          "labels": {"type": "object", "nullable": true, "additionalProperties": {"enum": ["yes", "no", null], "nullable": true, "minLength": 2, "maxLength": 6}, "default": {"yes": "yes"}},
+          "required": {"type": "array", "nullable": true, "items": {"type": "string", "enum": ["one", "two", "x"], "minLength": 2, "maxLength": 6}, "default": ["one"]}
+        },
+        "required": ["required"]
+      }}}},
+      "responses": {"204": {"description": "Updated"}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch", "tags": ["defaults"],
+      "responses": {"200": {"description": "Events", "content": {"text/event-stream": {"schema": {
+        "type": "object", "properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}, "required": ["event", "data"]
+      }}}}}
+    }}
+  }
+}

@@ -1,0 +1,425 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Referenced native enum collection field own defaults",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "$ref": "#/components/schemas/Required",
+            "default": [
+              [
+                1
+              ]
+            ]
+          },
+          "ints": {
+            "$ref": "#/components/schemas/Ints",
+            "default": [
+              1,
+              3,
+              2
+            ]
+          },
+          "longs": {
+            "$ref": "#/components/schemas/Longs",
+            "default": [
+              2,
+              1
+            ]
+          },
+          "floats": {
+            "$ref": "#/components/schemas/Floats",
+            "default": [
+              1.5,
+              0.5
+            ]
+          },
+          "doubleMaps": {
+            "$ref": "#/components/schemas/DoubleMaps",
+            "default": {
+              "z": -0.0,
+              "a/~": 1.25,
+              "$ref": 1.25
+            }
+          },
+          "bools": {
+            "$ref": "#/components/schemas/Bools",
+            "default": [
+              true,
+              false,
+              true
+            ]
+          },
+          "intMaps": {
+            "$ref": "#/components/schemas/IntMaps",
+            "default": {
+              "$ref": 1,
+              "a/~": 3
+            }
+          },
+          "nil": {
+            "$ref": "#/components/schemas/Nil",
+            "default": null
+          },
+          "empty": {
+            "$ref": "#/components/schemas/Empty",
+            "default": []
+          },
+          "nested": {
+            "properties": {
+              "value": {
+                "$ref": "#/components/schemas/NestedInts",
+                "default": [
+                  [
+                    1
+                  ],
+                  [
+                    3,
+                    2
+                  ]
+                ]
+              }
+            }
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/BorrowedBridge",
+            "default": [
+              2
+            ]
+          },
+          "repeatedInts": {
+            "$ref": "#/components/schemas/Ints",
+            "default": [
+              1,
+              3,
+              2
+            ]
+          },
+          "requiredInts": {
+            "$ref": "#/components/schemas/RequiredInts",
+            "default": [
+              3
+            ]
+          },
+          "kotlin": {
+            "type": "string"
+          },
+          "kotlinx": {
+            "type": "string"
+          },
+          "companion": {
+            "type": "string"
+          },
+          "serializer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "required",
+          "requiredInts"
+        ]
+      },
+      "RequiredNullable": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Nil",
+            "default": null
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Int32Code": {
+        "type": "integer",
+        "format": "int32",
+        "enum": [
+          1,
+          2,
+          3
+        ]
+      },
+      "Int64Code": {
+        "type": "integer",
+        "format": "int64",
+        "enum": [
+          1,
+          2
+        ]
+      },
+      "FloatCode": {
+        "type": "number",
+        "format": "float",
+        "enum": [
+          0.5,
+          1,
+          1.5
+        ]
+      },
+      "DoubleCode": {
+        "type": "number",
+        "format": "double",
+        "enum": [
+          1.25,
+          -0.0
+        ]
+      },
+      "BoolCode": {
+        "type": "boolean",
+        "enum": [
+          true,
+          false
+        ]
+      },
+      "Required": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Int32Code"
+          }
+        }
+      },
+      "Ints": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Int32Code"
+        }
+      },
+      "Longs": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Int64Code"
+        }
+      },
+      "Floats": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FloatCode"
+        }
+      },
+      "DoubleMaps": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/DoubleCode"
+        }
+      },
+      "Bools": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/BoolCode"
+        }
+      },
+      "IntMaps": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Int32Code"
+        }
+      },
+      "Nil": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Int32Code"
+        }
+      },
+      "Empty": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Int64Code"
+        }
+      },
+      "Hops": {
+        "properties": {
+          "entry": {
+            "$ref": "#/components/schemas/Ints",
+            "nullable": true
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/Hops/properties/entry",
+            "nullable": false
+          }
+        }
+      },
+      "RowsAlias": {
+        "$ref": "#/components/schemas/Hops/properties/narrow"
+      },
+      "Sources": {
+        "properties": {
+          "codes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Int32Code"
+            }
+          }
+        }
+      },
+      "NestedInts": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Ints"
+        }
+      },
+      "BorrowedBridge": {
+        "$ref": "#/components/schemas/Ints"
+      },
+      "RequiredInts": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Int32Code"
+        }
+      },
+      "PatchRows": {
+        "type": "array",
+        "nullable": true,
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Int32Code"
+          }
+        }
+      },
+      "PatchLabels": {
+        "type": "object",
+        "nullable": true,
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/BoolCode"
+          }
+        }
+      },
+      "PatchRequired": {
+        "type": "array",
+        "nullable": true,
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Int32Code"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "rows": {
+                    "$ref": "#/components/schemas/PatchRows",
+                    "default": [
+                      [
+                        1
+                      ]
+                    ]
+                  },
+                  "labels": {
+                    "$ref": "#/components/schemas/PatchLabels",
+                    "default": {
+                      "a": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": {
+                    "$ref": "#/components/schemas/PatchRequired",
+                    "default": [
+                      [
+                        2
+                      ]
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "holder"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

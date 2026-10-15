@@ -1,0 +1,27 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/open": {"post": {"operationId": "openValue", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+      "anyOf": [{"type": "string", "enum": ["known"]}, {"type": "string", "pattern": "^future"}]
+    }}}}, "responses": {"200": {"content": {"application/json": {"schema": {"oneOf": [{"enum": ["reply"]}, {"type": "null"}]}}}}}}},
+    "/maybe": {"post": {"operationId": "maybeValue", "requestBody": {"content": {"application/json": {"schema": {
+      "anyOf": [{"enum": ["known"]}, {"type": "null"}]
+    }}}}, "responses": {"204": {}}}},
+    "/items": {"post": {"operationId": "itemValues", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+      "type": "array", "items": {"oneOf": [{"type": "string", "enum": ["known"]}, {"type": "null"}, {"type": "null"}]}
+    }}}}, "responses": {"200": {"content": {"application/json": {"schema": {
+      "type": "array", "items": {"anyOf": [{"enum": ["reply"]}, {"type": "null"}]}
+    }}}}}}},
+    "/maps": {"post": {"operationId": "mapValues", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+      "type": "array", "items": {"type": "object", "additionalProperties": {"anyOf": [{"type": "string", "enum": ["known"]}, {"type": "string"}, {"type": "null"}]}}
+    }}}}, "responses": {"200": {"content": {"application/json": {"schema": {
+      "type": "array", "items": {"type": "array", "items": {"type": "object", "additionalProperties": {"oneOf": [{"enum": ["reply"]}, {"type": "null"}]}}}
+    }}}}}}},
+    "/identity": {"post": {"operationId": "identities", "requestBody": {"required": true, "content": {"application/json": {"schema": {
+      "type": "array", "items": {"anyOf": [{"$ref": "#/components/schemas/State"}, {"type": "null"}]}
+    }}}}, "responses": {"200": {"content": {"application/json": {"schema": {
+      "type": "array", "items": {"anyOf": [{"$ref": "#/components/schemas/State"}, {"type": "null"}]}
+    }}}}}}}
+  },
+  "components": {"schemas": {"State": {"type": "string", "enum": ["shared"]}}}
+}

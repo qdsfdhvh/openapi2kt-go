@@ -1,0 +1,19 @@
+{
+  "openapi": "3.1.0",
+  "components": {"schemas": {
+    "Vocabulary": {"x-native-type":"bigint","enum":["known-not-numeric"]},
+    "Record": {"type":"object","required":["big","stamp","money","items","lookup"],"properties":{
+      "big":{"$ref":"#/components/schemas/Vocabulary"},
+      "stamp":{"type":"string","x-native-type":"date","enum":["known-not-temporal"]},
+      "money":{"x-native-type":"org.example.scalarvalues.Money","enum":["known-not-money"]},
+      "items":{"type":"array","items":{"type":"string","x-native-type":"bigint","enum":["known-not-numeric"]}},
+      "lookup":{"type":"object","additionalProperties":{"x-native-type":"date","enum":["known-not-temporal"]}}
+    }}
+  }},
+  "paths": {
+    "/record":{"post":{"operationId":"record","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"choice":{"type":["string","null"],"x-native-type":"bigint","enum":["known-not-numeric"]}}}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Record"}}}}}}},
+    "/stamp":{"post":{"operationId":"stamp","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"string","x-native-type":"date","enum":["known-not-temporal"]}}}},"responses":{"200":{"content":{"application/json":{"schema":{"x-native-type":"date","enum":["known-not-temporal"]}}}}}}},
+    "/big":{"post":{"operationId":"big","parameters":[{"name":"vocabulary","in":"query","required":true,"schema":{"x-native-type":"bigint","enum":["known-not-numeric"]}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"string","x-native-type":"bigint","enum":["known-not-numeric"]}}}},"responses":{"200":{"content":{"application/json":{"schema":{"type":"string","x-native-type":"bigint","enum":["known-not-numeric"]}}}}}}},
+    "/money":{"post":{"operationId":"money","requestBody":{"required":true,"content":{"application/json":{"schema":{"x-native-type":"org.example.scalarvalues.Money","enum":["known-not-money"]}}}},"responses":{"200":{"content":{"application/json":{"schema":{"x-native-type":"org.example.scalarvalues.Money","enum":["known-not-money"]}}}}}}}
+  }
+}

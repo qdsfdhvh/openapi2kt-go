@@ -1,0 +1,21 @@
+{
+ "openapi":"3.1.0",
+ "components":{"schemas":{
+  "Plain":{"type":"object","required":["name","count","requiredNullable","value","length","when"],"properties":{
+    "name":{"type":"string","minLength":1,"maxLength":2},
+    "count":{"type":"integer","minimum":-2,"maximum":2},
+    "edge":{"type":"integer","format":"int64","minimum":-9223372036854775806,"maximum":9223372036854775805},
+    "requiredNullable":{"type":["string","null"],"minLength":1,"maxLength":2},
+    "value":{"type":"string","maxLength":2},
+    "length":{"type":"integer","minimum":0},
+    "when":{"type":"string","minLength":1},
+    "child":{"type":"object","required":["scale"],"properties":{"scale":{"type":"number","format":"float","minimum":0,"maximum":0.1}}}
+  }},
+  "Box":{"type":"object","required":["record","records","mapped"],"properties":{"record":{"$ref":"#/components/schemas/Plain"},"records":{"type":"array","items":{"$ref":"#/components/schemas/Plain"}},"mapped":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Plain"}}}}
+ }},
+ "paths":{
+  "/round":{"post":{"tags":["Models"],"operationId":"round","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Plain"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Plain"}}}}}}},
+  "/inline":{"post":{"tags":["Models"],"operationId":"inlineChecks","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","required":["rate"],"properties":{"name":{"type":"string","nullable":true,"minLength":1,"maxLength":2},"rate":{"type":"number","minimum":0,"maximum":1}}}}}},"responses":{"200":{"content":{"application/json":{"schema":{"type":"object","required":["value"],"properties":{"value":{"type":"string","minLength":1,"maxLength":2}}}}}}}}},
+  "/events":{"get":{"tags":["Models"],"operationId":"watch","responses":{"200":{"content":{"text/event-stream":{"schema":{"type":"object","required":["data"],"properties":{"data":{"type":"object","required":["value"],"properties":{"value":{"type":"string","minLength":1,"maxLength":2}}}}}}}}}}}
+ }
+}

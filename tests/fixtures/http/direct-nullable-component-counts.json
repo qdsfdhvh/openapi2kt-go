@@ -1,0 +1,42 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Direct Nullable Counts API", "version": "1"},
+  "components": {"schemas": {
+    "Record": {"type": ["object", "null"], "minProperties": 1, "maxProperties": 2, "properties": {"value": {"type": "string"}}},
+    "RecordTwin": {"type": "object", "nullable": true, "minProperties": 1, "maxProperties": 2, "properties": {"value": {"type": "string"}}},
+    "Defaulted": {"type": "object", "nullable": true, "minProperties": 1, "maxProperties": 1, "properties": {"value": {"type": "string", "default": "ready"}}},
+    "WithConst": {"type": "object", "nullable": true, "minProperties": 2, "maxProperties": 2, "properties": {"value": {"type": "string"}, "kind": {"type": "string", "const": "record"}}},
+    "Zero": {"type": "object", "nullable": true, "minProperties": 0, "maxProperties": 0, "properties": {"value": {"type": "string"}}},
+    "Checked": {"type": ["object", "null"], "minProperties": 1, "maxProperties": 1, "required": ["value"], "properties": {"value": {"type": "string", "minLength": 2, "maxLength": 3}}},
+    "Inherited": {"$ref": "#/components/schemas/Record"},
+    "Narrow": {"$ref": "#/components/schemas/Inherited", "nullable": false},
+    "Renull": {"$ref": "#/components/schemas/Narrow", "nullable": true},
+    "Holder": {"type": "object", "required": ["narrow"], "properties": {
+      "direct": {"$ref": "#/components/schemas/Record"},
+      "alias": {"$ref": "#/components/schemas/Inherited"},
+      "narrow": {"$ref": "#/components/schemas/Renull", "nullable": false},
+      "wrapped": {"allOf": [{"$ref": "#/components/schemas/Record"}]},
+      "records": {"type": "array", "items": {"$ref": "#/components/schemas/Record"}},
+      "index": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Record"}},
+      "nested": {"type": ["object", "null"], "minProperties": 0, "maxProperties": 1, "properties": {"value": {"type": "string"}}}
+    }},
+    "NestedAlias": {"$ref": "#/components/schemas/Holder/properties/nested", "nullable": false},
+    "NestedUse": {"properties": {"value": {"$ref": "#/components/schemas/NestedAlias"}}}
+  }},
+  "paths": {
+    "/records": {"post": {"tags": ["Counts"], "operationId": "send", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Record"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Record"}}}}}}},
+    "/narrow": {"post": {"tags": ["Counts"], "operationId": "sendNarrow", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Narrow"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Narrow"}}}}}}},
+    "/zero": {"post": {"tags": ["Counts"], "operationId": "sendZero", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Zero"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Zero"}}}}}}},
+    "/checked": {"post": {"tags": ["Counts"], "operationId": "sendChecked", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Checked"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Checked"}}}}}}},
+    "/patch": {"patch": {"tags": ["Counts"], "operationId": "patch", "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "required": ["requiredNull"], "properties": {
+      "requiredNull": {"$ref": "#/components/schemas/Record"},
+      "note": {"$ref": "#/components/schemas/Record"},
+      "narrow": {"$ref": "#/components/schemas/Record", "nullable": false}
+    }}}}}, "responses": {"204": {"description": "Accepted"}}}},
+    "/events": {"get": {"tags": ["Counts"], "operationId": "watch", "responses": {"200": {"content": {"text/event-stream": {"schema": {"type": "object", "required": ["data"], "properties": {
+      "event": {"type": "string", "const": "record"},
+      "id": {"type": "string"},
+      "data": {"$ref": "#/components/schemas/Record"}
+    }}}}}}}}
+  }
+}

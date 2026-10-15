@@ -1,0 +1,83 @@
+# Native executable / legacy local build artifacts
+/openapi-kt
+/openapi-kt.exe
+target/
+*.test
+*.test.exe
+
+# Python validation/benchmark helper caches
+__pycache__/
+*.py[cod]
+
+# Kotlin / Gradle build outputs (keep wrapper files and version catalogs tracked)
+.gradle/
+.kotlin/
+.konan/
+build/
+out/
+local.properties
+# JVM heap dumps are generated process-memory artifacts, not public sources.
+*.hprof
+
+# Local agent state and planning notes
+.pi/
+.planning/
+.claude/settings.local.json
+.claude/worktrees/
+.claude/sessions/
+.claude/cache/
+.agents/.cache/
+/task_plan.md
+/findings.md
+/progress.md
+
+# Local-only inputs and release artifacts
+# Put private specs here; do not place them under public tests/fixtures/ or samples/.
+/private/
+/local/
+/scratch/
+/artifacts/
+/dist/
+/generated/
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+!.env.template
+.envrc
+*.local.toml
+*.local.properties
+credentials.json
+secrets.json
+secrets.toml
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Logs, temporary files, and local backups
+*.log
+*.tmp
+*.temp
+*.part
+*.bak
+*.orig
+*~
+
+# Editors and OS metadata
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# Public fixtures, samples, snapshots, go.mod/go.sum, Gradle dependency locks,
+# and synthetic *.names.lock.json files are intentionally NOT ignored.
+# Ignore rules do not sanitize files or remove anything already tracked by Git.

@@ -1,0 +1,290 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Synthetic model defaults",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "RequiredNullable": {
+        "properties": {
+          "value": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": "annotation"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Record": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "default": "ready"
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "count": {
+            "type": "integer",
+            "default": 7
+          },
+          "minimum": {
+            "type": "integer",
+            "format": "int64",
+            "default": -9223372036854775808
+          },
+          "ratio": {
+            "type": "number",
+            "format": "float",
+            "default": 1.25
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "default": "2026-10-12"
+          },
+          "instant": {
+            "type": "string",
+            "format": "date-time",
+            "default": "2026-10-12T00:00:00Z"
+          },
+          "nullable": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": "fallback"
+          },
+          "nullValue": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null
+          },
+          "required": {
+            "type": "string",
+            "default": "annotation"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            }
+          },
+          "map": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Record"
+            }
+          }
+        }
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "value": {
+                "type": "string",
+                "default": "first"
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "value": {
+                "type": "string",
+                "default": "second"
+              }
+            }
+          }
+        ]
+      },
+      "Bounds": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "default": 2
+          },
+          "label": {
+            "type": "string",
+            "default": "😀"
+          }
+        }
+      },
+      "Shadow": {
+        "properties": {
+          "kotlin": {
+            "type": "string"
+          },
+          "minimum": {
+            "type": "integer",
+            "format": "int64",
+            "default": -9223372036854775808
+          },
+          "kotlinx": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "default": "2026-10-12"
+          },
+          "instant": {
+            "type": "string",
+            "format": "date-time",
+            "default": "2026-10-12T00:00:00Z"
+          }
+        },
+        "required": [
+          "kotlin"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/defaults": {
+      "post": {
+        "operationId": "applyDefaults",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "required": {
+                    "type": "string",
+                    "default": "annotation"
+                  },
+                  "requiredNullable": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "default": "annotation"
+                  },
+                  "patch": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "default": "fallback"
+                  },
+                  "clear": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "default": null
+                  },
+                  "optional": {
+                    "type": "string",
+                    "default": "fallback"
+                  },
+                  "nested": {
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "default": "nested"
+                      },
+                      "patch": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "default": "fallback"
+                      }
+                    }
+                  },
+                  "shared": {
+                    "$ref": "#/components/schemas/Record"
+                  }
+                },
+                "required": [
+                  "required",
+                  "requiredNullable"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "readDefaults",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "default": "response"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watchDefaults",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Record"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,264 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Deduplicate Contracts",
+    "version": "1"
+  },
+  "paths": {
+    "/alpha": {
+      "post": {
+        "operationId": "alpha",
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fast",
+                "safe"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 2
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "minProperties": 2,
+                  "maxProperties": 4,
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 2
+                    },
+                    "child": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ready",
+                            "gone"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "status"
+                      ]
+                    },
+                    "kind": {
+                      "type": "string",
+                      "const": "record"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "child"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/beta": {
+      "post": {
+        "operationId": "beta",
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fast",
+                "safe"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 2
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "minProperties": 2,
+                  "maxProperties": 4,
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 2
+                    },
+                    "child": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ready",
+                            "gone"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "status"
+                      ]
+                    },
+                    "kind": {
+                      "type": "string",
+                      "const": "record"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "child"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/guard": {
+      "post": {
+        "operationId": "guard",
+        "parameters": [
+          {
+            "name": "mode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fast",
+                "safe"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 2
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 2
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "minProperties": 2,
+                  "maxProperties": 4,
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 3
+                    },
+                    "child": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ready",
+                            "gone"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "status"
+                      ]
+                    },
+                    "kind": {
+                      "type": "string",
+                      "const": "record"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "child"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

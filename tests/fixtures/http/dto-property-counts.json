@@ -1,0 +1,213 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Record": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 3,
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "optional": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "const": "record"
+          }
+        },
+        "additionalProperties": true
+      },
+      "Node": {
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 2,
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "next": {
+            "$ref": "#/components/schemas/Node",
+            "nullable": true
+          }
+        }
+      },
+      "Zero": {
+        "type": "object",
+        "minProperties": 0,
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "Envelope": {
+        "type": "object",
+        "properties": {
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            }
+          },
+          "index": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Record"
+            }
+          }
+        }
+      },
+      "Shadow": {
+        "type": "object",
+        "minProperties": 0,
+        "properties": {
+          "delegate": {
+            "type": "string"
+          },
+          "descriptor": {
+            "type": "string"
+          },
+          "json": {
+            "type": "string"
+          },
+          "element": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string"
+          },
+          "kotlin": {
+            "type": "string"
+          },
+          "serializer": {
+            "type": "string"
+          },
+          "propertyCountSerializer": {
+            "type": "string"
+          },
+          "openapi-kt property count": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/records": {
+      "post": {
+        "tags": [
+          "Counts"
+        ],
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Record"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "tags": [
+          "Counts"
+        ],
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "maxProperties": 4,
+                "required": [
+                  "requiredNull"
+                ],
+                "properties": {
+                  "requiredNull": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "optional": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "patch"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "tags": [
+          "Counts"
+        ],
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Record"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

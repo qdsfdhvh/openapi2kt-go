@@ -1,0 +1,244 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "UnionAllOf",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Common": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "revision"
+        ]
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "note"
+              },
+              "body": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "body"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "count"
+              },
+              "count": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "kind",
+              "count"
+            ]
+          }
+        ]
+      },
+      "Composed": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Common"
+          },
+          {
+            "$ref": "#/components/schemas/Choice"
+          }
+        ]
+      },
+      "Product": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Choice"
+          },
+          {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "const": "fast"
+                  },
+                  "fast": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "fast"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "const": "slow"
+                  },
+                  "slow": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "slow"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Composed"
+          },
+          "inline": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Common"
+              },
+              {
+                "$ref": "#/components/schemas/Choice"
+              }
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Composed"
+            }
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          }
+        },
+        "required": [
+          "value",
+          "inline",
+          "rows",
+          "product"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "event",
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "requiredNullable"
+                ],
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/Composed",
+                    "nullable": true
+                  },
+                  "requiredNullable": {
+                    "$ref": "#/components/schemas/Composed",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    }
+  }
+}

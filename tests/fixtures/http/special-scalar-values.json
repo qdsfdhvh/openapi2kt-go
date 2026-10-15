@@ -1,0 +1,21 @@
+{
+  "openapi":"3.1.0",
+  "components":{"schemas":{
+    "DayVocabulary":{"type":"string","format":"date","enum":["2024-02-29"]},
+    "Value":{"type":"object","required":["day","tokens","stamps"],"properties":{
+      "day":{"$ref":"#/components/schemas/DayVocabulary"},
+      "tokens":{"type":"string","format":"binary","enum":["not-a-byte-array"]},
+      "stamps":{"type":"array","items":{"type":"string","format":"date-time","enum":["2024-02-29T12:34:56Z"]}},
+      "fixedDay":{"type":"string","format":"date","const":"2024-02-29"},
+      "fixedStamp":{"type":"string","format":"date-time","const":"2024-02-29T12:34:56Z"},
+      "nativeStamp":{"x-native-type":"date","const":"2024-02-29T12:34:56Z"},
+      "fixedBig":{"type":"string","x-native-type":"bigint","const":"9223372036854775807"}
+    }}
+  }},
+  "paths":{
+    "/value":{"post":{"operationId":"values","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Value"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Value"}}}}}}},
+    "/day":{"post":{"operationId":"day","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"string","format":"date","enum":["2024-02-29"]}}}},"responses":{"200":{"content":{"application/json":{"schema":{"type":"string","format":"date","enum":["2024-02-29"]}}}}}}},
+    "/stamp":{"post":{"operationId":"stamp","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"string","format":"date-time","enum":["2024-02-29T12:34:56Z"]}}}},"responses":{"200":{"content":{"application/json":{"schema":{"type":"string","format":"date-time","enum":["2024-02-29T12:34:56Z"]}}}}}}},
+    "/bytes":{"post":{"operationId":"bytes","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"string","format":"byte","enum":["not-a-byte-array"]}}}},"responses":{"200":{"content":{"application/json":{"schema":{"type":"string","format":"byte","enum":["not-a-byte-array"]}}}}}}}
+  }
+}

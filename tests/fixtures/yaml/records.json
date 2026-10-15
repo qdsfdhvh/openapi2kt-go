@@ -1,0 +1,33 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "YAML records", "version": "1"},
+  "paths": {
+    "/records": {
+      "get": {
+        "operationId": "records", "tags": ["Records"],
+        "parameters": [{"name": "limit", "in": "query", "schema": {"type": "integer", "format": "int32"}}],
+        "responses": {"200": {"description": "records", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/Record"}}}}}}
+      },
+      "patch": {
+        "operationId": "update", "tags": ["Records"],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "properties": {"note": {"type": "string", "nullable": true}}}}}},
+        "responses": {"200": {"description": "record", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Record"}}}}}
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Record": {
+        "type": "object", "additionalProperties": false, "required": ["id"],
+        "properties": {
+          "id": {"type": "string"},
+          "enabled": {"type": "boolean", "default": true},
+          "state": {"type": "string", "enum": ["ready", "done"]},
+          "tags": {"type": "array", "items": {"type": "string"}},
+          "note": {"type": ["string", "null"]}
+        },
+        "example": {"id": "synthetic", "enabled": true, "created": "2024-02-29"}
+      }
+    }
+  }
+}

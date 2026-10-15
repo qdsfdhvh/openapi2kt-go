@@ -1,0 +1,44 @@
+{
+  "openapi":"3.1.0",
+  "info":{"title":"Value classes"},
+  "components":{"schemas":{
+    "UserId":{"type":"string","x-kotlin-value-class":true},
+    "OtherId":{"type":"string","format":"uuid","x-kotlin-value-class":true},
+    "Counter":{"type":"integer","format":"int64","x-kotlin-value-class":true},
+    "Index":{"type":"integer","x-kotlin-value-class":true},
+    "Enabled":{"type":"boolean","x-kotlin-value-class":true},
+    "Ratio":{"type":"number","format":"double","x-kotlin-value-class":true},
+    "Weight":{"type":"number","format":"float","x-kotlin-value-class":true},
+    "Plain":{"type":"string","x-kotlin-value-class":false},
+    "Bag":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/UserId"}},
+    "Record":{"type":"object","required":["id","counter","index","enabled","ratio","weight","rows","bag"],"properties":{
+      "id":{"$ref":"#/components/schemas/UserId"},
+      "other":{"$ref":"#/components/schemas/OtherId"},
+      "counter":{"$ref":"#/components/schemas/Counter"},
+      "index":{"$ref":"#/components/schemas/Index"},
+      "enabled":{"$ref":"#/components/schemas/Enabled"},
+      "ratio":{"$ref":"#/components/schemas/Ratio"},
+      "weight":{"$ref":"#/components/schemas/Weight"},
+      "rows":{"type":"array","items":{"$ref":"#/components/schemas/UserId","nullable":true}},
+      "bag":{"$ref":"#/components/schemas/Bag"}
+    }}
+  }},
+  "paths":{
+    "/items/{id}":{"post":{"operationId":"roundTrip","tags":["Types"],"parameters":[
+      {"name":"id","in":"path","required":true,"schema":{"$ref":"#/components/schemas/UserId"}},
+      {"name":"other","in":"query","schema":{"$ref":"#/components/schemas/OtherId"}},
+      {"name":"many","in":"query","schema":{"type":"array","items":{"$ref":"#/components/schemas/UserId","nullable":true}}},
+      {"name":"csv","in":"query","explode":false,"schema":{"type":"array","items":{"$ref":"#/components/schemas/Counter"}}},
+      {"name":"byId","in":"query","schema":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Counter","nullable":true}}},
+      {"name":"filter","in":"query","style":"deepObject","schema":{"type":"object","required":["active"],"properties":{"id":{"$ref":"#/components/schemas/UserId"},"active":{"$ref":"#/components/schemas/Enabled"}}}},
+      {"name":"X-Enabled","in":"header","schema":{"$ref":"#/components/schemas/Enabled"}},
+      {"name":"X-Ids","in":"header","schema":{"type":"array","items":{"$ref":"#/components/schemas/UserId","nullable":true}}}
+    ],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Record"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Record"}}}}}}},
+    "/root":{"post":{"operationId":"root","tags":["Types"],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UserId"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/UserId"}}}}}}},
+    "/patch":{"post":{"operationId":"patch","tags":["Types"],"requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"id":{"$ref":"#/components/schemas/UserId","nullable":true}}}}}},"responses":{"204":{}}}},
+    "/vc-events":{"get":{"operationId":"watch","tags":["Types"],"responses":{"200":{"content":{"text/event-stream":{"schema":{"oneOf":[
+      {"type":"object","required":["data"],"properties":{"event":{"type":"string","const":"identifier"},"data":{"$ref":"#/components/schemas/UserId"}}},
+      {"type":"object","required":["data"],"properties":{"event":{"type":"string","const":"count"},"data":{"$ref":"#/components/schemas/Counter"}}}
+    ]}}}}}}}
+  }
+}

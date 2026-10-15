@@ -1,0 +1,21 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Synthetic fixture",
+    "version": "1.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "A/B~": {
+        "type": "object",
+        "properties": {
+          "key/~": {
+            "type": "string",
+            "enum": null
+          }
+        }
+      }
+    }
+  }
+}

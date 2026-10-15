@@ -1,0 +1,38 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "RecursiveJSON", "version": "1"},
+  "components": {
+    "schemas": {
+      "AChain": {"$ref": "#/components/schemas/Middle"},
+      "Holder": {
+        "type": "object",
+        "required": ["value", "chain", "rows", "mapping", "nullable"],
+        "properties": {
+          "value": {"$ref": "#/components/schemas/ZAny"},
+          "chain": {"$ref": "#/components/schemas/AChain"},
+          "rows": {"type": "array", "items": {"$ref": "#/components/schemas/AChain"}},
+          "mapping": {"type": "object", "additionalProperties": {"type": "array", "items": {"$ref": "#/components/schemas/ZAny"}}},
+          "nullable": {"$ref": "#/components/schemas/ZAny", "nullable": true},
+          "optional": {"$ref": "#/components/schemas/AChain"}
+        }
+      },
+      "Middle": {"$ref": "#/components/schemas/ZAny"},
+      "ZAny": {
+        "oneOf": [
+          {"type": "null"},
+          {"type": "string"},
+          {"type": "boolean"},
+          {"type": "number"},
+          {"type": "array", "items": {"$ref": "#/components/schemas/ZAny"}},
+          {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/ZAny"}}
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {"post": {"operationId": "echo", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}, "responses": {"200": {"description": "synthetic", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}}},
+    "/any": {"post": {"operationId": "any", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AChain"}}}}, "responses": {"200": {"description": "synthetic", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ZAny"}}}}}}},
+    "/patch": {"post": {"operationId": "patch", "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "required": ["requiredNullable"], "properties": {"value": {"$ref": "#/components/schemas/ZAny", "nullable": true}, "requiredNullable": {"$ref": "#/components/schemas/AChain", "nullable": true}}}}}}, "responses": {"204": {"description": "synthetic"}}}},
+    "/watch": {"get": {"operationId": "watch", "responses": {"200": {"description": "synthetic", "content": {"text/event-stream": {"schema": {"oneOf": [{"type": "object", "required": ["event", "data"], "properties": {"event": {"type": "string", "const": "sample"}, "data": {"$ref": "#/components/schemas/Holder"}}}]}}}}}}}
+  }
+}

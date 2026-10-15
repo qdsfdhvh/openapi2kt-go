@@ -1,0 +1,31 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Synthetic primitive references", "version": "1.0"},
+  "components": {
+    "schemas": {
+      "Text": {"type": "string"},
+      "UuidText": {"type": "string", "format": "uuid"},
+      "Flag": {"type": "boolean"},
+      "Int32": {"type": "integer", "format": "int32"},
+      "Int64": {"type": "integer", "format": "int64"},
+      "Float32": {"type": "number", "format": "float"},
+      "Float64": {"type": "number", "format": "double"},
+      "Numeric/Id~": {"type": "integer", "format": "int64"},
+      "Record": {
+        "type": "object",
+        "required": ["text", "flag", "i32", "i64", "f32", "f64", "values", "id"],
+        "properties": {
+          "text": {"$ref": "#/components/schemas/Text"},
+          "flag": {"$ref": "#/components/schemas/Flag"},
+          "i32": {"$ref": "#/components/schemas/Int32"},
+          "i64": {"$ref": "#/components/schemas/Int64"},
+          "f32": {"$ref": "#/components/schemas/Float32"},
+          "f64": {"$ref": "#/components/schemas/Float64"},
+          "values": {"type": "array", "items": {"$ref": "#/components/schemas/Int64", "nullable": true}},
+          "id": {"$ref": "#/components/schemas/Numeric~1Id~0"},
+          "optionalFlag": {"$ref": "#/components/schemas/Flag"}
+        }
+      }
+    }
+  }
+}

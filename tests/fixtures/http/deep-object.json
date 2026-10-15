@@ -1,0 +1,40 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Deep Query", "version": "1.0"},
+  "servers": [{"url": "https://api.example.test"}],
+  "components": {"schemas": {"State": {"type": "string", "enum": ["on hold", "ready"]}}},
+  "paths": {
+    "/records/{id}": {"get": {
+      "operationId": "search.records",
+      "parameters": [
+        {"name": "X-Trace", "in": "header", "schema": {"type": "string"}},
+        {"name": "filter", "in": "query", "style": "deepObject", "schema": {
+          "type": "object", "required": ["term", "token", "state"], "properties": {
+            "term": {"type": "string"},
+            "token": {"type": ["string", "null"]},
+            "state": {"$ref": "#/components/schemas/State", "nullable": true},
+            "mode": {"type": "string", "enum": ["quick", "slow"]},
+            "memo": {"type": ["string", "null"]},
+            "snake_case": {"type": "string"},
+            "when": {"type": "boolean"},
+            "kind": {"type": "string", "const": "fixed"}
+          }
+        }},
+        {"name": "limit", "in": "query", "schema": {"type": "integer"}},
+        {"name": "id", "in": "path", "required": true, "schema": {"type": "string"}}
+      ],
+      "responses": {"204": {}}
+    }},
+    "/required": {"get": {
+      "operationId": "required",
+      "parameters": [{"name": "criteria", "in": "query", "required": true, "style": "deepObject", "schema": {
+        "type": ["object", "null"], "required": ["token", "state"], "properties": {
+          "token": {"type": ["string", "null"]},
+          "state": {"$ref": "#/components/schemas/State", "nullable": true},
+          "memo": {"type": ["string", "null"]}
+        }
+      }}],
+      "responses": {"204": {}}
+    }}
+  }
+}

@@ -1,0 +1,18 @@
+{
+ "openapi":"3.1.0",
+ "components":{"schemas":{
+  "Name":{"type":"string","x-kotlin-value-class":true,"minLength":1,"maxLength":2},
+  "Count":{"type":"integer","format":"int64","x-kotlin-value-class":true,"minimum":-2,"maximum":2},
+  "Edge":{"type":"integer","format":"int64","x-kotlin-value-class":true,"minimum":-9223372036854775806,"maximum":9223372036854775805},
+  "Tiny":{"type":"integer","x-kotlin-value-class":true,"minimum":1,"maximum":3},
+  "Rate":{"type":"number","x-kotlin-value-class":true,"minimum":-0.25,"maximum":0.25},
+  "Scale":{"type":"number","format":"float","x-kotlin-value-class":true,"minimum":-1e-20,"maximum":0.1},
+  "Record":{"type":"object","required":["name","count"],"properties":{"name":{"$ref":"#/components/schemas/Name"},"count":{"$ref":"#/components/schemas/Count"}}}
+ }},
+ "paths":{
+  "/name/{name}":{"post":{"tags":["Checks"],"operationId":"name","parameters":[{"name":"name","in":"path","required":true,"schema":{"$ref":"#/components/schemas/Name"}}],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Name"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Name"}}}}}}},
+  "/count":{"get":{"tags":["Checks"],"operationId":"count","responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Count"}}}}}}},
+  "/patch":{"post":{"tags":["Checks"],"operationId":"patch","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"name":{"$ref":"#/components/schemas/Name","nullable":true}}}}}},"responses":{"204":{}}}},
+  "/events":{"get":{"tags":["Checks"],"operationId":"watch","responses":{"200":{"content":{"text/event-stream":{"schema":{"type":"object","required":["data"],"properties":{"data":{"$ref":"#/components/schemas/Name"}}}}}}}}}
+ }
+}

@@ -1,0 +1,35 @@
+{
+  "openapi":"3.1.0",
+  "paths":{"/special":{"post":{
+    "operationId":"special",
+    "parameters":[{"name":"since","in":"query","schema":{"type":"string","format":"date-time"}}],
+    "requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","required":["stamp","day","bytes","big","onlyNull"],"properties":{
+      "stamp":{"$ref":"#/components/schemas/Stamp"},
+      "day":{"type":"string","format":"date"},
+      "bytes":{"type":"string","format":"byte"},
+      "big":{"type":"string","x-native-type":"bigint"},
+      "onlyNull":{"type":"null"},
+      "money":{"x-native-type":"org.example.scalarvalues.Money"},
+      "maybeBig":{"type":["string","null"],"x-native-type":"bigint"},
+      "stamps":{"type":"array","items":{"type":"string","format":"date-time"}},
+      "bigList":{"type":"array","items":{"type":"string","x-native-type":"bigint"}},
+      "bigMap":{"type":"object","additionalProperties":{"type":"string","x-native-type":"bigint"}},
+      "days":{"type":"object","additionalProperties":{"type":["string","null"],"format":"date"}},
+      "child":{"type":"object","properties":{"big":{"type":["string","null"],"x-native-type":"bigint"}}}
+    }}}}},
+    "responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Record"}}}}}
+  }},
+  "/raw-bytes":{"post":{"operationId":"rawBytes","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"string","format":"binary"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"type":"string","format":"byte"}}}}}}},
+  "/root-big":{"post":{"operationId":"rootBig","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"string","x-native-type":"bigint"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"type":"string","x-native-type":"bigint"}}}}}}}},
+  "components":{"schemas":{
+    "Stamp":{"type":"string","format":"date-time"},
+    "Record":{"type":"object","required":["stamp","day","bytes","big","onlyNull"],"properties":{
+      "stamp":{"type":"string","format":"date-time"},
+      "day":{"type":"string","format":"date"},
+      "bytes":{"type":"string","format":"binary"},
+      "big":{"type":"string","x-native-type":"bigint"},
+      "onlyNull":{"type":"null"},
+      "nativeStamp":{"x-native-type":"date"}
+    }}
+  }}
+}

@@ -1,0 +1,42 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Finite nested open String enum defaults", "version": "1"},
+  "components": {"schemas": {
+    "Holder": {"type": "object", "properties": {
+      "required": {"type": "array", "items": {"type": "array", "items": {"type": "string", "enum": ["one", "two"]}}, "default": [["two"]]},
+      "rows": {"type": "array", "items": {"type": ["array", "null"], "items": {"type": ["string", "null"], "enum": ["one", null, "two", "null"]}}, "default": [["one", null, "two", "null"], null, []]},
+      "listMap": {"type": "array", "items": {"type": ["object", "null"], "additionalProperties": {"nullable": true, "enum": ["yes", null, "no"]}}, "default": [{"z": null, "a/~": "yes", "$ref": "no"}, null, {}]},
+      "mapList": {"type": "object", "additionalProperties": {"type": "array", "nullable": true, "items": {"type": ["string", "null"], "enum": ["up", "down", null]}}, "default": {"z": null, "b": [], "a": ["up", null]}},
+      "mapMap": {"additionalProperties": {"additionalProperties": {"nullable": true, "enum": ["on", null, "off"]}}, "default": {"z": {}, "a": {"z": null, "a": "on", "b": "off"}}},
+      "mixed": {"type": "array", "items": {"additionalProperties": {"type": "array", "items": {"additionalProperties": {"enum": ["deep", "other"]}}}}, "default": [{"a": [{"b": "deep"}]}]},
+      "special": {"type": "array", "items": {"type": "array", "items": {"type": "string", "enum": ["quote\"$😀", "\n", "null", ""]}}, "default": [["quote\"$😀", "\n", ""]]},
+      "empty": {"type": "array", "items": {"type": "array", "items": {"enum": ["empty", "other"]}}, "default": []},
+      "emptyMap": {"additionalProperties": {"additionalProperties": {"type": "string", "enum": ["empty", "other"]}}, "default": {}},
+      "nil": {"type": ["object", "null"], "additionalProperties": {"type": "array", "items": {"enum": ["one", "two"]}}, "default": null},
+      "nested": {"properties": {"value": {"type": "array", "items": {"additionalProperties": {"enum": ["nested", "other"]}}, "default": [{"one": "nested"}]}}},
+      "kotlin": {"type": "string"}, "kotlinx": {"type": "string"},
+      "companion": {"type": "string"}, "serializer": {"type": "string"}
+    }, "required": ["required"]},
+    "RequiredTrees": {"properties": {
+      "rows": {"type": "array", "items": {"type": "array", "items": {"enum": ["one", "two"]}}, "default": [["one"]]},
+      "listMap": {"type": "array", "items": {"additionalProperties": {"type": "string", "enum": ["one", "two"]}}, "default": [{"a": "one"}]},
+      "mapList": {"additionalProperties": {"type": "array", "items": {"enum": ["one", "two"]}}, "default": {"a": ["one"]}},
+      "mapMap": {"additionalProperties": {"additionalProperties": {"type": "string", "enum": ["one", "two"]}}, "default": {"a": {"b": "one"}}}
+    }, "required": ["rows", "listMap", "mapList", "mapMap"]},
+    "RequiredNullable": {"properties": {"value": {"type": "object", "nullable": true, "additionalProperties": {"type": "array", "items": {"enum": ["one", "two"]}}, "default": null}}, "required": ["value"]}
+  }},
+  "paths": {
+    "/holder": {"post": {"operationId": "send", "tags": ["defaults"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}, "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}}},
+    "/inline": {"get": {"operationId": "fetch", "tags": ["defaults"], "responses": {"200": {"description": "Inline defaults", "content": {"application/json": {"schema": {"properties": {
+      "listMap": {"type": "array", "items": {"additionalProperties": {"enum": ["one", "two"]}}, "default": [{"a": "one"}]}
+    }}}}}}}},
+    "/patch": {"patch": {"operationId": "patch", "tags": ["defaults"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"properties": {
+      "rows": {"type": "array", "nullable": true, "items": {"type": "array", "items": {"type": "string", "enum": ["one", "two"]}}, "default": [["one"]]},
+      "listMap": {"type": "array", "nullable": true, "items": {"additionalProperties": {"enum": ["yes", "no"]}}, "default": [{"a": "yes"}]},
+      "mapList": {"type": "object", "nullable": true, "additionalProperties": {"type": "array", "items": {"type": "string", "enum": ["up", "down"]}}, "default": {"a": ["up"]}},
+      "mapMap": {"type": "object", "nullable": true, "additionalProperties": {"additionalProperties": {"enum": ["on", "off"]}}, "default": {"a": {"b": "on"}}},
+      "required": {"type": "array", "nullable": true, "items": {"type": "array", "items": {"type": "string", "enum": ["one", "two"]}}, "default": [["two"]]}
+    }, "required": ["required"]}}}}, "responses": {"204": {"description": "Updated"}}}},
+    "/events": {"get": {"operationId": "watch", "tags": ["defaults"], "responses": {"200": {"description": "Events", "content": {"text/event-stream": {"schema": {"properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}, "required": ["event", "data"]}}}}}}}
+  }
+}

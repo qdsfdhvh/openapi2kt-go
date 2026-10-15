@@ -1,0 +1,350 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Value Class Reference Chains",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Count": {
+        "type": "integer",
+        "format": "int64",
+        "x-kotlin-value-class": true,
+        "minimum": 1,
+        "nullable": true
+      },
+      "Name": {
+        "type": "string",
+        "x-kotlin-value-class": true,
+        "minLength": 1
+      },
+      "CountAlias": {
+        "$ref": "#/components/schemas/Count"
+      },
+      "CountFalse": {
+        "$ref": "#/components/schemas/CountAlias",
+        "nullable": false
+      },
+      "NameMaybe": {
+        "$ref": "#/components/schemas/Name",
+        "nullable": true
+      },
+      "Hops": {
+        "properties": {
+          "count": {
+            "$ref": "#/components/schemas/CountAlias"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/CountFalse"
+          },
+          "name": {
+            "$ref": "#/components/schemas/NameMaybe"
+          },
+          "again": {
+            "$ref": "#/components/schemas/Hops/properties/count"
+          },
+          "true": {
+            "$ref": "#/components/schemas/Hops/properties/narrow",
+            "nullable": true
+          },
+          "cross": {
+            "$ref": "#/components/schemas/CountBridgeFalse"
+          }
+        }
+      },
+      "CountBridge": {
+        "$ref": "#/components/schemas/Hops/properties/again"
+      },
+      "CountBridgeFalse": {
+        "$ref": "#/components/schemas/CountBridge",
+        "nullable": false
+      },
+      "CountBridgeTrue": {
+        "$ref": "#/components/schemas/Hops/properties/true"
+      },
+      "NameBridge": {
+        "$ref": "#/components/schemas/Hops/properties/name"
+      },
+      "Holder": {
+        "properties": {
+          "count": {
+            "$ref": "#/components/schemas/CountBridge"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/CountBridgeFalse"
+          },
+          "name": {
+            "$ref": "#/components/schemas/NameBridge"
+          },
+          "list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountBridge"
+            }
+          },
+          "map": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CountBridgeFalse"
+            }
+          }
+        },
+        "required": [
+          "narrow",
+          "list",
+          "map"
+        ]
+      },
+      "AgainCountBridge": {
+        "$ref": "#/components/schemas/Hops/properties/cross"
+      },
+      "WrapperChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "a"
+              },
+              "value": {
+                "$ref": "#/components/schemas/Hops/properties/count",
+                "nullable": false
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "b"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/wrappers": {
+      "post": {
+        "operationId": "echoWrappers",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wrapper-nullable": {
+      "post": {
+        "operationId": "nullableWrapper",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CountBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wrapper-false": {
+      "post": {
+        "operationId": "falseWrapper",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CountBridgeFalse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountBridgeFalse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wrapper-name": {
+      "post": {
+        "operationId": "nameWrapper",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NameBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NameBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wrapper-patch": {
+      "patch": {
+        "operationId": "patchWrapper",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "required": {
+                    "$ref": "#/components/schemas/CountBridge"
+                  },
+                  "narrow": {
+                    "$ref": "#/components/schemas/CountBridgeFalse"
+                  },
+                  "value": {
+                    "$ref": "#/components/schemas/Hops/properties/count"
+                  }
+                },
+                "required": [
+                  "required",
+                  "narrow"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/wrapper-watch": {
+      "get": {
+        "operationId": "watchWrapper",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "nullable"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/CountBridge"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/CountBridgeFalse"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "holder"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wrapper-query": {
+      "get": {
+        "operationId": "queryWrapper",
+        "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CountBridgeFalse"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

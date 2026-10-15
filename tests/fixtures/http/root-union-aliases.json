@@ -1,0 +1,22 @@
+{
+ "openapi":"3.1.0", "info":{"title":"Root Union Alias API","version":"1"},
+ "components":{"schemas":{
+   "AChoice":{"$ref":"#/components/schemas/BChoice"},
+   "BChoice":{"$ref":"#/components/schemas/ZChoice"},
+   "AKind":{"$ref":"#/components/schemas/ZKind"},
+   "AClosed":{"$ref":"#/components/schemas/ZClosed"},
+   "Holder":{"properties":{"choice":{"$ref":"#/components/schemas/AChoice"},"kind":{"$ref":"#/components/schemas/AKind"},"closed":{"$ref":"#/components/schemas/AClosed"},"choices":{"type":"array","items":{"$ref":"#/components/schemas/AChoice"}},"kinds":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/AKind"}}},"required":["choice","kind","closed","choices","kinds"]},
+   "ZChoice":{"oneOf":[{"$ref":"#/components/schemas/ZNote"},{"$ref":"#/components/schemas/ZFlag"}]},
+   "ZNote":{"properties":{"kind":{"type":"string","const":"note"},"text":{"type":"string"}},"required":["text"]},
+   "ZFlag":{"properties":{"kind":{"type":"string","const":"flag"},"enabled":{"type":"boolean"}},"required":["enabled"]},
+   "ZKind":{"oneOf":[{"type":"string"},{"type":"boolean"},{"type":"null"}]},
+   "ZClosed":{"oneOf":[{"properties":{"count":{"type":"integer"}}},{"properties":{"code":{"type":"string"}}},{"type":"null"}]}
+ }},
+ "paths":{
+   "/alias":{"post":{"operationId":"echo","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AChoice"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AChoice"}}}}}}},
+   "/direct":{"post":{"operationId":"echo","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ZChoice"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ZChoice"}}}}}}},
+   "/kind":{"post":{"operationId":"echoKind","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AKind"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/AKind"}}}}}}},
+   "/patch":{"patch":{"operationId":"submit","requestBody":{"required":true,"content":{"application/json":{"schema":{"properties":{"choice":{"$ref":"#/components/schemas/AChoice","nullable":true},"kind":{"$ref":"#/components/schemas/AKind","nullable":true}},"required":[]}}}},"responses":{"204":{}}}},
+   "/events":{"get":{"operationId":"watch","responses":{"200":{"content":{"text/event-stream":{"schema":{"oneOf":[{"properties":{"event":{"type":"string","const":"choice"},"data":{"$ref":"#/components/schemas/AChoice"}},"required":["data"]},{"properties":{"event":{"type":"string","const":"kind"},"data":{"$ref":"#/components/schemas/AKind"}},"required":["data"]}]}}}}}}}
+ }
+}

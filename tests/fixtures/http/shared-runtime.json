@@ -1,0 +1,13 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Shared Runtime Example", "version": "1"},
+  "components": {"schemas": {
+    "Amount": {"type": "string", "x-native-type": "bigint"},
+    "Record": {"properties": {"amount": {"$ref": "#/components/schemas/Amount"}, "values": {"type": "array", "items": {"$ref": "#/components/schemas/Amount"}}}, "required": ["amount", "values"]}
+  }},
+  "paths": {
+    "/submit": {"post": {"operationId": "submit", "requestBody": {"required": true, "content": {"application/json": {"schema": {"properties": {"id": {"type": "string", "minLength": 2}, "amount": {"$ref": "#/components/schemas/Amount", "nullable": true}}, "required": ["id"]}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Record"}}}}}}},
+    "/amount": {"post": {"operationId": "amount", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Amount"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Amount"}}}}}}},
+    "/watch": {"get": {"operationId": "watch", "responses": {"200": {"content": {"text/event-stream": {"schema": {"properties": {"data": {"$ref": "#/components/schemas/Record"}}, "required": ["data"]}}}}}}}
+  }
+}

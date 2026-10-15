@@ -1,0 +1,27 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Structured Const Fields"},
+  "components": {
+    "schemas": {
+      "Holder": {
+        "properties": {
+          "label": {"type": "string"},
+          "kotlinx": {"type": "string"},
+          "kotlin": {"type": "string"},
+          "payload": {"type": "object", "const": {"$ref": "literal data", "type": "data", "values": [null, true, 100, "null"], "quoted": "quote \" and $value"}},
+          "rows": {"const": [{"enum": [null]}, null, "quoted"]}
+        },
+        "required": ["payload", "rows"]
+      },
+      "Only": {"properties": {"payload": {"const": {"nested": [1, null]}}, "rows": {"type": "array", "const": [true, "value"]}}},
+      "Nested": {"properties": {"child": {"properties": {"kotlinx": {"type": "boolean"}, "rows": {"type": "array", "const": [1, 2]}}}}},
+      "Containers": {"properties": {"holder": {"$ref": "#/components/schemas/Holder"}, "rows": {"type": "array", "items": {"$ref": "#/components/schemas/Holder"}}, "map": {"additionalProperties": {"$ref": "#/components/schemas/Holder"}}}},
+      "Merged": {"allOf": [{"properties": {"payload": {"const": {"source": "first"}}}}, {"properties": {"label": {"type": "string"}}}]}
+    }
+  },
+  "paths": {
+    "/holder": {"post": {"operationId": "send", "tags": ["structured-const"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}, "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}}},
+    "/patch": {"patch": {"operationId": "patch", "tags": ["structured-const"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"properties": {"label": {"type": "string", "nullable": true}, "payload": {"const": {"patch": true}, "nullable": true}, "rows": {"const": [null]}}}}}}, "responses": {"204": {}}}},
+    "/events": {"get": {"operationId": "watch", "tags": ["structured-const"], "responses": {"200": {"content": {"text/event-stream": {"schema": {"properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}, "required": ["data"]}}}}}}}
+  }
+}

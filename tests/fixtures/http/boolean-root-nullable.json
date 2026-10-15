@@ -1,0 +1,33 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "BooleanRootNullable", "version": "1"},
+  "components": {
+    "schemas": {
+      "ANullable": {"$ref": "#/components/schemas/ZAny", "nullable": true},
+      "BInherited": {"$ref": "#/components/schemas/ANullable"},
+      "CFalse": {"$ref": "#/components/schemas/BInherited", "nullable": false},
+      "DNullableAgain": {"$ref": "#/components/schemas/CFalse", "nullable": true},
+      "Holder": {
+        "type": "object",
+        "required": ["canonical", "inherited", "narrowed", "rows", "mapping"],
+        "properties": {
+          "canonical": {"$ref": "#/components/schemas/ZAny"},
+          "inherited": {"$ref": "#/components/schemas/BInherited"},
+          "narrowed": {"$ref": "#/components/schemas/CFalse"},
+          "rows": {"type": "array", "items": {"$ref": "#/components/schemas/BInherited"}},
+          "mapping": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/DNullableAgain"}},
+          "optional": {"$ref": "#/components/schemas/BInherited"},
+          "consumerFalse": {"$ref": "#/components/schemas/BInherited", "nullable": false}
+        }
+      },
+      "ZAny": true
+    }
+  },
+  "paths": {
+    "/echo": {"post": {"operationId": "echo", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}, "responses": {"200": {"description": "synthetic", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}}},
+    "/nullable": {"post": {"operationId": "nullable", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BInherited"}}}}, "responses": {"200": {"description": "synthetic", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BInherited"}}}}}}},
+    "/narrow": {"post": {"operationId": "narrow", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CFalse"}}}}, "responses": {"200": {"description": "synthetic", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CFalse"}}}}}}},
+    "/patch": {"post": {"operationId": "patch", "requestBody": {"required": true, "content": {"application/json": {"schema": {"type": "object", "required": ["requiredNullable", "narrowed"], "properties": {"value": {"$ref": "#/components/schemas/BInherited"}, "requiredNullable": {"$ref": "#/components/schemas/BInherited"}, "narrowed": {"$ref": "#/components/schemas/CFalse"}, "optionalFalse": {"$ref": "#/components/schemas/DNullableAgain", "nullable": false}}}}}}, "responses": {"204": {"description": "synthetic"}}}},
+    "/watch": {"get": {"operationId": "watch", "responses": {"200": {"description": "synthetic", "content": {"text/event-stream": {"schema": {"oneOf": [{"type": "object", "required": ["event", "data"], "properties": {"event": {"type": "string", "const": "sample"}, "data": {"$ref": "#/components/schemas/Holder"}}}]}}}}}}}
+  }
+}

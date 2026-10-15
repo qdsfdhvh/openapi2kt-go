@@ -1,0 +1,376 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Hierarchy Fields",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "FixedRoot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/FixedLeaf"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "fixed": "FixedLeaf"
+          }
+        }
+      },
+      "FixedLeaf": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "fixed"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "MissingRoot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/MissingFirst"
+          },
+          {
+            "$ref": "#/components/schemas/MissingSecond"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "first/a~b": "MissingFirst",
+            "alias-only": "MissingFirst",
+            "second": "MissingSecond"
+          }
+        }
+      },
+      "MissingFirst": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "MissingSecond": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
+      "DeepRoot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/DeepGroup"
+          },
+          {
+            "$ref": "#/components/schemas/DeepOther"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "family",
+          "mapping": {
+            "group": "DeepGroup",
+            "other": "DeepOther"
+          }
+        }
+      },
+      "DeepGroup": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/DeepFirst"
+          },
+          {
+            "$ref": "#/components/schemas/DeepSecond"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "stage",
+          "mapping": {
+            "first": "DeepFirst",
+            "second": "DeepSecond"
+          }
+        }
+      },
+      "DeepFirst": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "DeepSecond": {
+        "type": "object",
+        "properties": {
+          "stage": {
+            "type": "string",
+            "const": "second"
+          },
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
+      "DeepOther": {
+        "type": "object",
+        "properties": {
+          "family": {
+            "type": "string",
+            "const": "other"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "VaryRoot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/VaryGroup"
+          },
+          {
+            "$ref": "#/components/schemas/VaryOther"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "family",
+          "mapping": {
+            "group": "VaryGroup",
+            "other": "VaryOther"
+          }
+        }
+      },
+      "VaryGroup": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/VaryFirst"
+          },
+          {
+            "$ref": "#/components/schemas/VarySecond"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "first": "VaryFirst",
+            "second": "VarySecond"
+          }
+        }
+      },
+      "VaryFirst": {
+        "type": "object",
+        "properties": {
+          "family": {
+            "type": "string",
+            "enum": [
+              "group",
+              "alternate"
+            ],
+            "nullable": true
+          },
+          "kind": {
+            "type": "string",
+            "const": "first"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "VarySecond": {
+        "type": "object",
+        "properties": {
+          "family": {
+            "type": "string",
+            "const": "group"
+          },
+          "kind": {
+            "type": "string",
+            "const": "second"
+          },
+          "count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
+      "VaryOther": {
+        "type": "object",
+        "properties": {
+          "family": {
+            "type": "string",
+            "const": "other"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "fixed": {
+            "$ref": "#/components/schemas/FixedRoot"
+          },
+          "missing": {
+            "$ref": "#/components/schemas/MissingRoot"
+          },
+          "deep": {
+            "$ref": "#/components/schemas/DeepRoot"
+          },
+          "varying": {
+            "$ref": "#/components/schemas/VaryRoot"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MissingRoot"
+            }
+          }
+        },
+        "required": [
+          "fixed",
+          "missing",
+          "deep",
+          "varying",
+          "rows"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "tags": [
+          "hierarchy"
+        ],
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requiredNullable": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "value": {
+                    "$ref": "#/components/schemas/MissingRoot",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "requiredNullable"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Synthetic"
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "event",
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

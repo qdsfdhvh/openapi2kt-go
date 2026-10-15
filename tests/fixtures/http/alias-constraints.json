@@ -1,0 +1,20 @@
+{
+ "openapi":"3.1.0",
+ "components":{"schemas":{
+  "Id":{"type":"string","minLength":1,"maxLength":2,"pattern":"^[a-z]+$"},
+  "Link":{"$ref":"#/components/schemas/Id"},
+  "Count":{"type":"integer","format":"int64","minimum":-2,"maximum":2},
+  "Ratio":{"type":"number","format":"float","minimum":-1,"maximum":1},
+  "Counts":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Count"}},
+  "Record":{"type":"object","required":["id","count","ids","counts"],"properties":{"id":{"$ref":"#/components/schemas/Link"},"count":{"$ref":"#/components/schemas/Count"},"ids":{"type":"array","items":{"$ref":"#/components/schemas/Id"}},"counts":{"$ref":"#/components/schemas/Counts"}}}
+ }},
+ "paths":{
+  "/v/{id}":{"get":{"tags":["Aliases"],"operationId":"count","parameters":[{"name":"id","in":"path","required":true,"schema":{"$ref":"#/components/schemas/Link"}},{"name":"count","in":"query","schema":{"$ref":"#/components/schemas/Count"}}],"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Count"}}}}}}},
+  "/id":{"post":{"tags":["Aliases"],"operationId":"id","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Link"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Id"}}}}}}},
+  "/record":{"post":{"tags":["Aliases"],"operationId":"record","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Record"}}}},"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Record"}}}}}}},
+  "/patch":{"post":{"tags":["Aliases"],"operationId":"patch","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","properties":{"id":{"$ref":"#/components/schemas/Link","nullable":true}}}}}},"responses":{"204":{}}}},
+  "/values":{"post":{"tags":["Aliases"],"operationId":"values","requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"array","items":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Link","nullable":true}}}}}},"responses":{"200":{"content":{"application/json":{"schema":{"type":"array","items":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Link","nullable":true}}}}}}}}},
+  "/params":{"get":{"tags":["Aliases"],"operationId":"params","parameters":[{"name":"ids","in":"query","schema":{"type":"array","items":{"$ref":"#/components/schemas/Link","nullable":true}}},{"name":"counts","in":"query","schema":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Count"}}},{"name":"code","in":"header","schema":{"$ref":"#/components/schemas/Id"}},{"name":"ratio","in":"query","schema":{"$ref":"#/components/schemas/Ratio"}}],"responses":{"204":{}}}},
+  "/events":{"get":{"tags":["Aliases"],"operationId":"watch","responses":{"200":{"content":{"text/event-stream":{"schema":{"type":"object","required":["data"],"properties":{"data":{"$ref":"#/components/schemas/Link"}}}}}}}}}
+ }
+}

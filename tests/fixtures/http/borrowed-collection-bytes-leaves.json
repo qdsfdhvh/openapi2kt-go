@@ -1,0 +1,331 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BorrowedCollectionBytesLeaves",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Text": {
+        "type": "string",
+        "format": "byte"
+      },
+      "Wide": {
+        "type": "string",
+        "format": "binary"
+      },
+      "Flag": {
+        "type": "string",
+        "format": "binary"
+      },
+      "Count": {
+        "type": "string",
+        "format": "byte"
+      },
+      "Ratio": {
+        "type": "string",
+        "format": "byte"
+      },
+      "Measure": {
+        "type": "string",
+        "format": "binary"
+      },
+      "MaybeText": {
+        "type": "string",
+        "format": "byte",
+        "nullable": true
+      },
+      "TextAlias": {
+        "$ref": "#/components/schemas/MaybeText"
+      },
+      "TextFalse": {
+        "$ref": "#/components/schemas/TextAlias",
+        "nullable": false
+      },
+      "Source": {
+        "properties": {
+          "rows": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TextAlias"
+            }
+          },
+          "map": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Wide",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "flag": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Flag"
+            }
+          },
+          "count": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Count"
+            }
+          },
+          "ratio": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Ratio"
+            }
+          },
+          "measure": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Measure"
+            }
+          },
+          "narrow": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TextFalse"
+            }
+          }
+        }
+      },
+      "RowsAlias": {
+        "$ref": "#/components/schemas/Source/properties/rows"
+      },
+      "RowsBridge": {
+        "$ref": "#/components/schemas/RowsAlias",
+        "nullable": false
+      },
+      "MapAlias": {
+        "$ref": "#/components/schemas/Source/properties/map"
+      },
+      "MapBridge": {
+        "$ref": "#/components/schemas/MapAlias",
+        "nullable": false
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/RowsBridge"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/MapBridge"
+          },
+          "direct": {
+            "$ref": "#/components/schemas/Source/properties/rows"
+          },
+          "flags": {
+            "$ref": "#/components/schemas/Source/properties/flag"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/Source/properties/count"
+          },
+          "ratios": {
+            "$ref": "#/components/schemas/Source/properties/ratio"
+          },
+          "measures": {
+            "$ref": "#/components/schemas/Source/properties/measure"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/Source/properties/narrow"
+          }
+        },
+        "required": [
+          "rows",
+          "mapping"
+        ]
+      },
+      "CollectionChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "rows"
+              },
+              "rows": {
+                "$ref": "#/components/schemas/RowsBridge"
+              }
+            },
+            "required": [
+              "rows"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "map"
+              },
+              "map": {
+                "$ref": "#/components/schemas/MapBridge"
+              }
+            },
+            "required": [
+              "map"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RowsBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RowsBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/map": {
+      "post": {
+        "operationId": "echoMap",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MapBridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapBridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "required": {
+                    "$ref": "#/components/schemas/RowsBridge"
+                  },
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/RowsAlias"
+                  },
+                  "optional": {
+                    "$ref": "#/components/schemas/RowsAlias"
+                  },
+                  "map": {
+                    "$ref": "#/components/schemas/MapAlias"
+                  }
+                },
+                "required": [
+                  "required",
+                  "requiredNull"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "rows"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/RowsBridge"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "map"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/MapBridge"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/raw": {
+      "post": {
+        "operationId": "echoRaw",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TextAlias"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TextAlias"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

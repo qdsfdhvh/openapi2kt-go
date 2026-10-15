@@ -1,0 +1,41 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/collections/{pathList}": {"get": {
+      "operationId": "parameterValues",
+      "parameters": [
+        {"name":"pathList","in":"path","required":true,"schema":{"type":"array","items":{"type":["string","null"]}}},
+        {"name":"repeat","in":"query","schema":{"type":"array","items":{"type":["string","null"]}}},
+        {"name":"csv","in":"query","explode":false,"schema":{"type":"array","items":{"type":["string","null"]}}},
+        {"name":"indexed","in":"query","style":"deepObject","schema":{"type":"array","items":{"type":["integer","null"]}}},
+        {"name":"nested","in":"query","explode":false,"schema":{"type":"array","items":{"type":"array","items":{"type":"string"}}}},
+        {"name":"map","in":"query","schema":{"type":"object","additionalProperties":{"type":["integer","null"]}}},
+        {"name":"states","in":"query","schema":{"type":"array","items":{"$ref":"#/components/schemas/State","nullable":true}}},
+        {"name":"stateCsv","in":"query","explode":false,"schema":{"type":"array","items":{"$ref":"#/components/schemas/State","nullable":true}}},
+        {"name":"inlineStates","in":"query","schema":{"type":"array","items":{"type":["string","null"],"enum":["inline-ready"]}}},
+        {"name":"json","in":"query","schema":{"oneOf":[{"type":"string"},{"type":"boolean"}]}},
+        {"name":"stateMap","in":"query","schema":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/State"}}},
+        {"name":"record","in":"query","schema":{"$ref":"#/components/schemas/Record"}},
+        {"name":"raw","in":"query","schema":{"type":"object","properties":{"label":{"type":"string"}}}},
+        {"name":"X-Values","in":"header","schema":{"type":"array","items":{"type":["boolean","null"]}}},
+        {"name":"X-Map","in":"header","schema":{"type":"object","additionalProperties":{"type":"integer"}}}
+      ],
+      "responses":{"204":{}}
+    }},
+    "/filter": {"get": {
+      "operationId":"filterValues",
+      "parameters":[{"name":"filter","in":"query","style":"deepObject","schema":{"type":"object","properties":{
+        "tags":{"type":"array","items":{"type":"string"}},
+        "child":{"type":"object","properties":{"v":{"type":"string"}}},
+        "map":{"type":"object","additionalProperties":{"type":["integer","null"]}},
+        "opaque":{"anyOf":[{"type":"string"},{"type":"boolean"}]},
+        "nullableOpaque":{"oneOf":[{"type":"string"},{"type":"boolean"},{"type":"null"}]}
+      }}}],
+      "responses":{"204":{}}
+    }}
+  },
+  "components":{"schemas":{
+    "State":{"type":"string","enum":["wire-ready"]},
+    "Record":{"type":"object","properties":{"v":{"type":"string"}}}
+  }}
+}

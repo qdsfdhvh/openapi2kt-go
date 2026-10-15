@@ -1,0 +1,66 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Native enum collection defaults", "version": "1"},
+  "components": {
+    "schemas": {
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "required": {"type": "array", "items": {"type": "integer", "enum": [1, 2]}, "default": [1]},
+          "codes": {"type": "array", "items": {"type": ["integer", "null"], "enum": [1, 2]}, "default": [1, null, 2]},
+          "flags": {"type": "object", "additionalProperties": {"type": "boolean", "enum": [true]}, "default": {"a/~": true, "$ref": true}},
+          "longs": {"type": "array", "items": {"type": "integer", "format": "int64", "enum": [-9223372036854775808, 9223372036854775807]}, "default": [-9223372036854775808, 9223372036854775807]},
+          "floats": {"type": "object", "additionalProperties": {"type": "number", "format": "float", "enum": [0.5, 1]}, "default": {"half": 0.5}},
+          "doubles": {"type": "array", "items": {"type": "number", "enum": [0.5, 1]}, "default": [0.5]},
+          "empty": {"type": "array", "items": {"type": "boolean", "enum": [false]}, "default": []},
+          "emptyMap": {"type": "object", "additionalProperties": {"type": "integer", "enum": [1]}, "default": {}},
+          "nil": {"type": "object", "nullable": true, "additionalProperties": {"type": "boolean", "nullable": true, "enum": [true]}, "default": null},
+          "nested": {"type": "object", "properties": {"values": {"type": "object", "additionalProperties": {"type": "integer", "nullable": true, "enum": [1, 2]}, "default": {"one": 1, "nil": null}}}},
+          "kotlin": {"type": "string"},
+          "kotlinx": {"type": "string"}
+        },
+        "required": ["required"]
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "send",
+        "tags": ["defaults"],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}},
+        "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "tags": ["defaults"],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {
+            "type": "object",
+            "properties": {
+              "codes": {"type": "array", "nullable": true, "items": {"type": "integer", "enum": [1, 2]}, "default": [1]},
+              "flags": {"type": "object", "nullable": true, "additionalProperties": {"type": "boolean", "enum": [true]}, "default": {"yes": true}},
+              "required": {"type": "array", "nullable": true, "items": {"type": "integer", "enum": [1, 2]}, "default": [1]}
+            },
+            "required": ["required"]
+          }}}
+        },
+        "responses": {"204": {"description": "Updated"}}
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "tags": ["defaults"],
+        "responses": {"200": {"description": "Events", "content": {"text/event-stream": {"schema": {
+          "type": "object",
+          "properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}},
+          "required": ["event", "data"]
+        }}}}}
+      }
+    }
+  }
+}

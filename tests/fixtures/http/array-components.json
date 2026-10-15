@@ -1,0 +1,55 @@
+{
+  "openapi": "3.1.0", "info": {"title": "Array Component API", "version": "1"},
+  "components": {"schemas": {
+    "ACarrier": {
+      "properties": {
+        "values": {"$ref": "#/components/schemas/ZValues"},
+        "nested": {"type": "array", "items": {"$ref": "#/components/schemas/ZValues"}},
+        "entries": {"additionalProperties": {"$ref": "#/components/schemas/ZValues"}},
+        "states": {"$ref": "#/components/schemas/States"},
+        "rows": {"$ref": "#/components/schemas/Rows"}
+      }, "required": ["values"]
+    },
+    "Record": {"type": "array", "items": {"type": "string"}},
+    "Rows": {
+      "type": "array", "minItems": 1,
+      "items": {"properties": {
+        "id": {"type": "string", "minLength": 1},
+        "children": {"$ref": "#/components/schemas/Rows"}
+      }, "required": ["id"]}
+    },
+    "States": {"type": "array", "items": {"type": "string", "enum": ["open", "closed"]}},
+    "ZValues": {
+      "type": "array", "minItems": 1, "maxItems": 3, "uniqueItems": true,
+      "items": {"type": ["string", "null"], "minLength": 2, "maxLength": 3, "pattern": "^[a-z]+$"}
+    }
+  }},
+  "paths": {
+    "/values": {"post": {
+      "operationId": "echo",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ZValues"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/ZValues"}}}}}
+    }},
+    "/rows": {"post": {
+      "operationId": "echoRows",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Rows"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Rows"}}}}}
+    }},
+    "/patch": {"patch": {
+      "operationId": "submit",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "properties": {
+          "values": {"$ref": "#/components/schemas/ZValues", "nullable": true},
+          "requiredNull": {"$ref": "#/components/schemas/ZValues", "nullable": true}
+        }, "required": ["requiredNull"]
+      }}}}, "responses": {"204": {}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch",
+      "responses": {"200": {"content": {"text/event-stream": {"schema": {
+        "properties": {"event": {"type": "string", "const": "values"}, "data": {"$ref": "#/components/schemas/ZValues"}},
+        "required": ["data"]
+      }}}}}
+    }}
+  }
+}

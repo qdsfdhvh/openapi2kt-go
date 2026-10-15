@@ -1,0 +1,2372 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "scalars-30",
+      "group": "types",
+      "description": "Every supported scalar and format under OpenAPI 3.0.3.",
+      "input": "valid/scalars-30.json",
+      "package_name": "org.example.fixtures.scalars_30",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/scalars_30/models/Record.kt": "snapshots/scalars-30/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "presence-30",
+      "group": "presence",
+      "description": "All four required/nullable property combinations; required nullable defaults to null in P1.",
+      "input": "valid/presence-30.json",
+      "package_name": "org.example.fixtures.presence_30",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/presence_30/models/Record.kt": "snapshots/presence-30/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "presence-31",
+      "group": "presence",
+      "description": "All four required/nullable property combinations; required nullable defaults to null in P1.",
+      "input": "valid/presence-31.json",
+      "package_name": "org.example.fixtures.presence_31",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/presence_31/models/Record.kt": "snapshots/presence-31/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "array-presence",
+      "group": "collections",
+      "description": "Array nullability and element nullability vary independently.",
+      "input": "valid/array-presence.json",
+      "package_name": "org.example.fixtures.array_presence",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/array_presence/models/Record.kt": "snapshots/array-presence/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "nested-arrays",
+      "group": "collections",
+      "description": "Nullable nested arrays retain each container/element boundary.",
+      "input": "valid/nested-arrays.json",
+      "package_name": "org.example.fixtures.nested_arrays",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/nested_arrays/models/Record.kt": "snapshots/nested-arrays/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "self-reference",
+      "group": "references",
+      "description": "Self references do not recursively expand declarations.",
+      "input": "valid/self-reference.json",
+      "package_name": "org.example.fixtures.self_reference",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/self_reference/models/Node.kt": "snapshots/self-reference/Node.kt"
+        }
+      }
+    },
+    {
+      "id": "mutual-reference",
+      "group": "references",
+      "description": "Mutually recursive components and references inside lists.",
+      "input": "valid/mutual-reference.json",
+      "package_name": "org.example.fixtures.mutual_reference",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/mutual_reference/models/Left.kt": "snapshots/mutual-reference/Left.kt",
+          "org/example/fixtures/mutual_reference/models/Right.kt": "snapshots/mutual-reference/Right.kt"
+        }
+      }
+    },
+    {
+      "id": "pointer-escapes",
+      "group": "references",
+      "description": "Decode ~1 and ~0 exactly, including literal ~1 encoded as ~01.",
+      "input": "valid/pointer-escapes.json",
+      "package_name": "org.example.fixtures.pointer_escapes",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/pointer_escapes/models/ItemPart.kt": "snapshots/pointer-escapes/ItemPart.kt",
+          "org/example/fixtures/pointer_escapes/models/Literal1.kt": "snapshots/pointer-escapes/Literal1.kt",
+          "org/example/fixtures/pointer_escapes/models/Root.kt": "snapshots/pointer-escapes/Root.kt"
+        }
+      }
+    },
+    {
+      "id": "suffix-reference",
+      "group": "naming",
+      "description": "Suffix updates component filenames and fully qualified references.",
+      "input": "valid/suffix-reference.json",
+      "package_name": "org.example.fixtures.suffix_reference",
+      "model_name_suffix": "Dto",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/suffix_reference/models/OrderItemDto.kt": "snapshots/suffix-reference/OrderItemDto.kt"
+        }
+      }
+    },
+    {
+      "id": "inferred-objects",
+      "group": "objects",
+      "description": "Properties infer object type at both component and inline levels.",
+      "input": "valid/inferred-objects.json",
+      "package_name": "org.example.fixtures.inferred_objects",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/inferred_objects/models/Record.kt": "snapshots/inferred-objects/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "nested-object-scopes",
+      "group": "objects",
+      "description": "Equal inline property names remain scoped inside different nested owners.",
+      "input": "valid/nested-object-scopes.json",
+      "package_name": "org.example.fixtures.nested_object_scopes",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/nested_object_scopes/models/Record.kt": "snapshots/nested-object-scopes/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "array-inline-object",
+      "group": "collections",
+      "description": "Nullable inline object list items produce a nested declaration.",
+      "input": "valid/array-inline-object.json",
+      "package_name": "org.example.fixtures.array_inline_object",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/array_inline_object/models/Record.kt": "snapshots/array-inline-object/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "empty-components",
+      "group": "objects",
+      "description": "Empty objects become aliases, not zero-argument data classes.",
+      "input": "valid/empty-components.json",
+      "package_name": "org.example.fixtures.empty_components",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/empty_components/models/Empty.kt": "snapshots/empty-components/Empty.kt",
+          "org/example/fixtures/empty_components/models/ExplicitEmpty.kt": "snapshots/empty-components/ExplicitEmpty.kt"
+        }
+      }
+    },
+    {
+      "id": "unconstrained-fields",
+      "group": "objects",
+      "description": "Explicitly approximate empty objects and untyped values with JsonElement.",
+      "input": "valid/unconstrained-fields.json",
+      "package_name": "org.example.fixtures.unconstrained_fields",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/unconstrained_fields/models/Record.kt": "snapshots/unconstrained-fields/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "descriptive-metadata",
+      "group": "metadata",
+      "description": "Example payload keys are data, not schema keywords; descriptions cannot inject Kotlin.",
+      "input": "valid/descriptive-metadata.json",
+      "package_name": "org.example.fixtures.descriptive_metadata",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/descriptive_metadata/models/Record.kt": "snapshots/descriptive-metadata/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "identifier-forms",
+      "group": "naming",
+      "description": "Keywords, digit-leading names, hyphens and existing underscores.",
+      "input": "valid/identifier-forms.json",
+      "package_name": "org.example.fixtures.identifier_forms",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/identifier_forms/models/N123Record.kt": "snapshots/identifier-forms/N123Record.kt"
+        }
+      }
+    },
+    {
+      "id": "wire-escaping",
+      "group": "naming",
+      "description": "Dollar interpolation, quotes, slash and control/separator characters are escaped.",
+      "input": "valid/wire-escaping.json",
+      "package_name": "org.example.fixtures.wire_escaping",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/wire_escaping/models/Record.kt": "snapshots/wire-escaping/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "builtin-shadowing",
+      "group": "naming",
+      "description": "Component names cannot shadow primitive/collection/JSON runtime type references.",
+      "input": "valid/builtin-shadowing.json",
+      "package_name": "org.example.fixtures.builtin_shadowing",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/builtin_shadowing/models/List.kt": "snapshots/builtin-shadowing/List.kt",
+          "org/example/fixtures/builtin_shadowing/models/String.kt": "snapshots/builtin-shadowing/String.kt"
+        }
+      }
+    },
+    {
+      "id": "source-order",
+      "group": "ordering",
+      "description": "Files sort deterministically while constructor properties keep document order.",
+      "input": "valid/source-order.json",
+      "package_name": "org.example.fixtures.source_order",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/source_order/models/Alpha.kt": "snapshots/source-order/Alpha.kt",
+          "org/example/fixtures/source_order/models/Zebra.kt": "snapshots/source-order/Zebra.kt"
+        }
+      }
+    },
+    {
+      "id": "explicit-json-extension",
+      "group": "formats",
+      "description": "Explicit JSON accepts a non-JSON source extension.",
+      "input": "valid/explicit-json-extension.json",
+      "package_name": "org.example.fixtures.explicit_json_extension",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "source_name": "source.data",
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/explicit_json_extension/models/Record.kt": "snapshots/explicit-json-extension/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "extensionless-auto",
+      "group": "formats",
+      "description": "Auto accepts JSON content without a source extension.",
+      "input": "valid/extensionless-auto.json",
+      "package_name": "org.example.fixtures.extensionless_auto",
+      "model_name_suffix": "",
+      "input_format": "auto",
+      "validate": true,
+      "source_name": "source",
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/extensionless_auto/models/Record.kt": "snapshots/extensionless-auto/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "uppercase-json-auto",
+      "group": "formats",
+      "description": "Auto extension recognition is case-insensitive.",
+      "input": "valid/uppercase-json-auto.json",
+      "package_name": "org.example.fixtures.uppercase_json_auto",
+      "model_name_suffix": "",
+      "input_format": "auto",
+      "validate": true,
+      "source_name": "SOURCE.JSON",
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/uppercase_json_auto/models/Record.kt": "snapshots/uppercase-json-auto/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "catalog-graph",
+      "group": "composition",
+      "description": "Six related components combine mandatory references, recursion, nullable list items, nested objects, scalars and untyped payloads.",
+      "input": "valid/catalog-graph.json",
+      "package_name": "org.example.fixtures.catalog_graph",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/catalog_graph/models/Account.kt": "snapshots/catalog-graph/Account.kt",
+          "org/example/fixtures/catalog_graph/models/Catalog.kt": "snapshots/catalog-graph/Catalog.kt",
+          "org/example/fixtures/catalog_graph/models/Inventory.kt": "snapshots/catalog-graph/Inventory.kt",
+          "org/example/fixtures/catalog_graph/models/Item.kt": "snapshots/catalog-graph/Item.kt",
+          "org/example/fixtures/catalog_graph/models/Page.kt": "snapshots/catalog-graph/Page.kt",
+          "org/example/fixtures/catalog_graph/models/Price.kt": "snapshots/catalog-graph/Price.kt"
+        }
+      }
+    },
+    {
+      "id": "singleton-type-arrays",
+      "group": "types",
+      "description": "A one-element type array is not a multi-type union; nullable false remains non-null.",
+      "input": "valid/singleton-type-arrays.json",
+      "package_name": "org.example.fixtures.singleton_type_arrays",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/singleton_type_arrays/models/Record.kt": "snapshots/singleton-type-arrays/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "nullable-reference",
+      "group": "references",
+      "description": "Reference nullability, requiredness and descriptive siblings are handled independently.",
+      "input": "valid/nullable-reference.json",
+      "package_name": "org.example.fixtures.nullable_reference",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/nullable_reference/models/Record.kt": "snapshots/nullable-reference/Record.kt",
+          "org/example/fixtures/nullable_reference/models/Target.kt": "snapshots/nullable-reference/Target.kt"
+        }
+      }
+    },
+    {
+      "id": "empty-input",
+      "group": "json",
+      "description": "Reject malformed or duplicate-key JSON without echoing source payload.",
+      "input": "invalid/empty-input.json",
+      "package_name": "org.example.fixtures.empty_input",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_JSON_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "truncated-json",
+      "group": "json",
+      "description": "Reject malformed or duplicate-key JSON without echoing source payload.",
+      "input": "invalid/truncated-json.json",
+      "package_name": "org.example.fixtures.truncated_json",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_JSON_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "trailing-json",
+      "group": "json",
+      "description": "Reject malformed or duplicate-key JSON without echoing source payload.",
+      "input": "invalid/trailing-json.json",
+      "package_name": "org.example.fixtures.trailing_json",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_JSON_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "trailing-comma",
+      "group": "json",
+      "description": "Reject malformed or duplicate-key JSON without echoing source payload.",
+      "input": "invalid/trailing-comma.json",
+      "package_name": "org.example.fixtures.trailing_comma",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_JSON_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "nonfinite-number",
+      "group": "json",
+      "description": "Reject malformed or duplicate-key JSON without echoing source payload.",
+      "input": "invalid/nonfinite-number.json",
+      "package_name": "org.example.fixtures.nonfinite_number",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_JSON_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "comment-json",
+      "group": "json",
+      "description": "Reject malformed or duplicate-key JSON without echoing source payload.",
+      "input": "invalid/comment-json.json",
+      "package_name": "org.example.fixtures.comment_json",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_JSON_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "duplicate-root",
+      "group": "json",
+      "description": "Reject malformed or duplicate-key JSON without echoing source payload.",
+      "input": "invalid/duplicate-root.json",
+      "package_name": "org.example.fixtures.duplicate_root",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_JSON_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "duplicate-property",
+      "group": "json",
+      "description": "Reject malformed or duplicate-key JSON without echoing source payload.",
+      "input": "invalid/duplicate-property.json",
+      "package_name": "org.example.fixtures.duplicate_property",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_JSON_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "duplicate-metadata",
+      "group": "json",
+      "description": "Reject malformed or duplicate-key JSON without echoing source payload.",
+      "input": "invalid/duplicate-metadata.json",
+      "package_name": "org.example.fixtures.duplicate_metadata",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_JSON_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "root-array",
+      "group": "document",
+      "description": "Document root must be an object.",
+      "input": "invalid/root-array.json",
+      "package_name": "org.example.fixtures.root_array",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_DOCUMENT_INVALID",
+        "pointer": ""
+      }
+    },
+    {
+      "id": "root-null",
+      "group": "document",
+      "description": "Document root must be an object.",
+      "input": "invalid/root-null.json",
+      "package_name": "org.example.fixtures.root_null",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_DOCUMENT_INVALID",
+        "pointer": ""
+      }
+    },
+    {
+      "id": "root-boolean",
+      "group": "document",
+      "description": "Document root must be an object.",
+      "input": "invalid/root-boolean.json",
+      "package_name": "org.example.fixtures.root_boolean",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_DOCUMENT_INVALID",
+        "pointer": ""
+      }
+    },
+    {
+      "id": "root-number",
+      "group": "document",
+      "description": "Document root must be an object.",
+      "input": "invalid/root-number.json",
+      "package_name": "org.example.fixtures.root_number",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_DOCUMENT_INVALID",
+        "pointer": ""
+      }
+    },
+    {
+      "id": "version-2",
+      "group": "document",
+      "description": "Reject unsupported or malformed version.",
+      "input": "invalid/version-2.json",
+      "package_name": "org.example.fixtures.version_2",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_OPENAPI_VERSION",
+        "pointer": "/openapi"
+      }
+    },
+    {
+      "id": "version-310",
+      "group": "document",
+      "description": "Reject unsupported or malformed version.",
+      "input": "invalid/version-310.json",
+      "package_name": "org.example.fixtures.version_310",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_OPENAPI_VERSION",
+        "pointer": "/openapi"
+      }
+    },
+    {
+      "id": "version-no-patch",
+      "group": "document",
+      "description": "Reject unsupported or malformed version.",
+      "input": "invalid/version-no-patch.json",
+      "package_name": "org.example.fixtures.version_no_patch",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_OPENAPI_VERSION",
+        "pointer": "/openapi"
+      }
+    },
+    {
+      "id": "version-prerelease",
+      "group": "document",
+      "description": "Reject unsupported or malformed version.",
+      "input": "invalid/version-prerelease.json",
+      "package_name": "org.example.fixtures.version_prerelease",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_OPENAPI_VERSION",
+        "pointer": "/openapi"
+      }
+    },
+    {
+      "id": "version-number",
+      "group": "document",
+      "description": "Reject unsupported or malformed version.",
+      "input": "invalid/version-number.json",
+      "package_name": "org.example.fixtures.version_number",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_OPENAPI_VERSION",
+        "pointer": "/openapi"
+      }
+    },
+    {
+      "id": "version-null",
+      "group": "document",
+      "description": "Reject unsupported or malformed version.",
+      "input": "invalid/version-null.json",
+      "package_name": "org.example.fixtures.version_null",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_OPENAPI_VERSION",
+        "pointer": "/openapi"
+      }
+    },
+    {
+      "id": "version-missing",
+      "group": "document",
+      "description": "Missing version is not accepted as a default.",
+      "input": "invalid/version-missing.json",
+      "package_name": "org.example.fixtures.version_missing",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_OPENAPI_VERSION",
+        "pointer": "/openapi"
+      }
+    },
+    {
+      "id": "components-missing",
+      "group": "document",
+      "description": "Required model containers must be non-empty objects.",
+      "input": "invalid/components-missing.json",
+      "package_name": "org.example.fixtures.components_missing",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components"
+      }
+    },
+    {
+      "id": "components-null",
+      "group": "document",
+      "description": "Required model containers must be non-empty objects.",
+      "input": "invalid/components-null.json",
+      "package_name": "org.example.fixtures.components_null",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components"
+      }
+    },
+    {
+      "id": "schemas-empty",
+      "group": "document",
+      "description": "Required model containers must be non-empty objects.",
+      "input": "invalid/schemas-empty.json",
+      "package_name": "org.example.fixtures.schemas_empty",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas"
+      }
+    },
+    {
+      "id": "schemas-array",
+      "group": "document",
+      "description": "Required model containers must be non-empty objects.",
+      "input": "invalid/schemas-array.json",
+      "package_name": "org.example.fixtures.schemas_array",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas"
+      }
+    },
+    {
+      "id": "paths-nonempty",
+      "group": "operations",
+      "description": "Model-only input cannot silently discard operations.",
+      "input": "invalid/paths-nonempty.json",
+      "package_name": "org.example.fixtures.paths_nonempty",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_OPERATIONS_UNSUPPORTED",
+        "pointer": "/paths"
+      }
+    },
+    {
+      "id": "paths-wrong-type",
+      "group": "operations",
+      "description": "Operation containers must be objects.",
+      "input": "invalid/paths-wrong-type.json",
+      "package_name": "org.example.fixtures.paths_wrong_type",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/paths"
+      }
+    },
+    {
+      "id": "webhooks-nonempty",
+      "group": "operations",
+      "description": "Model-only input cannot silently discard operations.",
+      "input": "invalid/webhooks-nonempty.json",
+      "package_name": "org.example.fixtures.webhooks_nonempty",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_OPERATIONS_UNSUPPORTED",
+        "pointer": "/webhooks"
+      }
+    },
+    {
+      "id": "webhooks-wrong-type",
+      "group": "operations",
+      "description": "Operation containers must be objects.",
+      "input": "invalid/webhooks-wrong-type.json",
+      "package_name": "org.example.fixtures.webhooks_wrong_type",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/webhooks"
+      }
+    },
+    {
+      "id": "parameter-component",
+      "group": "operations",
+      "description": "Non-model components are not silently processed.",
+      "input": "invalid/parameter-component.json",
+      "package_name": "org.example.fixtures.parameter_component",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/parameters"
+      }
+    },
+    {
+      "id": "component-null",
+      "group": "schema-shape",
+      "description": "A component schema slot must be an object.",
+      "input": "invalid/component-null.json",
+      "package_name": "org.example.fixtures.component_null",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "component-boolean",
+      "group": "schema-shape",
+      "description": "A component schema slot must be an object.",
+      "input": "invalid/component-boolean.json",
+      "package_name": "org.example.fixtures.component_boolean",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "component-array",
+      "group": "schema-shape",
+      "description": "A component schema slot must be an object.",
+      "input": "invalid/component-array.json",
+      "package_name": "org.example.fixtures.component_array",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "primitive-component",
+      "group": "models",
+      "description": "Supported primitive components remain explicit typealiases; they are not lost from the artifact set.",
+      "input": "valid/primitive-component.json",
+      "package_name": "org.example.fixtures.primitive_component",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/primitive_component/models/Record.kt": "snapshots/primitive-component/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "nullable-component",
+      "group": "deferred",
+      "description": "Unsupported component roots must fail rather than disappear.",
+      "input": "invalid/nullable-component.json",
+      "package_name": "org.example.fixtures.nullable_component",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "untyped-component",
+      "group": "deferred",
+      "description": "Unsupported component roots must fail rather than disappear.",
+      "input": "invalid/untyped-component.json",
+      "package_name": "org.example.fixtures.untyped_component",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "array-component",
+      "group": "deferred",
+      "description": "Unsupported component roots must fail rather than disappear.",
+      "input": "invalid/array-component.json",
+      "package_name": "org.example.fixtures.array_component",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "property-null",
+      "group": "schema-shape",
+      "description": "Every property schema slot is checked.",
+      "input": "invalid/property-null.json",
+      "package_name": "org.example.fixtures.property_null",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "property-boolean",
+      "group": "schema-shape",
+      "description": "Every property schema slot is checked.",
+      "input": "invalid/property-boolean.json",
+      "package_name": "org.example.fixtures.property_boolean",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "property-array",
+      "group": "schema-shape",
+      "description": "Every property schema slot is checked.",
+      "input": "invalid/property-array.json",
+      "package_name": "org.example.fixtures.property_array",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "properties-array",
+      "group": "schema-shape",
+      "description": "properties cannot be an array.",
+      "input": "invalid/properties-array.json",
+      "package_name": "org.example.fixtures.properties_array",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "required-string",
+      "group": "presence",
+      "description": "Required list must name unique declared properties.",
+      "input": "invalid/required-string.json",
+      "package_name": "org.example.fixtures.required_string",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "required-unknown",
+      "group": "presence",
+      "description": "Required list must name unique declared properties.",
+      "input": "invalid/required-unknown.json",
+      "package_name": "org.example.fixtures.required_unknown",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "required-duplicate",
+      "group": "presence",
+      "description": "Required list must name unique declared properties.",
+      "input": "invalid/required-duplicate.json",
+      "package_name": "org.example.fixtures.required_duplicate",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "required-nonstring",
+      "group": "presence",
+      "description": "Required list must name unique declared properties.",
+      "input": "invalid/required-nonstring.json",
+      "package_name": "org.example.fixtures.required_nonstring",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "required-null",
+      "group": "presence",
+      "description": "Required list must name unique declared properties.",
+      "input": "invalid/required-null.json",
+      "package_name": "org.example.fixtures.required_null",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record"
+      }
+    },
+    {
+      "id": "type-number",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/type-number.json",
+      "package_name": "org.example.fixtures.type_number",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "type-array-nonstring",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/type-array-nonstring.json",
+      "package_name": "org.example.fixtures.type_array_nonstring",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "type-array-duplicate",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/type-array-duplicate.json",
+      "package_name": "org.example.fixtures.type_array_duplicate",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "type-array-empty",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/type-array-empty.json",
+      "package_name": "org.example.fixtures.type_array_empty",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/type"
+      }
+    },
+    {
+      "id": "type-array-multiple",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/type-array-multiple.json",
+      "package_name": "org.example.fixtures.type_array_multiple",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/type"
+      }
+    },
+    {
+      "id": "type-null-only",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/type-null-only.json",
+      "package_name": "org.example.fixtures.type_null_only",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/type"
+      }
+    },
+    {
+      "id": "type-unknown",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/type-unknown.json",
+      "package_name": "org.example.fixtures.type_unknown",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/type"
+      }
+    },
+    {
+      "id": "nullable-string",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/nullable-string.json",
+      "package_name": "org.example.fixtures.nullable_string",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value/nullable"
+      }
+    },
+    {
+      "id": "format-number",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/format-number.json",
+      "package_name": "org.example.fixtures.format_number",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "array-items-missing",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/array-items-missing.json",
+      "package_name": "org.example.fixtures.array_items_missing",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "array-items-null",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/array-items-null.json",
+      "package_name": "org.example.fixtures.array_items_null",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value/items"
+      }
+    },
+    {
+      "id": "array-items-boolean",
+      "group": "schema-shape",
+      "description": "Malformed or unsupported type slot is diagnosed at its schema location.",
+      "input": "invalid/array-items-boolean.json",
+      "package_name": "org.example.fixtures.array_items_boolean",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value/items"
+      }
+    },
+    {
+      "id": "inline-string-enum",
+      "group": "models",
+      "description": "Open string enums retain known wire values and preserve unknown strings instead of flattening to String.",
+      "input": "valid/inline-string-enum.json",
+      "package_name": "org.example.fixtures.inline_string_enum",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/inline_string_enum/models/Record.kt": "snapshots/inline-string-enum/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "declared-const",
+      "group": "objects",
+      "description": "Declared scalar const becomes an always-encoded body property in a plain class.",
+      "input": "valid/declared-const.json",
+      "package_name": "org.example.fixtures.declared_const",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/declared_const/models/Record.kt": "snapshots/declared-const/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "unsupported-default",
+      "group": "deferred",
+      "description": "Reject default rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-default.json",
+      "package_name": "org.example.fixtures.unsupported_default",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/default"
+      }
+    },
+    {
+      "id": "unsupported-oneof",
+      "group": "deferred",
+      "description": "Reject oneOf rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-oneof.json",
+      "package_name": "org.example.fixtures.unsupported_oneof",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/oneOf"
+      }
+    },
+    {
+      "id": "unsupported-anyof",
+      "group": "deferred",
+      "description": "Reject anyOf rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-anyof.json",
+      "package_name": "org.example.fixtures.unsupported_anyof",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/anyOf"
+      }
+    },
+    {
+      "id": "unsupported-allof",
+      "group": "deferred",
+      "description": "Scalar allOf remains deferred; object composition support must not silently absorb scalar branches.",
+      "input": "invalid/unsupported-allof.json",
+      "package_name": "org.example.fixtures.unsupported_allof",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/allOf"
+      }
+    },
+    {
+      "id": "unsupported-minlength",
+      "group": "deferred",
+      "description": "Reject minLength rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-minlength.json",
+      "package_name": "org.example.fixtures.unsupported_minlength",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/minLength"
+      }
+    },
+    {
+      "id": "unsupported-maxlength",
+      "group": "deferred",
+      "description": "Reject maxLength rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-maxlength.json",
+      "package_name": "org.example.fixtures.unsupported_maxlength",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/maxLength"
+      }
+    },
+    {
+      "id": "unsupported-pattern",
+      "group": "deferred",
+      "description": "Reject pattern rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-pattern.json",
+      "package_name": "org.example.fixtures.unsupported_pattern",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/pattern"
+      }
+    },
+    {
+      "id": "unsupported-minimum",
+      "group": "deferred",
+      "description": "Reject minimum rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-minimum.json",
+      "package_name": "org.example.fixtures.unsupported_minimum",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/minimum"
+      }
+    },
+    {
+      "id": "unsupported-maximum",
+      "group": "deferred",
+      "description": "Reject maximum rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-maximum.json",
+      "package_name": "org.example.fixtures.unsupported_maximum",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/maximum"
+      }
+    },
+    {
+      "id": "unsupported-readonly",
+      "group": "deferred",
+      "description": "Reject readOnly rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-readonly.json",
+      "package_name": "org.example.fixtures.unsupported_readonly",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/readOnly"
+      }
+    },
+    {
+      "id": "unsupported-writeonly",
+      "group": "deferred",
+      "description": "Reject writeOnly rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-writeonly.json",
+      "package_name": "org.example.fixtures.unsupported_writeonly",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/writeOnly"
+      }
+    },
+    {
+      "id": "unsupported-discriminator",
+      "group": "deferred",
+      "description": "Reject discriminator rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-discriminator.json",
+      "package_name": "org.example.fixtures.unsupported_discriminator",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/discriminator"
+      }
+    },
+    {
+      "id": "unsupported-x-kotlin-value-class",
+      "group": "deferred",
+      "description": "Reject x-kotlin-value-class rather than flattening or discarding its semantics.",
+      "input": "invalid/unsupported-x-kotlin-value-class.json",
+      "package_name": "org.example.fixtures.unsupported_x_kotlin_value_class",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/x-kotlin-value-class"
+      }
+    },
+    {
+      "id": "dictionary-typed",
+      "group": "collections",
+      "description": "Typed additionalProperties generates a nullable Map field with non-null string values.",
+      "input": "valid/dictionary-typed.json",
+      "package_name": "org.example.fixtures.dictionary_typed",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/dictionary_typed/models/Record.kt": "snapshots/dictionary-typed/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "dictionary-open",
+      "group": "collections",
+      "description": "Open additionalProperties retains object keys and arbitrary JSON values as JsonObject.",
+      "input": "valid/dictionary-open.json",
+      "package_name": "org.example.fixtures.dictionary_open",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/dictionary_open/models/Record.kt": "snapshots/dictionary-open/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "closed-object",
+      "group": "collections",
+      "description": "Closed empty objects use JsonObject with an explicit non-enforcement warning.",
+      "input": "valid/closed-object.json",
+      "package_name": "org.example.fixtures.closed_object",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/closed_object/models/Record.kt": "snapshots/closed-object/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "format-date",
+      "group": "deferred",
+      "description": "Only supported formats may map to a scalar.",
+      "input": "invalid/format-date.json",
+      "package_name": "org.example.fixtures.format_date",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/format"
+      }
+    },
+    {
+      "id": "format-date-time",
+      "group": "deferred",
+      "description": "Only supported formats may map to a scalar.",
+      "input": "invalid/format-date-time.json",
+      "package_name": "org.example.fixtures.format_date_time",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/format"
+      }
+    },
+    {
+      "id": "format-byte",
+      "group": "deferred",
+      "description": "Only supported formats may map to a scalar.",
+      "input": "invalid/format-byte.json",
+      "package_name": "org.example.fixtures.format_byte",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/format"
+      }
+    },
+    {
+      "id": "format-binary",
+      "group": "deferred",
+      "description": "Only supported formats may map to a scalar.",
+      "input": "invalid/format-binary.json",
+      "package_name": "org.example.fixtures.format_binary",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/format"
+      }
+    },
+    {
+      "id": "format-email",
+      "group": "deferred",
+      "description": "Only supported formats may map to a scalar.",
+      "input": "invalid/format-email.json",
+      "package_name": "org.example.fixtures.format_email",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/format"
+      }
+    },
+    {
+      "id": "array-string-enum",
+      "group": "models",
+      "description": "An enum declaration belongs to its array-item scope; list nullability does not make the enum item nullable.",
+      "input": "valid/array-string-enum.json",
+      "package_name": "org.example.fixtures.array_string_enum",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/array_string_enum/models/Record.kt": "snapshots/array-string-enum/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "unreferenced-enum",
+      "group": "deferred",
+      "description": "All components are checked even when nothing references them.",
+      "input": "invalid/unreferenced-enum.json",
+      "package_name": "org.example.fixtures.unreferenced_enum",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Unused/enum"
+      }
+    },
+    {
+      "id": "ref-missing",
+      "group": "references",
+      "description": "Reject unresolved, external or unsupported reference syntax.",
+      "input": "invalid/ref-missing.json",
+      "package_name": "org.example.fixtures.ref_missing",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_REF_MISSING",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "ref-external-http",
+      "group": "references",
+      "description": "Reject unresolved, external or unsupported reference syntax.",
+      "input": "invalid/ref-external-http.json",
+      "package_name": "org.example.fixtures.ref_external_http",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_REF_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "ref-external-file",
+      "group": "references",
+      "description": "Reject unresolved, external or unsupported reference syntax.",
+      "input": "invalid/ref-external-file.json",
+      "package_name": "org.example.fixtures.ref_external_file",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_REF_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "ref-schema-pointer",
+      "group": "references",
+      "description": "Reject unresolved, external or unsupported reference syntax.",
+      "input": "invalid/ref-schema-pointer.json",
+      "package_name": "org.example.fixtures.ref_schema_pointer",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_REF_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "ref-percent-encoding",
+      "group": "references",
+      "description": "Reject unresolved, external or unsupported reference syntax.",
+      "input": "invalid/ref-percent-encoding.json",
+      "package_name": "org.example.fixtures.ref_percent_encoding",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_REF_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "ref-invalid-escape",
+      "group": "references",
+      "description": "Reject unresolved, external or unsupported reference syntax.",
+      "input": "invalid/ref-invalid-escape.json",
+      "package_name": "org.example.fixtures.ref_invalid_escape",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "ref-trailing-tilde",
+      "group": "references",
+      "description": "Reject unresolved, external or unsupported reference syntax.",
+      "input": "invalid/ref-trailing-tilde.json",
+      "package_name": "org.example.fixtures.ref_trailing_tilde",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "ref-empty-name",
+      "group": "references",
+      "description": "Reject unresolved, external or unsupported reference syntax.",
+      "input": "invalid/ref-empty-name.json",
+      "package_name": "org.example.fixtures.ref_empty_name",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_REF_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "ref-number",
+      "group": "references",
+      "description": "Reject unresolved, external or unsupported reference syntax.",
+      "input": "invalid/ref-number.json",
+      "package_name": "org.example.fixtures.ref_number",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/Record/properties/value"
+      }
+    },
+    {
+      "id": "ref-semantic-sibling",
+      "group": "references",
+      "description": "Semantic ref siblings cannot silently override the reference.",
+      "input": "invalid/ref-semantic-sibling.json",
+      "package_name": "org.example.fixtures.ref_semantic_sibling",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/type"
+      }
+    },
+    {
+      "id": "component-name-collision",
+      "group": "naming",
+      "description": "Different component keys may normalize to the same filename.",
+      "input": "invalid/component-name-collision.json",
+      "package_name": "org.example.fixtures.component_name_collision",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_NAME_COLLISION",
+        "pointer": "/components/schemas/OrderItem"
+      }
+    },
+    {
+      "id": "component-case-collision",
+      "group": "naming",
+      "description": "Case-insensitive filesystems must not lose one component.",
+      "input": "invalid/component-case-collision.json",
+      "package_name": "org.example.fixtures.component_case_collision",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_NAME_COLLISION",
+        "pointer": "/components/schemas/Url"
+      }
+    },
+    {
+      "id": "property-name-collision",
+      "group": "naming",
+      "description": "Normalized property symbols must remain unique.",
+      "input": "invalid/property-name-collision.json",
+      "package_name": "org.example.fixtures.property_name_collision",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_NAME_COLLISION",
+        "pointer": "/components/schemas/Record/properties/aB"
+      }
+    },
+    {
+      "id": "property-case-collision",
+      "group": "naming",
+      "description": "Conservative property collision checks protect JVM getters.",
+      "input": "invalid/property-case-collision.json",
+      "package_name": "org.example.fixtures.property_case_collision",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_NAME_COLLISION",
+        "pointer": "/components/schemas/Record/properties/Value"
+      }
+    },
+    {
+      "id": "nested-array-collision",
+      "group": "naming",
+      "description": "An array-item declaration and sibling nested model cannot share a name.",
+      "input": "invalid/nested-array-collision.json",
+      "package_name": "org.example.fixtures.nested_array_collision",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_NAME_COLLISION",
+        "pointer": "/components/schemas/Record/properties/itemsInner"
+      }
+    },
+    {
+      "id": "nested-owner-collision",
+      "group": "naming",
+      "description": "A nested model cannot reuse its enclosing declaration name.",
+      "input": "invalid/nested-owner-collision.json",
+      "package_name": "org.example.fixtures.nested_owner_collision",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_NAME_COLLISION",
+        "pointer": "/components/schemas/Record/properties/record"
+      }
+    },
+    {
+      "id": "serializer-owned-name",
+      "group": "naming",
+      "description": "Nested models cannot use serialization-owned declaration names.",
+      "input": "invalid/serializer-owned-name.json",
+      "package_name": "org.example.fixtures.serializer_owned_name",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_NAME_COLLISION",
+        "pointer": "/components/schemas/Record/properties/companion"
+      }
+    },
+    {
+      "id": "name-no-ascii",
+      "group": "naming",
+      "description": "An unrepresentable property name receives a precise pointer.",
+      "input": "invalid/name-no-ascii.json",
+      "package_name": "org.example.fixtures.name_no_ascii",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_NAME_INVALID",
+        "pointer": "/components/schemas/Record/properties/雪"
+      }
+    },
+    {
+      "id": "reserved-filename",
+      "group": "naming",
+      "description": "Reject platform-reserved file basenames.",
+      "input": "invalid/reserved-filename.json",
+      "package_name": "org.example.fixtures.reserved_filename",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_NAME_INVALID",
+        "pointer": "/components/schemas/NUL"
+      }
+    },
+    {
+      "id": "pointer-diagnostic-escaping",
+      "group": "diagnostics",
+      "description": "Error pointers escape slash and tilde rather than becoming ambiguous.",
+      "input": "invalid/pointer-diagnostic-escaping.json",
+      "package_name": "org.example.fixtures.pointer_diagnostic_escaping",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_INVALID",
+        "pointer": "/components/schemas/A~1B~0/properties/key~1~0/enum"
+      }
+    },
+    {
+      "id": "package-traversal",
+      "group": "options",
+      "description": "Package options cannot introduce invalid names or unsafe paths.",
+      "input": "invalid/package-traversal.json",
+      "package_name": "../outside",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_PACKAGE_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "package-keyword",
+      "group": "options",
+      "description": "Package options cannot introduce invalid names or unsafe paths.",
+      "input": "invalid/package-keyword.json",
+      "package_name": "org.when",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_PACKAGE_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "package-reserved-root",
+      "group": "options",
+      "description": "Package options cannot introduce invalid names or unsafe paths.",
+      "input": "invalid/package-reserved-root.json",
+      "package_name": "kotlin.example",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_PACKAGE_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "package-windows-device",
+      "group": "options",
+      "description": "Package options cannot introduce invalid names or unsafe paths.",
+      "input": "invalid/package-windows-device.json",
+      "package_name": "org.con",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_PACKAGE_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "package-empty-segment",
+      "group": "options",
+      "description": "Package options cannot introduce invalid names or unsafe paths.",
+      "input": "invalid/package-empty-segment.json",
+      "package_name": "org..example",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_PACKAGE_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "suffix-traversal",
+      "group": "options",
+      "description": "Suffix validation is independent of source validation.",
+      "input": "invalid/suffix-traversal.json",
+      "package_name": "org.example.fixtures.suffix_traversal",
+      "model_name_suffix": "../Outside",
+      "input_format": "json",
+      "validate": false,
+      "expect": {
+        "kind": "error",
+        "code": "E_NAME_INVALID",
+        "pointer": null
+      }
+    },
+    {
+      "id": "explicit-yaml",
+      "group": "formats",
+      "description": "Explicit YAML accepts JSON syntax through the same ordered tree.",
+      "input": "valid/explicit-yaml.json",
+      "package_name": "org.example.fixtures.explicit_yaml",
+      "model_name_suffix": "",
+      "input_format": "yaml",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/explicit_yaml/models/Record.kt": "snapshots/explicit-yaml/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "auto-yaml-extension",
+      "group": "formats",
+      "description": "Auto YAML extension selects YAML and accepts its JSON syntax subset.",
+      "input": "valid/auto-yaml-extension.json",
+      "package_name": "org.example.fixtures.auto_yaml_extension",
+      "model_name_suffix": "",
+      "input_format": "auto",
+      "validate": true,
+      "source_name": "source.yaml",
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/auto_yaml_extension/models/Record.kt": "snapshots/auto-yaml-extension/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "auto-unknown-extension",
+      "group": "formats",
+      "description": "Unknown extensions require an explicit input format.",
+      "input": "invalid/auto-unknown-extension.json",
+      "package_name": "org.example.fixtures.auto_unknown_extension",
+      "model_name_suffix": "",
+      "input_format": "auto",
+      "validate": true,
+      "source_name": "source.data",
+      "expect": {
+        "kind": "error",
+        "code": "E_INPUT_FORMAT_UNSUPPORTED",
+        "pointer": null
+      }
+    },
+    {
+      "id": "nullable-booleans",
+      "group": "presence",
+      "description": "Boolean type arrays preserve nullable values and nullable list elements.",
+      "input": "valid/nullable-booleans.json",
+      "package_name": "org.example.fixtures.nullable_booleans",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/nullable_booleans/models/Record.kt": "snapshots/nullable-booleans/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "version-32",
+      "group": "document",
+      "description": "OpenAPI 3.2 is explicitly outside the current version contract.",
+      "input": "invalid/version-32.json",
+      "package_name": "org.example.fixtures.version_32",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_OPENAPI_VERSION",
+        "pointer": "/openapi"
+      }
+    },
+    {
+      "id": "unsupported-exclusiveminimum",
+      "group": "deferred",
+      "description": "Numeric bound semantics cannot be ignored.",
+      "input": "invalid/unsupported-exclusiveminimum.json",
+      "package_name": "org.example.fixtures.unsupported_exclusiveminimum",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/exclusiveMinimum"
+      }
+    },
+    {
+      "id": "unsupported-exclusivemaximum",
+      "group": "deferred",
+      "description": "Numeric bound semantics cannot be ignored.",
+      "input": "invalid/unsupported-exclusivemaximum.json",
+      "package_name": "org.example.fixtures.unsupported_exclusivemaximum",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/exclusiveMaximum"
+      }
+    },
+    {
+      "id": "unsupported-multipleof",
+      "group": "deferred",
+      "description": "Numeric bound semantics cannot be ignored.",
+      "input": "invalid/unsupported-multipleof.json",
+      "package_name": "org.example.fixtures.unsupported_multipleof",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/multipleOf"
+      }
+    },
+    {
+      "id": "unsupported-minitems",
+      "group": "deferred",
+      "description": "Array cardinality constraints cannot be ignored.",
+      "input": "invalid/unsupported-minitems.json",
+      "package_name": "org.example.fixtures.unsupported_minitems",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/minItems"
+      }
+    },
+    {
+      "id": "unsupported-maxitems",
+      "group": "deferred",
+      "description": "Array cardinality constraints cannot be ignored.",
+      "input": "invalid/unsupported-maxitems.json",
+      "package_name": "org.example.fixtures.unsupported_maxitems",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/maxItems"
+      }
+    },
+    {
+      "id": "unsupported-propertynames",
+      "group": "deferred",
+      "description": "Dictionary key schemas are an independent semantic construct.",
+      "input": "invalid/unsupported-propertynames.json",
+      "package_name": "org.example.fixtures.unsupported_propertynames",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/propertyNames"
+      }
+    },
+    {
+      "id": "unsupported-prefixitems",
+      "group": "deferred",
+      "description": "Tuple schemas and boolean tails are not flattened into ordinary arrays.",
+      "input": "invalid/unsupported-prefixitems.json",
+      "package_name": "org.example.fixtures.unsupported_prefixitems",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/prefixItems"
+      }
+    },
+    {
+      "id": "unsupported-native-date",
+      "group": "deferred",
+      "description": "Native-type extensions require explicit serializers/mappings.",
+      "input": "invalid/unsupported-native-date.json",
+      "package_name": "org.example.fixtures.unsupported_native_date",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/x-native-type"
+      }
+    },
+    {
+      "id": "unsupported-native-bigint",
+      "group": "deferred",
+      "description": "Native-type extensions require explicit serializers/mappings.",
+      "input": "invalid/unsupported-native-bigint.json",
+      "package_name": "org.example.fixtures.unsupported_native_bigint",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/x-native-type"
+      }
+    },
+    {
+      "id": "format-uri",
+      "group": "deferred",
+      "description": "URI is not implicitly treated as an unconstrained String.",
+      "input": "invalid/format-uri.json",
+      "package_name": "org.example.fixtures.format_uri",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/format"
+      }
+    },
+    {
+      "id": "null-type",
+      "group": "deferred",
+      "description": "A null-only schema is not an unconstrained value.",
+      "input": "invalid/null-type.json",
+      "package_name": "org.example.fixtures.null_type",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "error",
+        "code": "E_SCHEMA_UNSUPPORTED",
+        "pointer": "/components/schemas/Record/properties/value/type"
+      }
+    },
+    {
+      "id": "typeless-const",
+      "group": "objects",
+      "description": "Unambiguous typeless string const retains a typed body property instead of JsonElement.",
+      "input": "valid/typeless-const.json",
+      "package_name": "org.example.fixtures.typeless_const",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/typeless_const/models/Record.kt": "snapshots/typeless-const/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "typeless-enum",
+      "group": "models",
+      "description": "An enum of unique string literals without type shares the open string-enum resolver and does not fall through to JsonElement.",
+      "input": "valid/typeless-enum.json",
+      "package_name": "org.example.fixtures.typeless_enum",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/typeless_enum/models/Record.kt": "snapshots/typeless-enum/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "typeless-oneof",
+      "group": "models",
+      "description": "A string/integer inline oneOf uses sibling kind wrappers, a Long integer payload, and a source-located approximation warning.",
+      "input": "valid/typeless-oneof.json",
+      "package_name": "org.example.fixtures.typeless_oneof",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/typeless_oneof/models/Record.kt": "snapshots/typeless-oneof/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "typeless-anyof",
+      "group": "models",
+      "description": "A nested single non-null branch plus null retains its native nullable type instead of JsonElement.",
+      "input": "valid/typeless-anyof.json",
+      "package_name": "org.example.fixtures.typeless_anyof",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/typeless_anyof/models/Record.kt": "snapshots/typeless-anyof/Record.kt"
+        }
+      }
+    },
+    {
+      "id": "typeless-allof",
+      "group": "composition",
+      "description": "Empty object allOf uses the documented JsonElement approximation with nonfatal source-located warnings.",
+      "input": "valid/typeless-allof.json",
+      "package_name": "org.example.fixtures.typeless_allof",
+      "model_name_suffix": "",
+      "input_format": "json",
+      "validate": true,
+      "expect": {
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/typeless_allof/models/Record.kt": "snapshots/typeless-allof/Record.kt"
+        }
+      }
+    }
+  ]
+}

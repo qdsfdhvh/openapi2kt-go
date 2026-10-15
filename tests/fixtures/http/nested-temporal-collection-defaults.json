@@ -1,0 +1,29 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Finite nested temporal defaults", "version": "1"},
+  "components": {"schemas": {
+    "Holder": {"type": "object", "properties": {
+      "required": {"type": "array", "items": {"type": "array", "items": {"type": "string", "format": "date"}}, "default": [["2024-02-29"]]},
+      "rows": {"type": "array", "items": {"type": ["array", "null"], "items": {"type": ["string", "null"], "format": "date"}}, "default": [["2024-02-29", null, "0000-01-01"], null, []]},
+      "listMaps": {"type": "array", "items": {"type": ["object", "null"], "additionalProperties": {"type": ["string", "null"], "format": "date-time"}}, "default": [{"z": null, "a/~": "2024-02-29T12:34:56.123456789+02:30", "$ref": "2024-02-29T00:00:00Z"}, null, {}]},
+      "mapLists": {"additionalProperties": {"type": "array", "nullable": true, "items": {"type": "string", "format": "date", "nullable": true}}, "default": {"z": null, "b": [], "a": ["2024-02-29", null]}},
+      "mapMaps": {"type": "object", "additionalProperties": {"additionalProperties": {"type": "string", "format": "date-time", "nullable": true}}, "default": {"z": {}, "a": {"z": null, "a": "2024-02-29T12:34:56+18:00", "b": "2024-02-29T12:34:56-18:00"}}},
+      "mixed": {"type": "array", "items": {"additionalProperties": {"type": "array", "items": {"additionalProperties": {"type": "string", "format": "date"}}}}, "default": [{"a": [{"b": "2024-02-29"}]}]},
+      "builtin": {"additionalProperties": {"additionalProperties": {"type": "number", "format": "float"}}, "default": {"a": {"b": 1.000000001}}},
+      "empty": {"type": "array", "items": {"type": "array", "items": {"type": "string", "format": "date"}}, "default": []},
+      "nil": {"type": ["object", "null"], "additionalProperties": {"type": "array", "items": {"type": "string", "format": "date-time"}}, "default": null},
+      "nested": {"properties": {"value": {"type": "array", "items": {"type": "array", "items": {"type": "string", "format": "date"}}, "default": [["2024-02-29"]]}}},
+      "kotlin": {"type": "string"}, "kotlinx": {"type": "string"}
+    }, "required": ["required"]},
+    "RequiredNullable": {"properties": {"value": {"type": "object", "nullable": true, "additionalProperties": {"type": "array", "items": {"type": "string", "format": "date"}}, "default": null}}, "required": ["value"]}
+  }},
+  "paths": {
+    "/holder": {"post": {"operationId": "send", "tags": ["defaults"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}, "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}}},
+    "/patch": {"patch": {"operationId": "patch", "tags": ["defaults"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"properties": {
+      "rows": {"type": "array", "nullable": true, "items": {"type": "array", "items": {"type": "string", "format": "date"}}, "default": [["2024-02-29"]]},
+      "stamps": {"type": "object", "nullable": true, "additionalProperties": {"type": "array", "items": {"type": "string", "format": "date-time"}}, "default": {"a": ["2024-02-29T00:00:00Z"]}},
+      "required": {"type": "array", "nullable": true, "items": {"type": "array", "items": {"type": "string", "format": "date"}}, "default": [["2024-02-29"]]}
+    }, "required": ["required"]}}}}, "responses": {"204": {"description": "Updated"}}}},
+    "/events": {"get": {"operationId": "watch", "tags": ["defaults"], "responses": {"200": {"description": "Events", "content": {"text/event-stream": {"schema": {"properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}, "required": ["event", "data"]}}}}}}}
+  }
+}
