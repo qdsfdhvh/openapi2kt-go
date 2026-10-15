@@ -59,6 +59,15 @@ func (a *analyzer) primitiveUnionElementCandidate(v *document.Value) bool {
 }
 
 func (a *analyzer) unionDefaultField(f field, name string, nested *[]Declaration, used map[string]bool) (TypeRef, *diagnostic.Diagnostic) {
+	// Discarded allOf contributions validate annotations without owning any
+	// declarations. Their scratch plan still needs a local declaration sink.
+	if nested == nil {
+		scratch := []Declaration{}
+		nested = &scratch
+	}
+	if used == nil {
+		used = map[string]bool{}
+	}
 	if a.objectDefaultSchemas == nil {
 		a.objectDefaultSchemas = map[*document.Value]bool{}
 	}
@@ -204,6 +213,10 @@ func (a *analyzer) primitiveUnionDefaultEncoded(f field, union *PrimitiveUnion) 
 }
 
 func (a *analyzer) primitiveUnionEncoded(value *document.Value, at string, source *document.Value, sourcePointer string, depth int, union *PrimitiveUnion) (string, *diagnostic.Diagnostic) {
+	work, bytes := 0, 0
+	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
+		return "", err
+	}
 	if value.Kind() == document.Null {
 		view, err := a.readUnion(source, sourcePointer)
 		if err != nil {
@@ -234,6 +247,10 @@ func (a *analyzer) objectUnionDefaultEncoded(f field, union *ObjectUnion) (strin
 }
 
 func (a *analyzer) objectUnionEncoded(value *document.Value, at string, source *document.Value, sourcePointer string, depth int, union *ObjectUnion) (string, *diagnostic.Diagnostic) {
+	work, bytes := 0, 0
+	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
+		return "", err
+	}
 	if value.Kind() == document.Null {
 		if !union.NullVariant {
 			return "", invalid("A null default requires a nullable union.", at)

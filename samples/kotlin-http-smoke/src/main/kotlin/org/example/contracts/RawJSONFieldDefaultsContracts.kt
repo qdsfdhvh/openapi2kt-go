@@ -36,6 +36,7 @@ import org.example.rawjson.RawJson
 import org.example.rawjson.api.models.SendInlineInputDto
 import org.example.rawjson.api.models.WatchHoldersEventDto
 import org.example.rawjson.models.HolderDto
+import org.example.rawjson.models.Patch
 
 @OptIn(io.ktor.utils.io.InternalAPI::class)
 private class RawJSONFieldDefaultsEngine(config: MockEngineConfig) : MockEngine(config) {
@@ -61,6 +62,7 @@ private fun rawJSONFieldDefaultsBody(body: OutgoingContent): String = when (body
 
 private fun rawJSONFieldDefaultsFields(value: HolderDto): Map<String, JsonElement?> = linkedMapOf(
     "open" to value.open, "free" to value.free, "empty" to value.empty,
+    "nullableOpen" to value.nullableOpen, "nullableFree" to value.nullableFree,
 )
 
 suspend fun rawJSONFieldDefaultsContracts(checked: Boolean) {
@@ -68,6 +70,8 @@ suspend fun rawJSONFieldDefaultsContracts(checked: Boolean) {
         "open" to Json.parseToJsonElement("""{"a":1,"b":[true,null]}"""),
         "free" to Json.parseToJsonElement("[1,2,3]"),
         "empty" to Json.parseToJsonElement("""{"x":"y"}"""),
+        "nullableOpen" to null,
+        "nullableFree" to null,
     )
     val value = HolderDto()
     check(rawJSONFieldDefaultsFields(value) == expected)
@@ -83,6 +87,11 @@ suspend fun rawJSONFieldDefaultsContracts(checked: Boolean) {
         rawJSONFieldDefaultsReject { codec.decodeFromString<HolderDto>("""{"open":[]}""") }
         val inline = codec.decodeFromString<SendInlineInputDto>("{}")
         check(inline.u == Json.parseToJsonElement("\"x\""))
+        check(inline.open == Patch.Absent)
+        check("open" !in (codec.encodeToJsonElement(SendInlineInputDto.serializer(), inline) as JsonObject))
+        check(codec.decodeFromString<SendInlineInputDto>("""{"open":null}""").open == Patch.Null)
+        val replacement = Json.parseToJsonElement("""{"key":1}""") as JsonObject
+        check(codec.decodeFromString<SendInlineInputDto>("""{"open":{"key":1}}""").open == Patch.Value(replacement))
         rawJSONFieldDefaultsWire(codec, value, checked)
     }
 }

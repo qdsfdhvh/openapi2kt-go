@@ -13,7 +13,7 @@ A field whose shared plan produces a raw JSON carrier may declare its own `defau
 }
 ```
 
-Optional fields get typed initializers decoded by a file-level helper (`Json.parseToJsonElement` for `JsonElement`, plus an `as JsonObject` cast for `JsonObject`), so public qualifiers cannot be shadowed. Missing JSON uses the default, a supplied value replaces it and explicit null remains null. Required fields validate the annotation and keep their constructor argument; optional explicitly nullable inline request fields keep `Patch.Absent`.
+Optional fields get typed initializers decoded by a file-level helper (`Json.parseToJsonElement` for `JsonElement`, plus an `as JsonObject` cast for `JsonObject`), so public qualifiers cannot be shadowed. Missing JSON uses the default, a supplied value replaces it and explicit null remains null. A `default: null` annotation requires schema nullability (`nullable: true` or a supported type-plus-null spelling); optional presence alone does not grant it. Request union projections retain the shared planner's nullability, including an explicit null branch. Required fields validate the annotation and keep their constructor argument; optional explicitly nullable inline request fields keep `Patch.Absent`.
 
 ## Admission and source fidelity
 
@@ -23,12 +23,14 @@ The planner borrows the original schema and value nodes. The canonical JSON is e
 
 ## Validation and resources
 
-The existing input8MiB, source48, checked-collection16 and 240 serialized constructor-slot limits are unchanged. `JsonElement`/`JsonObject` carriers keep their existing approximation warnings (`W_JSON_ELEMENT_APPROXIMATION` for empty objects, `W_HTTP_FIELD_UNION_PROJECTION` for request-context unions); this feature adds no membership or constraint enforcement.
+The existing input8MiB, source48, checked-collection16 and 240 serialized constructor-slot limits are unchanged. Before embedding a raw default, the generator checks the entire original value tree against the shared 16,384 value-node and 32 KiB compact JSON budgets. JSON escaping counts toward the byte limit. The walk retains source member order and reports the original offending `/default/...` Pointer; exact limits are accepted. Required fields, Patch fields and discarded `allOf` contributions undergo the same validation even when no initializer is emitted.
+
+`JsonElement`/`JsonObject` carriers keep their existing approximation warnings (`W_JSON_ELEMENT_APPROXIMATION` for empty objects, `W_HTTP_FIELD_UNION_PROJECTION` for request-context unions); this feature adds no membership or constraint enforcement.
 
 ## Compatibility and verification
 
 These raw JSON field defaults previously failed with `E_SCHEMA_UNSUPPORTED`. Existing no-default carriers, typed dictionaries and structured const values retain their contracts and emitted bytes. This closes the raw `JsonElement`/`JsonObject` carrier subitem of D03; typed dictionaries, DTO/union/hierarchy carriers and root/component defaults remain separate.
 
-The [fixture](../tests/fixtures/http/raw-json-field-defaults.json), [core typed and guard tests](../core/raw_json_defaults_test.go) and feature `raw-json-field-defaults` define the increment. `bash scripts/test.sh feature raw-json-field-defaults` freshly generates Data/Plain × validation off/on projects and checks constructor/serde, four Json configurations, override/null, controlled HTTP and fragmented live SSE, plus a combined optimized/locked package. The fixture/consumer also run in `http`. `OPENAPI_KT_PREPARE_ONLY=1` provides native preparation evidence only.
+The [fixture](../tests/fixtures/http/raw-json-field-defaults.json), [core typed tests](../core/raw_json_defaults_test.go), [nullability/resource guards](../core/carrier_defaults_guards_test.go) and [native failure-preservation tests](../internal/cli/carrier_defaults_guards_process_test.go) define the increment. `bash scripts/test.sh feature raw-json-field-defaults` freshly generates Data/Plain × validation off/on projects and checks constructor/serde, four Json configurations, override/null, controlled HTTP and fragmented live SSE, plus a combined optimized/locked package. The fixture/consumer also run in `http`. `OPENAPI_KT_PREPARE_ONLY=1` provides native preparation evidence only.
 
-**Migration:** formerly rejected raw JSON carrier field defaults now generate. General D03/D04, wider platforms and release gates remain open.
+**Migration:** formerly rejected raw JSON carrier field defaults now generate. Non-nullable `default: null` annotations and defaults beyond the value-node/byte limits are rejected with `E_SCHEMA_INVALID` and `E_MODEL_LIMIT`, respectively; earlier admission of these values did not satisfy the bounded default contract. Generation failure preserves existing output. General D03/D04, wider platforms and release gates remain open.

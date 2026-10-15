@@ -78,7 +78,16 @@ func (a *analyzer) rawJSONDefaultEncoded(f field, ty TypeRef) (string, *diagnost
 	default:
 		return "", unsupported(at)
 	}
+	work, bytes := 0, 0
+	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
+		return "", err
+	}
 	if value.Kind() == document.Null {
+		// ty is the shared schema plan before optional presence adds a nullable
+		// Kotlin use. It also retains null branches of request union projections.
+		if ty.Kind != Nullable {
+			return "", invalid("A null default requires a nullable schema.", at)
+		}
 		return "null", nil
 	}
 	if marker == "`openapi-kt object default`(" && value.Kind() != document.Object {

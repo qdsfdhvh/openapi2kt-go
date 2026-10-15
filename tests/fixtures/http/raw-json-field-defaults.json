@@ -32,6 +32,15 @@
             "default": {
               "x": "y"
             }
+          },
+          "nullableOpen": {
+            "type": ["object", "null"],
+            "additionalProperties": true,
+            "default": null
+          },
+          "nullableFree": {
+            "nullable": true,
+            "default": null
           }
         }
       }
@@ -92,6 +101,12 @@
                       }
                     ],
                     "default": "x"
+                  },
+                  "open": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "nullable": true,
+                    "default": null
                   }
                 }
               }
