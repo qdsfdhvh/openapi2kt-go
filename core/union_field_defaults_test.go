@@ -65,7 +65,6 @@ func TestUnionFieldDefaultsGuards(t *testing.T) {
 	}{
 		"string format":         {`{"oneOf":[{"type":"string","format":"date"},{"type":"integer"}],"default":"2024-01-02"}`},
 		"object branch":         {`{"oneOf":[{"type":"object","properties":{"a":{"type":"string"}}},{"type":"integer"}],"default":{"a":"x"}}`},
-		"reference branch":      {"{\"oneOf\":[{\"$ref\":\"#/components/schemas/Name\"},{\"type\":\"integer\"}],\"default\":\"x\"}"},
 		"nullable branch":       {`{"oneOf":[{"type":"string","nullable":true},{"type":"integer"}],"default":"x"}`},
 		"wrong kind":            {base + `"default":[]}`},
 		"unmatched number kind": {`{"oneOf":[{"type":"string"},{"type":"boolean"}],"default":1}`},
@@ -91,6 +90,29 @@ func TestUnionFieldDefaultsGuards(t *testing.T) {
 		if _, err := core.GenerateWithDiagnostics(r); err == nil {
 			t.Fatal("adjacent role regressed", input, err)
 		}
+	}
+}
+
+func TestUnionFieldDefaultsReferencedBranches(t *testing.T) {
+	for _, tc := range []struct {
+		name, schemas string
+		ok            bool
+	}{
+		{"referenced enum member", `{"Status":{"type":"string","enum":["s1","s2"]},"Holder":{"properties":{"v":{"oneOf":[{"$ref":"#/components/schemas/Status"},{"type":"boolean"}],"default":"s1"}}}}`, true},
+		{"referenced enum nonmember", `{"Status":{"type":"string","enum":["s1","s2"]},"Holder":{"properties":{"v":{"oneOf":[{"$ref":"#/components/schemas/Status"},{"type":"boolean"}],"default":"zz"}}}}`, false},
+		{"referenced native member", `{"Code":{"type":"integer","format":"int32","enum":[1,2]},"Holder":{"properties":{"v":{"oneOf":[{"$ref":"#/components/schemas/Code"},{"type":"string"}],"default":2}}}}`, true},
+		{"referenced native nonmember", `{"Code":{"type":"integer","format":"int32","enum":[1,2]},"Holder":{"properties":{"v":{"oneOf":[{"$ref":"#/components/schemas/Code"},{"type":"string"}],"default":9}}}}`, false},
+		{"reference chain", `{"Status":{"type":"string","enum":["s1"]},"Alias":{"$ref":"#/components/schemas/Status"},"Holder":{"properties":{"v":{"oneOf":[{"$ref":"#/components/schemas/Alias"},{"type":"boolean"}],"default":"s1"}}}}`, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := core.GenerateWithDiagnostics(request(schemas(tc.schemas), "Dto"))
+			if tc.ok && err != nil {
+				t.Fatal(err)
+			}
+			if !tc.ok && (err == nil || len(got.Artifacts.Files) != 0) {
+				t.Fatal("referenced union branch admitted", err)
+			}
+		})
 	}
 }
 

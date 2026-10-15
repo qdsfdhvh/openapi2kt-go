@@ -41,14 +41,24 @@ func (a *analyzer) primitiveUnionElementCandidate(v *document.Value) bool {
 		if text(get(branch, "type")) == "null" || inferredNullLiteral(branch) {
 			continue
 		}
-		kind, nullable, err := schemaType(branch, p)
+		schema, pointer := branch, p
+		if has(branch, "$ref") {
+			// A direct local component reference to a scalar/enum target keeps
+			// its own resolution role and must not be a reference chain.
+			source, sourcePointer, err := a.defaultSource(text(get(branch, "$ref")), p)
+			if err != nil || has(source, "$ref") {
+				return false
+			}
+			schema, pointer = source, sourcePointer
+		}
+		kind, nullable, err := schemaType(schema, pointer)
 		if err != nil || nullable {
 			return false
 		}
 		if kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
 			return false
 		}
-		if kind == "string" && has(branch, "format") {
+		if kind == "string" && has(schema, "format") {
 			return false
 		}
 	}

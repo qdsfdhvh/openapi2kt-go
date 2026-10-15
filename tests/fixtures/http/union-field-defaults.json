@@ -184,6 +184,17 @@
             "default": {
               "k": "x"
             }
+          },
+          "refPin": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "default": "s1"
           }
         },
         "required": [
@@ -215,6 +226,13 @@
         },
         "required": [
           "u"
+        ]
+      },
+      "Status": {
+        "type": "string",
+        "enum": [
+          "s1",
+          "s2"
         ]
       }
     }

@@ -23,13 +23,13 @@ An optional field exposes e.g. `val v: V? = `openapi-kt model default org.exampl
 Only the consuming ordinary DTO field's own `default` grants this role, and only when the shared plan produces the native primitive-union declaration. Excluded here:
 
 - String branches with a `format` (temporal/byte/uuid spellings);
-- object branches, `$ref` branches and per-branch `nullable`;
+- object branches, reference chains and per-branch `nullable`;
 - same-kind unions that fold to a scalar, and unions that produce an `ObjectUnion`;
 - request-context operation unions and root unions.
 
 The same field-own default role also covers an inline union used as a container element (`array` items or typed `Map` values) or as a property of a defaulted object: the field helper decodes the whole collection/object through the final serializer, and each union member is validated against its kinds and pins with the element/member Pointer. The element union's own `default` annotation is not used.
 
-The planner borrows the original schema nodes and the consuming `/default` value; it never rewrites the source. `enum`/`const` branches are admitted, and the default must belong to the matched branch's vocabulary: a `const` branch requires exact equality, and an `enum` branch requires membership in its original String/native/Boolean vocabulary. The default must be a JSON primitive whose token matches an accepted branch. Because the runtime selector chooses its wrapper from the JSON token kind in the fixed order String → Boolean → Integer → Number, the original numeric token is preserved (`1` stays Integer, `1.0` stays Number) rather than canonicalized. A token that matches no accepted kind, a non-primitive value, or a null without explicit union nullability is rejected at the original `/default` Pointer. Canonical JSON participates in deduplication, merging, hoisting and name-lock identity; the helper binds the final relocated union type after optimization.
+The planner borrows the original schema nodes and the consuming `/default` value; it never rewrites the source. `enum`/`const` branches are admitted, including a direct local `$ref` to an already accepted scalar/enum component (a reference chain stays excluded). The default must belong to the matched branch's vocabulary after resolution: a `const` branch requires exact equality, and an `enum` branch requires membership in its original String/native/Boolean vocabulary. The default must be a JSON primitive whose token matches an accepted branch. Because the runtime selector chooses its wrapper from the JSON token kind in the fixed order String → Boolean → Integer → Number, the original numeric token is preserved (`1` stays Integer, `1.0` stays Number) rather than canonicalized. A token that matches no accepted kind, a non-primitive value, or a null without explicit union nullability is rejected at the original `/default` Pointer. Canonical JSON participates in deduplication, merging, hoisting and name-lock identity; the helper binds the final relocated union type after optimization.
 
 ## Validation and resources
 
