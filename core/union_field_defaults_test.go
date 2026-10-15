@@ -102,7 +102,7 @@ func TestUnionFieldDefaultsReferencedBranches(t *testing.T) {
 		{"referenced enum nonmember", `{"Status":{"type":"string","enum":["s1","s2"]},"Holder":{"properties":{"v":{"oneOf":[{"$ref":"#/components/schemas/Status"},{"type":"boolean"}],"default":"zz"}}}}`, false},
 		{"referenced native member", `{"Code":{"type":"integer","format":"int32","enum":[1,2]},"Holder":{"properties":{"v":{"oneOf":[{"$ref":"#/components/schemas/Code"},{"type":"string"}],"default":2}}}}`, true},
 		{"referenced native nonmember", `{"Code":{"type":"integer","format":"int32","enum":[1,2]},"Holder":{"properties":{"v":{"oneOf":[{"$ref":"#/components/schemas/Code"},{"type":"string"}],"default":9}}}}`, false},
-		{"reference chain", `{"Status":{"type":"string","enum":["s1"]},"Alias":{"$ref":"#/components/schemas/Status"},"Holder":{"properties":{"v":{"oneOf":[{"$ref":"#/components/schemas/Alias"},{"type":"boolean"}],"default":"s1"}}}}`, false},
+		{"reference chain", `{"Status":{"type":"string","enum":["s1"]},"Alias":{"$ref":"#/components/schemas/Status"},"Holder":{"properties":{"v":{"oneOf":[{"$ref":"#/components/schemas/Alias"},{"type":"boolean"}],"default":"s1"}}}}`, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := core.GenerateWithDiagnostics(request(schemas(tc.schemas), "Dto"))
@@ -111,6 +111,54 @@ func TestUnionFieldDefaultsReferencedBranches(t *testing.T) {
 			}
 			if !tc.ok && (err == nil || len(got.Artifacts.Files) != 0) {
 				t.Fatal("referenced union branch admitted", err)
+			}
+		})
+	}
+}
+
+func TestUnionObjectFieldDefaults(t *testing.T) {
+	union := `{"oneOf":[{"type":"object","required":["kind","a"],"properties":{"kind":{"type":"string","enum":["a"]},"a":{"type":"string"}}},{"type":"object","required":["kind","b"],"properties":{"kind":{"type":"string","enum":["b"]},"b":{"type":"integer"}}}],`
+	good := schemas(`{"Holder":{"properties":{"v":` + union + `"default":{"kind":"a","a":"x"}}}}}`)
+	got, err := core.GenerateWithDiagnostics(request(good, "Dto"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := source(t, got, "HolderDto")
+	for _, marker := range []string{
+		"public val v: V? = `openapi-kt model default org example models models HolderDto V`(",
+		`{\"a\":\"x\",\"kind\":\"a\"}`,
+		"public sealed class V",
+		"public data class A(",
+		"public data class B(",
+	} {
+		if !strings.Contains(text, marker) {
+			t.Fatal("lost object union default", marker, text)
+		}
+	}
+	// A second variant's default is validated against that variant.
+	if _, err := core.GenerateWithDiagnostics(request(schemas(`{"Holder":{"properties":{"v":`+union+`"default":{"kind":"b","b":2}}}}}`), "Dto")); err != nil {
+		t.Fatal(err)
+	}
+	for name, tc := range map[string]struct{ field, pointer string }{
+		"unknown tag":   {union + `"default":{"kind":"zz","a":"x"}}`, "/components/schemas/Holder/properties/v/default"},
+		"missing req":   {union + `"default":{"kind":"a"}}`, "/components/schemas/Holder/properties/v/default"},
+		"unknown key":   {union + `"default":{"kind":"a","a":"x","zz":1}}`, "/components/schemas/Holder/properties/v/default/zz"},
+		"wrong kind":    {union + `"default":"x"}`, "/components/schemas/Holder/properties/v/default"},
+		"const tag":     {`{"oneOf":[{"type":"object","required":["kind","a"],"properties":{"kind":{"const":"a"},"a":{"type":"string"}}},{"type":"object","required":["kind","b"],"properties":{"kind":{"const":"b"},"b":{"type":"integer"}}}],"default":{"kind":"a","a":"x"}}`, ""},
+		"presence only": {`{"oneOf":[{"type":"object","required":["a"],"properties":{"a":{"type":"string"}}},{"type":"object","required":["b"],"properties":{"b":{"type":"integer"}}}],"default":{"a":"x"}}`, ""},
+	} {
+		t.Run(name, func(t *testing.T) {
+			r := request(schemas(`{"Holder":{"properties":{"v":`+tc.field+`}}}`), "Dto")
+			r.Options.Validation = true
+			report, err := core.GenerateWithDiagnostics(r)
+			if err == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
+				t.Fatalf("excluded object union default leaked: %v", err)
+			}
+			if tc.pointer != "" {
+				ds := err.(core.Diagnostics)
+				if len(ds) == 0 || ds[0].Pointer == nil || *ds[0].Pointer != tc.pointer {
+					t.Fatalf("want pointer %s, got %v", tc.pointer, err)
+				}
 			}
 		})
 	}

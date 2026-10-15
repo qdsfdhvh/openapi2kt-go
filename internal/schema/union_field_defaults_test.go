@@ -33,7 +33,7 @@ func TestUnionFieldDefaultCandidateAndDeclaration(t *testing.T) {
 			t.Fatal("candidate rejected", tc)
 		}
 		var nested []Declaration
-		ty, err := a.primitiveUnionDefaultField(f, "V", &nested, map[string]bool{})
+		ty, err := a.unionDefaultField(f, "V", &nested, map[string]bool{})
 		if err != nil || ty.Kind != Named || len(nested) != 1 {
 			t.Fatal(ty, nested, err)
 		}
@@ -54,7 +54,7 @@ func TestUnionFieldDefaultSelectorMirror(t *testing.T) {
 	// token is preserved for the runtime selector.
 	integral := loadUnionField(t, `{"oneOf":[{"type":"integer"},{"type":"number"}],"default":1}`)
 	var nested []Declaration
-	if _, err := a.primitiveUnionDefaultField(integral, "V", &nested, map[string]bool{}); err != nil {
+	if _, err := a.unionDefaultField(integral, "V", &nested, map[string]bool{}); err != nil {
 		t.Fatal(err)
 	}
 	union := nested[0].(*PrimitiveUnion)
@@ -68,7 +68,7 @@ func TestUnionFieldDefaultSelectorMirror(t *testing.T) {
 	floatToken := loadUnionField(t, `{"oneOf":[{"type":"integer"},{"type":"number"}],"default":1.0}`)
 	a2 := unionDefaultTestAnalyzer()
 	var floatNested []Declaration
-	floatType, err := a2.primitiveUnionDefaultField(floatToken, "V", &floatNested, map[string]bool{})
+	floatType, err := a2.unionDefaultField(floatToken, "V", &floatNested, map[string]bool{})
 	if err != nil {
 		t.Fatal(floatType, err)
 	}
@@ -79,7 +79,7 @@ func TestUnionFieldDefaultSelectorMirror(t *testing.T) {
 	}
 	// A token that matches no accepted kind is rejected.
 	boolOnly := loadUnionField(t, `{"oneOf":[{"type":"boolean"}],"default":1}`)
-	if _, err := a.primitiveUnionDefaultField(boolOnly, "V", &[]Declaration{}, map[string]bool{}); err == nil {
+	if _, err := a.unionDefaultField(boolOnly, "V", &[]Declaration{}, map[string]bool{}); err == nil {
 		t.Fatal("integral token admitted for boolean-only union")
 	}
 }

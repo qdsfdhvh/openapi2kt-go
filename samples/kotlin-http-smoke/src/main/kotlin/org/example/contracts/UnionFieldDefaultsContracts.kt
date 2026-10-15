@@ -64,6 +64,7 @@ private fun unionFieldDefaultsFields(value: HolderDto): Map<String, Any?> = link
     "maybe" to value.maybe, "requiredUnion" to value.requiredUnion,
     "pinEnum" to value.pinEnum, "pinConst" to value.pinConst,
     "rows" to value.rows, "rowMap" to value.rowMap, "refPin" to value.refPin,
+    "objUnion" to value.objUnion,
 )
 
 suspend fun unionFieldDefaultsContracts(checked: Boolean) {
@@ -79,6 +80,7 @@ suspend fun unionFieldDefaultsContracts(checked: Boolean) {
     check(value.rows?.get(1) is HolderDto.IntRowsInner && (value.rows?.get(1) as HolderDto.IntRowsInner).value == 1L)
     check(value.rowMap?.get("k") is HolderDto.StringRowMapValue && (value.rowMap?.get("k") as HolderDto.StringRowMapValue).value == "x")
     check(value.refPin is HolderDto.StringRefPin && (value.refPin as HolderDto.StringRefPin).value == "s1")
+    check(value.objUnion is HolderDto.ObjUnion.A && (value.objUnion as HolderDto.ObjUnion.A).a == "x")
     check(!HolderDto.serializer().descriptor.isElementOptional(5))
     for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }

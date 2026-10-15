@@ -33,39 +33,32 @@ func (a *analyzer) primitiveUnionElementCandidate(v *document.Value) bool {
 	if !ok || branches.Kind() != document.Array || len(branches.Items()) == 0 {
 		return false
 	}
-	for i, branch := range branches.Items() {
+	for _, branch := range branches.Items() {
 		if branch.Kind() != document.Object {
 			return false
 		}
-		p := naming.Pointer(naming.Pointer("", keyword), strconv.Itoa(i))
-		if text(get(branch, "type")) == "null" || inferredNullLiteral(branch) {
+		resolved, pointer, _, err := a.resolveUnionBranch(unionBranch{Schema: branch, Pointer: naming.Pointer(naming.Pointer("", keyword), strconv.Itoa(0))}, 0)
+		if err != nil {
+			return false
+		}
+		if text(get(resolved, "type")) == "null" || inferredNullLiteral(resolved) {
 			continue
 		}
-		schema, pointer := branch, p
-		if has(branch, "$ref") {
-			// A direct local component reference to a scalar/enum target keeps
-			// its own resolution role and must not be a reference chain.
-			source, sourcePointer, err := a.defaultSource(text(get(branch, "$ref")), p)
-			if err != nil || has(source, "$ref") {
-				return false
-			}
-			schema, pointer = source, sourcePointer
-		}
-		kind, nullable, err := schemaType(schema, pointer)
+		kind, nullable, err := schemaType(resolved, pointer)
 		if err != nil || nullable {
 			return false
 		}
 		if kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
 			return false
 		}
-		if kind == "string" && has(schema, "format") {
+		if kind == "string" && has(resolved, "format") {
 			return false
 		}
 	}
 	return true
 }
 
-func (a *analyzer) primitiveUnionDefaultField(f field, name string, nested *[]Declaration, used map[string]bool) (TypeRef, *diagnostic.Diagnostic) {
+func (a *analyzer) unionDefaultField(f field, name string, nested *[]Declaration, used map[string]bool) (TypeRef, *diagnostic.Diagnostic) {
 	if a.objectDefaultSchemas == nil {
 		a.objectDefaultSchemas = map[*document.Value]bool{}
 	}
@@ -75,16 +68,30 @@ func (a *analyzer) primitiveUnionDefaultField(f field, name string, nested *[]De
 	if err != nil {
 		return TypeRef{}, err
 	}
-	union, ok := a.primitiveUnionDeclaration(f, nested, before)
-	if !ok {
+	if nested == nil || len(*nested) != before+1 {
 		return TypeRef{}, unsupported(naming.Pointer(f.Pointer, "default"))
 	}
 	validation := *a
 	validation.warnings = nil
-	if _, err := validation.primitiveUnionDefaultEncoded(f, union); err != nil {
+	if _, err := validation.unionDefaultEncoded(f, (*nested)[before]); err != nil {
 		return TypeRef{}, err
 	}
 	return ty, nil
+}
+
+// unionDefaultEncoded dispatches the shared plan's appended union declaration
+// so primitive and object unions share one gate and initializer.
+func (a *analyzer) unionDefaultEncoded(f field, declaration Declaration) (string, *diagnostic.Diagnostic) {
+	switch union := declaration.(type) {
+	case *PrimitiveUnion:
+		if union.Object != nil || union.NullVariant || !a.primitiveUnionElementCandidate(f.Schema) {
+			return "", unsupported(naming.Pointer(f.Pointer, "default"))
+		}
+		return a.primitiveUnionDefaultEncoded(f, union)
+	case *ObjectUnion:
+		return a.objectUnionDefaultEncoded(f, union)
+	}
+	return "", unsupported(naming.Pointer(f.Pointer, "default"))
 }
 
 // primitiveUnionDeclaration extracts exactly the declaration the shared plan
@@ -101,19 +108,18 @@ func (a *analyzer) primitiveUnionDeclaration(f field, nested *[]Declaration, bef
 	return union, true
 }
 
-// primitiveUnionDefaultInitializer revalidates on a scratch plan so it never
-// appends declarations twice. An explicit null stays the literal null.
-func (a *analyzer) primitiveUnionDefaultInitializer(f field) (string, *diagnostic.Diagnostic) {
+// unionDefaultInitializer revalidates on a scratch plan so it never appends
+// declarations twice. An explicit null stays the literal null.
+func (a *analyzer) unionDefaultInitializer(f field) (string, *diagnostic.Diagnostic) {
 	var scratch []Declaration
 	_, _, err := a.modelPropertyType(f.Schema, "Validation", f.Pointer, &scratch, map[string]bool{}, f.Depth)
 	if err != nil {
 		return "", err
 	}
-	union, ok := a.primitiveUnionDeclaration(f, &scratch, 0)
-	if !ok {
+	if len(scratch) != 1 {
 		return "", unsupported(naming.Pointer(f.Pointer, "default"))
 	}
-	encoded, err := a.primitiveUnionDefaultEncoded(f, union)
+	encoded, err := a.unionDefaultEncoded(f, scratch[0])
 	if err != nil {
 		return "", err
 	}
@@ -137,6 +143,52 @@ func (a *analyzer) primitiveUnionDefaultEncoded(f field, union *PrimitiveUnion) 
 		return "null", nil
 	}
 	return a.primitiveUnionDefaultValue(f, union)
+}
+
+// objectUnionDefaultEncoded accepts a tag-dispatched content object union. The
+// default must be an object whose discriminator selects a known variant; the
+// value is then validated against that variant's original source through the
+// shared object walker, so unknown keys, required members and leaf checks keep
+// their member Pointers.
+func (a *analyzer) objectUnionDefaultEncoded(f field, union *ObjectUnion) (string, *diagnostic.Diagnostic) {
+	value := get(f.Schema, "default")
+	at := naming.Pointer(f.Pointer, "default")
+	if value.Kind() == document.Null {
+		if !union.NullVariant {
+			return "", invalid("A null default requires a nullable union.", at)
+		}
+		return "null", nil
+	}
+	if !union.Content() || union.TagField == "" || len(union.Tags) == 0 || len(union.TagCombinations) != 0 || len(union.Presence) != 0 {
+		return "", unsupported(at)
+	}
+	if value.Kind() != document.Object {
+		return "", invalid("A union default must be a JSON object.", at)
+	}
+	tag, ok := get(value, union.TagField).Text()
+	if !ok {
+		return "", invalid("A union default must carry its discriminator string.", at)
+	}
+	index := -1
+	for _, rule := range union.Tags {
+		if rule.Value == tag {
+			index = rule.Index
+			break
+		}
+	}
+	if index < 0 || index >= len(union.Variants) {
+		return "", invalid("A union default discriminator must select a known variant.", at)
+	}
+	variant := union.Variants[index]
+	source := a.modelOrigins[variant]
+	if source == nil {
+		return "", unsupported(at)
+	}
+	node, err := a.objectDefaultNode(source, a.modelPointers[variant], f.Depth, false)
+	if err != nil {
+		return "", err
+	}
+	return node.value(value, at)
 }
 
 // primitiveUnionDefaultValue mirrors the emitted selector order (String,

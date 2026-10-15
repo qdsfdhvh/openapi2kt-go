@@ -195,6 +195,50 @@
               }
             ],
             "default": "s1"
+          },
+          "objUnion": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "a"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "a"
+                    ]
+                  },
+                  "a": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "b"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "b"
+                    ]
+                  },
+                  "b": {
+                    "type": "integer"
+                  }
+                }
+              }
+            ],
+            "default": {
+              "kind": "a",
+              "a": "x"
+            }
           }
         },
         "required": [
