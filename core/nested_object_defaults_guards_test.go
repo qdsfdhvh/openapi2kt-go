@@ -20,7 +20,6 @@ func TestNestedObjectDefaultsGuards(t *testing.T) {
 		{`{"type":"object","properties":{"a":{"type":"string"}},"default":"x"}`, "E_SCHEMA_INVALID", "/default"},
 		{`{"properties":{"id":{"type":"string"}},"default":[]}`, "E_SCHEMA_INVALID", "/default"},
 		{`{"type":"object","properties":{"a":{"type":"string"}},"default":{"a":1}}`, "E_SCHEMA_INVALID", "/default/a"},
-		{`{"type":"object","default":{}}`, "E_SCHEMA_UNSUPPORTED", "/default"},
 		{`{"type":"object","properties":{"a":{"type":"string"}},"allOf":[{"properties":{"a":{"type":"string"}}}],"default":{"a":"x"}}`, "E_SCHEMA_UNSUPPORTED", "/default"},
 		{`{"type":"object","properties":{"a":{"type":"string"}},"additionalProperties":{"type":"integer"},"default":{"a":"x"}}`, "E_SCHEMA_UNSUPPORTED", "/default"},
 	} {

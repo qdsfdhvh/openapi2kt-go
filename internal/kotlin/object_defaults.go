@@ -80,11 +80,20 @@ func objectDefaultTypeKey(ty schema.TypeRef) string {
 
 func emitObjectDefaultHelpers(declaration schema.Declaration, owner string, out *strings.Builder) {
 	seen := map[string]bool{}
+	jsonDefault, objectDefault := false, false
 	var visit func(schema.Declaration, string)
 	visit = func(d schema.Declaration, scope string) {
 		switch d := d.(type) {
 		case *schema.Model:
 			for _, p := range d.Properties {
+				if strings.HasPrefix(p.Default, "`openapi-kt json default`(") {
+					jsonDefault = true
+					continue
+				}
+				if strings.HasPrefix(p.Default, "`openapi-kt object default`(") {
+					objectDefault = true
+					continue
+				}
 				if !strings.HasPrefix(p.Default, objectDefaultMarker) {
 					continue
 				}
@@ -117,4 +126,10 @@ func emitObjectDefaultHelpers(declaration schema.Declaration, owner string, out 
 		}
 	}
 	visit(declaration, owner)
+	if jsonDefault {
+		out.WriteString("\nprivate fun `openapi-kt json default`(source: kotlin.String): kotlinx.serialization.json.JsonElement = kotlinx.serialization.json.Json.parseToJsonElement(source)\n")
+	}
+	if objectDefault {
+		out.WriteString("\nprivate fun `openapi-kt object default`(source: kotlin.String): kotlinx.serialization.json.JsonObject = kotlinx.serialization.json.Json.parseToJsonElement(source) as kotlinx.serialization.json.JsonObject\n")
+	}
 }

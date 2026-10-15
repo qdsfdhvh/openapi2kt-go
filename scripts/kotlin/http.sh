@@ -1808,6 +1808,10 @@ done
   --output "$workspace/project/build/generated-limits/union-field-defaults" --package-name org.example.uniondef --api-client-name UnionDef --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/union-field-defaults.json \
   --output "$workspace/project/build/generated-limits/union-field-defaults" --package-name org.example.uniondef --api-client-name UnionDef --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/raw-json-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/raw-json-field-defaults" --package-name org.example.rawjson --api-client-name RawJson --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/raw-json-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/raw-json-field-defaults" --package-name org.example.rawjson --api-client-name RawJson --model-name-suffix Dto --check
 if [[ "${OPENAPI_KT_PREPARE_ONLY:-0}" == 1 ]]; then
   echo "PREPARED HTTP native generation/check: $workspace/project"
   exit 0

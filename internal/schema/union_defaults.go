@@ -69,6 +69,15 @@ func (a *analyzer) unionDefaultField(f field, name string, nested *[]Declaration
 		return TypeRef{}, err
 	}
 	if nested == nil || len(*nested) != before+1 {
+		// A request-context union projects to a raw JsonElement carrier.
+		if carrier := ty.WithoutRootNull(); carrier.Kind == JSON || carrier.Kind == JSONObject {
+			validation := *a
+			validation.warnings = nil
+			if _, err := validation.rawJSONDefaultEncoded(f, ty); err != nil {
+				return TypeRef{}, err
+			}
+			return ty, nil
+		}
 		return TypeRef{}, unsupported(naming.Pointer(f.Pointer, "default"))
 	}
 	validation := *a
@@ -112,11 +121,14 @@ func (a *analyzer) primitiveUnionDeclaration(f field, nested *[]Declaration, bef
 // declarations twice. An explicit null stays the literal null.
 func (a *analyzer) unionDefaultInitializer(f field) (string, *diagnostic.Diagnostic) {
 	var scratch []Declaration
-	_, _, err := a.modelPropertyType(f.Schema, "Validation", f.Pointer, &scratch, map[string]bool{}, f.Depth)
+	ty, _, err := a.modelPropertyType(f.Schema, "Validation", f.Pointer, &scratch, map[string]bool{}, f.Depth)
 	if err != nil {
 		return "", err
 	}
 	if len(scratch) != 1 {
+		if carrier := ty.WithoutRootNull(); carrier.Kind == JSON || carrier.Kind == JSONObject {
+			return a.rawJSONDefaultEncoded(f, ty)
+		}
 		return "", unsupported(naming.Pointer(f.Pointer, "default"))
 	}
 	encoded, err := a.unionDefaultEncoded(f, scratch[0])

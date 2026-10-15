@@ -988,7 +988,12 @@ func (a *analyzer) nonUnionPropertyType(v *document.Value, nestedName, pointer s
 				ty = TypeRef{Kind: Named, Name: nestedName}
 			}
 		case "":
-			if err := checkKeys(v, []string{"nullable"}, pointer); err != nil {
+			keys := []string{"nullable"}
+			if a.objectDefaultSchemas[v] {
+				// A raw JsonElement field own default is validated separately.
+				keys = append(keys, "default")
+			}
+			if err := checkKeys(v, keys, pointer); err != nil {
 				return TypeRef{}, err
 			}
 			ty = TypeRef{Kind: JSON}
