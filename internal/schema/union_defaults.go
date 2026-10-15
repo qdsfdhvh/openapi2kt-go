@@ -17,15 +17,16 @@ import (
 // declaration. The initializer decodes through the final actual union
 // serializer, so the emitted Kotlin call site and wire behavior are unchanged.
 func (a *analyzer) primitiveUnionDefaultCandidate(v *document.Value) bool {
+	return has(v, "default") && a.primitiveUnionElementCandidate(v)
+}
+
+func (a *analyzer) primitiveUnionElementCandidate(v *document.Value) bool {
 	keyword := ""
 	if has(v, "oneOf") {
 		keyword = "oneOf"
 	} else if has(v, "anyOf") {
 		keyword = "anyOf"
 	} else {
-		return false
-	}
-	if !has(v, "default") {
 		return false
 	}
 	branches, ok := v.Get(keyword)
@@ -135,18 +136,55 @@ func (a *analyzer) primitiveUnionDefaultEncoded(f field, union *PrimitiveUnion) 
 func (a *analyzer) primitiveUnionDefaultValue(f field, union *PrimitiveUnion) (string, *diagnostic.Diagnostic) {
 	value := get(f.Schema, "default")
 	at := naming.Pointer(f.Pointer, "default")
-	kind, ok := unionDefaultKind(value, union.Kinds)
-	if !ok {
-		return "", invalid("Default must match an accepted union branch.", at)
+	kind, encoded, err := unionValueEncoded(value, union.Kinds, at)
+	if err != nil {
+		return "", err
 	}
 	if err := a.primitiveUnionPinCheck(f, kind, value, at); err != nil {
 		return "", err
 	}
-	encoded, marshalErr := value.MarshalJSON()
-	if marshalErr != nil {
-		return "", invalid("Default must be valid JSON.", at)
+	return encoded, nil
+}
+
+// primitiveUnionElementNode plans a container element or object property union
+// on a scratch so its declaration never appends twice.
+func (a *analyzer) primitiveUnionElementNode(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	var scratch []Declaration
+	ty, _, err := a.modelPropertyType(v, "Validation", pointer, &scratch, map[string]bool{}, depth)
+	if err != nil {
+		return nil, err
 	}
-	return string(encoded), nil
+	union, ok := a.primitiveUnionDeclaration(field{}, &scratch, 0)
+	if !ok {
+		return nil, unsupported(pointer)
+	}
+	return &nestedDefaultNode{schema: v, pointer: pointer, ty: ty, union: union, native: a}, nil
+}
+
+// unionValue validates one union default member against its kinds and pins.
+func (node *nestedDefaultNode) unionValue(v *document.Value, pointer string) (string, *diagnostic.Diagnostic) {
+	kind, encoded, err := unionValueEncoded(v, node.union.Kinds, pointer)
+	if err != nil {
+		return "", err
+	}
+	if node.native != nil {
+		if err := node.native.primitiveUnionPinCheck(field{Schema: node.schema, Pointer: node.pointer}, kind, v, pointer); err != nil {
+			return "", err
+		}
+	}
+	return encoded, nil
+}
+
+func unionValueEncoded(value *document.Value, kinds []PrimitiveKind, at string) (PrimitiveKind, string, *diagnostic.Diagnostic) {
+	kind, ok := unionDefaultKind(value, kinds)
+	if !ok {
+		return 0, "", invalid("Default member must match an accepted union branch.", at)
+	}
+	encoded, err := value.MarshalJSON()
+	if err != nil {
+		return 0, "", invalid("Default member must be valid JSON.", at)
+	}
+	return kind, string(encoded), nil
 }
 
 func unionDefaultKind(value *document.Value, kinds []PrimitiveKind) (PrimitiveKind, bool) {

@@ -83,15 +83,39 @@ func TestUnionFieldDefaultsGuards(t *testing.T) {
 			}
 		})
 	}
-	// A same-kind fold and a scalar-branch collection stay with their own roles.
+	// A same-kind fold stays with its own scalar role.
 	for _, input := range []string{
 		`{"Holder":{"properties":{"v":{"oneOf":[{"type":"string"},{"type":"string"}],"default":"x"}}}}`,
-		`{"Holder":{"properties":{"v":{"type":"array","items":{"oneOf":[{"type":"string"},{"type":"integer"}]},"default":["x"]}}}}`,
 	} {
 		r := request(schemas(input), "Dto")
 		if _, err := core.GenerateWithDiagnostics(r); err == nil {
 			t.Fatal("adjacent role regressed", input, err)
 		}
+	}
+}
+
+func TestUnionCollectionElementDefaults(t *testing.T) {
+	for name, tc := range map[string]struct{ field string }{
+		"list":            {`{"type":"array","items":{"oneOf":[{"type":"string"},{"type":"integer","format":"int32"}]},"default":["x",1]}`},
+		"map":             {`{"type":"object","additionalProperties":{"oneOf":[{"type":"string"},{"type":"integer","format":"int32"}]},"default":{"k":"x"}}`},
+		"nested property": {`{"type":"object","properties":{"u":{"oneOf":[{"type":"string"},{"type":"integer","format":"int32"}]}},"default":{"u":"x"}}`},
+		"pinned":          {`{"type":"array","items":{"oneOf":[{"type":"string","enum":["a","b"]},{"type":"integer"}]},"default":["a"]}`},
+	} {
+		t.Run(name, func(t *testing.T) {
+			got, err := core.GenerateWithDiagnostics(request(schemas(`{"Holder":{"properties":{"v":`+tc.field+`}}}`), "Dto"))
+			if err != nil || !strings.Contains(source(t, got, "HolderDto"), "`openapi-kt model default") {
+				t.Fatal(got, err)
+			}
+		})
+	}
+	// A token that matches no element union branch keeps the element Pointer.
+	bad := schemas(`{"Holder":{"properties":{"v":{"type":"array","items":{"oneOf":[{"type":"string"},{"type":"boolean"}]},"default":[1]}}}}`)
+	r := request(bad, "Dto")
+	r.Options.Validation = true
+	report, err := core.GenerateWithDiagnostics(r)
+	ds, ok := err.(core.Diagnostics)
+	if !ok || len(ds) == 0 || ds[0].Code != "E_SCHEMA_INVALID" || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/Holder/properties/v/default/0" || !reflect.DeepEqual(report, core.GenerationReport{}) {
+		t.Fatalf("element union Pointer: %v", err)
 	}
 }
 

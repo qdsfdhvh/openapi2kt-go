@@ -96,3 +96,29 @@ func TestUnionFieldDefaultExclusions(t *testing.T) {
 		}
 	}
 }
+
+func TestUnionCollectionElementDefaultAuthority(t *testing.T) {
+	field := loadUnionField(t, `{"type":"array","items":{"oneOf":[{"type":"string"},{"type":"integer","format":"int32"}]},"default":["x",1]}`)
+	a := unionDefaultTestAnalyzer()
+	if !a.objectDefaultCandidate(field.Schema) {
+		t.Fatal("list-of-union not recognized by the collection gate")
+	}
+	node, err := a.objectDefaultNode(field.Schema, "/v", 1, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if node.ty.Kind != List || node.element == nil || node.element.union == nil || node.element.schema != get(field.Schema, "items") {
+		t.Fatal("element union node lost its declaration/source", node.element)
+	}
+	canonical, err := node.value(get(field.Schema, "default"), "/v/default")
+	if err != nil || canonical != `["x",1]` {
+		t.Fatal(canonical, err)
+	}
+	bad, err := document.Load([]byte(`{"v":["z",true]}`), document.JSON, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := node.value(get(bad, "v"), "/v/default"); err == nil || err.Pointer == nil || *err.Pointer != "/v/default/1" {
+		t.Fatalf("element union member Pointer: %v", err)
+	}
+}

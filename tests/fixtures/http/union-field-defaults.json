@@ -149,6 +149,41 @@
               }
             ],
             "default": "fix"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              ]
+            },
+            "default": [
+              "x",
+              1
+            ]
+          },
+          "rowMap": {
+            "type": "object",
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              ]
+            },
+            "default": {
+              "k": "x"
+            }
           }
         },
         "required": [

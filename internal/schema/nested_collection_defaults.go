@@ -37,6 +37,9 @@ type nestedDefaultNode struct {
 	// nominal type binding lives with the consuming field plan.
 	object       bool
 	objectFields []objectDefaultProperty
+	// Inline primitive union leaves retain the shared declaration and validate
+	// each value against its kinds and enum/const pins.
+	union *PrimitiveUnion
 }
 
 func nestedCollectionDefaultSchema(v *document.Value) bool {
@@ -253,6 +256,9 @@ func (node *nestedDefaultNode) value(v *document.Value, pointer string) (string,
 			return "", invalid("A null default member requires explicit schema nullability.", pointer)
 		}
 		return "null", nil
+	}
+	if node.union != nil {
+		return node.unionValue(v, pointer)
 	}
 	if node.object {
 		return node.objectValue(v, pointer)

@@ -82,7 +82,7 @@ func (a *analyzer) objectDefaultCandidate(v *document.Value) bool {
 		}
 		return objectDefaultCandidateSchema(source)
 	}
-	return objectDefaultCandidateSchema(v)
+	return a.primitiveUnionElementCandidate(v) || objectDefaultCandidateSchema(v)
 }
 
 func objectDefaultRequiredNames(v *document.Value, pointer string) (map[string]bool, *diagnostic.Diagnostic) {
@@ -165,6 +165,8 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 			// A referenced plain object property borrows its resolved target; the
 			// consuming DTO serializer still owns the nested codec.
 			child, err = a.objectDefaultPropertyReference(member.Value, childPointer, depth+1)
+		case a.primitiveUnionElementCandidate(member.Value):
+			child, err = a.primitiveUnionElementNode(member.Value, childPointer, depth+1)
 		case objectDefaultCandidateSchema(member.Value):
 			child, err = a.objectDefaultNode(member.Value, childPointer, depth+1, true)
 		default:
@@ -284,6 +286,9 @@ func (a *analyzer) objectDefaultChild(v *document.Value, pointer string, depth i
 			}
 		}
 		return node, nil
+	}
+	if a.primitiveUnionElementCandidate(v) {
+		return a.primitiveUnionElementNode(v, pointer, depth)
 	}
 	if objectDefaultCandidateSchema(v) {
 		return a.objectDefaultNode(v, pointer, depth, false)
