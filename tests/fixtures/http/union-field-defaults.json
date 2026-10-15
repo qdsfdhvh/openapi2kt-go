@@ -239,6 +239,44 @@
               "kind": "a",
               "a": "x"
             }
+          },
+          "constUnion": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "a"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "a"
+                  },
+                  "a": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "b"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "b"
+                  },
+                  "b": {
+                    "type": "integer"
+                  }
+                }
+              }
+            ],
+            "default": {
+              "kind": "a",
+              "a": "x"
+            }
           }
         },
         "required": [

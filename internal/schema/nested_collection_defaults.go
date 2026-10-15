@@ -40,6 +40,10 @@ type nestedDefaultNode struct {
 	// Inline primitive union leaves retain the shared declaration and validate
 	// each value against its kinds and enum/const pins.
 	union *PrimitiveUnion
+	// Scalar const properties validate the supplied value for exact equality.
+	constValue *document.Value
+	constKind  string
+	// native carries the analyzer for pin/const checks on union and const nodes.
 }
 
 func nestedCollectionDefaultSchema(v *document.Value) bool {
@@ -259,6 +263,13 @@ func (node *nestedDefaultNode) value(v *document.Value, pointer string) (string,
 	}
 	if node.union != nil {
 		return node.unionValue(v, pointer)
+	}
+	if node.constValue != nil {
+		if !primitivePinEqual(node.constValue, v, node.constKind, pointer) {
+			return "", invalid("Default member must equal the field const value.", pointer)
+		}
+		encoded, _ := v.MarshalJSON()
+		return string(encoded), nil
 	}
 	if node.object {
 		return node.objectValue(v, pointer)

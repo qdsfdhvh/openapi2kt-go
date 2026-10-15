@@ -45,8 +45,6 @@ func TestNestedObjectDefaultsGuards(t *testing.T) {
 	}
 	// Excluded sub-roles stay rejected without partial output.
 	for _, input := range []string{
-		// Const-bearing properties are not part of this slice.
-		`{"Holder":{"properties":{"value":{"type":"object","properties":{"tag":{"const":"a"}},"default":{"tag":"a"}}}}}`,
 		// A container child default is not an outer object default.
 		`{"Holder":{"properties":{"value":{"type":"object","properties":{"rows":{"type":"array","items":{"type":"object","properties":{"v":{"type":"integer"}},"default":{"v":1}}}}},"default":{"rows":[]}}}}}`,
 	} {

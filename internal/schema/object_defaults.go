@@ -165,6 +165,8 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 			// A referenced plain object property borrows its resolved target; the
 			// consuming DTO serializer still owns the nested codec.
 			child, err = a.objectDefaultPropertyReference(member.Value, childPointer, depth+1)
+		case has(member.Value, "const"):
+			child, err = a.objectDefaultConstNode(member.Value, childPointer)
 		case a.primitiveUnionElementCandidate(member.Value):
 			child, err = a.primitiveUnionElementNode(member.Value, childPointer, depth+1)
 		case objectDefaultCandidateSchema(member.Value):
@@ -218,6 +220,45 @@ func (a *analyzer) objectDefaultContainer(v *document.Value, pointer string, dep
 		node.ty = node.ty.Null()
 	}
 	return node, nil
+}
+
+// objectDefaultConstNode validates a scalar const property inside a defaulted
+// object. Structured const bodies keep their separate role.
+func (a *analyzer) objectDefaultConstNode(v *document.Value, pointer string) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	if err := checkKeys(v, []string{"type", "nullable", "const"}, pointer); err != nil {
+		return nil, err
+	}
+	kind, nullable, err := schemaType(v, pointer)
+	if err != nil {
+		return nil, err
+	}
+	if nullable {
+		return nil, unsupported(pointer)
+	}
+	literal := get(v, "const")
+	if kind == "" {
+		// A typeless scalar const infers its kind from the literal token.
+		switch literal.Kind() {
+		case document.String:
+			kind = "string"
+		case document.Boolean:
+			kind = "boolean"
+		case document.Number:
+			if unionIntegerToken(literal) {
+				kind = "integer"
+			} else if unionNumberToken(literal) {
+				kind = "number"
+			} else {
+				return nil, unsupported(pointer)
+			}
+		default:
+			return nil, unsupported(pointer)
+		}
+	}
+	if kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
+		return nil, unsupported(pointer)
+	}
+	return &nestedDefaultNode{schema: v, pointer: pointer, ty: TypeRef{Kind: JSON}, constValue: literal, constKind: kind, native: a}, nil
 }
 
 // objectDefaultPropertyReference resolves an object property's direct local

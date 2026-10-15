@@ -144,7 +144,6 @@ func TestUnionObjectFieldDefaults(t *testing.T) {
 		"missing req":   {union + `"default":{"kind":"a"}}`, "/components/schemas/Holder/properties/v/default"},
 		"unknown key":   {union + `"default":{"kind":"a","a":"x","zz":1}}`, "/components/schemas/Holder/properties/v/default/zz"},
 		"wrong kind":    {union + `"default":"x"}`, "/components/schemas/Holder/properties/v/default"},
-		"const tag":     {`{"oneOf":[{"type":"object","required":["kind","a"],"properties":{"kind":{"const":"a"},"a":{"type":"string"}}},{"type":"object","required":["kind","b"],"properties":{"kind":{"const":"b"},"b":{"type":"integer"}}}],"default":{"kind":"a","a":"x"}}`, ""},
 		"presence only": {`{"oneOf":[{"type":"object","required":["a"],"properties":{"a":{"type":"string"}}},{"type":"object","required":["b"],"properties":{"b":{"type":"integer"}}}],"default":{"a":"x"}}`, ""},
 	} {
 		t.Run(name, func(t *testing.T) {

@@ -85,3 +85,36 @@ func TestNestedObjectDefaultsOptionalOverrideAndNull(t *testing.T) {
 		}
 	}
 }
+
+func TestObjectDefaultConstProperties(t *testing.T) {
+	// Scalar const properties inside a defaulted object are admitted and the
+	// supplied value must equal the const literal.
+	for _, field := range []string{
+		`{"type":"object","properties":{"tag":{"const":"a"},"n":{"type":"integer"}},"default":{"tag":"a","n":1}}`,
+		`{"type":"object","properties":{"tag":{"const":1},"n":{"type":"integer"}},"default":{"tag":1,"n":1}}`,
+		`{"type":"object","properties":{"tag":{"type":"boolean","const":true}},"default":{"tag":true}}`,
+	} {
+		if _, err := core.GenerateWithDiagnostics(request(schemas(`{"Holder":{"properties":{"value":`+field+`}}}`), "Dto")); err != nil {
+			t.Fatal("const property default rejected", field, err)
+		}
+	}
+	// A mismatching value keeps the member Pointer; structured const stays out.
+	mismatch := schemas(`{"Holder":{"properties":{"value":{"type":"object","properties":{"tag":{"const":"a"}},"default":{"tag":"b"}}}}}`)
+	r := request(mismatch, "Dto")
+	r.Options.Validation = true
+	report, err := core.GenerateWithDiagnostics(r)
+	ds, ok := err.(core.Diagnostics)
+	if !ok || len(ds) == 0 || ds[0].Code != "E_SCHEMA_INVALID" || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/Holder/properties/value/default/tag" || !reflect.DeepEqual(report, core.GenerationReport{}) {
+		t.Fatalf("const mismatch Pointer: %v", err)
+	}
+	for _, field := range []string{
+		`{"type":"object","properties":{"tag":{"type":"object","const":{"x":1}}},"default":{"tag":{"x":1}}}`,
+		`{"type":"object","properties":{"tag":{"const":null}},"default":{"tag":null}}`,
+	} {
+		r := request(schemas(`{"Holder":{"properties":{"value":`+field+`}}}`), "Dto")
+		r.Options.Validation = true
+		if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
+			t.Fatal("structured/null const admitted", field, err)
+		}
+	}
+}
