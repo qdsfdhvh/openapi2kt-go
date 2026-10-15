@@ -118,6 +118,37 @@
               }
             ],
             "default": "r"
+          },
+          "pinEnum": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "a",
+                  "b"
+                ]
+              },
+              {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2
+                ]
+              }
+            ],
+            "default": "a"
+          },
+          "pinConst": {
+            "oneOf": [
+              {
+                "type": "string",
+                "const": "fix"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "default": "fix"
           }
         },
         "required": [

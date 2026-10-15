@@ -63,8 +63,6 @@ func TestUnionFieldDefaultsGuards(t *testing.T) {
 	for name, tc := range map[string]struct {
 		field string
 	}{
-		"enum pin":              {`{"oneOf":[{"type":"string","enum":["a"]},{"type":"integer"}],"default":"a"}`},
-		"const pin":             {`{"oneOf":[{"type":"string","const":"a"},{"type":"integer"}],"default":"a"}`},
 		"string format":         {`{"oneOf":[{"type":"string","format":"date"},{"type":"integer"}],"default":"2024-01-02"}`},
 		"object branch":         {`{"oneOf":[{"type":"object","properties":{"a":{"type":"string"}}},{"type":"integer"}],"default":{"a":"x"}}`},
 		"reference branch":      {"{\"oneOf\":[{\"$ref\":\"#/components/schemas/Name\"},{\"type\":\"integer\"}],\"default\":\"x\"}"},
@@ -94,6 +92,32 @@ func TestUnionFieldDefaultsGuards(t *testing.T) {
 		if _, err := core.GenerateWithDiagnostics(r); err == nil {
 			t.Fatal("adjacent role regressed", input, err)
 		}
+	}
+}
+
+func TestUnionFieldDefaultsPins(t *testing.T) {
+	// Enum and const pins are enforced against the matched branch vocabulary.
+	for _, tc := range []struct {
+		name, field string
+		ok          bool
+	}{
+		{"string enum member", `{"oneOf":[{"type":"string","enum":["a","b"]},{"type":"integer","enum":[1,2]}],"default":"a"}`, true},
+		{"native enum member", `{"oneOf":[{"type":"string"},{"type":"integer","format":"int32","enum":[1,2]}],"default":2}`, true},
+		{"string enum nonmember", `{"oneOf":[{"type":"string","enum":["a","b"]},{"type":"integer"}],"default":"z"}`, false},
+		{"native enum nonmember", `{"oneOf":[{"type":"string"},{"type":"integer","enum":[1,2]}],"default":9}`, false},
+		{"const equal", `{"oneOf":[{"type":"string","const":"a"},{"type":"integer"}],"default":"a"}`, true},
+		{"const differs", `{"oneOf":[{"type":"string","const":"a"},{"type":"integer"}],"default":"b"}`, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			input := schemas(`{"Holder":{"properties":{"v":` + tc.field + `}}}`)
+			got, err := core.GenerateWithDiagnostics(request(input, "Dto"))
+			if tc.ok && err != nil {
+				t.Fatal(err)
+			}
+			if !tc.ok && (err == nil || len(got.Artifacts.Files) != 0) {
+				t.Fatal("pinned non-member admitted", err)
+			}
+		})
 	}
 }
 

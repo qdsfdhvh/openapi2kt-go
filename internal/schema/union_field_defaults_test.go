@@ -66,7 +66,14 @@ func TestUnionFieldDefaultSelectorMirror(t *testing.T) {
 		t.Fatal(encoded, err)
 	}
 	floatToken := loadUnionField(t, `{"oneOf":[{"type":"integer"},{"type":"number"}],"default":1.0}`)
-	encoded, err = a.primitiveUnionDefaultValue(floatToken, union)
+	a2 := unionDefaultTestAnalyzer()
+	var floatNested []Declaration
+	floatType, err := a2.primitiveUnionDefaultField(floatToken, "V", &floatNested, map[string]bool{})
+	if err != nil {
+		t.Fatal(floatType, err)
+	}
+	floatUnion := floatNested[0].(*PrimitiveUnion)
+	encoded, err = a2.primitiveUnionDefaultValue(floatToken, floatUnion)
 	if err != nil || encoded != "1.0" {
 		t.Fatal("float token must be preserved", encoded, err)
 	}
@@ -79,8 +86,6 @@ func TestUnionFieldDefaultSelectorMirror(t *testing.T) {
 
 func TestUnionFieldDefaultExclusions(t *testing.T) {
 	for _, text := range []string{
-		`{"oneOf":[{"type":"string","enum":["a"]},{"type":"integer"}],"default":"a"}`,
-		`{"oneOf":[{"type":"string","const":"a"},{"type":"integer"}],"default":"a"}`,
 		`{"oneOf":[{"type":"string","format":"date"},{"type":"integer"}],"default":"2024-01-02"}`,
 		`{"oneOf":[{"type":"object","properties":{"a":{"type":"string"}}},{"type":"integer"}],"default":{"a":"x"}}`,
 		`{"oneOf":[{"type":"string","nullable":true},{"type":"integer"}],"default":"x"}`,

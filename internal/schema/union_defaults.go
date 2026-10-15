@@ -47,7 +47,7 @@ func (a *analyzer) primitiveUnionDefaultCandidate(v *document.Value) bool {
 		if kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
 			return false
 		}
-		if has(branch, "enum") || has(branch, "const") || kind == "string" && has(branch, "format") {
+		if kind == "string" && has(branch, "format") {
 			return false
 		}
 	}
@@ -129,37 +129,120 @@ func (a *analyzer) primitiveUnionDefaultEncoded(f field, union *PrimitiveUnion) 
 }
 
 // primitiveUnionDefaultValue mirrors the emitted selector order (String,
-// Boolean, Integer, Number) and preserves the original JSON token, because the
-// selector's wrapper choice depends on the token kind.
+// Boolean, Integer, Number), preserves the original JSON token because the
+// selector's wrapper choice depends on the token kind, and enforces enum/const
+// pins of the matched branch at generation time.
 func (a *analyzer) primitiveUnionDefaultValue(f field, union *PrimitiveUnion) (string, *diagnostic.Diagnostic) {
 	value := get(f.Schema, "default")
 	at := naming.Pointer(f.Pointer, "default")
-	has := func(kind PrimitiveKind) bool { return slices.Contains(union.Kinds, kind) }
-	switch value.Kind() {
-	case document.String:
-		if !has(PrimitiveString) {
-			return "", invalid("Default must match an accepted union branch.", at)
-		}
-	case document.Boolean:
-		if !has(PrimitiveBoolean) {
-			return "", invalid("Default must match an accepted union branch.", at)
-		}
-	case document.Number:
-		if has(PrimitiveInteger) && unionIntegerToken(value) {
-			break
-		}
-		if has(PrimitiveNumber) && unionNumberToken(value) {
-			break
-		}
+	kind, ok := unionDefaultKind(value, union.Kinds)
+	if !ok {
 		return "", invalid("Default must match an accepted union branch.", at)
-	default:
-		return "", invalid("Default must be a JSON primitive matching an accepted union branch.", at)
+	}
+	if err := a.primitiveUnionPinCheck(f, kind, value, at); err != nil {
+		return "", err
 	}
 	encoded, marshalErr := value.MarshalJSON()
 	if marshalErr != nil {
 		return "", invalid("Default must be valid JSON.", at)
 	}
 	return string(encoded), nil
+}
+
+func unionDefaultKind(value *document.Value, kinds []PrimitiveKind) (PrimitiveKind, bool) {
+	has := func(kind PrimitiveKind) bool { return slices.Contains(kinds, kind) }
+	switch value.Kind() {
+	case document.String:
+		if has(PrimitiveString) {
+			return PrimitiveString, true
+		}
+	case document.Boolean:
+		if has(PrimitiveBoolean) {
+			return PrimitiveBoolean, true
+		}
+	case document.Number:
+		if has(PrimitiveInteger) && unionIntegerToken(value) {
+			return PrimitiveInteger, true
+		}
+		if has(PrimitiveNumber) && unionNumberToken(value) {
+			return PrimitiveNumber, true
+		}
+	}
+	return 0, false
+}
+
+// primitiveUnionPinCheck finds the branch the runtime selector would choose and
+// validates its enum/const vocabulary. Unpinned branches accept any value of
+// their kind.
+func (a *analyzer) primitiveUnionPinCheck(f field, kind PrimitiveKind, value *document.Value, at string) *diagnostic.Diagnostic {
+	view, err := a.readUnion(f.Schema, f.Pointer)
+	if err != nil {
+		return err
+	}
+	if view == nil {
+		return unsupported(at)
+	}
+	for _, branch := range view.Branches {
+		bv, bp, _, err := a.resolveUnionBranch(branch, f.Depth)
+		if err != nil {
+			return err
+		}
+		branchKind, _, err := schemaType(bv, bp)
+		if err != nil {
+			return err
+		}
+		if resolved, ok := primitiveKindOfString(branchKind); !ok || resolved != kind {
+			continue
+		}
+		if has(bv, "const") {
+			if !primitivePinEqual(get(bv, "const"), value, branchKind, at) {
+				return invalid("Default must equal the pinned const value.", at)
+			}
+			return nil
+		}
+		if has(bv, "enum") {
+			return a.enumDefaultMemberAt(bv, value, branchKind, bp, at)
+		}
+		return nil
+	}
+	return invalid("Default must match an accepted union branch.", at)
+}
+
+func primitiveKindOfString(kind string) (PrimitiveKind, bool) {
+	switch kind {
+	case "string":
+		return PrimitiveString, true
+	case "integer":
+		return PrimitiveInteger, true
+	case "number":
+		return PrimitiveNumber, true
+	case "boolean":
+		return PrimitiveBoolean, true
+	}
+	return 0, false
+}
+
+func primitivePinEqual(pin, value *document.Value, kind, at string) bool {
+	switch kind {
+	case "string":
+		left, lok := pin.Text()
+		right, rok := value.Text()
+		return lok && rok && left == right
+	case "boolean":
+		left, lok := pin.Bool()
+		right, rok := value.Bool()
+		return lok && rok && left == right
+	}
+	scalar, err := scalarMapping(kind, pin, at)
+	if err != nil {
+		return false
+	}
+	_, left, err := constraintNumber(pin, scalar, at)
+	if err != nil {
+		return false
+	}
+	_, right, err := constraintNumber(value, scalar, at)
+	return err == nil && left.Cmp(right) == 0
 }
 
 func unionIntegerToken(value *document.Value) bool {
