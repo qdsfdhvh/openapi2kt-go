@@ -1,0 +1,288 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Referenced object collection defaults",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Item": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "age": {
+            "type": "integer",
+            "default": 7
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "a",
+              "b"
+            ]
+          },
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+              1,
+              2,
+              3
+            ]
+          }
+        }
+      },
+      "Rows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Item"
+        }
+      },
+      "MapRows": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Item"
+        }
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "inlineRows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "default": [
+              {
+                "name": "a",
+                "kind": "a"
+              },
+              {
+                "name": "b",
+                "age": 3,
+                "code": 2
+              }
+            ]
+          },
+          "inlineMap": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "default": {
+              "k": {
+                "name": "c"
+              }
+            }
+          },
+          "namedRows": {
+            "$ref": "#/components/schemas/Rows",
+            "default": [
+              {
+                "name": "d"
+              }
+            ]
+          },
+          "namedMap": {
+            "$ref": "#/components/schemas/MapRows",
+            "default": {
+              "m": {
+                "name": "e"
+              }
+            }
+          },
+          "requiredRows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "default": [
+              {
+                "name": "r"
+              }
+            ]
+          },
+          "nilRows": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "default": null
+          }
+        },
+        "required": [
+          "requiredRows"
+        ]
+      },
+      "RequiredCfg": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "default": [
+              {
+                "name": "v"
+              }
+            ]
+          }
+        },
+        "required": [
+          "rows"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "sendHolder",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patchHolder",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "required": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "rows": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "$ref": "#/components/schemas/Item"
+                    },
+                    "default": [
+                      {
+                        "name": "p"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watchHolders",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "const": "holder"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/required": {
+      "post": {
+        "operationId": "sendRequired",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequiredCfg"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequiredCfg"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

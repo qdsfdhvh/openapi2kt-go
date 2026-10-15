@@ -1800,6 +1800,10 @@ done
   --output "$workspace/project/build/generated-limits/nested-object-collection-defaults" --package-name org.example.colobject --api-client-name ColObject --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/nested-object-collection-defaults.json \
   --output "$workspace/project/build/generated-limits/nested-object-collection-defaults" --package-name org.example.colobject --api-client-name ColObject --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/referenced-object-collection-defaults.json \
+  --output "$workspace/project/build/generated-limits/referenced-object-collection-defaults" --package-name org.example.refcol --api-client-name RefCol --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/referenced-object-collection-defaults.json \
+  --output "$workspace/project/build/generated-limits/referenced-object-collection-defaults" --package-name org.example.refcol --api-client-name RefCol --model-name-suffix Dto --check
 if [[ "${OPENAPI_KT_PREPARE_ONLY:-0}" == 1 ]]; then
   echo "PREPARED HTTP native generation/check: $workspace/project"
   exit 0

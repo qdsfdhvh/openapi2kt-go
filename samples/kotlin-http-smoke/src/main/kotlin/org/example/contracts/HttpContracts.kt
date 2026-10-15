@@ -258,6 +258,7 @@ fun main() = runBlocking {
     nestedObjectDefaultsContracts(checked = false)
     referencedObjectDefaultsContracts(checked = false)
     nestedObjectCollectionDefaultsContracts(checked = false)
+    referencedObjectCollectionDefaultsContracts(checked = false)
     directNullableComponentCountsContracts()
     structuredValuesContracts()
     structuredConstContracts()

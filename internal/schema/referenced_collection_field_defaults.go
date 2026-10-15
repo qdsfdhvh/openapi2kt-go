@@ -225,7 +225,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		// A Named terminal may be an ordinary DTO instead of a String enum. The
 		// target root must not carry its own default; property schemas keep their
 		// own validated defaults through the nested model plan.
-		if role != referencedNamedOwnDefault {
+		if role != referencedNamedOwnDefault && role != referencedCollectionOwnDefault {
 			return nil, unsupported(naming.Pointer(pointer, "properties"))
 		}
 		if bare.Kind != Named {

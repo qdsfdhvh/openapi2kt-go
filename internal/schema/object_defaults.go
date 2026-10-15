@@ -58,6 +58,33 @@ func objectDefaultCandidateSchema(v *document.Value) bool {
 	return exists && properties.Kind() == document.Object && len(properties.Members()) > 0
 }
 
+// objectDefaultCandidate is the analyzer-aware gate: it accepts a plain object,
+// a List/typed Map whose element tree contains one, and (for collection
+// elements) a direct local `$ref` that resolves to a plain object target.
+func (a *analyzer) objectDefaultCandidate(v *document.Value) bool {
+	if v == nil {
+		return false
+	}
+	kind, _, err := schemaType(v, "")
+	if err != nil {
+		return false
+	}
+	if kind == "array" {
+		return a.objectDefaultCandidate(get(v, "items"))
+	}
+	if dictionarySchema(v) {
+		return a.objectDefaultCandidate(get(v, "additionalProperties"))
+	}
+	if has(v, "$ref") {
+		source, _, err := a.defaultSource(text(get(v, "$ref")), "")
+		if err != nil {
+			return false
+		}
+		return objectDefaultCandidateSchema(source)
+	}
+	return objectDefaultCandidateSchema(v)
+}
+
 func objectDefaultRequiredNames(v *document.Value, pointer string) (map[string]bool, *diagnostic.Diagnostic) {
 	required := map[string]bool{}
 	value, ok := v.Get("required")
@@ -187,9 +214,38 @@ func (a *analyzer) objectDefaultContainer(v *document.Value, pointer string, dep
 }
 
 // objectDefaultChild dispatches a container element. Object-containing trees
-// recurse here; every other element stays with the existing leaf/container
-// planner. Element schemas cannot own the default annotation themselves.
+// recurse here; a direct local `$ref` to a plain object target borrows that
+// target; every other element stays with the existing leaf/container planner.
+// Element schemas cannot own the default annotation themselves.
 func (a *analyzer) objectDefaultChild(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	if has(v, "$ref") {
+		if err := checkKeys(v, []string{"$ref", "nullable"}, pointer); err != nil {
+			return nil, err
+		}
+		source, sourcePointer, err := a.defaultSource(text(get(v, "$ref")), pointer)
+		if err != nil {
+			return nil, err
+		}
+		if !objectDefaultCandidateSchema(source) {
+			return nil, unsupported(naming.Pointer(pointer, "$ref"))
+		}
+		node, err := a.objectDefaultNode(source, sourcePointer, depth, false)
+		if err != nil {
+			return nil, err
+		}
+		// The element's nearest explicit nullability overrides the target intent.
+		if has(v, "nullable") {
+			_, nullable, err := schemaType(v, pointer)
+			if err != nil {
+				return nil, err
+			}
+			node.ty = TypeRef{Kind: JSON}
+			if nullable {
+				node.ty = node.ty.Null()
+			}
+		}
+		return node, nil
+	}
 	if objectDefaultCandidateSchema(v) {
 		return a.objectDefaultNode(v, pointer, depth, false)
 	}
