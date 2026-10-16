@@ -41,6 +41,30 @@ func inlineAllOfDefaultElement(v *document.Value) *document.Value {
 	return nil
 }
 
+// inlineAllOfObjectDefaultMember admits only an ordinary inline constructor
+// property in an object value walk. The enclosing field's shared type plan has
+// already planned its declarations; this walk borrows sources, never declares
+// a type or grants a reference/collection-element role.
+func (a *analyzer) inlineAllOfObjectDefaultMember(v *document.Value, pointer string, depth int, allowOwnDefault bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	if !composedModelCandidate(v) || a.hierarchySources[v] ||
+		!allowOwnDefault && has(v, "default") ||
+		a.containsObjectCompositionUnion(v, 0, map[*document.Value]bool{}) {
+		return nil, unsupported(naming.Pointer(pointer, "allOf"))
+	}
+	node, err := a.ordinaryAllOfDefaultNode(v, pointer, depth)
+	if err != nil {
+		return nil, err
+	}
+	// Scalar consts are body properties, so a const-only shape has no
+	// constructor and keeps its separate default role even if omitted.
+	for _, property := range node.objectFields {
+		if !has(property.node.schema, "const") {
+			return node, nil
+		}
+	}
+	return nil, unsupported(naming.Pointer(pointer, "allOf"))
+}
+
 // ordinaryAllOfDefaultNode borrows the shared ordinary object shape. Disjoint
 // contributions require no cross-contribution constraint/default aggregation;
 // every child keeps its original schema node, pointer and source depth.

@@ -10,11 +10,11 @@ import (
 	"openapi-kt/internal/naming"
 )
 
-// Direct inline ordinary DTO object field own defaults. This role is narrower
-// than the inline object type planner: it accepts only plain inline objects
-// without references, composition, dictionaries, consts or nominal leaves. The
-// field type is still planned by the shared ordinary property planner, so the
-// declaration set and public type do not depend on the annotation.
+// Direct inline ordinary DTO object field own defaults. The root uses a plain
+// inline object or a separately admitted allOf/collection role. Its properties
+// may use the bounded reference, inline allOf, union and scalar-const walks
+// below. The shared ordinary property planner owns all declarations and public
+// types independently of the annotation.
 //
 // The default value validates every declared property and requires each
 // required wire name. Property values reuse the existing leaf/container
@@ -198,9 +198,10 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 	return node, nil
 }
 
-// objectDefaultPropertyNode dispatches one object property. Leaf/container
-// children are validated by the existing planner, which never creates
-// declarations here, so identity stays with the field type plan.
+// objectDefaultPropertyNode dispatches one object property, including direct
+// inline ordinary allOf constructors. Leaf/container children are validated by
+// the existing planner. These walks never create declarations, so identity
+// stays with the field type plan.
 func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, depth int, allowOwnDefault bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	a, err := a.objectDefaultStep(pointer)
 	if err != nil {
@@ -211,6 +212,8 @@ func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, 
 		// A referenced plain object property borrows its resolved target; the
 		// consuming DTO serializer still owns the nested codec.
 		return a.objectDefaultPropertyReference(v, pointer, depth)
+	case has(v, "allOf"):
+		return a.inlineAllOfObjectDefaultMember(v, pointer, depth, allowOwnDefault)
 	case has(v, "const"):
 		return a.objectDefaultConstNode(v, pointer)
 	case a.primitiveUnionElementCandidate(v):

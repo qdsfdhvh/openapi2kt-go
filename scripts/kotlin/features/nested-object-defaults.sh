@@ -24,6 +24,7 @@ fun main() = runBlocking {
     check(optimized.cfg?.tags == listOf("a", "b") && optimized.cfg?.counts == mapOf("k" to 1))
     check(optimized.allOfCfg?.z == "merged" && optimized.allOfCfg?.count == 5 && optimized.allOfCfg?.meta?.flag == true)
     check(optimized.allOfNull == null)
+    check(optimized.cfg?.composed?.label == "outer member" && optimized.cfg?.composed?.count == 3 && optimized.cfg?.composed?.child?.flag == false)
     nestedObjectDefaultsContracts(CHECKED)
 }
 KOTLIN
