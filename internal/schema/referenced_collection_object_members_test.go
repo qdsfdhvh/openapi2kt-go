@@ -133,3 +133,46 @@ func TestReferencedCollectionBareAllOfMemberSourcesAndBudgets(t *testing.T) {
 		t.Fatal("rewrote original sources")
 	}
 }
+
+// An original internal allOf element terminal is bound through the shared
+// resolver seam so the eager member walk observes the same node/Pointer/
+// SourceCatalog its deferred source check requires. A copied node still fails.
+func TestReferencedCollectionInternalAllOfMemberSources(t *testing.T) {
+	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Owner":{"properties":{"node":{"allOf":[{"properties":{"a":{"type":"string"}},"required":["a"]},{"properties":{"b":{"type":"integer"}}}]}}},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Owner/properties/node"}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Rows"}},"default":{"member":[{"a":"x"}]}}}}}}}`)
+	a, root := referencedCollectionTestAnalyzer(t, input)
+	member := get(get(get(get(get(referencedSchemas(root), "Holder"), "properties"), "v"), "properties"), "member")
+	node := get(get(get(referencedSchemas(root), "Owner"), "properties"), "node")
+	before, _ := root.MarshalJSON()
+	n, err := a.objectDefaultPropertyNode(member, "/member", 1, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	terminal := get(get(get(referencedSchemas(root), "Owner"), "properties"), "node")
+	if n.schema != get(referencedSchemas(root), "Rows") || n.element == nil || n.element.schema != terminal || !n.element.object ||
+		n.element.pointer != "/components/schemas/Owner/properties/node" ||
+		n.element.objectFields[0].node.schema != get(get(get(terminal, "allOf").Items()[0], "properties"), "a") {
+		t.Fatal("lost collection/element source", n)
+	}
+	if a.deferredNominals[node] == nil {
+		t.Fatal("internal terminal binding not established")
+	}
+	pointer := "/components/schemas/Owner/properties/node"
+	if err := a.internalAllOfDefaultMemberSource(node, pointer, "#"+pointer); err != nil {
+		t.Fatal("bound internal terminal rejected", err)
+	}
+	cloneBytes, _ := node.MarshalJSON()
+	clone, loadErr := document.Load(cloneBytes, document.JSON, "")
+	if loadErr != nil {
+		t.Fatal(loadErr)
+	}
+	if err := a.internalAllOfDefaultMemberSource(clone, pointer, "#"+pointer); err == nil {
+		t.Fatal("copied internal terminal admitted")
+	}
+	if err := a.internalAllOfDefaultMemberSource(node, pointer, "#/components/schemas/Owner/properties/other"); err == nil {
+		t.Fatal("wrong pointer admitted")
+	}
+	after, _ := root.MarshalJSON()
+	if string(before) != string(after) {
+		t.Fatal("rewrote original sources")
+	}
+}
