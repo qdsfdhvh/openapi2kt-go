@@ -105,7 +105,7 @@ func (a *analyzer) uniqueScalarSource(v *document.Value, pointer string, depth i
 		c, err := a.resolveSchema(text(get(v, "$ref")), pointer+"/$ref")
 		return err == nil && a.uniqueScalarSource(c.Schema, c.Pointer, depth+1)
 	}
-	if union, err := readUnion(v, pointer); err != nil {
+	if union, err := a.readUnion(v, pointer); err != nil {
 		return false
 	} else if union != nil {
 		return len(union.Branches) == 1 && union.HasNull &&

@@ -129,7 +129,7 @@ func (a *analyzer) operationValueType(v *document.Value, name, pointer string, d
 	if err := object(v, pointer); err != nil {
 		return TypeRef{}, err
 	}
-	union, err := readUnion(v, pointer)
+	union, err := a.readUnion(v, pointer)
 	if err != nil {
 		return TypeRef{}, err
 	}

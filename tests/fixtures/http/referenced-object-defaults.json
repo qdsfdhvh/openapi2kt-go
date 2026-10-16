@@ -1,0 +1,371 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Referenced object defaults",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Inner": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "age": {
+            "type": "integer",
+            "default": 7
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "on",
+              "off"
+            ]
+          },
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+              1,
+              2,
+              3
+            ]
+          },
+          "when": {
+            "type": "string",
+            "format": "date"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "counts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          },
+          "child": {
+            "type": "object",
+            "properties": {
+              "flag": {
+                "type": "boolean"
+              }
+            },
+            "default": {
+              "flag": true
+            }
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "AllOfValue": {
+        "allOf": [
+          {"$ref": "#/components/schemas/Inner"},
+          {
+            "properties": {"n": {"type": "integer", "enum": [1, 2, 3, 4, 5, 8]}},
+            "required": ["n"]
+          }
+        ]
+      },
+      "InternalOwner": {
+        "properties": {
+          "node": {"allOf": [
+            {"$ref": "#/components/schemas/Inner"},
+            {"properties": {"n": {"type": "integer", "enum": [1, 2, 3, 4, 5, 8]}}, "required": ["n"]}
+          ]},
+          "nodes": {"type": "array", "items": {"allOf": [
+            {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+            {"properties": {"n": {"type": "integer", "default": 7}}}
+          ]}},
+          "entries": {"additionalProperties": {"allOf": [
+            {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+            {"properties": {"n": {"type": "integer", "default": 7}}}
+          ]}},
+          "maybe": {"allOf": [
+            {"nullable": true, "properties": {"label": {"type": "string"}}, "required": ["label"]},
+            {"properties": {"flag": {"type": "boolean"}}}
+          ]}
+        }
+      },
+      "InternalAlias": {"$ref": "#/components/schemas/InternalOwner/properties/node"},
+      "InternalHops": {"properties": {"via": {"$ref": "#/components/schemas/InternalAlias", "nullable": true}}},
+      "InternalBridge": {"$ref": "#/components/schemas/InternalHops/properties/via"},
+      "InternalRows": {"type": "array", "items": {"allOf": [
+        {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+        {"properties": {"n": {"type": "integer", "default": 7}}}
+      ]}},
+      "InternalMap": {"additionalProperties": {"allOf": [
+        {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+        {"properties": {"n": {"type": "integer", "default": 7}}}
+      ]}},
+      "InternalChoice": {"oneOf": [
+        {"allOf": [
+          {"properties": {"kind": {"const": "all"}, "label": {"type": "string"}}, "required": ["label"]},
+          {"properties": {"n": {"type": "integer", "default": 7}}}
+        ]},
+        {"properties": {"kind": {"const": "other"}, "label": {"type": "integer"}}, "required": ["label"]}
+      ]},
+      "AllOfAlias": {"$ref": "#/components/schemas/AllOfValue"},
+      "AllOfHops": {"properties": {"node": {"$ref": "#/components/schemas/AllOfValue"}}},
+      "AllOfBridge": {"$ref": "#/components/schemas/AllOfHops/properties/node"},
+      "NullableAllOfValue": {
+        "nullable": true,
+        "allOf": [
+          {"$ref": "#/components/schemas/Inner"},
+          {"properties": {"flag": {"type": "boolean"}}}
+        ]
+      },
+      "RequiredAllOfCfg": {
+        "properties": {
+          "value": {"$ref": "#/components/schemas/AllOfValue", "nullable": true, "default": null}
+        },
+        "required": ["value"]
+      },
+      "InnerAlias": {
+        "$ref": "#/components/schemas/Inner"
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "cfg": {
+            "$ref": "#/components/schemas/Inner",
+            "default": {
+              "name": "outer",
+              "age": 9,
+              "status": "on",
+              "code": 2,
+              "when": "2024-01-02",
+              "tags": [
+                "a",
+                "b"
+              ],
+              "counts": {
+                "k": 1
+              },
+              "child": {
+                "flag": false
+              },
+              "note": null
+            }
+          },
+          "aliasCfg": {
+            "$ref": "#/components/schemas/InnerAlias",
+            "default": {
+              "name": "alias"
+            }
+          },
+          "requiredCfg": {
+            "$ref": "#/components/schemas/Inner",
+            "default": {
+              "name": "required"
+            }
+          },
+          "allOfCfg": {
+            "$ref": "#/components/schemas/AllOfValue",
+            "default": {"name": "composed", "n": 2}
+          },
+          "aliasAllOfCfg": {
+            "$ref": "#/components/schemas/AllOfAlias",
+            "default": {"name": "alias-composed", "n": 3}
+          },
+          "bridgedAllOfCfg": {
+            "$ref": "#/components/schemas/AllOfBridge",
+            "default": {"name": "bridge-composed", "n": 4}
+          },
+          "allOfNil": {
+            "$ref": "#/components/schemas/NullableAllOfValue",
+            "default": null
+          },
+          "internalCfg": {"$ref": "#/components/schemas/InternalOwner/properties/node", "default": {"name": "internal", "n": 2}},
+          "internalAliasCfg": {"$ref": "#/components/schemas/InternalAlias", "default": {"name": "internal-alias", "n": 3}},
+          "internalBridgeCfg": {"$ref": "#/components/schemas/InternalBridge", "default": {"name": "internal-bridge", "n": 4}},
+          "internalListCfg": {"$ref": "#/components/schemas/InternalOwner/properties/nodes/items", "default": {"label": "list"}},
+          "internalMapCfg": {"$ref": "#/components/schemas/InternalOwner/properties/entries/additionalProperties", "default": {"label": "map"}},
+          "internalRootListCfg": {"$ref": "#/components/schemas/InternalRows/items", "default": {"label": "root-list"}},
+          "internalRootMapCfg": {"$ref": "#/components/schemas/InternalMap/additionalProperties", "default": {"label": "root-map"}},
+          "internalVariantCfg": {"$ref": "#/components/schemas/InternalChoice/oneOf/0", "default": {"kind": "all", "label": "variant"}},
+          "internalMaybe": {"$ref": "#/components/schemas/InternalOwner/properties/maybe", "default": {"label": "nullable"}},
+          "internalNull": {"$ref": "#/components/schemas/InternalOwner/properties/maybe", "default": null},
+          "nilCfg": {
+            "$ref": "#/components/schemas/Inner",
+            "nullable": true,
+            "default": null
+          }
+        },
+        "required": [
+          "requiredCfg"
+        ]
+      },
+      "RequiredCfg": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Inner",
+            "nullable": true,
+            "default": null
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "sendHolder",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patchHolder",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "required"
+                ],
+                "properties": {
+                  "required": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "internalCfg": {
+                    "$ref": "#/components/schemas/InternalBridge",
+                    "nullable": true,
+                    "default": {"name": "patch-internal", "n": 5}
+                  },
+                  "allOfCfg": {
+                    "$ref": "#/components/schemas/AllOfBridge",
+                    "nullable": true,
+                    "default": {"name": "patch-composed", "n": 4}
+                  },
+                  "cfg": {
+                    "$ref": "#/components/schemas/Inner",
+                    "nullable": true,
+                    "default": {
+                      "name": "patch"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watchHolders",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "const": "holder"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/required": {
+      "post": {
+        "operationId": "sendRequired",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequiredCfg"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequiredCfg"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -233,6 +233,14 @@ func (a *analyzer) linkNominalDeclarations(hierarchy map[string]*Hierarchy, decl
 		}
 	}
 	if final {
+		// Own-default plans retain a pre-presence TypeRef by value, including
+		// required/discarded fields with no retained property to supply it later.
+		// Link that copy through the same final source/declaration authority.
+		if a.referencedDefaults != nil {
+			for i := range *a.referencedDefaults {
+				linkType(&(*a.referencedDefaults)[i].Type)
+			}
+		}
 		a.nominalsLinked = true
 	}
 	return nil

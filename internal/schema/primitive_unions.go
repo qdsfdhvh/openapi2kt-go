@@ -225,7 +225,7 @@ func (a *analyzer) rootUnion(v *document.Value, name, pointer string, used map[s
 	if has(v, "discriminator") {
 		return nil, unsupported(pointer)
 	}
-	union, err := readUnion(v, pointer)
+	union, err := a.readUnion(v, pointer)
 	if err != nil {
 		return nil, err
 	}

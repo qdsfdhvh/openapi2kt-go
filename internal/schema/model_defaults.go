@@ -63,6 +63,26 @@ func (a *analyzer) modelDefaultType(f field, ordinary bool, name string, nested 
 		ty, err := a.referencedDefaultType(f, ordinary)
 		return ty, nil, err
 	}
+	if has(f.Schema, "oneOf") || has(f.Schema, "anyOf") {
+		ty, err := a.unionDefaultField(f, name, nested, used)
+		return ty, nil, err
+	}
+	if rawJSONDefaultCandidate(f.Schema) {
+		ty, err := a.rawJSONDefaultField(f, name, nested, used)
+		return ty, nil, err
+	}
+	if a.objectDefaultCandidate(f.Schema) {
+		ty, err := a.objectDefaultField(f, ordinary, name, nested, used)
+		return ty, nil, err
+	}
+	if has(f.Schema, "allOf") {
+		if !a.containsObjectCompositionUnion(f.Schema, 0, map[*document.Value]bool{}) {
+			ty, err := a.objectDefaultField(f, ordinary, name, nested, used)
+			return ty, nil, err
+		}
+		ty, err := a.composedUnionDefaultField(f, name, nested, used)
+		return ty, nil, err
+	}
 	if nestedCollectionDefaultSchema(f.Schema) {
 		if !ordinary {
 			return TypeRef{}, nil, unsupported(naming.Pointer(f.Pointer, "default"))
@@ -226,6 +246,60 @@ func (a *analyzer) modelDefault(f field, ty TypeRef, required bool) (string, *di
 		return "", nil // Final linked backing supplies the typed default plan.
 	}
 	pointer := naming.Pointer(f.Pointer, "default")
+	if has(f.Schema, "oneOf") || has(f.Schema, "anyOf") {
+		validation := *a
+		validation.warnings = nil // Type planning owns source warnings.
+		initializer, err := validation.unionDefaultInitializer(f)
+		if err != nil {
+			return "", err
+		}
+		if required || ty.Kind == PatchValue {
+			return "", nil
+		}
+		return initializer, nil
+	}
+	if rawJSONDefaultCandidate(f.Schema) {
+		validation := *a
+		validation.warnings = nil // Type planning owns source warnings.
+		initializer, err := validation.rawJSONDefaultInitializer(f)
+		if err != nil {
+			return "", err
+		}
+		if required || ty.Kind == PatchValue {
+			return "", nil
+		}
+		return initializer, nil
+	}
+	if a.objectDefaultCandidate(f.Schema) {
+		validation := *a
+		validation.warnings = nil // Type planning owns source warnings.
+		initializer, err := validation.objectDefaultInitializer(f)
+		if err != nil {
+			return "", err
+		}
+		if required || ty.Kind == PatchValue {
+			return "", nil
+		}
+		return initializer, nil
+	}
+	if has(f.Schema, "allOf") {
+		validation := *a
+		validation.warnings = nil // Type planning owns source warnings.
+		var initializer string
+		var err *diagnostic.Diagnostic
+		if a.containsObjectCompositionUnion(f.Schema, 0, map[*document.Value]bool{}) {
+			initializer, err = validation.composedUnionDefaultInitializer(f)
+		} else {
+			initializer, err = validation.objectDefaultInitializer(f)
+		}
+		if err != nil {
+			return "", err
+		}
+		if required || ty.Kind == PatchValue {
+			return "", nil
+		}
+		return initializer, nil
+	}
 	if nestedCollectionDefaultSchema(f.Schema) {
 		validation := *a
 		validation.warnings = nil // Type planning owns source warnings.

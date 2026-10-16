@@ -1,0 +1,73 @@
+# Ordinary allOf object field defaults
+
+An ordinary DTO field may declare its own `default` on an inline object `allOf` whose contributions have distinct wire property names. The shared object planner still owns its nested Kotlin DTO, required arguments and serializers. For example:
+
+```json
+{
+  "allOf": [
+    {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+    {"properties": {"count": {"type": "integer"}}, "required": ["count"]}
+  ],
+  "default": {"count": 2, "label": "initial"}
+}
+```
+
+An optional field uses a fresh typed object decoded through the final nested DTO serializer. A missing key uses the default; a supplied object replaces it. Required fields validate the complete annotation and retain their constructor argument. Optional nullable inline request fields retain `Patch.Absent`, `Patch.Null` and `Patch.Value`; a schema default never makes a missing key an update.
+
+## Source and value contract
+
+The field must produce an ordinary constructor Model with at least one constructor property. Its `allOf` members may contain ordinary objects, nested object compositions and already accepted object-member references. Root own properties contribute after the members. Every wire property has exactly one contribution; repeated names, even with identical schemas, remain outside this default role.
+
+The default walk borrows the shared merged shape. Each field retains its original schema node, Pointer and source depth, including fields expanded from named members. All supplied keys must name declared fields; all merged required names must be present. Leaf membership, nullable values, supported bounds and collection counts follow the existing [object default contract](nested-object-defaults.md). A plain object member may carry its own validated default; omitting that member from the outer default uses the nested field's initializer. Schema errors point to their source; supplied-value errors point to the original `/default/...` member. Validation visits default keys in source order before sorting the encoded keys.
+
+Effective shape nullability authorizes `default: null`; optional Kotlin presence alone does not. Nested objects, supported collections and scalar/enum/temporal leaves retain their own nullable intent and validation. Required/Patch/discarded annotations undergo the same full validation before initializer suppression or a later parent `allOf` override.
+
+The decode helper binds the final actual DTO type after deduplication, merging and hoisting. Adding the annotation preserves the public type and declaration ownership. The existing `W_ALL_OF_APPROXIMATION` remains owned by type planning, with no duplicate warnings from the default walk.
+
+## References to named allOf DTOs
+
+An ordinary direct local `$ref` field may also own a default when its original terminal is an already accepted named ordinary allOf constructor DTO with the same disjoint contributions. For example, place the `allOf` above in component `Value` without a root default, then consume it as:
+
+```json
+{"$ref": "#/components/schemas/Value", "default": {"count": 2, "label": "initial"}}
+```
+
+Transparent named aliases and already accepted finite internal reference hops may reach that named component. The source walk retains every intermediate annotation and original Pointer. Final retained declaration ownership authorizes the actual component and serializer; a provisional or coincident type name does not. The field retains the resolver's existing public type, and adding a consumer default leaves target declaration bytes and warnings unchanged.
+
+Reference nullability follows the shared reference planner before optional presence: explicit consumer intent, nearest alias/internal hop intent, then terminal intent. Explicit false narrows even an intrinsically nullable allOf component. A valid null annotation emits literal `null`; non-null values use the final actual DTO serializer and create fresh objects, including omitted members with their own defaults. Required, Patch and discarded defaults undergo complete validation before suppression.
+
+The same referenced role also covers eligible [internal allOf DTOs](#references-to-internal-allof-dtos). Annotation-only allOf reference wrappers, hierarchy/common/inherited projections and List/Map defaults containing allOf leaves retain separate roles. Defaults on the target component or an intermediate reference are rejected rather than inherited. Repeated properties, fixed extras and whole-object counts remain excluded.
+
+## References to internal allOf DTOs
+
+A consuming ordinary direct local `$ref` field may own a default when an already admitted [internal allOf terminal](allof-nominal-terminals.md) retains a unique constructor Model under its original lexical component. For example, a reference to `#/components/schemas/Owner/properties/node` can use `default: {"label":"initial","count":2}` when `node` contains the disjoint allOf above. A root alias or finite internal/named reference chain may reach that same node. The public type stays the physical constructor, such as `OwnerDto.Node`, rather than an alias-owned or copied class.
+
+Eligible existing scopes include properties/nested DTOs, List item and typed Map value Models, root collection peers and unique composition-owned constructor Models. A reference to an allOf object-union variant uses that concrete Model's serializer and ordinary business payload; it does not add a closed-root class discriminator. The source must still pass the disjoint ordinary object default walk. Typed nominal recursion or wider typed admission alone does not grant a default role.
+
+Source authorization combines the final retained nominal binding with the original node, Pointer, current component identity and schema lookup's lexical `SourceCatalog`. A generated name or a scratch/borrowed occurrence cannot grant ownership. Hierarchy sources and hierarchy lexical owners remain excluded. No resolver or declaration admission is added by the annotation.
+
+Original field nodes, required names, leaf checks and source depths are reused. Nearest consumer/alias/internal nullable intent precedes terminal effective shape intent, including member-derived nullable on internal Models; explicit false narrows it and a later true may re-enable null. The helper binds the final actual type after optimization and produces fresh values. Target/chain annotations remain rejected, even when the target field's own initializer is otherwise valid. Required/Patch/discarded annotations and original/canonical budgets follow the same full validation before suppression.
+
+The consuming field defaults a single DTO value: references may target Models located in collections, but defaults on a collection containing allOf leaves and allOf-valued members inside another object default retain separate roles.
+
+## Bounded admission
+
+Inline fields and references to eligible named or internal constructor Models apply in ordinary shared/response/request DTOs. These remain separate:
+
+- annotation-only reference wrappers: a single component ref plus metadata/nullable members must retain its canonical referenced type;
+- target/root/component defaults and default inheritance;
+- repeated-property/default/constraint aggregation, fixed extras (`additionalProperties`) and whole-object property counts;
+- empty/raw and const-only projections, hierarchy/common/inherited fields, collection elements and nested defaulted-object members whose own schema is `allOf`;
+- object-union products, which use the separate [composed union default contract](union-field-defaults.md).
+
+Existing input8MiB, source48, composition-work16,384, checked-collection16 and constructor-slot240 limits remain. Object default walks also share the independent [16,384-step source planning budget](nested-object-defaults.md#object-source-planning-budget). The annotation retains the shared 16,384 JSON value-node and 32 KiB original/canonical JSON budgets. Exceeding a value budget returns `E_MODEL_LIMIT` at the original member; generation failure leaves existing output intact.
+
+## Verification and compatibility
+
+This extends M01/M03/M04/M07/M08 and the bounded D03 default profile; general D03/D05 remain open. Previously rejected eligible inline and referenced named/internal ordinary allOf object field defaults now generate. Fields without defaults retain existing source, type and wire behavior. Repeated-field aggregation, hierarchy and root/component default semantics are not added.
+
+The [core contract tests](../core/allof_object_defaults_test.go), [source authority tests](../internal/schema/allof_object_defaults_test.go) and [native parity/preservation tests](../internal/cli/allof_object_defaults_process_test.go) define admission and diagnostics. The existing [nested object fixture](../tests/fixtures/http/nested-object-defaults.json) and [Kotlin consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/NestedObjectDefaultsContracts.kt) cover ordinary allOf defaults, member refs, fresh nested instances, missing/replacement/null, Patch states and HTTP/SSE consumption under four Json configurations. Run `bash scripts/test.sh feature nested-object-defaults` for Data/Plain × validation off/on compilation/runtime and optimized/locked helper binding.
+
+The referenced role is defined by [core admission/nullable/bridge regressions](../core/referenced_allof_object_defaults_test.go), [source and final nominal authority tests](../internal/schema/referenced_allof_object_defaults_test.go) and [CLI parity/readonly check/failure preservation](../internal/cli/referenced_allof_object_defaults_process_test.go). Its [referenced-object fixture](../tests/fixtures/http/referenced-object-defaults.json), [consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ReferencedObjectDefaultsContracts.kt) and `bash scripts/test.sh feature referenced-object-defaults` exercise actual named/alias/internal-bridge defaults, intrinsic nullability, required/Patch, optimized helper binding and controlled HTTP/live SSE under the same four profiles.
+
+The internal extension has [core scope/nullable/presence regressions](../core/internal_allof_defaults_test.go), [source/owner/depth tests](../internal/schema/internal_allof_defaults_test.go) and [native parity/check/failure preservation](../internal/cli/internal_allof_defaults_process_test.go). The same fixture/consumer exercises property and collection-owned Models, root peers, aliases/bridges, concrete composition variants, inherited nullability, fresh nested member defaults, Patch wire states and original validation through HTTP/live SSE. `OPENAPI_KT_PREPARE_ONLY=1` provides native preparation only. JVM verification does not establish Android/KMP or release acceptance.

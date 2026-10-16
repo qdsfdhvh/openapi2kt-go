@@ -82,7 +82,7 @@ func TestNestedBuiltinCollectionDefaultsExcludeIndependentRoles(t *testing.T) {
 		`{"Holder":{"properties":{"value":{"additionalProperties":` + field + `}}}}`,
 		`{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,
 		`{"Leaf":{"type":"string"},"Holder":{"properties":{"value":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Leaf"}},"default":[]}}}}`,
-		`{"Holder":{"properties":{"value":{"type":"array","items":{"type":"array","items":{"properties":{"id":{"type":"integer"}}}},"default":[]}}}}`,
+		// Object leaves inside collections now use the separate object default role.
 		`{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"value":` + field + `}},{"properties":{"tag":{"const":"two"}}}]}}`,
 	} {
 		for _, checked := range []bool{false, true} {

@@ -10,6 +10,8 @@ The [composition-owned reference contract](composed-nested-owners.md) supplies o
 
 The final shared ownership barrier resolves and removes transient links before alias validation, optimization, name-lock fingerprints, operation planning and emission. First late HTTP uses may bind only registered physical occurrences. Transparent dictionary/collection cycles retain their existing structured cycle diagnostics; cleanup can visit provisional cyclic types without recursively overflowing.
 
+An ordinary direct local `$ref` field may also own a [default referencing an internal allOf constructor Model](allof-object-defaults.md#references-to-internal-allof-dtos) when the original shape has disjoint property contributions and passes the finite object default walk. The initializer binds the actual lexical serializer after optimization; target/chain defaults are not inherited. This separate default role excludes hierarchy sources/owners, broader composition/collection default roles and repeated-field aggregation. Typed recursion and full terminal admission alone do not authorize defaults.
+
 ## Nullable intent and source work
 
 Nested allOf Models may obtain nullable intent from their own annotation or from the original source-shape merge. A root alias or typed use with no override inherits that effective intent. The nearest consumer/ref/alias true or false overrides it, and a later true can re-enable null. Explicit node-level false takes precedence over member intent. The physical Kotlin class and its direct serializer remain non-null; nullable typed views use the nullable codec.

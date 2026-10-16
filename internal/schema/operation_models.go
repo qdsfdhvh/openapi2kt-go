@@ -125,7 +125,7 @@ func (a *analyzer) operationResponseSchema(v *document.Value, owner, pointer str
 	}
 	view := v
 	foldedObject := folded != nil
-	union, err := readUnion(v, pointer)
+	union, err := a.readUnion(v, pointer)
 	if err != nil {
 		return TypeRef{}, nil, err
 	}

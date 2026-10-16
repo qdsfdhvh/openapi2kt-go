@@ -1,0 +1,660 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Union field defaults",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "str": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "format": "int32"
+              },
+              {
+                "type": "number",
+                "format": "double"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "default": "x"
+          },
+          "i": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "format": "int32"
+              },
+              {
+                "type": "number",
+                "format": "double"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "default": 3
+          },
+          "n": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "format": "int32"
+              },
+              {
+                "type": "number",
+                "format": "double"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "default": 1.5
+          },
+          "b": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "format": "int32"
+              },
+              {
+                "type": "number",
+                "format": "double"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "default": true
+          },
+          "maybe": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "format": "int32"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "requiredUnion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "format": "int32"
+              },
+              {
+                "type": "number",
+                "format": "double"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "default": "r"
+          },
+          "pinEnum": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "a",
+                  "b"
+                ]
+              },
+              {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2
+                ]
+              }
+            ],
+            "default": "a"
+          },
+          "pinConst": {
+            "oneOf": [
+              {
+                "type": "string",
+                "const": "fix"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "default": "fix"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              ]
+            },
+            "default": [
+              "x",
+              1
+            ]
+          },
+          "rowMap": {
+            "type": "object",
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              ]
+            },
+            "default": {
+              "k": "x"
+            }
+          },
+          "refPin": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Status"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "default": "s1"
+          },
+          "objUnion": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "a"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "a"
+                    ]
+                  },
+                  "a": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "b"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "b"
+                    ]
+                  },
+                  "b": {
+                    "type": "integer"
+                  }
+                }
+              }
+            ],
+            "default": {
+              "kind": "a",
+              "a": "x"
+            }
+          },
+          "constUnion": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "a"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "a"
+                  },
+                  "a": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "b"
+                ],
+                "properties": {
+                  "kind": {
+                    "const": "b"
+                  },
+                  "b": {
+                    "type": "integer"
+                  }
+                }
+              }
+            ],
+            "default": {
+              "kind": "a",
+              "a": "x"
+            }
+          },
+          "presUnion": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "a"
+                ],
+                "properties": {
+                  "a": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "b"
+                ],
+                "properties": {
+                  "b": {
+                    "type": "integer"
+                  }
+                }
+              }
+            ],
+            "default": {
+              "a": "x"
+            }
+          },
+          "refUnion": {
+            "$ref": "#/components/schemas/RefUnion",
+            "default": "x"
+          },
+          "refObjUnion": {
+            "$ref": "#/components/schemas/RefObjUnion",
+            "default": {
+              "kind": "a",
+              "a": "x"
+            }
+          },
+          "closed": {
+            "$ref": "#/components/schemas/Closed",
+            "default": {"type": "Variant1", "value": "closed", "meta": {"flag": true}}
+          },
+          "closedNullable": {
+            "$ref": "#/components/schemas/ClosedNullable",
+            "default": {"type": "Variant2", "value": 8}
+          },
+          "closedNil": {
+            "$ref": "#/components/schemas/ClosedNullable",
+            "default": null
+          },
+          "composedInline": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Choice"
+              },
+              {
+                "$ref": "#/components/schemas/Mode"
+              }
+            ],
+            "default": {
+              "kind": "note",
+              "mode": "fast",
+              "fast": true,
+              "body": "x"
+            }
+          },
+          "composedRef": {
+            "$ref": "#/components/schemas/ComposedUnion",
+            "default": {
+              "kind": "count",
+              "mode": "slow",
+              "slow": false,
+              "count": 7
+            }
+          }
+        },
+        "required": [
+          "requiredUnion"
+        ]
+      },
+      "RequiredCfg": {
+        "type": "object",
+        "properties": {
+          "u": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "format": "int32"
+              },
+              {
+                "type": "number",
+                "format": "double"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "default": "v"
+          }
+        },
+        "required": [
+          "u"
+        ]
+      },
+      "Status": {
+        "type": "string",
+        "enum": [
+          "s1",
+          "s2"
+        ]
+      },
+      "Closed": {
+        "oneOf": [
+          {
+            "properties": {
+              "value": {"type": "string"},
+              "age": {"type": "integer", "default": 7},
+              "meta": {"properties": {"flag": {"type": "boolean"}}}
+            },
+            "required": ["value"]
+          },
+          {"properties": {"value": {"type": "integer"}}, "required": ["value"]}
+        ]
+      },
+      "ClosedNullable": {
+        "nullable": true,
+        "anyOf": [
+          {"properties": {"value": {"type": "string"}}, "required": ["value"]},
+          {"properties": {"value": {"type": "integer"}}, "required": ["value"]}
+        ]
+      },
+      "RefUnion": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer",
+            "format": "int32"
+          }
+        ]
+      },
+      "RefObjUnion": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "a"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "a"
+                ]
+              },
+              "a": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "b"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "b"
+                ]
+              },
+              "b": {
+                "type": "integer"
+              }
+            }
+          }
+        ]
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "body"
+            ],
+            "properties": {
+              "kind": {
+                "const": "note"
+              },
+              "body": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "count"
+            ],
+            "properties": {
+              "kind": {
+                "const": "count"
+              },
+              "count": {
+                "type": "integer"
+              }
+            }
+          }
+        ]
+      },
+      "Mode": {
+        "anyOf": [
+          {
+            "type": "object",
+            "required": [
+              "mode",
+              "fast"
+            ],
+            "properties": {
+              "mode": {
+                "const": "fast"
+              },
+              "fast": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "mode",
+              "slow"
+            ],
+            "properties": {
+              "mode": {
+                "const": "slow"
+              },
+              "slow": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      },
+      "ComposedUnion": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Choice"
+          },
+          {
+            "$ref": "#/components/schemas/Mode"
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "sendHolder",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/closed": {
+      "patch": {
+        "operationId": "patchClosed",
+        "tags": ["defaults"],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {
+            "type": "object",
+            "properties": {"closed": {
+              "$ref": "#/components/schemas/Closed",
+              "nullable": true,
+              "default": {"type": "Variant1", "value": "patch"}
+            }}
+          }}}
+        },
+        "responses": {"204": {"description": "Updated"}}
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watchHolders",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "const": "holder"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/required": {
+      "post": {
+        "operationId": "sendRequired",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequiredCfg"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequiredCfg"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

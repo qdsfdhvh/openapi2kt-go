@@ -70,7 +70,7 @@ func TestReferencedTemporalCollectionFieldDefaultsExcludedSourceRolesAndNoDrop(t
 		`{"type":"string","x-native-type":"date"}`, `{"type":"string","x-native-type":"kotlin.time.Instant"}`, `{"type":"string","format":"date","x-native-type":"kotlinx.datetime.LocalDate"}`,
 		`{"type":"string","format":"date","x-kotlin-value-class":false}`, `{"type":"string","x-kotlin-value-class":true}`,
 		`{"type":"string","format":"date","default":"2024-02-29"}`, `{"oneOf":[{"type":"string","format":"date"},{"type":"null"}]}`,
-		`{"properties":{"day":{"type":"string","format":"date"}}}`, `{"type":"string","format":"date","minLength":0}`, `{"type":"string","format":"date-time","minimum":0}`, `{"type":"string","format":"date","pattern":".*"}`,
+		`{"type":"string","format":"date","minLength":0}`, `{"type":"string","format":"date-time","minimum":0}`, `{"type":"string","format":"date","pattern":".*"}`,
 	} {
 		for _, checked := range []bool{false, true} {
 			for _, value := range []string{`[]`, `null`} {
@@ -83,6 +83,8 @@ func TestReferencedTemporalCollectionFieldDefaultsExcludedSourceRolesAndNoDrop(t
 			}
 		}
 	}
+	// Inline object elements with temporal properties now use the separate
+	// referenced object collection role.
 	for _, body := range []string{
 		`{"Rows":{"type":"array","items":{"type":"string","format":"date"},"default":[]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Rows","default":[]}}}}`,
 		`{"Rows":{"type":"array","items":{"type":"string","format":"date"}},"Alias":{"$ref":"#/components/schemas/Rows","default":[]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias","default":[]}}}}`,

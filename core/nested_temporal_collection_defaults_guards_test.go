@@ -40,7 +40,7 @@ func TestNestedTemporalCollectionDefaultsKeepExcludedRolesAndNoDrop(t *testing.T
 		`{"Day":{"type":"string","format":"date"},"Holder":{"properties":{"value":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Day"}},"default":[]}}}}`,
 		`{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,
 		`{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"value":` + field + `}},{"properties":{"tag":{"const":"two"}}}]}}`,
-		`{"Holder":{"properties":{"value":{"type":"array","items":{"type":"array","items":{"properties":{"day":{"type":"string","format":"date"}}}},"default":[]}}}}`,
+		// Object leaves inside collections now use the separate object default role.
 	} {
 		for _, checked := range []bool{false, true} {
 			r := request(schemas(input), "Dto")

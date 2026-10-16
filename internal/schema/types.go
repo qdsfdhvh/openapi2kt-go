@@ -226,10 +226,15 @@ type analyzer struct {
 	internalModelUses   map[string]string
 	// Discovery only; final hierarchy declarations authorize nullable alias
 	// bindings. Original nodes remain distinct from physical classifier names.
-	hierarchySources             map[*document.Value]bool
-	hierarchyOrigins             map[*Hierarchy]nominalOrigin
-	modelOrigins                 map[*Model]*document.Value
-	modelPointers                map[*Model]string
+	hierarchySources map[*document.Value]bool
+	hierarchyOrigins map[*Hierarchy]nominalOrigin
+	modelOrigins     map[*Model]*document.Value
+	modelPointers    map[*Model]string
+	// Original inline object field roots in the direct DTO object default role.
+	// The shared object type planner must ignore their own annotation, which the
+	// dedicated default planner validates instead.
+	objectDefaultSchemas         map[*document.Value]bool
+	objectDefaultWork            *int // Shared only by one source validation walk.
 	declarationOwners            map[Declaration]*component
 	unionOrigins                 map[Declaration]nominalOrigin
 	enumOrigins                  map[Declaration]nominalOrigin

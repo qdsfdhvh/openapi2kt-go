@@ -44,8 +44,8 @@ func TestReferencedCollectionFieldDefaultsSourceKindsAndNullLayers(t *testing.T)
 func TestReferencedCollectionFieldDefaultsSourceRolesAndNoDrop(t *testing.T) {
 	for _, terminal := range []string{
 		`{"type":"array","items":{"type":"string","default":"a"}}`,
+		// Inline object elements now use the separate referenced object collection role.
 
-		`{"type":"array","items":{"properties":{"id":{"type":"integer"}}}}`,
 		`{"additionalProperties":true}`,
 		`{"type":"array","items":{"type":"string","x-native-type":"kotlin.String"}}`,
 		`{"type":"array","items":{"oneOf":[{"type":"string"},{"type":"null"}]}}`,

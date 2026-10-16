@@ -63,7 +63,7 @@ func (a *analyzer) fieldSerializer(v *document.Value, pointer string, depth int)
 	if has(v, "discriminator") {
 		return "", nil
 	}
-	union, err := readUnion(v, pointer)
+	union, err := a.readUnion(v, pointer)
 	if err != nil {
 		return "", err
 	}

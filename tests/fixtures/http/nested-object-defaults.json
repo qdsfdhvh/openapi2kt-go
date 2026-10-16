@@ -1,0 +1,377 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Nested object defaults",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "cfg": {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "age": {
+                "type": "integer",
+                "default": 7
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "on",
+                  "off"
+                ]
+              },
+              "code": {
+                "type": "integer",
+                "format": "int32",
+                "enum": [
+                  1,
+                  2,
+                  3
+                ]
+              },
+              "when": {
+                "type": "string",
+                "format": "date"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "counts": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer"
+                }
+              },
+              "child": {
+                "type": "object",
+                "properties": {
+                  "flag": {
+                    "type": "boolean"
+                  }
+                },
+                "default": {
+                  "flag": true
+                }
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "leaf": {
+                "$ref": "#/components/schemas/LeafCfg"
+              }
+            },
+            "default": {
+              "name": "outer",
+              "age": 9,
+              "status": "on",
+              "code": 2,
+              "when": "2024-01-02",
+              "tags": [
+                "a",
+                "b"
+              ],
+              "counts": {
+                "k": 1
+              },
+              "child": {
+                "flag": false
+              },
+              "note": null,
+              "leaf": {
+                "z": "deep"
+              }
+            }
+          },
+          "requiredCfg": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "default": {
+              "id": "x"
+            }
+          },
+          "allOfCfg": {
+            "allOf": [
+              {"$ref": "#/components/schemas/LeafCfg"},
+              {
+                "properties": {
+                  "count": {"type": "integer"},
+                  "meta": {
+                    "properties": {"flag": {"type": "boolean"}},
+                    "default": {"flag": true}
+                  }
+                },
+                "required": ["count"]
+              }
+            ],
+            "default": {"count": 5, "z": "merged"}
+          },
+          "allOfNull": {
+            "allOf": [
+              {"properties": {"a": {"type": "string"}}},
+              {"properties": {"b": {"type": "integer"}}}
+            ],
+            "nullable": true,
+            "default": null
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "v": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "requiredCfg"
+        ]
+      },
+      "PatchInput": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cfg": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "a": {
+                "type": "string"
+              }
+            },
+            "default": {
+              "a": "x"
+            }
+          },
+          "cfgNullable": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "b": {
+                "type": "integer"
+              }
+            },
+            "default": null
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "RequiredNullableCfg": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "n": {
+                "type": "integer"
+              }
+            },
+            "default": null
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "LeafCfg": {
+        "type": "object",
+        "required": [
+          "z"
+        ],
+        "properties": {
+          "z": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "sendHolder",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patchHolder",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "required": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "cfg": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "a": {
+                        "type": "string"
+                      }
+                    },
+                    "default": {
+                      "a": "x"
+                    }
+                  },
+                  "allOfCfg": {
+                    "allOf": [
+                      {"properties": {"a": {"type": "string"}}},
+                      {"properties": {"b": {"type": "integer"}}}
+                    ],
+                    "nullable": true,
+                    "default": {"a": "initial", "b": 2}
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watchHolders",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "const": "holder"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/required": {
+      "post": {
+        "operationId": "sendRequired",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequiredNullableCfg"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequiredNullableCfg"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

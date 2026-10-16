@@ -50,7 +50,11 @@ func tupleScalar(v *document.Value, pointer string, depth int) (tupleScalarSigna
 }
 
 func (a *analyzer) arrayItems(v *document.Value, pointer string, depth int) (*arrayItemsDecision, *diagnostic.Diagnostic) {
-	if err := checkKeys(v, a.collectionKeys([]string{"type", "nullable", "items", "prefixItems"}), pointer); err != nil {
+	keys := a.collectionKeys([]string{"type", "nullable", "items", "prefixItems"})
+	if a.objectDefaultSchemas[v] {
+		keys = append(keys, "default")
+	}
+	if err := checkKeys(v, keys, pointer); err != nil {
 		return nil, err
 	}
 	decision := &arrayItemsDecision{Selected: get(v, "items"), Pointer: naming.Pointer(pointer, "items")}

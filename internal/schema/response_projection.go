@@ -58,7 +58,7 @@ func (a *analyzer) responseProjection(v *document.Value, pointer string) (*TypeR
 		}
 		return &TypeRef{Kind: Scalar, Name: "kotlin.Unit"}, nil, nil
 	}
-	union, err := readUnion(v, pointer)
+	union, err := a.readUnion(v, pointer)
 	if err != nil || union == nil {
 		return nil, nil, err
 	}
