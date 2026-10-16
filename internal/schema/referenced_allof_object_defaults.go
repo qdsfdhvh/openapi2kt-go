@@ -7,21 +7,35 @@ import (
 )
 
 // A consuming reference's own default may use a disjoint ordinary allOf DTO
-// only after the existing final nominal barrier has retained its named Model.
-// Source shape alone, a coincident Named spelling or a hierarchy leaf is not
-// authority for this role. Pure named aliases are traversed by the caller.
+// only after the existing final nominal barrier has retained its actual Model
+// under the original lexical component. Source shape alone, a coincident Named
+// spelling or a hierarchy owner is not authority. Aliases are walked by caller.
 func (a *analyzer) referencedAllOfObjectDefaultNode(v *document.Value, pointer string, ty TypeRef, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	if has(v, "default") {
 		return nil, unsupported(naming.Pointer(pointer, "default"))
 	}
 	target := ty.WithoutRootNull()
-	owner := a.componentsByOriginalSchema(v)
 	binding := a.deferredNominals[v]
+	owner := a.componentsByOriginalSchema(v)
+	if owner == nil && binding != nil {
+		owner = binding.Owner
+	}
 	if !a.nominalsLinked || !composedModelCandidate(v) || a.hierarchySources[v] ||
 		a.containsObjectCompositionUnion(v, 0, map[*document.Value]bool{}) ||
 		target.Kind != Named || target.Element != nil || owner == nil || owner.InternalModelTarget != nil ||
-		owner.Pointer != pointer || binding == nil || binding.Schema != v || binding.Owner != owner ||
+		a.components[owner.Wire] != owner || a.hierarchySources[owner.Schema] ||
+		binding == nil || binding.Schema != v || binding.Owner != owner ||
 		binding.Pointer != pointer || binding.Name == "" || binding.Name != target.Name {
+		return nil, unsupported(naming.Pointer(pointer, "allOf"))
+	}
+	if pointer != owner.Pointer {
+		// Recheck an original schema path, not a generated classifier spelling.
+		// Lookup admits no new types; the final binding already owns the Model.
+		source, err := a.lookupSchemaReference("#"+pointer, pointer)
+		if err != nil || source.Schema != v || source.Pointer != pointer || source.SourceCatalog != owner {
+			return nil, unsupported(naming.Pointer(pointer, "allOf"))
+		}
+	} else if owner.Schema != v {
 		return nil, unsupported(naming.Pointer(pointer, "allOf"))
 	}
 	validation := *a

@@ -25,6 +25,12 @@ fun main() = runBlocking {
     check(optimized.allOfCfg?.name == "composed" && optimized.allOfCfg?.n == 2 && optimized.allOfCfg?.child?.flag == true)
     check(optimized.aliasAllOfCfg?.name == "alias-composed" && optimized.aliasAllOfCfg?.n == 3 && optimized.allOfNil == null)
     check(optimized.bridgedAllOfCfg?.name == "bridge-composed" && optimized.bridgedAllOfCfg?.n == 4 && optimized.bridgedAllOfCfg?.child?.flag == true)
+    check(optimized.internalCfg?.name == "internal" && optimized.internalCfg?.n == 2 && optimized.internalCfg?.child?.flag == true)
+    check(optimized.internalAliasCfg?.name == "internal-alias" && optimized.internalBridgeCfg?.name == "internal-bridge")
+    check(optimized.internalListCfg?.label == "list" && optimized.internalMapCfg?.label == "map")
+    check(optimized.internalRootListCfg?.label == "root-list" && optimized.internalRootMapCfg?.label == "root-map")
+    check(optimized.internalVariantCfg?.label == "variant" && optimized.internalVariantCfg?.kind == "all" && optimized.internalVariantCfg?.n == 7)
+    check(optimized.internalMaybe?.label == "nullable" && optimized.internalNull == null)
     check(org.example.refobjectopt.models.HolderDto(requiredCfg = org.example.refobjectopt.models.InnerDto(name = "required")).allOfCfg !== optimized.allOfCfg)
     referencedObjectDefaultsContracts(CHECKED)
 }

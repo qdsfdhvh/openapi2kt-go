@@ -105,13 +105,17 @@ func TestReferencedAllOfDefaultThroughInternalBridge(t *testing.T) {
 	// reference chain consumer cannot inherit or silently ignore that annotation.
 	annotatedHop := schemas(`{` + strings.Replace(definitions, `"hop":{"$ref":"#/components/schemas/Value"}`, `"hop":{"$ref":"#/components/schemas/Value","default":{"label":"hop"}}`, 1) + `"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias","default":{"label":"outer"}}}}}`)
 	carrierDefaultFailure(t, annotatedHop, false, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Hops/properties/hop/default")
-	// Internal-owned constructor allOf nodes have their own source role.
+	// The original internal-owned allOf default guard now graduates while
+	// retaining the no-default reference's lexical constructor and serializer.
 	owned := schemas(`{"Owner":{"properties":{"node":` + referencedAllOfTarget + `}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Owner/properties/node","default":{"label":"x"}}}}}`)
 	baseline := []byte(strings.Replace(string(owned), `,"default":{"label":"x"}`, "", 1))
 	if _, err := core.GenerateWithDiagnostics(request(baseline, "Dto")); err != nil {
 		t.Fatal("internal-owned no-default reference must already work", err)
 	}
-	carrierDefaultFailure(t, owned, true, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Owner/properties/node/allOf")
+	got, err := core.GenerateWithDiagnostics(request(owned, "Dto"))
+	if err != nil || !strings.Contains(source(t, got, "HolderDto"), "org.example.models.models.OwnerDto.Node? =") {
+		t.Fatal("internal allOf default guard did not graduate", err)
+	}
 }
 
 func TestReferencedAllOfDefaultNullability(t *testing.T) {

@@ -79,6 +79,44 @@
           }
         ]
       },
+      "InternalOwner": {
+        "properties": {
+          "node": {"allOf": [
+            {"$ref": "#/components/schemas/Inner"},
+            {"properties": {"n": {"type": "integer", "enum": [1, 2, 3, 4, 5, 8]}}, "required": ["n"]}
+          ]},
+          "nodes": {"type": "array", "items": {"allOf": [
+            {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+            {"properties": {"n": {"type": "integer", "default": 7}}}
+          ]}},
+          "entries": {"additionalProperties": {"allOf": [
+            {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+            {"properties": {"n": {"type": "integer", "default": 7}}}
+          ]}},
+          "maybe": {"allOf": [
+            {"nullable": true, "properties": {"label": {"type": "string"}}, "required": ["label"]},
+            {"properties": {"flag": {"type": "boolean"}}}
+          ]}
+        }
+      },
+      "InternalAlias": {"$ref": "#/components/schemas/InternalOwner/properties/node"},
+      "InternalHops": {"properties": {"via": {"$ref": "#/components/schemas/InternalAlias", "nullable": true}}},
+      "InternalBridge": {"$ref": "#/components/schemas/InternalHops/properties/via"},
+      "InternalRows": {"type": "array", "items": {"allOf": [
+        {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+        {"properties": {"n": {"type": "integer", "default": 7}}}
+      ]}},
+      "InternalMap": {"additionalProperties": {"allOf": [
+        {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+        {"properties": {"n": {"type": "integer", "default": 7}}}
+      ]}},
+      "InternalChoice": {"oneOf": [
+        {"allOf": [
+          {"properties": {"kind": {"const": "all"}, "label": {"type": "string"}}, "required": ["label"]},
+          {"properties": {"n": {"type": "integer", "default": 7}}}
+        ]},
+        {"properties": {"kind": {"const": "other"}, "label": {"type": "integer"}}, "required": ["label"]}
+      ]},
       "AllOfAlias": {"$ref": "#/components/schemas/AllOfValue"},
       "AllOfHops": {"properties": {"node": {"$ref": "#/components/schemas/AllOfValue"}}},
       "AllOfBridge": {"$ref": "#/components/schemas/AllOfHops/properties/node"},
@@ -150,6 +188,16 @@
             "$ref": "#/components/schemas/NullableAllOfValue",
             "default": null
           },
+          "internalCfg": {"$ref": "#/components/schemas/InternalOwner/properties/node", "default": {"name": "internal", "n": 2}},
+          "internalAliasCfg": {"$ref": "#/components/schemas/InternalAlias", "default": {"name": "internal-alias", "n": 3}},
+          "internalBridgeCfg": {"$ref": "#/components/schemas/InternalBridge", "default": {"name": "internal-bridge", "n": 4}},
+          "internalListCfg": {"$ref": "#/components/schemas/InternalOwner/properties/nodes/items", "default": {"label": "list"}},
+          "internalMapCfg": {"$ref": "#/components/schemas/InternalOwner/properties/entries/additionalProperties", "default": {"label": "map"}},
+          "internalRootListCfg": {"$ref": "#/components/schemas/InternalRows/items", "default": {"label": "root-list"}},
+          "internalRootMapCfg": {"$ref": "#/components/schemas/InternalMap/additionalProperties", "default": {"label": "root-map"}},
+          "internalVariantCfg": {"$ref": "#/components/schemas/InternalChoice/oneOf/0", "default": {"kind": "all", "label": "variant"}},
+          "internalMaybe": {"$ref": "#/components/schemas/InternalOwner/properties/maybe", "default": {"label": "nullable"}},
+          "internalNull": {"$ref": "#/components/schemas/InternalOwner/properties/maybe", "default": null},
           "nilCfg": {
             "$ref": "#/components/schemas/Inner",
             "nullable": true,
@@ -227,6 +275,11 @@
                       "string",
                       "null"
                     ]
+                  },
+                  "internalCfg": {
+                    "$ref": "#/components/schemas/InternalBridge",
+                    "nullable": true,
+                    "default": {"name": "patch-internal", "n": 5}
                   },
                   "allOfCfg": {
                     "$ref": "#/components/schemas/AllOfBridge",
