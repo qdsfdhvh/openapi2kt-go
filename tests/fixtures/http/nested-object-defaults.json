@@ -89,6 +89,10 @@
               "viaCollectionMap": {"$ref": "#/components/schemas/CollectionMapBridge", "nullable": false, "default": {"none": null, "value": {"label": "bridge map member"}}},
               "viaCollectionGrid": {"$ref": "#/components/schemas/CollectionGridBridge", "default": [{"k": {"label": "bridge grid member"}}]},
               "namedRows": {"$ref": "#/components/schemas/NamedRowsAlias", "default": [{"label": "named rows member"}]},
+              "memberBareRows": {"$ref": "#/components/schemas/MemberBareRows", "default": [{"label": "bare rows member"}]},
+              "memberBareRowsNull": {"$ref": "#/components/schemas/MemberBareRowsNullable", "default": null},
+              "memberBareMap": {"$ref": "#/components/schemas/MemberBareMap", "nullable": false, "default": {"none": null, "value": {"label": "bare map member"}}},
+              "memberBareGrid": {"$ref": "#/components/schemas/MemberBareGrid", "default": [{"k": {"label": "bare grid member"}}]},
               "namedMap": {"$ref": "#/components/schemas/NamedMap", "nullable": false, "default": null},
               "namedMapValues": {"$ref": "#/components/schemas/NamedMap", "default": {"none": null, "value": {"label": "named map member"}}},
               "namedGrid": {"$ref": "#/components/schemas/NamedGrid", "default": [{"k": {"label": "named grid member"}}]},
@@ -184,6 +188,10 @@
               "viaCollectionMap": {"none": null, "value": {"label": "outer bridge map"}},
               "viaCollectionGrid": [{"k": {"label": "outer bridge grid"}}],
               "namedRows": [{"label": "outer named rows"}],
+              "memberBareRows": [{"label": "outer bare rows"}],
+              "memberBareRowsNull": null,
+              "memberBareMap": {"none": null, "value": {"label": "outer bare map"}},
+              "memberBareGrid": [{"k": {"label": "outer bare grid"}}],
               "namedMap": null,
               "namedMapValues": {"none": null, "value": {"label": "outer named map"}},
               "namedGrid": [{"k": {"label": "outer named grid"}}],
@@ -342,6 +350,22 @@
       "CollectionMapBridge": {"$ref": "#/components/schemas/CollectionHops/properties/map"},
       "CollectionGridBridge": {"$ref": "#/components/schemas/CollectionHops/properties/grid"},
       "NamedRows": {"type": "array", "nullable": true, "items": {"$ref": "#/components/schemas/ComposedOuter"}},
+      "MemberBareRows": {"type": "array", "items": {"allOf": [
+        {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+        {"properties": {"count": {"type": "integer", "default": 2}, "child": {"properties": {"flag": {"type": "boolean"}}, "default": {"flag": true}}}}
+      ]}},
+      "MemberBareRowsNullable": {"type": "array", "nullable": true, "items": {"allOf": [
+        {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+        {"properties": {"count": {"type": "integer", "default": 2}}}
+      ]}},
+      "MemberBareMap": {"type": "object", "nullable": true, "additionalProperties": {"allOf": [
+        {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+        {"properties": {"count": {"type": "integer", "default": 2}}}
+      ], "nullable": true}},
+      "MemberBareGrid": {"type": "array", "items": {"type": "object", "additionalProperties": {"allOf": [
+        {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+        {"properties": {"count": {"type": "integer", "default": 2}}}
+      ]}}},
       "NamedRowsAlias": {"$ref": "#/components/schemas/NamedRows", "nullable": false},
       "NamedMap": {"type": "object", "nullable": true, "additionalProperties": {"$ref": "#/components/schemas/ComposedNullableOuter"}},
       "NamedGrid": {"type": "array", "items": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/ComposedOuter"}}},

@@ -76,6 +76,8 @@ private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMa
     "viaCollectionRows" to value?.viaCollectionRows, "viaCollectionRowsNull" to value?.viaCollectionRowsNull,
     "viaCollectionMap" to value?.viaCollectionMap, "viaCollectionGrid" to value?.viaCollectionGrid,
     "namedRows" to value?.namedRows, "namedMap" to value?.namedMap, "namedMapValues" to value?.namedMapValues, "namedGrid" to value?.namedGrid,
+    "memberBareRows" to value?.memberBareRows, "memberBareRowsNull" to value?.memberBareRowsNull,
+    "memberBareMap" to value?.memberBareMap, "memberBareGrid" to value?.memberBareGrid,
     "refRows" to value?.refRows, "refMap" to value?.refMap, "refGrid" to value?.refGrid, "refVariants" to value?.refVariants,
     "memberRows" to value?.memberRows, "memberMap" to value?.memberMap, "memberGrid" to value?.memberGrid,
     "viaAlias" to value?.viaAlias, "aliasNull" to value?.aliasNull,
@@ -128,6 +130,9 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.namedRows?.single()?.label == "outer named rows" && value.cfg?.namedRows?.single()?.child?.flag == true)
     check(value.cfg?.namedMap == null && value.cfg?.namedMapValues?.get("value")?.label == "outer named map" && value.cfg?.namedMapValues?.get("none") == null)
     check(value.cfg?.namedGrid?.single()?.get("k")?.label == "outer named grid")
+    check(value.cfg?.memberBareRows?.single()?.label == "outer bare rows" && value.cfg?.memberBareRows?.single()?.child?.flag == true)
+    check(value.cfg?.memberBareRowsNull == null && value.cfg?.memberBareMap?.get("value")?.label == "outer bare map" && value.cfg?.memberBareMap?.get("none") == null)
+    check(value.cfg?.memberBareGrid?.single()?.get("k")?.label == "outer bare grid")
     check(value.cfg?.viaCollectionRows?.single()?.label == "outer bridge rows" && value.cfg?.viaCollectionRows?.single()?.child?.flag == true)
     check(value.cfg?.viaCollectionRowsNull == null && value.cfg?.viaCollectionMap?.get("value")?.label == "outer bridge map" && value.cfg?.viaCollectionMap?.get("none") == null)
     check(value.cfg?.viaCollectionGrid?.single()?.get("k")?.label == "outer bridge grid")
@@ -169,6 +174,10 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.namedRows?.single()?.child !== other.cfg?.namedRows?.single()?.child)
     check(value.cfg?.namedMapValues?.get("value") !== other.cfg?.namedMapValues?.get("value"))
     check(value.cfg?.namedGrid?.single()?.get("k") !== other.cfg?.namedGrid?.single()?.get("k"))
+    check(value.cfg?.memberBareRows?.single() !== other.cfg?.memberBareRows?.single())
+    check(value.cfg?.memberBareRows?.single()?.child !== other.cfg?.memberBareRows?.single()?.child)
+    check(value.cfg?.memberBareMap?.get("value") !== other.cfg?.memberBareMap?.get("value"))
+    check(value.cfg?.memberBareGrid?.single()?.get("k") !== other.cfg?.memberBareGrid?.single()?.get("k"))
     check(value.cfg?.viaCollectionRows?.single() !== other.cfg?.viaCollectionRows?.single())
     check(value.cfg?.viaCollectionRows?.single()?.child !== other.cfg?.viaCollectionRows?.single()?.child)
     check(value.cfg?.viaCollectionMap?.get("value") !== other.cfg?.viaCollectionMap?.get("value"))
@@ -206,6 +215,8 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(fresh.refGrid?.single()?.get("k")?.label == "ref grid member" && fresh.refVariants?.single()?.label == "ref variant member")
     check(fresh.namedRows?.single()?.label == "named rows member" && fresh.namedMap == null)
     check(fresh.namedMapValues?.get("value")?.label == "named map member" && fresh.namedGrid?.single()?.get("k")?.label == "named grid member")
+    check(fresh.memberBareRows?.single()?.label == "bare rows member" && fresh.memberBareRows?.single()?.child?.flag == true && fresh.memberBareRowsNull == null)
+    check(fresh.memberBareMap?.get("value")?.label == "bare map member" && fresh.memberBareGrid?.single()?.get("k")?.label == "bare grid member")
     check(fresh.viaCollectionRows?.single()?.label == "bridge rows member" && fresh.viaCollectionRowsNull == null)
     check(fresh.viaCollectionMap?.get("value")?.label == "bridge map member" && fresh.viaCollectionGrid?.single()?.get("k")?.label == "bridge grid member")
     check(fresh.viaInternalRows?.single()?.label == "internal rows member" && fresh.viaInternalNull == null)
@@ -260,6 +271,17 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), named))) == nestedObjectHolderFields(named))
         check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","namedRows":[]}}""").cfg?.namedRows?.isEmpty() == true)
         check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","namedMap":null}}""").cfg?.namedMap == null)
+        check(overridden.cfg?.memberBareRows?.single()?.label == "bare rows member" && overridden.cfg?.memberBareMap?.get("value")?.label == "bare map member")
+        val bare = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","memberBareRows":[{"label":"replacement"}],"memberBareRowsNull":[{"label":"set"}],"memberBareMap":{"nil":null,"new":{"label":"map"}},"memberBareGrid":[{"new":{"label":"grid"}}]}}""")
+        check(bare.cfg?.memberBareRows?.single()?.label == "replacement" && bare.cfg?.memberBareRows?.single()?.child?.flag == true)
+        check(bare.cfg?.memberBareRowsNull?.single()?.label == "set")
+        check(bare.cfg?.memberBareMap?.keys == setOf("nil", "new") && bare.cfg?.memberBareMap?.get("nil") == null && bare.cfg?.memberBareMap?.get("new")?.count == 2)
+        check(bare.cfg?.memberBareGrid?.single()?.keys == setOf("new") && bare.cfg?.memberBareGrid?.single()?.get("new")?.count == 2)
+        check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), bare))) == nestedObjectHolderFields(bare))
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","memberBareRowsNull":null}}""").cfg?.memberBareRowsNull == null)
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","memberBareRows":[]}}""").cfg?.memberBareRows?.isEmpty() == true)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","memberBareRows":[{}]}}""") }.isFailure)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","memberBareRows":[null]}}""") }.isFailure)
         check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","namedRows":[{}]}}""") }.isFailure)
         check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","namedRows":[null]}}""") }.isFailure)
         check(overridden.cfg?.viaCollectionRows?.single()?.label == "bridge rows member" && overridden.cfg?.viaCollectionMap?.get("value")?.label == "bridge map member")

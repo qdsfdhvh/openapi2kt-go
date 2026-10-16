@@ -266,7 +266,7 @@ Root nullability comes from the existing named component/alias view, nearer inte
 
 Original source depth and the shared source-work budget continue across collection aliases, containers, element references and object members. Omitted/null/empty members still validate the complete source. Original-order value diagnostics, canonical keys and original/canonical value budgets remain. Decoding uses the final enclosing serializer after optimization and creates fresh containers, referenced DTOs and nested defaults.
 
-[Internal collection entities](#internal-collection-entities-inside-object-defaults) use the same element profile with their own original source checks. Bare allOf leaves, references between container layers and internal allOf element terminals remain excluded. The corresponding consuming-field own-default roles and inline collection-member roles retain their separate contracts. General D03 remains open.
+[Internal collection entities](#internal-collection-entities-inside-object-defaults) use the same element profile with their own original source checks. A referenced collection whose inline element tree ends in a **bare inline ordinary allOf constructor** uses the [bare allOf element leaf](#bare-allof-element-leaves-in-referenced-collection-members) role below; the consuming-field and inline collection-member roles retain their separate contracts. References between container layers and internal allOf element terminals remain excluded. General D03 remains open.
 
 [Core named-collection/context/nullable/guard tests](../core/referenced_collection_allof_object_default_members_test.go), [original source/depth/work checks](../internal/schema/referenced_collection_object_members_test.go) and the shared [native parity/preservation test](../internal/cli/referenced_allof_object_default_members_process_test.go) define admission. The nested-object feature covers aliases, nullable Maps, mixed containers, fresh defaults, missing/replacement/null/required elements, Patch, HTTP/live SSE and optimized/locked helpers in all four profiles.
 
@@ -301,6 +301,31 @@ The internal collection must retain its original node, canonical Pointer and cur
 Every source hop, container and object member consumes the existing depth/work budgets, including cached, omitted, null and empty paths. The original collection, intermediate-reference and element defaults remain rejected rather than inherited. Consumer-own defaults retain their separate validation. Required/Patch/discarded annotations, original-order errors, canonical value limits, container counts and leaf checks apply before suppression. Adding the enclosing default leaves existing owner/alias/target declarations and warnings unchanged. Decoding creates fresh containers and nested DTO defaults through the final enclosing codec.
 
 Bare allOf leaves, internal allOf element terminals and references between container layers remain outside this member profile. This extends bounded D03 without widening typed reference admission or introducing another binder.
+
+## Bare allOf element leaves in referenced collection members
+
+An object-default property may directly reference a named or internal List/typed Map component whose **inline** element tree ends in a bare ordinary allOf constructor (no element `$ref`). For example:
+
+```json
+{
+  "Rows": {"type": "array", "items": {"allOf": [
+    {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+    {"properties": {"count": {"type": "integer", "default": 2}}}
+  ]}},
+  "Holder": {"properties": {"cfg": {
+    "properties": {"rows": {"$ref": "#/components/schemas/Rows"}},
+    "default": {"rows": [{"label": "initial"}]}
+  }}}
+}
+```
+
+This mirrors the consuming-field [bare allOf element role](#bare-allOf-elements-in-referenced-collections) and the inline-collection [member role](#inline-collection-properties-inside-object-defaults). Typed Map, mixed paths and finite nested containers are eligible. The shared type plan must already retain a unique nonempty constructor for the original element under its lexical component; the detector scopes permission only to that exact original element node, and a structurally equal sibling or copied node cannot borrow it. Hierarchy-owned elements remain excluded.
+
+Root nullability continues to come from the named/internal view, nearer ref intent and the consuming override; container and element intent stay independent, and explicit false still narrows a nullable Map. Original merged fields, required names, leaf checks, per-layer nullable and container counts are reused. Every source hop and member consumes the existing depth/work and value budgets. The consuming property may own a separately validated default; element, inner-container, target and intermediate defaults remain rejected rather than inherited. Required/Patch/discarded checks validate before suppression, and the final enclosing serializer creates fresh containers on each evaluation.
+
+Adding the annotation leaves the collection/element declaration bytes and warnings unchanged. Internal allOf element **references** and references between container layers remain separate roles.
+
+[Core leaf/nullable/guard tests](../core/referenced_collection_allof_object_default_members_test.go) and [original source/depth/budget checks](../internal/schema/referenced_collection_object_members_test.go) define admission. The nested-object feature covers List/Map/mixed/nested bare leaves, fresh defaults, missing/replacement/null/required elements, Patch, HTTP/live SSE and optimized/locked helper binding across Data/Plain × validation.
 
 [Core entity/alias/nullable/context/guard tests](../core/internal_collection_allof_object_default_members_test.go) and [source, budget and retained-declaration tests](../internal/schema/internal_collection_object_members_test.go) define this role. Native CLI parity/check/output preservation and the shared Kotlin fixture cover direct/aliased Rows, nullable Map values, mixed containers, missing/replacement/null/required values, fresh instances, Patch, HTTP/live SSE and optimized/locked helpers.
 
