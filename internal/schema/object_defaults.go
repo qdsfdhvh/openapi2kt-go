@@ -193,15 +193,15 @@ func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, 
 	}
 }
 
-// objectDefaultShapeNode validates a Cartesian variant default against the
-// merged original shape of its composed branch. Fields keep their borrowed
-// source nodes and pointers; no declarations are created.
-func (a *analyzer) objectDefaultShapeNode(s *shape, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+// objectDefaultShapeNode validates a merged original object shape. Fields keep
+// their borrowed source nodes and pointers; no declarations are created. The
+// consuming role grants ordinary object members their own default annotations.
+func (a *analyzer) objectDefaultShapeNode(s *shape, pointer string, allowOwnDefault bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	node := &nestedDefaultNode{pointer: pointer, ty: TypeRef{Kind: JSON}, object: true}
 	declared := map[string]bool{}
 	for _, f := range s.Fields {
 		declared[f.Wire] = true
-		child, err := a.objectDefaultPropertyNode(f.Schema, f.Pointer, f.Depth, false)
+		child, err := a.objectDefaultPropertyNode(f.Schema, f.Pointer, f.Depth, allowOwnDefault)
 		if err != nil {
 			return nil, err
 		}
@@ -383,9 +383,21 @@ func (a *analyzer) objectDefaultField(f field, ordinary bool, name string, neste
 		a.objectDefaultSchemas = map[*document.Value]bool{}
 	}
 	a.objectDefaultSchemas[f.Schema] = true
+	before := len(*nested)
 	ty, _, err := a.modelPropertyType(f.Schema, name, f.Pointer, nested, used, f.Depth)
 	if err != nil {
 		return TypeRef{}, err
+	}
+	if has(f.Schema, "allOf") {
+		// Only an ordinary constructor DTO acquires this role. Empty/raw and
+		// const-only projections, unions and hierarchy declarations stay separate.
+		if len(*nested) != before+1 {
+			return TypeRef{}, unsupported(naming.Pointer(f.Pointer, "default"))
+		}
+		model, ok := (*nested)[before].(*Model)
+		if !ok || len(model.Properties) == 0 {
+			return TypeRef{}, unsupported(naming.Pointer(f.Pointer, "default"))
+		}
 	}
 	validation := *a
 	validation.warnings = nil
@@ -398,7 +410,13 @@ func (a *analyzer) objectDefaultField(f field, ordinary bool, name string, neste
 // objectDefaultInitializer revalidates the annotation and returns the decode
 // initializer. An explicit null stays the historical literal null.
 func (a *analyzer) objectDefaultInitializer(f field) (string, *diagnostic.Diagnostic) {
-	node, err := a.objectDefaultNode(f.Schema, f.Pointer, f.Depth, true)
+	var node *nestedDefaultNode
+	var err *diagnostic.Diagnostic
+	if has(f.Schema, "allOf") {
+		node, err = a.ordinaryAllOfDefaultNode(f.Schema, f.Pointer, f.Depth)
+	} else {
+		node, err = a.objectDefaultNode(f.Schema, f.Pointer, f.Depth, true)
+	}
 	if err != nil {
 		return "", err
 	}

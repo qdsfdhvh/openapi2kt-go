@@ -76,6 +76,10 @@ func (a *analyzer) modelDefaultType(f field, ordinary bool, name string, nested 
 		return ty, nil, err
 	}
 	if has(f.Schema, "allOf") {
+		if !a.containsObjectCompositionUnion(f.Schema, 0, map[*document.Value]bool{}) {
+			ty, err := a.objectDefaultField(f, ordinary, name, nested, used)
+			return ty, nil, err
+		}
 		ty, err := a.composedUnionDefaultField(f, name, nested, used)
 		return ty, nil, err
 	}
@@ -281,7 +285,13 @@ func (a *analyzer) modelDefault(f field, ty TypeRef, required bool) (string, *di
 	if has(f.Schema, "allOf") {
 		validation := *a
 		validation.warnings = nil // Type planning owns source warnings.
-		initializer, err := validation.composedUnionDefaultInitializer(f)
+		var initializer string
+		var err *diagnostic.Diagnostic
+		if a.containsObjectCompositionUnion(f.Schema, 0, map[*document.Value]bool{}) {
+			initializer, err = validation.composedUnionDefaultInitializer(f)
+		} else {
+			initializer, err = validation.objectDefaultInitializer(f)
+		}
 		if err != nil {
 			return "", err
 		}

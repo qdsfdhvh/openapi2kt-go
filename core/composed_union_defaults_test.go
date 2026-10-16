@@ -89,7 +89,7 @@ func TestComposedUnionDefaultSelectionMirrorsDispatch(t *testing.T) {
 }
 
 func TestComposedUnionDefaultExclusions(t *testing.T) {
-	// An ordinary allOf merge keeps its historical default rejection.
+	// An annotation-only reference wrapper keeps its historical default rejection.
 	carrierDefaultFailure(t, schemas(`{`+composedUnionParts+`,"Plain":{"allOf":[{"type":"object","properties":{"a":{"type":"string"}}}]},"Holder":{"properties":{"v":{"allOf":[{"$ref":"#/components/schemas/Plain"}],"default":{"a":"x"}}}}}`), true, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Holder/properties/v/default")
 	// Reference chains to a composed component stay excluded.
 	input := schemas(`{` + composedUnionParts + `,"Chain":{"$ref":"#/components/schemas/Product"},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Chain","default":{"kind":"note","mode":"fast","fast":true,"body":"x"}}}}}`)

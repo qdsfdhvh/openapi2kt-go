@@ -34,6 +34,12 @@ type referenceView struct {
 }
 
 func referenceWrapper(v *document.Value, pointer string) (*referenceView, *diagnostic.Diagnostic) {
+	return parseReferenceWrapper(v, pointer, false)
+}
+
+// allowDefault identifies an annotation-only wrapper before a field default
+// can turn its source into an expanded DTO. It does not admit that wrapper.
+func parseReferenceWrapper(v *document.Value, pointer string, allowDefault bool) (*referenceView, *diagnostic.Diagnostic) {
 	if err := object(v, pointer); err != nil {
 		return nil, err
 	}
@@ -42,11 +48,15 @@ func referenceWrapper(v *document.Value, pointer string) (*referenceView, *diagn
 		return nil, nil
 	}
 	for _, member := range v.Members() {
-		if member.Name != "allOf" && member.Name != "nullable" && !slices.Contains(metadata, member.Name) {
+		if member.Name != "allOf" && member.Name != "nullable" && !(allowDefault && member.Name == "default") && !slices.Contains(metadata, member.Name) {
 			return nil, nil
 		}
 	}
-	if err := checkKeys(v, []string{"allOf", "nullable"}, pointer); err != nil {
+	keys := []string{"allOf", "nullable"}
+	if allowDefault {
+		keys = append(keys, "default")
+	}
+	if err := checkKeys(v, keys, pointer); err != nil {
 		return nil, err
 	}
 	var nullable *bool

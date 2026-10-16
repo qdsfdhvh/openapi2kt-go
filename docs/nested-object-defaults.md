@@ -22,7 +22,7 @@ An optional ordinary field gets a typed initializer that decodes the canonical J
 
 Only a direct ordinary DTO field's own `default` grants this role, and only when the field schema is a plain inline object: `type` may be explicit `"object"` or inferred from a non-empty `properties` map. Rejected sub-constructs keep their original diagnostics at the same or a more precise original Pointer. Excluded here:
 
-- `$ref` to a named DTO (the separate [referenced object contract](referenced-object-defaults.md)), `oneOf`/`anyOf`/union and `allOf` objects;
+- `$ref` to a named DTO (the separate [referenced object contract](referenced-object-defaults.md)), `oneOf`/`anyOf`/union and `allOf` objects (ordinary disjoint inline merges use the separate [allOf field default contract](allof-object-defaults.md));
 - dictionaries or fixed extras (`additionalProperties`), empty-property objects and raw `JsonElement` projections;
 - `const` on the object node itself (scalar `const` **properties** are validated for exact equality), `enum` on the object node, native (`x-native-type`), value-class, format and OpenAPI discriminator markers; structured (object/array) `const` properties;
 - containers whose element is an inline object use the separate [object collection contract](nested-object-collection-defaults.md); container-child defaults remain rejected.

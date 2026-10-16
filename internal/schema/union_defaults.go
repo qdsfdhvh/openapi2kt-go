@@ -355,7 +355,7 @@ func (a *analyzer) composedObjectUnionEncoded(value *document.Value, at string, 
 	if a.modelOrigins[variant] == nil || composition.Branches[index].Shape == nil {
 		return "", unsupported(at)
 	}
-	node, err := a.objectDefaultShapeNode(composition.Branches[index].Shape, a.modelPointers[variant], depth)
+	node, err := a.objectDefaultShapeNode(composition.Branches[index].Shape, a.modelPointers[variant], false)
 	if err != nil {
 		return "", err
 	}

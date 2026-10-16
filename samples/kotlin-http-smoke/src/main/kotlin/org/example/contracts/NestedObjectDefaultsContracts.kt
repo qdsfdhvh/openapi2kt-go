@@ -74,6 +74,8 @@ private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMa
 private fun nestedObjectHolderFields(value: HolderDto): Map<String, Any?> = linkedMapOf(
     "cfg" to nestedObjectCfg(value.cfg),
     "requiredCfg" to value.requiredCfg.id,
+    "allOfCfg" to value.allOfCfg,
+    "allOfNull" to value.allOfNull,
     "rows" to value.rows,
 )
 
@@ -95,6 +97,11 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.child?.flag == false && value.cfg?.note == null)
     check(value.cfg?.leaf?.z == "deep")
     check(value.requiredCfg.id == "x")
+    check(value.allOfCfg?.z == "merged" && value.allOfCfg?.count == 5 && value.allOfCfg?.meta?.flag == true)
+    check(value.allOfNull == null)
+    val other = HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x"))
+    check(value.allOfCfg == other.allOfCfg && value.allOfCfg !== other.allOfCfg)
+    check(value.allOfCfg?.meta !== other.allOfCfg?.meta)
     // A required object default keeps its constructor argument and no initializer.
     check(!HolderDto.serializer().descriptor.isElementOptional(1))
     // Fresh nested trees per instance, not one shared mutable default.
@@ -116,17 +123,24 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         val overridden = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"y"},"cfg":{"name":"z"}}""")
         check(overridden.requiredCfg.id == "y" && overridden.cfg?.name == "z" && overridden.cfg?.age == 7 && overridden.cfg?.child?.flag == true)
         check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":null}""").cfg == null)
+        val mergedOverride = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"allOfCfg":{"z":"replacement","count":8},"allOfNull":{"a":"set","b":1}}""")
+        check(mergedOverride.allOfCfg?.z == "replacement" && mergedOverride.allOfCfg?.count == 8 && mergedOverride.allOfCfg?.meta?.flag == true)
+        check(mergedOverride.allOfNull?.a == "set" && mergedOverride.allOfNull?.b == 1)
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"allOfCfg":null}""").allOfCfg == null)
         check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), missing))) == nestedObjectHolderFields(missing))
         // Own defaults on the referenced component remain ordinary nullable fields.
         val referenced = codec.decodeFromString<PatchInputDto>("{}")
         check(referenced.cfg?.a == "x" && referenced.cfgNullable == null)
         // Inline request object defaults keep complete validation but Patch.Absent.
         val absent = codec.decodeFromString<PatchHolderInputDto>("""{"required":null}""")
-        check(absent.cfg == Patch.Absent && absent.required == null)
-        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "cfg" })
-        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"cfg":null}""")
-        check(cleared.cfg == Patch.Null)
+        check(absent.cfg == Patch.Absent && absent.allOfCfg == Patch.Absent && absent.required == null)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "cfg" || it == "allOfCfg" })
+        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"cfg":null,"allOfCfg":null}""")
+        check(cleared.cfg == Patch.Null && cleared.allOfCfg == Patch.Null)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["cfg"] === JsonNull)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["allOfCfg"] === JsonNull)
+        val mergedUpdate = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"allOfCfg":{"a":"u","b":3}}""")
+        check(mergedUpdate.allOfCfg == Patch.Value(PatchHolderInputDto.AllOfCfg(a = "u", b = 3)))
         val update = PatchHolderInputDto(required = null, cfg = Patch.Value(PatchHolderInputDto.Cfg(a = "u")))
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), update) as JsonObject)["cfg"] == codec.parseToJsonElement("""{"a":"u"}"""))
         // Required nullable object keeps a required argument; explicit null is null.

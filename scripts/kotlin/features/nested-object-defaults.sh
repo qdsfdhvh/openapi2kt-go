@@ -22,6 +22,8 @@ fun main() = runBlocking {
     val optimized = org.example.nestedobjectopt.models.HolderDto(requiredCfg = org.example.nestedobjectopt.models.HolderDto.RequiredCfg(id = "x"))
     check(optimized.cfg?.name == "outer" && optimized.cfg?.age == 9 && optimized.cfg?.child?.flag == false)
     check(optimized.cfg?.tags == listOf("a", "b") && optimized.cfg?.counts == mapOf("k" to 1))
+    check(optimized.allOfCfg?.z == "merged" && optimized.allOfCfg?.count == 5 && optimized.allOfCfg?.meta?.flag == true)
+    check(optimized.allOfNull == null)
     nestedObjectDefaultsContracts(CHECKED)
 }
 KOTLIN
