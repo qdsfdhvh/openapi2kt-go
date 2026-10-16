@@ -65,6 +65,17 @@
                   "flag": true
                 }
               },
+              "composed": {
+                "allOf": [
+                  {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+                  {"properties": {
+                    "count": {"type": "integer", "default": 2},
+                    "child": {"properties": {"flag": {"type": "boolean"}}, "default": {"flag": true}}
+                  }}
+                ],
+                "nullable": true,
+                "default": {"label": "member"}
+              },
               "note": {
                 "type": [
                   "string",
@@ -91,6 +102,7 @@
               "child": {
                 "flag": false
               },
+              "composed": {"label": "outer member", "count": 3, "child": {"flag": false}},
               "note": null,
               "leaf": {
                 "z": "deep"

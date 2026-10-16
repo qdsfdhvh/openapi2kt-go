@@ -68,7 +68,7 @@ private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMa
     "name" to value?.name, "age" to value?.age, "status" to value?.status,
     "code" to value?.code, "when" to value?.`when`, "tags" to value?.tags,
     "counts" to value?.counts, "child" to value?.child, "childFlag" to value?.child?.flag,
-    "leaf" to value?.leaf?.z, "note" to value?.note,
+    "leaf" to value?.leaf?.z, "note" to value?.note, "composed" to value?.composed,
 )
 
 private fun nestedObjectHolderFields(value: HolderDto): Map<String, Any?> = linkedMapOf(
@@ -96,12 +96,15 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.tags == listOf("a", "b") && value.cfg?.counts == mapOf("k" to 1))
     check(value.cfg?.child?.flag == false && value.cfg?.note == null)
     check(value.cfg?.leaf?.z == "deep")
+    check(value.cfg?.composed?.label == "outer member" && value.cfg?.composed?.count == 3 && value.cfg?.composed?.child?.flag == false)
     check(value.requiredCfg.id == "x")
     check(value.allOfCfg?.z == "merged" && value.allOfCfg?.count == 5 && value.allOfCfg?.meta?.flag == true)
     check(value.allOfNull == null)
     val other = HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x"))
     check(value.allOfCfg == other.allOfCfg && value.allOfCfg !== other.allOfCfg)
     check(value.allOfCfg?.meta !== other.allOfCfg?.meta)
+    check(value.cfg?.composed == other.cfg?.composed && value.cfg?.composed !== other.cfg?.composed)
+    check(value.cfg?.composed?.child !== other.cfg?.composed?.child)
     // A required object default keeps its constructor argument and no initializer.
     check(!HolderDto.serializer().descriptor.isElementOptional(1))
     // Fresh nested trees per instance, not one shared mutable default.
@@ -109,6 +112,7 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     // Nested property own defaults apply when the outer default omits them.
     val fresh = HolderDto.Cfg(name = "n")
     check(fresh.age == 7 && fresh.child?.flag == true && fresh.status == null && fresh.code == null)
+    check(fresh.composed?.label == "member" && fresh.composed?.count == 2 && fresh.composed?.child?.flag == true)
     if (checked) {
         nestedObjectReject("enum") { HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x"), cfg = HolderDto.Cfg(name = "n", code = 9)) }
     } else {
@@ -122,6 +126,11 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check(nestedObjectHolderFields(missing) == nestedObjectHolderFields(value))
         val overridden = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"y"},"cfg":{"name":"z"}}""")
         check(overridden.requiredCfg.id == "y" && overridden.cfg?.name == "z" && overridden.cfg?.age == 7 && overridden.cfg?.child?.flag == true)
+        check(overridden.cfg?.composed?.label == "member" && overridden.cfg?.composed?.count == 2)
+        val memberOverride = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","composed":{"label":"replacement"}}}""")
+        check(memberOverride.cfg?.composed?.label == "replacement" && memberOverride.cfg?.composed?.count == 2 && memberOverride.cfg?.composed?.child?.flag == true)
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","composed":null}}""").cfg?.composed == null)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","composed":{}}}""") }.isFailure)
         check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":null}""").cfg == null)
         val mergedOverride = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"allOfCfg":{"z":"replacement","count":8},"allOfNull":{"a":"set","b":1}}""")
         check(mergedOverride.allOfCfg?.z == "replacement" && mergedOverride.allOfCfg?.count == 8 && mergedOverride.allOfCfg?.meta?.flag == true)

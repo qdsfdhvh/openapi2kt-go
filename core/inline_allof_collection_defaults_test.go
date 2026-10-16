@@ -95,17 +95,20 @@ func TestInlineAllOfCollectionDiagnosticsAndBoundaries(t *testing.T) {
 				t.Fatal("empty annotation admitted excluded source/constructor", element, err)
 			}
 		}
-		// Keep permission on the original leaf of the consuming collection,
-		// rather than allowing allOf members inside another object default.
-		for _, field := range []string{
-			`{"properties":{"rows":{"type":"array","items":` + referencedAllOfCollectionItem + `}},"default":{}}`,
-			`{"type":"array","items":{"properties":{"node":` + referencedAllOfCollectionItem + `}},"default":[]}`,
-		} {
-			r := request(inlineAllOfCollectionDocument(field), "Dto")
-			r.Options.Validation = checked
-			if _, err := core.GenerateWithDiagnostics(r); err == nil {
-				t.Fatal("inline collection permission escaped to object member")
-			}
+		// An allOf element nested under an object member still needs its own
+		// collection role; direct allOf properties graduate below.
+		field := `{"properties":{"rows":{"type":"array","items":` + referencedAllOfCollectionItem + `}},"default":{}}`
+		r := request(inlineAllOfCollectionDocument(field), "Dto")
+		r.Options.Validation = checked
+		if _, err := core.GenerateWithDiagnostics(r); err == nil {
+			t.Fatal("inline collection permission escaped to object member")
+		}
+		// Preserve the original negative input as a positive graduation case:
+		// a plain element object can now contain an inline allOf property.
+		field = `{"type":"array","items":{"properties":{"node":` + referencedAllOfCollectionItem + `}},"default":[]}`
+		r.Document = inlineAllOfCollectionDocument(field)
+		if _, err := core.GenerateWithDiagnostics(r); err != nil {
+			t.Fatal("allOf property in object collection default did not graduate", err)
 		}
 	}
 	bounded := `{"type":"array","minItems":1,"items":` + referencedAllOfCollectionItem + `,"default":[]}`
