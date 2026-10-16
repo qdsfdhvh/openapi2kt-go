@@ -51,7 +51,7 @@ func TestReferencedObjectDefaultsGuards(t *testing.T) {
 	}
 	// Excluded target shapes stay rejected without partial output.
 	for _, input := range []string{
-		`{"Inner":{"allOf":[{"type":"object","properties":{"a":{"type":"string"}}}],"properties":{"b":{"type":"string"}}},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{"b":"x"}}}}}`,
+		// Disjoint ordinary allOf targets graduate in referenced_allof_object_defaults_test.go.
 		`{"Inner":{"type":"object","properties":{"e":{"type":"object","enum":["a"]}}},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{"e":"a"}}}}}`,
 		`{"Inner":{"type":"object","properties":{"x":{"type":"string","x-native-type":"bigint"}}},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{"x":"1"}}}}}`,
 		`{"Inner":{"type":"object"},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{}}}}}`,

@@ -22,6 +22,10 @@ fun main() = runBlocking {
     val optimized = org.example.refobjectopt.models.HolderDto(requiredCfg = org.example.refobjectopt.models.InnerDto(name = "required"))
     check(optimized.cfg?.name == "outer" && optimized.cfg?.age == 9 && optimized.cfg?.child?.flag == false)
     check(optimized.aliasCfg?.name == "alias" && optimized.nilCfg == null)
+    check(optimized.allOfCfg?.name == "composed" && optimized.allOfCfg?.n == 2 && optimized.allOfCfg?.child?.flag == true)
+    check(optimized.aliasAllOfCfg?.name == "alias-composed" && optimized.aliasAllOfCfg?.n == 3 && optimized.allOfNil == null)
+    check(optimized.bridgedAllOfCfg?.name == "bridge-composed" && optimized.bridgedAllOfCfg?.n == 4 && optimized.bridgedAllOfCfg?.child?.flag == true)
+    check(org.example.refobjectopt.models.HolderDto(requiredCfg = org.example.refobjectopt.models.InnerDto(name = "required")).allOfCfg !== optimized.allOfCfg)
     referencedObjectDefaultsContracts(CHECKED)
 }
 KOTLIN

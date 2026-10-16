@@ -31,7 +31,8 @@ func TestReferencedStringEnumScalarDefaultsSourceAuthority(t *testing.T) {
 	node, err := a.referencedDefaultSchema(plan.Field.Schema, plan.Field.Pointer, plan.Type, plan.Field.Depth, true)
 	source := get(get(a.components["Source"].Schema, "properties"), "code")
 	actual := plan.Model.Properties[plan.Index].Type.WithoutRootNull()
-	if err != nil || node.schema != source || node.pointer != "/components/schemas/Source/properties/code" || !node.stringEnum || node.native != nil || node.ty.Kind != Named || actual.Name != "org.example.defaults.models.SourceDto.Code" || node.ty.deferredNominal == nil || node.ty.deferredNominal.Schema != source {
+	binding := a.deferredNominals[source]
+	if err != nil || node.schema != source || node.pointer != "/components/schemas/Source/properties/code" || !node.stringEnum || node.native != nil || node.ty.Kind != Named || actual.Name != "org.example.defaults.models.SourceDto.Code" || node.ty.Name != actual.Name || node.ty.deferredNominal != nil || binding == nil || binding.Schema != source || binding.Name != actual.Name {
 		t.Fatal("original source/actual classifier", node, actual, err)
 	}
 	if plan.Model.Properties[plan.Index].Default != "`openapi-kt default enum scalar`(\"\\\"on\\\"\")" {

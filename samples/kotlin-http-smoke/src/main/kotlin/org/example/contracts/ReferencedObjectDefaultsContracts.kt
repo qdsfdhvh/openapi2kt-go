@@ -36,9 +36,11 @@ import kotlinx.serialization.json.JsonObject
 import org.example.refobject.RefObject
 import org.example.refobject.api.models.PatchHolderInputDto
 import org.example.refobject.api.models.WatchHoldersEventDto
+import org.example.refobject.models.AllOfValueDto
 import org.example.refobject.models.HolderDto
 import org.example.refobject.models.InnerDto
 import org.example.refobject.models.Patch
+import org.example.refobject.models.RequiredAllOfCfgDto
 import org.example.refobject.models.RequiredCfgDto
 
 @OptIn(io.ktor.utils.io.InternalAPI::class)
@@ -70,11 +72,19 @@ private fun referencedObjectInner(value: InnerDto?): Map<String, Any?> = linkedM
     "counts" to value?.counts, "childFlag" to value?.child?.flag, "note" to value?.note,
 )
 
+private fun referencedAllOfFields(value: AllOfValueDto?): Map<String, Any?> = linkedMapOf(
+    "name" to value?.name, "age" to value?.age, "n" to value?.n, "childFlag" to value?.child?.flag,
+)
+
 private fun referencedObjectHolderFields(value: HolderDto): Map<String, Any?> = linkedMapOf(
     "cfg" to referencedObjectInner(value.cfg),
     "aliasCfg" to referencedObjectInner(value.aliasCfg),
     "requiredCfg" to referencedObjectInner(value.requiredCfg),
     "nilCfg" to referencedObjectInner(value.nilCfg),
+    "allOfCfg" to referencedAllOfFields(value.allOfCfg),
+    "aliasAllOfCfg" to referencedAllOfFields(value.aliasAllOfCfg),
+    "bridgedAllOfCfg" to referencedAllOfFields(value.bridgedAllOfCfg),
+    "allOfNil" to value.allOfNil?.name,
 )
 
 suspend fun referencedObjectDefaultsContracts(checked: Boolean) {
@@ -88,11 +98,20 @@ suspend fun referencedObjectDefaultsContracts(checked: Boolean) {
     check(value.aliasCfg?.name == "alias" && value.aliasCfg?.age == 7 && value.aliasCfg?.child?.flag == true)
     check(value.requiredCfg.name == "required" && value.nilCfg == null)
     check(!HolderDto.serializer().descriptor.isElementOptional(2))
+    check(!RequiredAllOfCfgDto.serializer().descriptor.isElementOptional(0))
+    val composed: AllOfValueDto = checkNotNull(value.allOfCfg)
+    check(composed.name == "composed" && composed.n == 2 && composed.age == 7 && composed.child?.flag == true)
+    check(value.aliasAllOfCfg?.name == "alias-composed" && value.aliasAllOfCfg?.n == 3 && value.allOfNil == null)
+    check(value.bridgedAllOfCfg?.name == "bridge-composed" && value.bridgedAllOfCfg?.n == 4 && value.bridgedAllOfCfg?.child?.flag == true)
+    check(HolderDto(requiredCfg = requiredCfg).allOfCfg !== composed && composed !== value.aliasAllOfCfg)
+    check(HolderDto(requiredCfg = requiredCfg).allOfCfg?.child !== composed.child)
     // The referenced and alias fields share one decoded type, not a shared instance.
     check(value.cfg !== value.aliasCfg && HolderDto(requiredCfg = requiredCfg).cfg !== value.cfg)
     if (checked) {
         referencedObjectReject("enum") { HolderDto(requiredCfg = requiredCfg, cfg = InnerDto(name = "n", code = 9)) }
+        referencedObjectReject("enum") { AllOfValueDto(name = "bad", n = 0) }
     } else {
+        check(AllOfValueDto(name = "unchecked", n = 0).n == 0)
         check(HolderDto(requiredCfg = requiredCfg, cfg = InnerDto(name = "n", code = 9)).cfg?.code == 9)
     }
     for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
@@ -104,17 +123,24 @@ suspend fun referencedObjectDefaultsContracts(checked: Boolean) {
         val overridden = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"name":"r"},"cfg":{"name":"z"}}""")
         check(overridden.cfg?.name == "z" && overridden.cfg?.age == 7 && overridden.cfg?.child?.flag == true)
         check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"name":"r"},"cfg":null}""").cfg == null)
+        val composedOverride = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"name":"r"},"allOfCfg":{"name":"replacement","n":8},"aliasAllOfCfg":null}""")
+        check(composedOverride.allOfCfg?.name == "replacement" && composedOverride.allOfCfg?.n == 8 && composedOverride.allOfCfg?.child?.flag == true)
+        check(composedOverride.aliasAllOfCfg == null)
+        check(codec.decodeFromString<RequiredAllOfCfgDto>("""{"value":null}""").value == null)
+        check(codec.decodeFromString<RequiredAllOfCfgDto>("""{"value":{"name":"r","n":1}}""").value?.n == 1)
         check(referencedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), missing))) == referencedObjectHolderFields(missing))
         // Inline request object referenced defaults keep complete validation but Patch.Absent.
         val patchSource = """{"required":null}"""
         val absent = codec.decodeFromString<PatchHolderInputDto>(patchSource)
-        check(absent.cfg == Patch.Absent && absent.required == null)
-        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "cfg" })
-        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"cfg":null}""")
-        check(cleared.cfg == Patch.Null)
+        check(absent.cfg == Patch.Absent && absent.allOfCfg == Patch.Absent && absent.required == null)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "cfg" || it == "allOfCfg" })
+        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"cfg":null,"allOfCfg":null}""")
+        check(cleared.cfg == Patch.Null && cleared.allOfCfg == Patch.Null)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["allOfCfg"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["cfg"] === JsonNull)
-        val update = PatchHolderInputDto(required = null, cfg = Patch.Value(InnerDto(name = "u")))
+        val update = PatchHolderInputDto(required = null, cfg = Patch.Value(InnerDto(name = "u")), allOfCfg = Patch.Value(AllOfValueDto(name = "u", n = 5)))
         val updateWire = codec.encodeToJsonElement(PatchHolderInputDto.serializer(), update) as JsonObject
+        check((updateWire["allOfCfg"] as JsonObject)["n"] == codec.parseToJsonElement("5"))
         check((updateWire["cfg"] as JsonObject)["name"] == codec.parseToJsonElement("\"u\""))
         // Required nullable referenced object keeps a required argument.
         check(codec.decodeFromString<RequiredCfgDto>("""{"value":null}""").value == null)
@@ -181,13 +207,16 @@ private suspend fun referencedObjectWire(codec: Json, value: HolderDto, checked:
         check(calls == before && callbacks == beforeCallbacks)
         val event = (withTimeout(10000) { stream.toList() }.single() as WatchHoldersEventDto.Holder).data
         check(referencedObjectHolderFields(event) == referencedObjectHolderFields(value))
-        if (checked) {
-            payload = """{"requiredCfg":{"name":"r"},"cfg":{"name":"n","code":9}}"""
+        if (checked) for ((rule, invalidPayload) in listOf(
+            "enum" to """{"requiredCfg":{"name":"r"},"cfg":{"name":"n","code":9}}""",
+            "enum" to """{"requiredCfg":{"name":"r"},"allOfCfg":{"name":"n","n":0}}""",
+        )) {
+            payload = invalidPayload
             failing = true
             val beforeFailure = calls
-            referencedObjectReject("enum") { api.sendHolder(value) { callbacks++ } }
+            referencedObjectReject(rule) { api.sendHolder(value) { callbacks++ } }
             check(calls == beforeFailure + 1 && callbacks == calls)
-            referencedObjectReject("enum") { withTimeout(10000) { api.watchHolders { callbacks++ }.toList() } }
+            referencedObjectReject(rule) { withTimeout(10000) { api.watchHolders { callbacks++ }.toList() } }
             check(calls == beforeFailure + 2 && callbacks == calls)
             withTimeout(10000) { framesWritten.last().await() }
             check(channels.last().isClosedForRead) { "Failed full-frame still-open stream was not closed" }

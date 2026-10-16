@@ -70,6 +70,31 @@
           }
         }
       },
+      "AllOfValue": {
+        "allOf": [
+          {"$ref": "#/components/schemas/Inner"},
+          {
+            "properties": {"n": {"type": "integer", "enum": [1, 2, 3, 4, 5, 8]}},
+            "required": ["n"]
+          }
+        ]
+      },
+      "AllOfAlias": {"$ref": "#/components/schemas/AllOfValue"},
+      "AllOfHops": {"properties": {"node": {"$ref": "#/components/schemas/AllOfValue"}}},
+      "AllOfBridge": {"$ref": "#/components/schemas/AllOfHops/properties/node"},
+      "NullableAllOfValue": {
+        "nullable": true,
+        "allOf": [
+          {"$ref": "#/components/schemas/Inner"},
+          {"properties": {"flag": {"type": "boolean"}}}
+        ]
+      },
+      "RequiredAllOfCfg": {
+        "properties": {
+          "value": {"$ref": "#/components/schemas/AllOfValue", "nullable": true, "default": null}
+        },
+        "required": ["value"]
+      },
       "InnerAlias": {
         "$ref": "#/components/schemas/Inner"
       },
@@ -108,6 +133,22 @@
             "default": {
               "name": "required"
             }
+          },
+          "allOfCfg": {
+            "$ref": "#/components/schemas/AllOfValue",
+            "default": {"name": "composed", "n": 2}
+          },
+          "aliasAllOfCfg": {
+            "$ref": "#/components/schemas/AllOfAlias",
+            "default": {"name": "alias-composed", "n": 3}
+          },
+          "bridgedAllOfCfg": {
+            "$ref": "#/components/schemas/AllOfBridge",
+            "default": {"name": "bridge-composed", "n": 4}
+          },
+          "allOfNil": {
+            "$ref": "#/components/schemas/NullableAllOfValue",
+            "default": null
           },
           "nilCfg": {
             "$ref": "#/components/schemas/Inner",
@@ -186,6 +227,11 @@
                       "string",
                       "null"
                     ]
+                  },
+                  "allOfCfg": {
+                    "$ref": "#/components/schemas/AllOfBridge",
+                    "nullable": true,
+                    "default": {"name": "patch-composed", "n": 4}
                   },
                   "cfg": {
                     "$ref": "#/components/schemas/Inner",

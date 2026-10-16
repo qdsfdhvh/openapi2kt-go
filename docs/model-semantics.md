@@ -1,6 +1,6 @@
 # Model semantics
 
-[Ordinary allOf object field defaults](allof-object-defaults.md) accept direct inline ordinary constructor DTO fields with disjoint property contributions. The shared shape retains original fields/required/nullable intent; existing default checks, budgets, final type binding and required/Patch suppression remain. Reference wrappers, repeated-field aggregation, hierarchy and root/component defaults retain separate roles.
+[Ordinary allOf object field defaults](allof-object-defaults.md) accept direct inline ordinary constructor DTO fields and direct local `$ref` fields whose terminal is an existing named ordinary allOf DTO with disjoint property contributions. Eligible references may traverse accepted named aliases/internal hops; final retained declaration authority, nearest nullable intent and original source fields remain. The shared shape retains original fields/required/nullable intent; existing default checks, budgets, final type binding and required/Patch suppression remain. Reference wrappers, internal-owned allOf terminals, repeated-field aggregation, hierarchy and target/root/component defaults retain separate roles.
 
 [直接嵌套 native enum 集合字段默认值](nested-native-enum-collection-defaults.md)仅授予普通 direct inline finite List/typed Map 树的 outer-own default，叶为既有 Int/Long/Float/Double/Boolean enum。native wire、validation-off 近似与 checked membership/bounds 不变；原注解严格词表、逐层 nullable、required/Patch/discarded 预验证、canonical Maps、实际 type/default/check identity 和原预算保留，其他 default 角色与 general D03/D04/D05 不扩张。
 

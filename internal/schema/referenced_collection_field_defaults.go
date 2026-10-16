@@ -101,8 +101,8 @@ func (a *analyzer) referencedDefaultSchema(v *document.Value, pointer string, ty
 		case List, Map:
 			role = referencedCollectionOwnDefault
 		case Named:
-			// Source grammar below must confirm a plain String enum or ordinary
-			// DTO; a Named spelling alone never grants default admission.
+			// Source grammar below must confirm a plain String enum or admitted
+			// ordinary DTO; a Named spelling alone never grants default admission.
 			role = referencedNamedOwnDefault
 		}
 	}
@@ -138,6 +138,9 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 	}
 	actual := defaultBacking(ty)
 	bare := actual.WithoutRootNull()
+	if has(v, "allOf") && role == referencedNamedOwnDefault {
+		return a.referencedAllOfObjectDefaultNode(v, pointer, actual, depth)
+	}
 	node := &nestedDefaultNode{schema: v, pointer: pointer, ty: actual}
 	keys := []string{"type", "nullable", "format"}
 	edge := ""
@@ -339,9 +342,9 @@ func (a *analyzer) planReferencedFieldDefaults() *diagnostic.Diagnostic {
 			continue
 		}
 		if node.object {
-			// Keep the plain-nominal boundary explicit: alias/Element views and
-			// internal chains stay outside this role, and the emitter binds the
-			// final actual DTO type after relocation.
+			// Retain the plain nominal constructor boundary without transparent
+			// Element aliases. The emitter binds the final actual DTO type after
+			// relocation; each source role has already checked its own authority.
 			target := property.Type.WithoutRootNull()
 			if target.Kind != Named || target.Element != nil {
 				return unsupported(naming.Pointer(plan.Field.Pointer, "default"))

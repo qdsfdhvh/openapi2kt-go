@@ -24,12 +24,26 @@ Effective shape nullability authorizes `default: null`; optional Kotlin presence
 
 The decode helper binds the final actual DTO type after deduplication, merging and hoisting. Adding the annotation preserves the public type and declaration ownership. The existing `W_ALL_OF_APPROXIMATION` remains owned by type planning, with no duplicate warnings from the default walk.
 
+## References to named allOf DTOs
+
+An ordinary direct local `$ref` field may also own a default when its original terminal is an already accepted named ordinary allOf constructor DTO with the same disjoint contributions. For example, place the `allOf` above in component `Value` without a root default, then consume it as:
+
+```json
+{"$ref": "#/components/schemas/Value", "default": {"count": 2, "label": "initial"}}
+```
+
+Transparent named aliases and already accepted finite internal reference hops may reach that named component. The source walk retains every intermediate annotation and original Pointer. Final retained declaration ownership authorizes the actual component and serializer; a provisional or coincident type name does not. The field retains the resolver's existing public type, and adding a consumer default leaves target declaration bytes and warnings unchanged.
+
+Reference nullability follows the shared reference planner before optional presence: explicit consumer intent, nearest alias/internal hop intent, then terminal intent. Explicit false narrows even an intrinsically nullable allOf component. A valid null annotation emits literal `null`; non-null values use the final actual DTO serializer and create fresh objects, including omitted members with their own defaults. Required, Patch and discarded defaults undergo complete validation before suppression.
+
+A schema-internal allOf node owned by another DTO, an annotation-only allOf reference wrapper, hierarchy/common/inherited projections and List/Map defaults containing allOf leaves retain separate roles. Defaults on the target component or an intermediate reference are rejected rather than inherited. Repeated properties, fixed extras and whole-object counts remain excluded.
+
 ## Bounded admission
 
-This role applies to direct inline fields in ordinary shared/response/request DTOs. These remain separate:
+Inline fields and references to eligible named components apply in ordinary shared/response/request DTOs. These remain separate:
 
 - annotation-only reference wrappers: a single component ref plus metadata/nullable members must retain its canonical referenced type;
-- fields whose root is `$ref`, target/root/component defaults and default inheritance;
+- target/root/component defaults and default inheritance;
 - repeated-property/default/constraint aggregation, fixed extras (`additionalProperties`) and whole-object property counts;
 - empty/raw and const-only projections, hierarchy/common/inherited fields, collection elements and nested defaulted-object members whose own schema is `allOf`;
 - object-union products, which use the separate [composed union default contract](union-field-defaults.md).
@@ -38,6 +52,8 @@ Existing input8MiB, source48, composition-work16,384, checked-collection16 and c
 
 ## Verification and compatibility
 
-This extends M01/M03/M04/M07/M08 and the bounded D03 default profile; general D03/D05 remain open. Previously rejected eligible inline ordinary allOf object defaults now generate. Fields without defaults retain existing source, type and wire behavior. Repeated-field aggregation, hierarchy and root/component default semantics are not added.
+This extends M01/M03/M04/M07/M08 and the bounded D03 default profile; general D03/D05 remain open. Previously rejected eligible inline and referenced named ordinary allOf object field defaults now generate. Fields without defaults retain existing source, type and wire behavior. Repeated-field aggregation, hierarchy and root/component default semantics are not added.
 
-The [core contract tests](../core/allof_object_defaults_test.go), [source authority tests](../internal/schema/allof_object_defaults_test.go) and [native parity/preservation tests](../internal/cli/allof_object_defaults_process_test.go) define admission and diagnostics. The existing [nested object fixture](../tests/fixtures/http/nested-object-defaults.json) and [Kotlin consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/NestedObjectDefaultsContracts.kt) cover ordinary allOf defaults, member refs, fresh nested instances, missing/replacement/null, Patch states and HTTP/SSE consumption under four Json configurations. Run `bash scripts/test.sh feature nested-object-defaults` for Data/Plain × validation off/on compilation/runtime and optimized/locked helper binding. `OPENAPI_KT_PREPARE_ONLY=1` provides native preparation only. JVM verification does not establish Android/KMP or release acceptance.
+The [core contract tests](../core/allof_object_defaults_test.go), [source authority tests](../internal/schema/allof_object_defaults_test.go) and [native parity/preservation tests](../internal/cli/allof_object_defaults_process_test.go) define admission and diagnostics. The existing [nested object fixture](../tests/fixtures/http/nested-object-defaults.json) and [Kotlin consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/NestedObjectDefaultsContracts.kt) cover ordinary allOf defaults, member refs, fresh nested instances, missing/replacement/null, Patch states and HTTP/SSE consumption under four Json configurations. Run `bash scripts/test.sh feature nested-object-defaults` for Data/Plain × validation off/on compilation/runtime and optimized/locked helper binding.
+
+The referenced role is defined by [core admission/nullable/bridge regressions](../core/referenced_allof_object_defaults_test.go), [source and final nominal authority tests](../internal/schema/referenced_allof_object_defaults_test.go) and [CLI parity/readonly check/failure preservation](../internal/cli/referenced_allof_object_defaults_process_test.go). Its [referenced-object fixture](../tests/fixtures/http/referenced-object-defaults.json), [consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ReferencedObjectDefaultsContracts.kt) and `bash scripts/test.sh feature referenced-object-defaults` exercise actual named/alias/internal-bridge defaults, intrinsic nullability, required/Patch, optimized helper binding and controlled HTTP/live SSE under the same four profiles. `OPENAPI_KT_PREPARE_ONLY=1` provides native preparation only. JVM verification does not establish Android/KMP or release acceptance.
