@@ -75,7 +75,7 @@ func TestChainedAllOfObjectDefaultMemberSourcesAndBudgets(t *testing.T) {
 	hopOwner := a.components["Hops"]
 	hop := get(get(hopOwner.Schema, "properties"), "first")
 	pointer := "/components/schemas/Hops/properties/first"
-	if err := a.internalAllOfDefaultMemberHop(hop, pointer, "#"+pointer); err != nil {
+	if err := a.internalDefaultMemberSource(hop, pointer, "#"+pointer); err != nil {
 		t.Fatal(err)
 	}
 	cloneBytes, _ := hop.MarshalJSON()
@@ -83,10 +83,10 @@ func TestChainedAllOfObjectDefaultMemberSourcesAndBudgets(t *testing.T) {
 	if loadErr != nil {
 		t.Fatal(loadErr)
 	}
-	if err := a.internalAllOfDefaultMemberHop(clone, pointer, "#"+pointer); err == nil {
+	if err := a.internalDefaultMemberSource(clone, pointer, "#"+pointer); err == nil {
 		t.Fatal("copied hop admitted")
 	}
-	if err := a.internalAllOfDefaultMemberHop(hop, pointer, "#/components/schemas/Hops/properties/second"); err == nil {
+	if err := a.internalDefaultMemberSource(hop, pointer, "#/components/schemas/Hops/properties/second"); err == nil {
 		t.Fatal("wrong original hop admitted")
 	}
 	a.hierarchySources[hopOwner.Schema] = true

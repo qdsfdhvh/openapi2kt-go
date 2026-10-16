@@ -76,6 +76,18 @@
                 "nullable": true,
                 "default": {"label": "member"}
               },
+              "viaBorrowedRows": {"$ref": "#/components/schemas/CollectionEntities/properties/rows", "nullable": false, "default": [{"label": "borrowed rows member"}]},
+              "viaBorrowedNull": {"$ref": "#/components/schemas/CollectionEntities/properties/rows", "default": null},
+              "viaBorrowedMap": {"$ref": "#/components/schemas/EntityMapAlias", "nullable": false, "default": {"none": null, "value": {"label": "borrowed map member"}}},
+              "viaBorrowedGrid": {"$ref": "#/components/schemas/EntityHops/properties/grid", "default": [{"k": {"label": "borrowed grid member"}}]},
+              "viaInternalRows": {"$ref": "#/components/schemas/CollectionHops/properties/first", "default": [{"label": "internal rows member"}]},
+              "viaInternalNull": {"$ref": "#/components/schemas/CollectionHops/properties/second", "default": null},
+              "viaInternalMap": {"$ref": "#/components/schemas/CollectionHops/properties/map", "nullable": false, "default": {"none": null, "value": {"label": "internal map member"}}},
+              "viaInternalGrid": {"$ref": "#/components/schemas/CollectionHops/properties/grid", "default": [{"k": {"label": "internal grid member"}}]},
+              "viaCollectionRows": {"$ref": "#/components/schemas/CollectionRowsOuter", "nullable": false, "default": [{"label": "bridge rows member"}]},
+              "viaCollectionRowsNull": {"$ref": "#/components/schemas/CollectionRowsOuter", "default": null},
+              "viaCollectionMap": {"$ref": "#/components/schemas/CollectionMapBridge", "nullable": false, "default": {"none": null, "value": {"label": "bridge map member"}}},
+              "viaCollectionGrid": {"$ref": "#/components/schemas/CollectionGridBridge", "default": [{"k": {"label": "bridge grid member"}}]},
               "namedRows": {"$ref": "#/components/schemas/NamedRowsAlias", "default": [{"label": "named rows member"}]},
               "namedMap": {"$ref": "#/components/schemas/NamedMap", "nullable": false, "default": null},
               "namedMapValues": {"$ref": "#/components/schemas/NamedMap", "default": {"none": null, "value": {"label": "named map member"}}},
@@ -159,6 +171,18 @@
               },
               "composed": {"label": "outer member", "count": 3, "child": {"flag": false}},
               "linked": {"label": "outer linked"},
+              "viaBorrowedRows": [{"label": "outer borrowed rows"}],
+              "viaBorrowedNull": null,
+              "viaBorrowedMap": {"none": null, "value": {"label": "outer borrowed map"}},
+              "viaBorrowedGrid": [{"k": {"label": "outer borrowed grid"}}],
+              "viaInternalRows": [{"label": "outer internal rows"}],
+              "viaInternalNull": null,
+              "viaInternalMap": {"none": null, "value": {"label": "outer internal map"}},
+              "viaInternalGrid": [{"k": {"label": "outer internal grid"}}],
+              "viaCollectionRows": [{"label": "outer bridge rows"}],
+              "viaCollectionRowsNull": null,
+              "viaCollectionMap": {"none": null, "value": {"label": "outer bridge map"}},
+              "viaCollectionGrid": [{"k": {"label": "outer bridge grid"}}],
               "namedRows": [{"label": "outer named rows"}],
               "namedMap": null,
               "namedMapValues": {"none": null, "value": {"label": "outer named map"}},
@@ -299,6 +323,24 @@
           "value"
         ]
       },
+      "CollectionEntities": {"properties": {
+        "rows": {"type": "array", "nullable": true, "items": {"$ref": "#/components/schemas/ComposedOuter"}},
+        "map": {"type": "object", "nullable": true, "additionalProperties": {"$ref": "#/components/schemas/ComposedNullableOuter"}},
+        "grid": {"type": "array", "items": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/ComposedOuter"}}}
+      }},
+      "EntityRowsAlias": {"$ref": "#/components/schemas/CollectionEntities/properties/rows", "nullable": false},
+      "EntityMapAlias": {"$ref": "#/components/schemas/CollectionEntities/properties/map", "nullable": true},
+      "EntityHops": {"properties": {"grid": {"$ref": "#/components/schemas/CollectionEntities/properties/grid"}}},
+      "CollectionHops": {"properties": {
+        "first": {"$ref": "#/components/schemas/CollectionHops/properties/second", "nullable": false},
+        "second": {"$ref": "#/components/schemas/NamedRows", "nullable": true},
+        "map": {"$ref": "#/components/schemas/NamedMap", "nullable": true},
+        "grid": {"$ref": "#/components/schemas/NamedGrid"}
+      }},
+      "CollectionRowsBridge": {"$ref": "#/components/schemas/CollectionHops/properties/first"},
+      "CollectionRowsOuter": {"$ref": "#/components/schemas/CollectionRowsBridge", "nullable": true},
+      "CollectionMapBridge": {"$ref": "#/components/schemas/CollectionHops/properties/map"},
+      "CollectionGridBridge": {"$ref": "#/components/schemas/CollectionHops/properties/grid"},
       "NamedRows": {"type": "array", "nullable": true, "items": {"$ref": "#/components/schemas/ComposedOuter"}},
       "NamedRowsAlias": {"$ref": "#/components/schemas/NamedRows", "nullable": false},
       "NamedMap": {"type": "object", "nullable": true, "additionalProperties": {"$ref": "#/components/schemas/ComposedNullableOuter"}},
@@ -428,6 +470,9 @@
                       "member": {"$ref": "#/components/schemas/ComposedOuter"},
                       "owned": {"$ref": "#/components/schemas/OwnedCfg/properties/node", "nullable": false},
                       "chained": {"$ref": "#/components/schemas/CfgBridge"},
+                      "collectionEntityRows": {"$ref": "#/components/schemas/EntityRowsAlias"},
+                      "collectionInternalRows": {"$ref": "#/components/schemas/CollectionHops/properties/first"},
+                      "collectionBridgeRows": {"$ref": "#/components/schemas/CollectionRowsBridge"},
                       "namedRows": {"$ref": "#/components/schemas/NamedRowsAlias"},
                       "refs": {"type": "array", "items": {"$ref": "#/components/schemas/CfgBridge"}},
                       "rows": {"type": "array", "items": {"allOf": [
@@ -435,7 +480,7 @@
                         {"properties": {"count": {"type": "integer", "default": 2}}}
                       ]}}
                     },
-                    "default": {"member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}]}
+                    "default": {"member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}], "collectionBridgeRows": [{"label": "bridge patch default"}], "collectionInternalRows": [{"label": "internal patch default"}], "collectionEntityRows": [{"label": "entity patch default"}]}
                   },
                   "allOfCfg": {
                     "allOf": [

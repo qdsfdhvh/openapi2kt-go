@@ -89,7 +89,7 @@ func (a *analyzer) referencedAllOfObjectDefaultMember(v *document.Value, pointer
 			// A transparent internal hop has source identity, not a nominal
 			// declaration of its own. Keep its original annotations and location;
 			// the terminal still needs the existing constructor binding below.
-			if err := a.internalAllOfDefaultMemberHop(v, pointer, reference); err != nil {
+			if err := a.internalDefaultMemberSource(v, pointer, reference); err != nil {
 				return nil, err
 			}
 		} else if owner == nil {
@@ -141,9 +141,10 @@ func (a *analyzer) referencedAllOfObjectDefaultMember(v *document.Value, pointer
 	}
 }
 
-// internalAllOfDefaultMemberHop checks only the original source path. The
-// enclosing type plan already admitted the chain; no new type is resolved here.
-func (a *analyzer) internalAllOfDefaultMemberHop(v *document.Value, pointer, reference string) *diagnostic.Diagnostic {
+// internalDefaultMemberSource checks only the original internal source path,
+// for reference hops and collection entities. The enclosing type plan already
+// admitted the source; no new type is resolved here.
+func (a *analyzer) internalDefaultMemberSource(v *document.Value, pointer, reference string) *diagnostic.Diagnostic {
 	source, err := a.lookupSchemaReference(reference, pointer)
 	if err != nil || reference != "#"+pointer || source.Schema != v || source.Pointer != pointer ||
 		source.SourceCatalog == nil || a.components[source.SourceCatalog.Wire] != source.SourceCatalog ||
