@@ -49,6 +49,43 @@
           "$ref": "#/components/schemas/Item"
         }
       },
+      "AllOfItem": {
+        "allOf": [
+          {"properties": {"name": {"type": "string"}}, "required": ["name"]},
+          {"properties": {"age": {"type": "integer", "default": 7}, "code": {"type": "integer", "enum": [1, 2]}, "child": {"properties": {"note": {"type": "string", "default": "inner"}}}}}
+        ]
+      },
+      "AllOfItemAlias": {"$ref": "#/components/schemas/AllOfItem"},
+      "AllOfNodeHops": {"properties": {"node": {"$ref": "#/components/schemas/AllOfOwner/properties/node"}}},
+      "AllOfNodeAlias": {"$ref": "#/components/schemas/AllOfNodeHops/properties/node"},
+      "AllOfRows": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/AllOfItem"}
+      },
+      "AllOfAlias": {"$ref": "#/components/schemas/AllOfRows"},
+      "AllOfOwner": {
+        "properties": {
+          "node": {
+            "allOf": [
+              {"properties": {"name": {"type": "string"}}, "required": ["name"]},
+              {"properties": {"child": {"properties": {"note": {"type": "string", "default": "inner"}}}}}
+            ]
+          }
+        }
+      },
+      "AllOfNested": {
+        "type": "array",
+        "items": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/AllOfOwner/properties/node", "nullable": true}}
+      },
+      "AllOfNullableRows": {"type": "array", "items": {"$ref": "#/components/schemas/AllOfItem", "nullable": true}},
+      "InlineAllOfRequired": {
+        "properties": {"rows": {"type": "array", "items": {"$ref": "#/components/schemas/AllOfItem"}, "default": [{"name": "required-inline"}]}},
+        "required": ["rows"]
+      },
+      "AllOfRequired": {
+        "properties": {"rows": {"$ref": "#/components/schemas/AllOfRows", "default": [{"name": "required"}]}},
+        "required": ["rows"]
+      },
       "Holder": {
         "type": "object",
         "properties": {
@@ -116,7 +153,17 @@
               "$ref": "#/components/schemas/Item"
             },
             "default": null
-          }
+          },
+          "inlineAllRows": {"type": "array", "items": {"$ref": "#/components/schemas/AllOfItemAlias"}, "default": [{"name": "inline", "child": {}}]},
+          "inlineAllMap": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/AllOfItem"}, "default": {"k": {"name": "map"}}},
+          "inlineAllMixed": {"type": "array", "items": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/AllOfNodeAlias"}}, "default": [{"k": {"name": "internal-inline", "child": {}}}]},
+          "inlineAllNullable": {"type": "array", "items": {"$ref": "#/components/schemas/AllOfItem", "nullable": true}, "default": [null, {"name": "nullable-inline"}]},
+          "inlineAllNil": {"type": ["array", "null"], "items": {"$ref": "#/components/schemas/AllOfItem"}, "default": null},
+          "allOfRows": {"$ref": "#/components/schemas/AllOfRows", "default": [{"name": "all", "child": {}}]},
+          "allOfAlias": {"$ref": "#/components/schemas/AllOfAlias", "default": [{"name": "alias"}]},
+          "allOfNested": {"$ref": "#/components/schemas/AllOfNested", "default": [{"k": {"name": "internal", "child": {}}, "nil": null}]},
+          "allOfNullable": {"$ref": "#/components/schemas/AllOfNullableRows", "default": [null, {"name": "nullable"}]},
+          "allOfNil": {"$ref": "#/components/schemas/AllOfRows", "nullable": true, "default": null}
         },
         "required": [
           "requiredRows"
@@ -193,6 +240,8 @@
                       "null"
                     ]
                   },
+                  "inlineAllRows": {"type": ["array", "null"], "items": {"$ref": "#/components/schemas/AllOfNodeAlias"}, "default": [{"name": "patch-inline"}]},
+                  "allOfRows": {"$ref": "#/components/schemas/AllOfRows", "nullable": true, "default": [{"name": "patch"}]},
                   "rows": {
                     "type": [
                       "array",

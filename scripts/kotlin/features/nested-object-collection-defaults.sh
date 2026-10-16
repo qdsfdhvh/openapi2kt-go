@@ -12,6 +12,18 @@ for style in data_class plain_class; do
     cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/NestedObjectCollectionDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
     cp tests/fixtures/http/nested-object-collection-defaults.json "$project/input.json"
     cp tests/fixtures/http/nested-object-collection-defaults.json "$project/opt.json"
+    if [[ "$checked" == true ]]; then
+      python3 - "$project" <<'PY'
+import json
+from pathlib import Path
+import sys
+for name in ('input.json', 'opt.json'):
+    path = Path(sys.argv[1]) / name
+    value = json.loads(path.read_text())
+    value['components']['schemas']['Holder']['properties']['allRows'].update(minItems=1, maxItems=3)
+    path.write_text(json.dumps(value))
+PY
+    fi
     cat > "$project/src/main/kotlin/org/example/contracts/Main.kt" <<'KOTLIN'
 package org.example.contracts
 
@@ -22,6 +34,9 @@ fun main() = runBlocking {
     val optimized = org.example.colobjectopt.models.HolderDto(requiredRows = listOf(org.example.colobjectopt.models.HolderDto.RequiredRowsInner(k = "v")))
     check(optimized.rows?.map { it.name } == listOf("a", "b"))
     check(optimized.maps == mapOf("k" to org.example.colobjectopt.models.HolderDto.MapsValue(v = 1)))
+    check(optimized.allRows?.single()?.name == "all" && optimized.allRows?.single()?.child?.note == "inner")
+    check(optimized.allMaps?.get("k")?.name == "map" && optimized.allMixed?.single()?.get("z")?.name == "mixed")
+    check(optimized.allNullable?.map { it?.name } == listOf(null, "nullable") && optimized.allNil == null)
     nestedObjectCollectionDefaultsContracts(CHECKED)
 }
 KOTLIN

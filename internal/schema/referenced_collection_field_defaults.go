@@ -8,9 +8,9 @@ import (
 	"openapi-kt/internal/naming"
 )
 
-// Admission and public spelling belong to the existing reference planner. Only
-// a direct ordinary field's own annotation receives this additional role.
-// Forward backing is read after the final source/declaration authority checks.
+// Admission and public spelling belong to the shared type/reference planner.
+// Ordinary direct references and inline collections with allOf element refs
+// defer only the consuming field's own annotation until final ownership links.
 type referencedFieldDefault struct {
 	Field field
 	Type  TypeRef // Before optional presence adds incidental nullability.
@@ -80,8 +80,8 @@ func defaultBacking(ty TypeRef) TypeRef {
 	return ty
 }
 
-// The own-default role originates at an admitted direct reference field. It is
-// independent of scalar spelling: source grammar and actual linked backing must
+// The own-default role originates at an admitted ordinary consuming field.
+// It is independent of scalar spelling: source grammar and actual linked backing must
 // still agree after the reference planner's final authority checks.
 type referencedDefaultSourceRole uint8
 
@@ -94,7 +94,7 @@ const (
 
 func (a *analyzer) referencedDefaultSchema(v *document.Value, pointer string, ty TypeRef, depth int, root bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	role := noReferencedDefaultRole
-	if root && has(v, "$ref") && has(v, "default") {
+	if root && has(v, "default") && (has(v, "$ref") || a.inlineReferencedAllOfCollection(v)) {
 		switch defaultBacking(ty).WithoutRootNull().Kind {
 		case Scalar:
 			role = referencedScalarOwnDefault
@@ -128,6 +128,11 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		if err != nil {
 			return nil, err
 		}
+		if role == referencedCollectionOwnDefault && has(source, "allOf") && defaultBacking(ty).WithoutRootNull().Kind == Named {
+			// Only an actual reference edge grants this element role. A bare
+			// inline allOf leaf stays separate even if another use binds it.
+			return a.referencedAllOfObjectDefaultNode(source, p, defaultBacking(ty), depth+1)
+		}
 		return a.referencedDefaultSchemaRole(source, p, ty, depth+1, false, role)
 	}
 	// This source grammar is deliberately narrower than the type planner. No
@@ -151,6 +156,11 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 	case dictionarySchema(v):
 		keys = a.collectionKeys([]string{"type", "nullable", "properties", "required", "additionalProperties"})
 		edge = "additionalProperties"
+	}
+	if edge != "" && root && role == referencedCollectionOwnDefault && a.inlineReferencedAllOfCollection(v) {
+		// Only the consuming inline container owns this annotation. Inner
+		// containers and target/reference sources retain their strict keys.
+		keys = append(keys, "default")
 	}
 	if edge == "" && has(v, "enum") {
 		if kind == "" || kind == "string" {

@@ -36,7 +36,7 @@ Transparent named aliases and already accepted finite internal reference hops ma
 
 Reference nullability follows the shared reference planner before optional presence: explicit consumer intent, nearest alias/internal hop intent, then terminal intent. Explicit false narrows even an intrinsically nullable allOf component. A valid null annotation emits literal `null`; non-null values use the final actual DTO serializer and create fresh objects, including omitted members with their own defaults. Required, Patch and discarded defaults undergo complete validation before suppression.
 
-The same referenced role also covers eligible [internal allOf DTOs](#references-to-internal-allof-dtos). Annotation-only allOf reference wrappers, hierarchy/common/inherited projections and List/Map defaults containing allOf leaves retain separate roles. Defaults on the target component or an intermediate reference are rejected rather than inherited. Repeated properties, fixed extras and whole-object counts remain excluded.
+The same referenced role also covers eligible [internal allOf DTOs](#references-to-internal-allof-dtos). Annotation-only allOf reference wrappers and hierarchy/common/inherited projections retain separate roles. [Referenced collection fields](#referenced-collection-field-defaults) separately admit DTO element references. Defaults on the target component or an intermediate reference are rejected rather than inherited. Repeated properties, fixed extras and whole-object counts remain excluded.
 
 ## References to internal allOf DTOs
 
@@ -48,7 +48,58 @@ Source authorization combines the final retained nominal binding with the origin
 
 Original field nodes, required names, leaf checks and source depths are reused. Nearest consumer/alias/internal nullable intent precedes terminal effective shape intent, including member-derived nullable on internal Models; explicit false narrows it and a later true may re-enable null. The helper binds the final actual type after optimization and produces fresh values. Target/chain annotations remain rejected, even when the target field's own initializer is otherwise valid. Required/Patch/discarded annotations and original/canonical budgets follow the same full validation before suppression.
 
-The consuming field defaults a single DTO value: references may target Models located in collections, but defaults on a collection containing allOf leaves and allOf-valued members inside another object default retain separate roles.
+The consuming field defaults a single DTO value. [Referenced collection fields](#referenced-collection-field-defaults) separately support references to these Models as elements; allOf-valued members inside another object default remain outside the walk.
+
+## Direct inline collection field defaults
+
+An ordinary direct inline finite List/typed Map field may own an outer default when its original terminal element is an ordinary disjoint allOf constructor DTO. For example:
+
+```json
+{
+  "type": "array",
+  "items": {
+    "allOf": [
+      {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+      {"properties": {"count": {"type": "integer", "default": 2}}}
+    ]
+  },
+  "default": [{"label": "initial"}]
+}
+```
+
+List, typed Map and finite mixed paths such as List of Map values keep their original nested constructor and public collection type. The shared type plan must create exactly one constructor Model with at least one property on that path. Empty/raw, const-only and union projections do not obtain the role. The value walk borrows the original leaf and its merged fields; no component, source schema copy or borrowed classifier is added.
+
+Permission is scoped to that consuming field's original allOf element node in a shallow validation copy. A structurally equal copy or another object member cannot acquire it. It follows only inline container edges and stops at reference edges. [Direct inline collections with referenced elements](#direct-inline-collections-with-referenced-elements) use the final nominal validation role below; allOf-valued members inside another object default and bare allOf elements inside referenced collection trees remain separate. Primitive allOf compositions keep their existing default/diagnostic path.
+
+The merged required names, leaf checks, original Pointers/depths, source planning and original/canonical value budgets apply even to empty/null annotations. Container and element nullable intent remain independent; effective element intent may come from an allOf member, and an explicit root false narrows it. Optional presence alone does not authorize annotation null. Required/Patch/discarded annotations validate before suppression, and existing no-drop guards still reject discarded runtime constraints. Element/container-child own defaults remain rejected; ordinary fields inside the element retain their own admitted defaults.
+
+The helper decodes the whole collection through its final actual serializer after optimization. Each evaluation creates fresh containers, element DTOs and supplied nested objects; missing fields inside an element use its existing field initializers. Supplied collections replace the outer default and preserve existing HTTP/SSE/Patch behavior.
+
+[Core admission/nullable/diagnostic/budget regressions](../core/inline_allof_collection_defaults_test.go), [original leaf identity/scoping/type/depth tests](../internal/schema/inline_allof_collection_defaults_test.go) and [native parity/check/failure preservation](../internal/cli/inline_allof_collection_defaults_process_test.go) define the extension. The [nested collection fixture](../tests/fixtures/http/nested-object-collection-defaults.json), [consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/NestedObjectCollectionDefaultsContracts.kt) and `bash scripts/test.sh feature nested-object-collection-defaults` exercise Data/Plain × validation off/on, four Json configurations, fresh nested values, nullable/required/Patch, HTTP/live SSE and optimized/locked helpers. The checked profile adds admitted collection counts to its generated input; preparation alone is not Kotlin compilation/runtime evidence.
+
+## Direct inline collections with referenced elements
+
+An ordinary direct inline finite List/typed Map field may also own an outer default when its element crosses an actual `$ref` edge, optionally through already admitted finite named/internal hops, to an eligible ordinary allOf constructor Model. For example, use `{"type":"array","items":{"$ref":"#/components/schemas/Value"},"default":[{"label":"initial","count":2}]}` with the disjoint `Value` above. Mixed List/Map paths retain the same contract. Named and internal terminals use their actual physical lexical owner and serializer.
+
+The shared collection/reference planner first establishes the public type, nullable layers and existing checks. The consuming annotation is then queued with its original field node and pre-presence TypeRef. After final nominal linking, the existing referenced collection walker checks the allOf terminal's retained constructor binding, original node/Pointer/owner/SourceCatalog and exact final element name; generated spelling alone never authorizes a source. Adding the annotation leaves the target's declaration bytes and warnings unchanged. The helper binds the final collection serializer after optimization and creates fresh containers and nested values.
+
+Only the consuming inline container accepts its own `default`. Element refs, intermediate hops/aliases, target components and inner containers cannot own or supply inherited defaults. Object-member paths, hierarchy sources/owners, repeated-property aggregation, wrappers, fixed extras/counts and bare allOf leaves inside referenced collection trees retain their separate boundaries. A reference ending in another collection does not extend this routing role; its terminal here must be the admitted allOf Model.
+
+Container and element nullability remain independent, using the original pre-presence type and nearest reference intent. Optional Kotlin presence does not authorize null. Every declared source and supplied value is checked before required/Patch/discarded initializer suppression, including empty/null collections, native enum membership, original/canonical value budgets and the independent source-walk limit. Existing no-drop checks continue to reject discarded runtime constraints. Element fields may retain their own already admitted initializers; missing request keys remain Patch.Absent.
+
+[Core type/nullable/suppression/diagnostic/budget regressions](../core/inline_referenced_allof_defaults_test.go), [final ownership/original source/depth and role checks](../internal/schema/inline_referenced_allof_defaults_test.go) and [native parity/check/failure preservation](../internal/cli/inline_referenced_allof_defaults_process_test.go) define this extension. The [referenced collection fixture](../tests/fixtures/http/referenced-object-collection-defaults.json), [consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ReferencedObjectCollectionDefaultsContracts.kt) and `bash scripts/test.sh feature referenced-object-collection-defaults` cover Data/Plain × validation off/on, four Json configurations, aliases/internal bridges, fresh nested values, required/Patch, HTTP/live SSE and optimized/locked helpers. The checked profile adds admitted collection counts; preparation alone is not Kotlin compilation/runtime evidence.
+
+## Referenced collection field defaults
+
+An ordinary DTO field whose direct local `$ref` resolves to an already admitted finite named/internal List/typed Map tree may own an outer default when its element references an eligible named or internal ordinary allOf constructor Model. Accepted collection aliases and element reference chains retain their existing physical types and source limits. For example, `Rows` may declare `items: {"$ref":"#/components/schemas/Value"}` for the disjoint allOf above, and a consuming field may use `{"$ref":"#/components/schemas/Rows","default":[{"label":"initial","count":2}]}`. Mixed finite paths such as List of typed Map values are supported by the same walk.
+
+Only crossing an actual element reference edge grants this role. The final named element type, retained nominal binding, original source node/Pointer/owner and hierarchy exclusions are checked by the same referenced DTO authority above. In this referenced-field role, a bare inline allOf collection element remains excluded, including when another typed use has independently registered its nominal source. [Direct inline collection fields](#direct-inline-collection-field-defaults) have their own source role; [their referenced elements](#direct-inline-collections-with-referenced-elements) reuse final nominal authority. AllOf-valued members inside object defaults remain separate.
+
+Every element validates the original disjoint shape, required names and leaves. Container and element nullable intent remain independent; an explicit false element reference narrows a nullable terminal, and optional field presence alone does not authorize annotation null. Source planning and original/canonical value budgets apply even to empty/null collections. Required/Patch/discarded annotations fully validate before initializer suppression; existing no-drop checks still reject discarded runtime constraints. Source annotations are not inherited. Named collection count constraints retain their existing validation opt-in.
+
+The helper decodes the complete collection using its final actual collection/alias serializer. Each default evaluation creates fresh containers, DTOs and supplied nested objects; omitted DTO fields retain their own declared initializers. Optimization and locks retain the effective type/default/check identity.
+
+[Core scope/nullable/suppression/diagnostic/budget regressions](../core/referenced_allof_collection_defaults_test.go), [original source/final element authority checks](../internal/schema/referenced_allof_collection_defaults_test.go) and [native parity/check/failure preservation](../internal/cli/referenced_allof_collection_defaults_process_test.go) define this extension. The [referenced collection fixture](../tests/fixtures/http/referenced-object-collection-defaults.json), [consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ReferencedObjectCollectionDefaultsContracts.kt) and `bash scripts/test.sh feature referenced-object-collection-defaults` cover Data/Plain × validation off/on, four Json configurations, concrete internal serializers, fresh nested values, required/Patch, HTTP/live SSE and optimized/locked helpers. The checked profile adds admitted named collection counts to its generated input; preparation alone is not compilation/runtime evidence.
 
 ## Bounded admission
 
@@ -57,7 +108,7 @@ Inline fields and references to eligible named or internal constructor Models ap
 - annotation-only reference wrappers: a single component ref plus metadata/nullable members must retain its canonical referenced type;
 - target/root/component defaults and default inheritance;
 - repeated-property/default/constraint aggregation, fixed extras (`additionalProperties`) and whole-object property counts;
-- empty/raw and const-only projections, hierarchy/common/inherited fields, collection elements and nested defaulted-object members whose own schema is `allOf`;
+- empty/raw and const-only projections, hierarchy/common/inherited fields, bare allOf elements inside referenced collection trees and nested defaulted-object members whose own schema is `allOf`;
 - object-union products, which use the separate [composed union default contract](union-field-defaults.md).
 
 Existing input8MiB, source48, composition-work16,384, checked-collection16 and constructor-slot240 limits remain. Object default walks also share the independent [16,384-step source planning budget](nested-object-defaults.md#object-source-planning-budget). The annotation retains the shared 16,384 JSON value-node and 32 KiB original/canonical JSON budgets. Exceeding a value budget returns `E_MODEL_LIMIT` at the original member; generation failure leaves existing output intact.

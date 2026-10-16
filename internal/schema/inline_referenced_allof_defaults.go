@@ -1,0 +1,67 @@
+package schema
+
+import (
+	"openapi-kt/internal/diagnostic"
+	"openapi-kt/internal/document"
+	"openapi-kt/internal/naming"
+)
+
+// Recognize only an inline container path followed by actual reference edges
+// ending at allOf. This is routing, not admission: the shared type plan and
+// final retained nominal/source checks still authorize the actual constructor.
+func (a *analyzer) inlineReferencedAllOfCollection(v *document.Value) bool {
+	if has(v, "$ref") {
+		return false
+	}
+	crossedReference := false
+	for edges := 0; edges <= MaxSchemaDepth && v != nil; edges++ {
+		if edges > 0 && has(v, "$ref") {
+			source, _, err := a.defaultSource(text(get(v, "$ref")), "")
+			if err != nil {
+				return false
+			}
+			v, crossedReference = source, true
+			continue
+		}
+		if crossedReference {
+			return has(v, "allOf")
+		}
+		kind, _, err := schemaType(v, "")
+		if err != nil {
+			return false
+		}
+		switch {
+		case kind == "array":
+			v = get(v, "items")
+		case dictionarySchema(v):
+			v = get(v, "additionalProperties")
+		default:
+			return false
+		}
+	}
+	return false
+}
+
+func (a *analyzer) deferredFieldDefault(v *document.Value) bool {
+	return has(v, "$ref") || a.inlineReferencedAllOfCollection(v)
+}
+
+// Plan the original inline collection type without validating the value yet.
+// Element names/owners are authoritative only after the final nominal barrier.
+func (a *analyzer) inlineReferencedAllOfDefaultType(f field, ordinary bool, name string, nested *[]Declaration, used map[string]bool) (TypeRef, *PrimitiveValidation, *diagnostic.Diagnostic) {
+	if !ordinary {
+		return TypeRef{}, nil, unsupported(naming.Pointer(f.Pointer, "default"))
+	}
+	if nested == nil {
+		scratch := []Declaration{}
+		nested = &scratch
+	}
+	if used == nil {
+		used = map[string]bool{}
+	}
+	if a.objectDefaultSchemas == nil {
+		a.objectDefaultSchemas = map[*document.Value]bool{}
+	}
+	a.objectDefaultSchemas[f.Schema] = true
+	return a.modelPropertyType(f.Schema, name, f.Pointer, nested, used, f.Depth)
+}

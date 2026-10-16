@@ -65,6 +65,9 @@ func (a *analyzer) objectDefaultCandidate(v *document.Value) bool {
 	if v == nil {
 		return false
 	}
+	if inlineAllOfDefaultElement(v) != nil {
+		return true
+	}
 	kind, _, err := schemaType(v, "")
 	if err != nil {
 		return false
@@ -359,6 +362,9 @@ func (a *analyzer) objectDefaultChild(v *document.Value, pointer string, depth i
 	if err != nil {
 		return nil, err
 	}
+	if v == a.objectDefaultAllOfElement && v != nil {
+		return a.ordinaryAllOfDefaultNode(v, pointer, depth)
+	}
 	if has(v, "$ref") {
 		if err := checkKeys(v, []string{"$ref", "nullable"}, pointer); err != nil {
 			return nil, err
@@ -390,7 +396,7 @@ func (a *analyzer) objectDefaultChild(v *document.Value, pointer string, depth i
 	if a.primitiveUnionElementCandidate(v) {
 		return a.primitiveUnionElementNode(v, pointer, depth)
 	}
-	if objectDefaultCandidateSchema(v) {
+	if objectDefaultCandidateSchema(v) || a.objectDefaultAllOfElement != nil && inlineAllOfDefaultElement(v) == a.objectDefaultAllOfElement {
 		return a.objectDefaultNode(v, pointer, depth, false)
 	}
 	return a.nestedDefaultSchema(v, "Validation", pointer, nil, nil, depth, false)
@@ -422,7 +428,7 @@ func (a *analyzer) objectDefaultField(f field, ordinary bool, name string, neste
 	if err != nil {
 		return TypeRef{}, err
 	}
-	if has(f.Schema, "allOf") {
+	if has(f.Schema, "allOf") || inlineAllOfDefaultElement(f.Schema) != nil {
 		// Only an ordinary constructor DTO acquires this role. Empty/raw and
 		// const-only projections, unions and hierarchy declarations stay separate.
 		if len(*nested) != before+1 {
@@ -444,6 +450,9 @@ func (a *analyzer) objectDefaultField(f field, ordinary bool, name string, neste
 // objectDefaultInitializer revalidates the annotation and returns the decode
 // initializer. An explicit null stays the historical literal null.
 func (a *analyzer) objectDefaultInitializer(f field) (string, *diagnostic.Diagnostic) {
+	validation := *a
+	validation.objectDefaultAllOfElement = inlineAllOfDefaultElement(f.Schema)
+	a = &validation
 	var node *nestedDefaultNode
 	var err *diagnostic.Diagnostic
 	if has(f.Schema, "allOf") {

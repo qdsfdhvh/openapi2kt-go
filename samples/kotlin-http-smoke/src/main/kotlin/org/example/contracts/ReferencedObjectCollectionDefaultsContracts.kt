@@ -36,7 +36,11 @@ import kotlinx.serialization.json.JsonObject
 import org.example.refcol.RefCol
 import org.example.refcol.api.models.PatchHolderInputDto
 import org.example.refcol.api.models.WatchHoldersEventDto
+import org.example.refcol.models.AllOfItemDto
+import org.example.refcol.models.AllOfOwnerDto
+import org.example.refcol.models.AllOfRequiredDto
 import org.example.refcol.models.HolderDto
+import org.example.refcol.models.InlineAllOfRequiredDto
 import org.example.refcol.models.ItemDto
 import org.example.refcol.models.Patch
 import org.example.refcol.models.RequiredCfgDto
@@ -73,6 +77,16 @@ private fun referencedObjectCollectionFields(value: HolderDto): Map<String, Any?
     "namedMap" to referencedObjectCollectionItems(value.namedMap?.values?.toList()),
     "requiredRows" to referencedObjectCollectionItems(value.requiredRows),
     "nilRows" to referencedObjectCollectionItems(value.nilRows),
+    "allOfRows" to value.allOfRows?.map { listOf(it.name, it.age, it.code, it.child?.note) },
+    "allOfAlias" to value.allOfAlias?.map { listOf(it.name, it.age) },
+    "allOfNested" to value.allOfNested?.map { row -> row.mapValues { (_, item) -> item?.let { listOf(it.name, it.child?.note) } } },
+    "allOfNullable" to value.allOfNullable?.map { it?.name },
+    "allOfNil" to value.allOfNil?.map { it.name },
+    "inlineAllRows" to value.inlineAllRows?.map { listOf(it.name, it.age, it.code, it.child?.note) },
+    "inlineAllMap" to value.inlineAllMap?.mapValues { listOf(it.value.name, it.value.age) },
+    "inlineAllMixed" to value.inlineAllMixed?.map { row -> row.mapValues { listOf(it.value.name, it.value.child?.note) } },
+    "inlineAllNullable" to value.inlineAllNullable?.map { it?.name },
+    "inlineAllNil" to value.inlineAllNil?.map { it.name },
 )
 
 suspend fun referencedObjectCollectionDefaultsContracts(checked: Boolean) {
@@ -84,9 +98,30 @@ suspend fun referencedObjectCollectionDefaultsContracts(checked: Boolean) {
     check(value.inlineMap == mapOf("k" to ItemDto(name = "c")))
     check(value.namedRows == listOf(ItemDto(name = "d")) && value.namedMap == mapOf("m" to ItemDto(name = "e")))
     check(value.nilRows == null)
+    val all: AllOfItemDto = value.allOfRows!!.single()
+    val internal: AllOfOwnerDto.Node = value.allOfNested!!.single().getValue("k")!!
+    check(all.name == "all" && all.age == 7 && all.child?.note == "inner")
+    check(internal.name == "internal" && internal.child?.note == "inner")
+    check(value.allOfAlias?.single()?.name == "alias" && value.allOfNested?.single()?.get("nil") == null)
+    check(value.allOfNullable?.map { it?.name } == listOf(null, "nullable") && value.allOfNil == null)
+    val fresh = HolderDto(requiredRows = requiredRows)
+    check(fresh.allOfRows !== value.allOfRows && fresh.allOfRows?.single() !== all && fresh.allOfRows?.single()?.child !== all.child)
+    check(fresh.allOfNested?.single()?.get("k")?.child !== internal.child)
+    check(!AllOfRequiredDto.serializer().descriptor.isElementOptional(0))
+    val inline: AllOfItemDto = value.inlineAllRows!!.single()
+    val mixed: AllOfOwnerDto.Node = value.inlineAllMixed!!.single().getValue("k")
+    check(inline.name == "inline" && inline.age == 7 && inline.child?.note == "inner")
+    check(value.inlineAllMap?.get("k")?.name == "map" && mixed.name == "internal-inline" && mixed.child?.note == "inner")
+    check(value.inlineAllNullable?.map { it?.name } == listOf(null, "nullable-inline") && value.inlineAllNil == null)
+    check(fresh.inlineAllRows !== value.inlineAllRows && fresh.inlineAllRows?.single() !== inline && fresh.inlineAllRows?.single()?.child !== inline.child)
+    check(fresh.inlineAllMixed?.single()?.get("k")?.child !== mixed.child)
+    check(!InlineAllOfRequiredDto.serializer().descriptor.isElementOptional(0))
     check(!HolderDto.serializer().descriptor.isElementOptional(4))
     check(HolderDto(requiredRows = requiredRows).inlineRows !== value.inlineRows)
     if (checked) {
+        referencedObjectCollectionReject("enum") { AllOfItemDto(name = "bad", code = 9) }
+        referencedObjectCollectionReject("minItems") { HolderDto(requiredRows = requiredRows, allOfRows = emptyList()) }
+        referencedObjectCollectionReject("minItems") { HolderDto(requiredRows = requiredRows, inlineAllRows = emptyList()) }
         referencedObjectCollectionReject("enum") { HolderDto(requiredRows = requiredRows, inlineRows = listOf(ItemDto(name = "n", code = 9))) }
     } else {
         check(HolderDto(requiredRows = requiredRows, inlineRows = listOf(ItemDto(name = "n", code = 9))).inlineRows?.single()?.code == 9)
@@ -94,20 +129,33 @@ suspend fun referencedObjectCollectionDefaultsContracts(checked: Boolean) {
     for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }
         check(runCatching { codec.decodeFromString<HolderDto>("{}") }.isFailure)
+        check(runCatching { codec.decodeFromString<AllOfRequiredDto>("{}") }.isFailure)
+        check(runCatching { codec.decodeFromString<InlineAllOfRequiredDto>("{}") }.isFailure)
+        check(codec.decodeFromString<InlineAllOfRequiredDto>("""{"rows":[{"name":"supplied"}]}""").rows.single().age == 7)
+        check(codec.decodeFromString<AllOfRequiredDto>("""{"rows":[{"name":"supplied"}]}""").rows.single().age == 7)
         val missing = codec.decodeFromString<HolderDto>("""{"requiredRows":[{"name":"r"}]}""")
         check(referencedObjectCollectionFields(missing) == referencedObjectCollectionFields(value))
         val overridden = codec.decodeFromString<HolderDto>("""{"requiredRows":[{"name":"r"}],"inlineRows":[{"name":"z"}],"namedRows":[]}""")
         check(overridden.inlineRows?.size == 1 && overridden.inlineRows?.get(0)?.name == "z" && overridden.inlineRows?.get(0)?.age == 7 && overridden.namedRows == emptyList<ItemDto>())
+        val suppliedAllOf = codec.decodeFromString<HolderDto>("""{"requiredRows":[{"name":"r"}],"allOfRows":[{"name":"wire"}],"allOfNil":null}""")
+        check(suppliedAllOf.allOfRows?.single()?.name == "wire" && suppliedAllOf.allOfRows?.single()?.age == 7 && suppliedAllOf.allOfRows?.single()?.child == null && suppliedAllOf.allOfNil == null)
+        val suppliedInline = codec.decodeFromString<HolderDto>("""{"requiredRows":[{"name":"r"}],"inlineAllRows":[{"name":"replacement"}],"inlineAllNil":null}""")
+        check(suppliedInline.inlineAllRows?.single()?.name == "replacement" && suppliedInline.inlineAllRows?.single()?.age == 7 && suppliedInline.inlineAllRows?.single()?.child == null && suppliedInline.inlineAllNil == null)
         check(codec.decodeFromString<HolderDto>("""{"requiredRows":[{"name":"r"}],"nilRows":null}""").nilRows == null)
         check(referencedObjectCollectionFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), missing))) == referencedObjectCollectionFields(missing))
         val absent = codec.decodeFromString<PatchHolderInputDto>("""{"required":null}""")
-        check(absent.rows == Patch.Absent)
-        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "rows" })
-        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"rows":null}""")
-        check(cleared.rows == Patch.Null)
+        check(absent.rows == Patch.Absent && absent.allOfRows == Patch.Absent && absent.inlineAllRows == Patch.Absent)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "rows" || it == "allOfRows" || it == "inlineAllRows" })
+        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"rows":null,"allOfRows":null,"inlineAllRows":null}""")
+        check(cleared.rows == Patch.Null && cleared.allOfRows == Patch.Null && cleared.inlineAllRows == Patch.Null)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["inlineAllRows"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["rows"] === JsonNull)
-        val update = PatchHolderInputDto(required = null, rows = Patch.Value(listOf(ItemDto(name = "u"))))
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["allOfRows"] === JsonNull)
+        val update = PatchHolderInputDto(required = null, rows = Patch.Value(listOf(ItemDto(name = "u"))), allOfRows = Patch.Value(listOf(AllOfItemDto(name = "update"))))
+        check(((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), update) as JsonObject)["allOfRows"] as List<*>).size == 1)
         check(((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), update) as JsonObject)["rows"] as List<*>).size == 1)
+        val inlineUpdate = PatchHolderInputDto(required = null, inlineAllRows = Patch.Value(listOf(AllOfOwnerDto.Node(name = "inline-update"))))
+        check(((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), inlineUpdate) as JsonObject)["inlineAllRows"] as List<*>).size == 1)
         check(codec.decodeFromString<RequiredCfgDto>("""{"rows":[{"name":"a"},{"name":"b"}]}""").rows.map { it.name } == listOf("a", "b"))
         referencedObjectCollectionWire(codec, value, checked)
     }
@@ -163,6 +211,11 @@ private suspend fun referencedObjectCollectionWire(codec: Json, value: HolderDto
         check(referencedObjectCollectionFields(api.sendHolder(value) { callbacks++ }) == referencedObjectCollectionFields(value))
         expectedPatch = codec.encodeToJsonElement(PatchHolderInputDto.serializer(), PatchHolderInputDto(required = null)) as JsonObject
         api.patchHolder(PatchHolderInputDto(required = null)) { callbacks++ }
+        for (change in listOf(Patch.Null, Patch.Value(listOf(AllOfItemDto(name = "update"))))) {
+            val patch = PatchHolderInputDto(required = null, allOfRows = change, inlineAllRows = if (change == Patch.Null) Patch.Null else Patch.Value(listOf(AllOfOwnerDto.Node(name = "wire"))))
+            expectedPatch = codec.encodeToJsonElement(PatchHolderInputDto.serializer(), patch) as JsonObject
+            api.patchHolder(patch) { callbacks++ }
+        }
         check(api.sendRequired(requiredValue) { callbacks++ }.rows.size == 1)
         val before = calls
         val beforeCallbacks = callbacks
@@ -180,6 +233,16 @@ private suspend fun referencedObjectCollectionWire(codec: Json, value: HolderDto
             check(calls == beforeFailure + 2 && callbacks == calls)
             withTimeout(10000) { framesWritten.last().await() }
             check(channels.last().isClosedForRead) { "Failed full-frame still-open stream was not closed" }
+            payload = """{"requiredRows":[{"name":"r"}],"allOfRows":[{"name":"n","code":9}]}"""
+            referencedObjectCollectionReject("enum") { api.sendHolder(value) { callbacks++ } }
+            referencedObjectCollectionReject("enum") { withTimeout(10000) { api.watchHolders { callbacks++ }.toList() } }
+            withTimeout(10000) { framesWritten.last().await() }
+            check(channels.last().isClosedForRead)
+            payload = """{"requiredRows":[{"name":"r"}],"inlineAllRows":[{"name":"bad-inline","code":9}]}"""
+            referencedObjectCollectionReject("enum") { api.sendHolder(value) { callbacks++ } }
+            referencedObjectCollectionReject("enum") { withTimeout(10000) { api.watchHolders { callbacks++ }.toList() } }
+            withTimeout(10000) { framesWritten.last().await() }
+            check(channels.last().isClosedForRead)
             payload = codec.encodeToString(HolderDto.serializer(), value)
             failing = false
             check(referencedObjectCollectionFields(api.sendHolder(value) { callbacks++ }) == referencedObjectCollectionFields(value))

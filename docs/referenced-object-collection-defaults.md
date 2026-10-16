@@ -16,11 +16,13 @@
 }
 ```
 
+The referenced collection form also supports [disjoint ordinary allOf DTO element references](allof-object-defaults.md#referenced-collection-field-defaults) across admitted named/internal finite collection trees and aliases. These require an actual element `$ref` to a retained named/internal constructor Model and preserve its original lexical serializer, merged source fields and effective nullable intent. Bare inline allOf elements inside referenced collection trees, hierarchy and nested allOf-valued object-default members retain separate roles. [Direct inline fields with referenced allOf elements](allof-object-defaults.md#direct-inline-collections-with-referenced-elements) now accept their outer own default after final nominal/source validation. [Direct inline fields with bare ordinary allOf elements](allof-object-defaults.md#direct-inline-collection-field-defaults) have a separate source-scoped outer-default contract.
+
 The field keeps its actual collection type (`List<ItemDto>?`, `RowsDto?`) and the emitted helper decodes the canonical JSON through the final actual serializer, binding the final relocated element/alias type after optimization and deduplicating per wrapper shape. Each evaluation produces a fresh tree, and omitted element object keys use the element DTO's own property defaults.
 
 ## Annotation, presence and source fidelity
 
-Only the consuming field's own `default` is accepted. The inline element form is selected by the analyzer-aware candidate only when the direct local `$ref` resolves to a plain object target; a `$ref` to a scalar, enum, composition, dictionary, union or alias chain does not become an object element. The named-collection form is selected by the existing referenced collection role and reuses its existing container/count/nullable handling.
+Only the consuming field's own `default` is accepted. The plain-target inline element form is selected by the analyzer-aware candidate only when the direct local `$ref` resolves to a plain object target; a `$ref` to a scalar, enum, dictionary or union does not become an object element. AllOf element refs and their admitted finite aliases/internal hops use the separate final nominal role linked above. The named-collection form is selected by the existing referenced collection role and reuses its existing container/count/nullable handling.
 
 Element objects are validated exactly like the direct object leaf: every declared property is checked, unknown keys fail, every `required` wire must be present, property values reuse the finite leaf/container planner, and a property may carry its own validated `default`. A referenced target must not own a root `default`; target-root defaults are rejected outright. Container counts and non-object element leaves keep their existing rules. Element schemas cannot own the default annotation themselves.
 
@@ -29,6 +31,8 @@ Nullable intent follows the existing reference contracts: nearest explicit consu
 ## Validation and resources
 
 With `--validation`, default values satisfy each retained element/container count and leaf bound, and each element DTO's own `init` checks run when the decoded default is constructed. Null bypasses only its own non-null checks. The existing input8MiB, source48, checked-collection16 and 240 serialized constructor-slot limits are unchanged; the whole annotation reuses the 16,384 value-node and 32 KiB compact/canonical JSON budgets. Exceeded budgets return `E_MODEL_LIMIT` at an original Pointer with no partial artifacts.
+
+Object-containing source walks independently retain the [16,384-step source budget](nested-object-defaults.md#object-source-planning-budget), including empty annotations and repeated references.
 
 ## Compatibility and verification
 
