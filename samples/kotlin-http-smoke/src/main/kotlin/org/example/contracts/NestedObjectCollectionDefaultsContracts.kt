@@ -36,6 +36,7 @@ import kotlinx.serialization.json.JsonObject
 import org.example.colobject.ColObject
 import org.example.colobject.api.models.PatchHolderInputDto
 import org.example.colobject.api.models.WatchHoldersEventDto
+import org.example.colobject.models.AllOfRequiredDto
 import org.example.colobject.models.HolderDto
 import org.example.colobject.models.Patch
 import org.example.colobject.models.RequiredCfgDto
@@ -70,6 +71,11 @@ private fun nestedObjectCollectionRows(value: HolderDto): Map<String, Any?> = li
     "nilRows" to value.nilRows?.map { it.n },
     "requiredRows" to value.requiredRows.map { it.k },
     "scalars" to value.scalars,
+    "allRows" to value.allRows?.map { listOf(it.name, it.age, it.code, it.child?.note) },
+    "allMaps" to value.allMaps?.mapValues { listOf(it.value.name, it.value.age) },
+    "allMixed" to value.allMixed?.map { row -> row.mapValues { listOf(it.value.name, it.value.age) } },
+    "allNullable" to value.allNullable?.map { it?.name },
+    "allNil" to value.allNil?.map { it.name },
 )
 
 suspend fun nestedObjectCollectionDefaultsContracts(checked: Boolean) {
@@ -81,9 +87,20 @@ suspend fun nestedObjectCollectionDefaultsContracts(checked: Boolean) {
     check(value.maps == mapOf("k" to HolderDto.MapsValue(v = 1)))
     check(value.mixed == listOf(mapOf("a" to HolderDto.MixedInnerValue(z = "x"))))
     check(value.nilRows == null && value.scalars == listOf("a", "b"))
+    val all: HolderDto.AllRowsInner = value.allRows!!.single()
+    check(all.name == "all" && all.age == 7 && all.child?.note == "inner")
+    check(value.allMaps?.get("k")?.name == "map" && value.allMaps?.get("k")?.age == 7)
+    check(value.allMixed?.single()?.get("z")?.name == "mixed")
+    check(value.allNullable?.map { it?.name } == listOf(null, "nullable") && value.allNil == null)
+    val fresh = HolderDto(requiredRows = requiredRows)
+    check(fresh.allRows !== value.allRows && fresh.allRows?.single() !== all && fresh.allRows?.single()?.child !== all.child)
+    check(fresh.allMixed?.single()?.get("z") !== value.allMixed?.single()?.get("z"))
+    check(!AllOfRequiredDto.serializer().descriptor.isElementOptional(0))
     check(!HolderDto.serializer().descriptor.isElementOptional(4))
     check(HolderDto(requiredRows = requiredRows).rows !== value.rows)
     if (checked) {
+        nestedObjectCollectionReject("enum") { HolderDto.AllRowsInner(name = "bad", code = 9) }
+        nestedObjectCollectionReject("minItems") { HolderDto(requiredRows = requiredRows, allRows = emptyList()) }
         nestedObjectCollectionReject("enum") { HolderDto(requiredRows = requiredRows, rows = listOf(HolderDto.RowsInner(name = "n", code = 9))) }
     } else {
         check(HolderDto(requiredRows = requiredRows, rows = listOf(HolderDto.RowsInner(name = "n", code = 9))).rows?.single()?.code == 9)
@@ -91,19 +108,25 @@ suspend fun nestedObjectCollectionDefaultsContracts(checked: Boolean) {
     for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }
         check(runCatching { codec.decodeFromString<HolderDto>("{}") }.isFailure)
+        check(runCatching { codec.decodeFromString<AllOfRequiredDto>("{}") }.isFailure)
+        check(codec.decodeFromString<AllOfRequiredDto>("""{"rows":[{"name":"supplied"}]}""").rows.single().age == 7)
         val missing = codec.decodeFromString<HolderDto>("""{"requiredRows":[{"k":"v"}]}""")
         check(nestedObjectCollectionRows(missing) == nestedObjectCollectionRows(value))
         val overridden = codec.decodeFromString<HolderDto>("""{"requiredRows":[{"k":"v"}],"rows":[{"name":"z"}],"maps":{}}""")
         check(overridden.rows?.size == 1 && overridden.rows?.get(0)?.name == "z" && overridden.rows?.get(0)?.age == 7 && overridden.maps == emptyMap<String, HolderDto.MapsValue>())
         check(codec.decodeFromString<HolderDto>("""{"requiredRows":[{"k":"v"}],"nilRows":null}""").nilRows == null)
+        val supplied = codec.decodeFromString<HolderDto>("""{"requiredRows":[{"k":"v"}],"allRows":[{"name":"replacement"}],"allNil":null}""")
+        check(supplied.allRows?.single()?.name == "replacement" && supplied.allRows?.single()?.age == 7 && supplied.allRows?.single()?.child == null && supplied.allNil == null)
         check(nestedObjectCollectionRows(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), missing))) == nestedObjectCollectionRows(missing))
         val absent = codec.decodeFromString<PatchHolderInputDto>("""{"required":null}""")
-        check(absent.rows == Patch.Absent)
-        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "rows" })
-        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"rows":null}""")
-        check(cleared.rows == Patch.Null)
+        check(absent.rows == Patch.Absent && absent.allRows == Patch.Absent)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "rows" || it == "allRows" })
+        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"rows":null,"allRows":null}""")
+        check(cleared.rows == Patch.Null && cleared.allRows == Patch.Null)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["allRows"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["rows"] === JsonNull)
-        val update = PatchHolderInputDto(required = null, rows = Patch.Value(listOf(PatchHolderInputDto.RowsInner(x = "u"))))
+        val update = PatchHolderInputDto(required = null, rows = Patch.Value(listOf(PatchHolderInputDto.RowsInner(x = "u"))), allRows = Patch.Value(listOf(PatchHolderInputDto.AllRowsInner(name = "update"))))
+        check(((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), update) as JsonObject)["allRows"] as List<*>).size == 1)
         check(((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), update) as JsonObject)["rows"] as List<*>) == listOf(codec.parseToJsonElement("""{"x":"u"}""")))
         check(codec.decodeFromString<RequiredCfgDto>("""{"rows":[{"r":1},{}]}""").rows.map { it.r } == listOf(1, null))
         nestedObjectCollectionWire(codec, value, checked)
@@ -160,6 +183,11 @@ private suspend fun nestedObjectCollectionWire(codec: Json, value: HolderDto, ch
         check(nestedObjectCollectionRows(api.sendHolder(value) { callbacks++ }) == nestedObjectCollectionRows(value))
         expectedPatch = codec.encodeToJsonElement(PatchHolderInputDto.serializer(), PatchHolderInputDto(required = null)) as JsonObject
         api.patchHolder(PatchHolderInputDto(required = null)) { callbacks++ }
+        for (change in listOf(Patch.Null, Patch.Value(listOf(PatchHolderInputDto.AllRowsInner(name = "wire"))))) {
+            val patch = PatchHolderInputDto(required = null, allRows = change)
+            expectedPatch = codec.encodeToJsonElement(PatchHolderInputDto.serializer(), patch) as JsonObject
+            api.patchHolder(patch) { callbacks++ }
+        }
         check(api.sendRequired(requiredValue) { callbacks++ }.rows.size == 1)
         val before = calls
         val beforeCallbacks = callbacks
@@ -177,6 +205,11 @@ private suspend fun nestedObjectCollectionWire(codec: Json, value: HolderDto, ch
             check(calls == beforeFailure + 2 && callbacks == calls)
             withTimeout(10000) { framesWritten.last().await() }
             check(channels.last().isClosedForRead) { "Failed full-frame still-open stream was not closed" }
+            payload = """{"requiredRows":[{"k":"v"}],"allRows":[{"name":"bad","code":9}]}"""
+            nestedObjectCollectionReject("enum") { api.sendHolder(value) { callbacks++ } }
+            nestedObjectCollectionReject("enum") { withTimeout(10000) { api.watchHolders { callbacks++ }.toList() } }
+            withTimeout(10000) { framesWritten.last().await() }
+            check(channels.last().isClosedForRead)
             payload = codec.encodeToString(HolderDto.serializer(), value)
             failing = false
             check(nestedObjectCollectionRows(api.sendHolder(value) { callbacks++ }) == nestedObjectCollectionRows(value))

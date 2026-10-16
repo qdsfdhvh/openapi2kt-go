@@ -50,11 +50,38 @@ Original field nodes, required names, leaf checks and source depths are reused. 
 
 The consuming field defaults a single DTO value. [Referenced collection fields](#referenced-collection-field-defaults) separately support references to these Models as elements; allOf-valued members inside another object default remain outside the walk.
 
+## Direct inline collection field defaults
+
+An ordinary direct inline finite List/typed Map field may own an outer default when its original terminal element is an ordinary disjoint allOf constructor DTO. For example:
+
+```json
+{
+  "type": "array",
+  "items": {
+    "allOf": [
+      {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+      {"properties": {"count": {"type": "integer", "default": 2}}}
+    ]
+  },
+  "default": [{"label": "initial"}]
+}
+```
+
+List, typed Map and finite mixed paths such as List of Map values keep their original nested constructor and public collection type. The shared type plan must create exactly one constructor Model with at least one property on that path. Empty/raw, const-only and union projections do not obtain the role. The value walk borrows the original leaf and its merged fields; no component, source schema copy or borrowed classifier is added.
+
+Permission is scoped to that consuming field's original allOf element node in a shallow validation copy. A structurally equal copy or another object member cannot acquire it. It follows only inline container edges and stops at reference edges. Direct inline collection fields with referenced allOf elements, allOf-valued members inside another object default and bare allOf elements inside referenced collection trees retain separate roles. Primitive allOf compositions keep their existing default/diagnostic path.
+
+The merged required names, leaf checks, original Pointers/depths, source planning and original/canonical value budgets apply even to empty/null annotations. Container and element nullable intent remain independent; effective element intent may come from an allOf member, and an explicit root false narrows it. Optional presence alone does not authorize annotation null. Required/Patch/discarded annotations validate before suppression, and existing no-drop guards still reject discarded runtime constraints. Element/container-child own defaults remain rejected; ordinary fields inside the element retain their own admitted defaults.
+
+The helper decodes the whole collection through its final actual serializer after optimization. Each evaluation creates fresh containers, element DTOs and supplied nested objects; missing fields inside an element use its existing field initializers. Supplied collections replace the outer default and preserve existing HTTP/SSE/Patch behavior.
+
+[Core admission/nullable/diagnostic/budget regressions](../core/inline_allof_collection_defaults_test.go), [original leaf identity/scoping/type/depth tests](../internal/schema/inline_allof_collection_defaults_test.go) and [native parity/check/failure preservation](../internal/cli/inline_allof_collection_defaults_process_test.go) define the extension. The [nested collection fixture](../tests/fixtures/http/nested-object-collection-defaults.json), [consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/NestedObjectCollectionDefaultsContracts.kt) and `bash scripts/test.sh feature nested-object-collection-defaults` exercise Data/Plain × validation off/on, four Json configurations, fresh nested values, nullable/required/Patch, HTTP/live SSE and optimized/locked helpers. The checked profile adds admitted collection counts to its generated input; preparation alone is not Kotlin compilation/runtime evidence.
+
 ## Referenced collection field defaults
 
 An ordinary DTO field whose direct local `$ref` resolves to an already admitted finite named/internal List/typed Map tree may own an outer default when its element references an eligible named or internal ordinary allOf constructor Model. Accepted collection aliases and element reference chains retain their existing physical types and source limits. For example, `Rows` may declare `items: {"$ref":"#/components/schemas/Value"}` for the disjoint allOf above, and a consuming field may use `{"$ref":"#/components/schemas/Rows","default":[{"label":"initial","count":2}]}`. Mixed finite paths such as List of typed Map values are supported by the same walk.
 
-Only crossing an actual element reference edge grants this role. The final named element type, retained nominal binding, original source node/Pointer/owner and hierarchy exclusions are checked by the same referenced DTO authority above. A bare inline allOf collection element remains excluded, including when another typed use has independently registered its nominal source. Direct inline collection field defaults with allOf leaves and allOf-valued members inside object defaults remain separate.
+Only crossing an actual element reference edge grants this role. The final named element type, retained nominal binding, original source node/Pointer/owner and hierarchy exclusions are checked by the same referenced DTO authority above. In this referenced-field role, a bare inline allOf collection element remains excluded, including when another typed use has independently registered its nominal source. [Direct inline collection fields](#direct-inline-collection-field-defaults) have their own source role; referenced elements of direct inline fields and allOf-valued members inside object defaults remain separate.
 
 Every element validates the original disjoint shape, required names and leaves. Container and element nullable intent remain independent; an explicit false element reference narrows a nullable terminal, and optional field presence alone does not authorize annotation null. Source planning and original/canonical value budgets apply even to empty/null collections. Required/Patch/discarded annotations fully validate before initializer suppression; existing no-drop checks still reject discarded runtime constraints. Source annotations are not inherited. Named collection count constraints retain their existing validation opt-in.
 
@@ -69,7 +96,7 @@ Inline fields and references to eligible named or internal constructor Models ap
 - annotation-only reference wrappers: a single component ref plus metadata/nullable members must retain its canonical referenced type;
 - target/root/component defaults and default inheritance;
 - repeated-property/default/constraint aggregation, fixed extras (`additionalProperties`) and whole-object property counts;
-- empty/raw and const-only projections, hierarchy/common/inherited fields, bare inline allOf collection elements and nested defaulted-object members whose own schema is `allOf`;
+- empty/raw and const-only projections, hierarchy/common/inherited fields, bare allOf elements inside referenced collection trees and nested defaulted-object members whose own schema is `allOf`;
 - object-union products, which use the separate [composed union default contract](union-field-defaults.md).
 
 Existing input8MiB, source48, composition-work16,384, checked-collection16 and constructor-slot240 limits remain. Object default walks also share the independent [16,384-step source planning budget](nested-object-defaults.md#object-source-planning-budget). The annotation retains the shared 16,384 JSON value-node and 32 KiB original/canonical JSON budgets. Exceeding a value budget returns `E_MODEL_LIMIT` at the original member; generation failure leaves existing output intact.

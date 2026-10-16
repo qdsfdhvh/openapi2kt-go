@@ -16,7 +16,7 @@
 }
 ```
 
-The referenced collection form also supports [disjoint ordinary allOf DTO element references](allof-object-defaults.md#referenced-collection-field-defaults) across admitted named/internal finite collection trees and aliases. These require an actual element `$ref` to a retained named/internal constructor Model and preserve its original lexical serializer, merged source fields and effective nullable intent. Bare inline allOf elements, direct inline collection fields with allOf leaves, hierarchy and nested allOf-valued object-default members retain separate roles.
+The referenced collection form also supports [disjoint ordinary allOf DTO element references](allof-object-defaults.md#referenced-collection-field-defaults) across admitted named/internal finite collection trees and aliases. These require an actual element `$ref` to a retained named/internal constructor Model and preserve its original lexical serializer, merged source fields and effective nullable intent. Bare inline allOf elements inside referenced collection trees, direct inline fields with referenced allOf leaves, hierarchy and nested allOf-valued object-default members retain separate roles. [Direct inline fields with bare ordinary allOf elements](allof-object-defaults.md#direct-inline-collection-field-defaults) have a separate source-scoped outer-default contract.
 
 The field keeps its actual collection type (`List<ItemDto>?`, `RowsDto?`) and the emitted helper decodes the canonical JSON through the final actual serializer, binding the final relocated element/alias type after optimization and deduplicating per wrapper shape. Each evaluation produces a fresh tree, and omitted element object keys use the element DTO's own property defaults.
 

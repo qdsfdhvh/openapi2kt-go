@@ -125,6 +125,43 @@
               }
             ]
           },
+          "allRows": {
+            "type": "array",
+            "items": {"allOf": [
+              {"properties": {"name": {"type": "string"}}, "required": ["name"]},
+              {"properties": {"age": {"type": "integer", "default": 7}, "code": {"type": "integer", "enum": [1, 2]}, "child": {"properties": {"note": {"type": "string", "default": "inner"}}}}}
+            ]},
+            "default": [{"name": "all", "child": {}}]
+          },
+          "allMaps": {
+            "type": "object",
+            "additionalProperties": {"allOf": [
+              {"properties": {"name": {"type": "string"}}, "required": ["name"]},
+              {"properties": {"age": {"type": "integer", "default": 7}}}
+            ]},
+            "default": {"k": {"name": "map"}}
+          },
+          "allMixed": {
+            "type": "array",
+            "items": {"type": "object", "additionalProperties": {"allOf": [
+              {"properties": {"name": {"type": "string"}}, "required": ["name"]},
+              {"properties": {"age": {"type": "integer", "default": 7}}}
+            ]}},
+            "default": [{"z": {"name": "mixed"}, "a": {"name": "first"}}]
+          },
+          "allNullable": {
+            "type": "array",
+            "items": {"allOf": [
+              {"nullable": true, "properties": {"name": {"type": "string"}}, "required": ["name"]},
+              {"properties": {"age": {"type": "integer", "default": 7}}}
+            ]},
+            "default": [null, {"name": "nullable"}]
+          },
+          "allNil": {
+            "type": ["array", "null"],
+            "items": {"allOf": [{"properties": {"name": {"type": "string"}}}, {"properties": {"age": {"type": "integer"}}}]},
+            "default": null
+          },
           "scalars": {
             "type": "array",
             "items": {
@@ -139,6 +176,14 @@
         "required": [
           "requiredRows"
         ]
+      },
+      "AllOfRequired": {
+        "properties": {"rows": {
+          "type": "array",
+          "items": {"allOf": [{"properties": {"name": {"type": "string"}}, "required": ["name"]}, {"properties": {"age": {"type": "integer", "default": 7}}}]},
+          "default": [{"name": "required"}]
+        }},
+        "required": ["rows"]
       },
       "RequiredCfg": {
         "type": "object",
@@ -215,6 +260,11 @@
                       "string",
                       "null"
                     ]
+                  },
+                  "allRows": {
+                    "type": ["array", "null"],
+                    "items": {"allOf": [{"properties": {"name": {"type": "string"}}, "required": ["name"]}, {"properties": {"age": {"type": "integer", "default": 7}}}]},
+                    "default": [{"name": "patch"}]
                   },
                   "rows": {
                     "type": [
