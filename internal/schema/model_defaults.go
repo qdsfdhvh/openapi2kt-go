@@ -75,6 +75,10 @@ func (a *analyzer) modelDefaultType(f field, ordinary bool, name string, nested 
 		ty, err := a.objectDefaultField(f, ordinary, name, nested, used)
 		return ty, nil, err
 	}
+	if has(f.Schema, "allOf") {
+		ty, err := a.composedUnionDefaultField(f, name, nested, used)
+		return ty, nil, err
+	}
 	if nestedCollectionDefaultSchema(f.Schema) {
 		if !ordinary {
 			return TypeRef{}, nil, unsupported(naming.Pointer(f.Pointer, "default"))
@@ -266,6 +270,18 @@ func (a *analyzer) modelDefault(f field, ty TypeRef, required bool) (string, *di
 		validation := *a
 		validation.warnings = nil // Type planning owns source warnings.
 		initializer, err := validation.objectDefaultInitializer(f)
+		if err != nil {
+			return "", err
+		}
+		if required || ty.Kind == PatchValue {
+			return "", nil
+		}
+		return initializer, nil
+	}
+	if has(f.Schema, "allOf") {
+		validation := *a
+		validation.warnings = nil // Type planning owns source warnings.
+		initializer, err := validation.composedUnionDefaultInitializer(f)
 		if err != nil {
 			return "", err
 		}

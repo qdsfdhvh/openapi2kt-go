@@ -317,6 +317,31 @@
               "kind": "a",
               "a": "x"
             }
+          },
+          "composedInline": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Choice"
+              },
+              {
+                "$ref": "#/components/schemas/Mode"
+              }
+            ],
+            "default": {
+              "kind": "note",
+              "mode": "fast",
+              "fast": true,
+              "body": "x"
+            }
+          },
+          "composedRef": {
+            "$ref": "#/components/schemas/ComposedUnion",
+            "default": {
+              "kind": "count",
+              "mode": "slow",
+              "slow": false,
+              "count": 7
+            }
           }
         },
         "required": [
@@ -405,6 +430,84 @@
                 "type": "integer"
               }
             }
+          }
+        ]
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "body"
+            ],
+            "properties": {
+              "kind": {
+                "const": "note"
+              },
+              "body": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "kind",
+              "count"
+            ],
+            "properties": {
+              "kind": {
+                "const": "count"
+              },
+              "count": {
+                "type": "integer"
+              }
+            }
+          }
+        ]
+      },
+      "Mode": {
+        "anyOf": [
+          {
+            "type": "object",
+            "required": [
+              "mode",
+              "fast"
+            ],
+            "properties": {
+              "mode": {
+                "const": "fast"
+              },
+              "fast": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "mode",
+              "slow"
+            ],
+            "properties": {
+              "mode": {
+                "const": "slow"
+              },
+              "slow": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      },
+      "ComposedUnion": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Choice"
+          },
+          {
+            "$ref": "#/components/schemas/Mode"
           }
         ]
       }

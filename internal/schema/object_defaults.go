@@ -159,30 +159,55 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 	for _, member := range properties.Members() {
 		declared[member.Name] = true
 		childPointer := naming.Pointer(naming.Pointer(pointer, "properties"), member.Name)
-		var child *nestedDefaultNode
-		switch {
-		case has(member.Value, "$ref"):
-			// A referenced plain object property borrows its resolved target; the
-			// consuming DTO serializer still owns the nested codec.
-			child, err = a.objectDefaultPropertyReference(member.Value, childPointer, depth+1)
-		case has(member.Value, "const"):
-			child, err = a.objectDefaultConstNode(member.Value, childPointer)
-		case a.primitiveUnionElementCandidate(member.Value):
-			child, err = a.primitiveUnionElementNode(member.Value, childPointer, depth+1)
-		case objectDefaultCandidateSchema(member.Value):
-			child, err = a.objectDefaultNode(member.Value, childPointer, depth+1, true)
-		default:
-			// Leaf/container children are validated by the existing planner. It
-			// never creates declarations here, so identity stays with the field
-			// type plan performed before this walk.
-			child, err = a.nestedDefaultSchema(member.Value, "Validation", childPointer, nil, nil, depth+1, true)
-		}
+		child, err := a.objectDefaultPropertyNode(member.Value, childPointer, depth+1, true)
 		if err != nil {
 			return nil, err
 		}
 		node.objectFields = append(node.objectFields, objectDefaultProperty{wire: member.Name, required: required[member.Name], node: child})
 	}
 	for wire := range required {
+		if !declared[wire] {
+			return nil, invalid("required must contain unique declared property names.", pointer)
+		}
+	}
+	return node, nil
+}
+
+// objectDefaultPropertyNode dispatches one object property. Leaf/container
+// children are validated by the existing planner, which never creates
+// declarations here, so identity stays with the field type plan.
+func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, depth int, allowOwnDefault bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	switch {
+	case has(v, "$ref"):
+		// A referenced plain object property borrows its resolved target; the
+		// consuming DTO serializer still owns the nested codec.
+		return a.objectDefaultPropertyReference(v, pointer, depth)
+	case has(v, "const"):
+		return a.objectDefaultConstNode(v, pointer)
+	case a.primitiveUnionElementCandidate(v):
+		return a.primitiveUnionElementNode(v, pointer, depth)
+	case objectDefaultCandidateSchema(v):
+		return a.objectDefaultNode(v, pointer, depth, allowOwnDefault)
+	default:
+		return a.nestedDefaultSchema(v, "Validation", pointer, nil, nil, depth, true)
+	}
+}
+
+// objectDefaultShapeNode validates a Cartesian variant default against the
+// merged original shape of its composed branch. Fields keep their borrowed
+// source nodes and pointers; no declarations are created.
+func (a *analyzer) objectDefaultShapeNode(s *shape, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	node := &nestedDefaultNode{pointer: pointer, ty: TypeRef{Kind: JSON}, object: true}
+	declared := map[string]bool{}
+	for _, f := range s.Fields {
+		declared[f.Wire] = true
+		child, err := a.objectDefaultPropertyNode(f.Schema, f.Pointer, f.Depth, false)
+		if err != nil {
+			return nil, err
+		}
+		node.objectFields = append(node.objectFields, objectDefaultProperty{wire: f.Wire, required: s.Required[f.Wire], node: child})
+	}
+	for _, wire := range s.RequiredOrder {
 		if !declared[wire] {
 			return nil, invalid("required must contain unique declared property names.", pointer)
 		}

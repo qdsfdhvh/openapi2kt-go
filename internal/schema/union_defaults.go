@@ -150,6 +150,79 @@ func (a *analyzer) unionDefaultInitializer(f field) (string, *diagnostic.Diagnos
 	return "`openapi-kt default model`(" + naming.Literal(encoded) + ")", nil
 }
 
+// composedUnionDefaultField plans the shared field type for a union-in-allOf
+// (Cartesian) field and validates its own default against the merged variant
+// shape. Ordinary allOf merges keep their existing default rejection.
+func (a *analyzer) composedUnionDefaultField(f field, name string, nested *[]Declaration, used map[string]bool) (TypeRef, *diagnostic.Diagnostic) {
+	// Discarded allOf contributions validate annotations without owning any
+	// declarations. Their scratch plan still needs a local declaration sink.
+	if nested == nil {
+		scratch := []Declaration{}
+		nested = &scratch
+	}
+	if used == nil {
+		used = map[string]bool{}
+	}
+	if a.objectDefaultSchemas == nil {
+		a.objectDefaultSchemas = map[*document.Value]bool{}
+	}
+	a.objectDefaultSchemas[f.Schema] = true
+	validation := *a
+	validation.warnings = nil
+	view, err := validation.objectCompositionUnion(f.Schema, f.Pointer, f.Depth)
+	if err != nil {
+		return TypeRef{}, err
+	}
+	if view == nil {
+		return TypeRef{}, unsupported(naming.Pointer(f.Pointer, "default"))
+	}
+	before := 0
+	if nested != nil {
+		before = len(*nested)
+	}
+	ty, _, err := a.modelPropertyType(f.Schema, name, f.Pointer, nested, used, f.Depth)
+	if err != nil {
+		return TypeRef{}, err
+	}
+	if nested == nil || len(*nested) != before+1 {
+		return TypeRef{}, unsupported(naming.Pointer(f.Pointer, "default"))
+	}
+	union, ok := (*nested)[before].(*ObjectUnion)
+	if !ok {
+		return TypeRef{}, unsupported(naming.Pointer(f.Pointer, "default"))
+	}
+	validation = *a
+	validation.warnings = nil
+	if _, err := validation.objectUnionEncoded(get(f.Schema, "default"), naming.Pointer(f.Pointer, "default"), f.Schema, f.Pointer, f.Depth, union); err != nil {
+		return TypeRef{}, err
+	}
+	return ty, nil
+}
+
+// composedUnionDefaultInitializer revalidates on a scratch plan so it never
+// appends declarations twice.
+func (a *analyzer) composedUnionDefaultInitializer(f field) (string, *diagnostic.Diagnostic) {
+	var scratch []Declaration
+	if _, _, err := a.modelPropertyType(f.Schema, "Validation", f.Pointer, &scratch, map[string]bool{}, f.Depth); err != nil {
+		return "", err
+	}
+	if len(scratch) != 1 {
+		return "", unsupported(naming.Pointer(f.Pointer, "default"))
+	}
+	union, ok := scratch[0].(*ObjectUnion)
+	if !ok {
+		return "", unsupported(naming.Pointer(f.Pointer, "default"))
+	}
+	encoded, err := a.objectUnionEncoded(get(f.Schema, "default"), naming.Pointer(f.Pointer, "default"), f.Schema, f.Pointer, f.Depth, union)
+	if err != nil {
+		return "", err
+	}
+	if encoded == "null" {
+		return "null", nil
+	}
+	return "`openapi-kt default model`(" + naming.Literal(encoded) + ")", nil
+}
+
 // planReferencedUnionDefault handles an ordinary direct local `$ref` field
 // whose resolved component is a root union. The union declaration is replanned
 // on a silenced copy so the component's own plan is untouched; the initializer
@@ -163,14 +236,35 @@ func (a *analyzer) planReferencedUnionDefault(plan referencedFieldDefault) (bool
 	if err != nil {
 		return false, err
 	}
-	if !has(source, "oneOf") && !has(source, "anyOf") {
+	if !has(source, "oneOf") && !has(source, "anyOf") && !has(source, "allOf") {
 		return false, nil
 	}
 	validation := *a
 	validation.warnings = nil
-	declaration, err := validation.rootUnion(source, "Validation", sourcePointer, map[string]bool{})
-	if err != nil {
-		return false, err
+	var declaration Declaration
+	if has(source, "allOf") && !has(source, "oneOf") && !has(source, "anyOf") {
+		// A composed component mirrors its standalone root plan, including the
+		// standalone null variant for an explicitly nullable root.
+		view, err := validation.objectCompositionUnion(source, sourcePointer, 0)
+		if err != nil {
+			return false, err
+		}
+		if view == nil {
+			return false, nil
+		}
+		model, err := validation.objectUnion(view, "Validation", 1, true)
+		if err != nil {
+			return false, err
+		}
+		if model == nil {
+			return false, unsupported(sourcePointer)
+		}
+		declaration = model
+	} else {
+		declaration, err = validation.rootUnion(source, "Validation", sourcePointer, map[string]bool{})
+		if err != nil {
+			return false, err
+		}
 	}
 	value := get(plan.Field.Schema, "default")
 	at := naming.Pointer(plan.Field.Pointer, "default")
@@ -206,6 +300,87 @@ func (a *analyzer) unionDeclarationEncoded(value *document.Value, at string, sou
 		return a.objectUnionEncoded(value, at, source, sourcePointer, depth, union)
 	}
 	return "", unsupported(at)
+}
+
+// composedObjectUnionEncoded accepts a Cartesian composed union (union-in-allOf).
+// The composed branches are recomputed so the selected variant validates against
+// its merged original shape; selection mirrors the emitted conjunction rules.
+func (a *analyzer) composedObjectUnionEncoded(value *document.Value, at string, source *document.Value, sourcePointer string, depth int, union *ObjectUnion) (string, *diagnostic.Diagnostic) {
+	if !union.Content() {
+		return "", unsupported(at)
+	}
+	if value.Kind() == document.Null {
+		if !union.NullVariant {
+			return "", invalid("A null default requires a nullable union.", at)
+		}
+		return "null", nil
+	}
+	composition, err := a.objectCompositionUnion(source, sourcePointer, depth)
+	if err != nil {
+		return "", err
+	}
+	if composition == nil || len(composition.Branches) != len(union.Variants) {
+		return "", unsupported(at)
+	}
+	if value.Kind() != document.Object {
+		return "", invalid("A union default must be a JSON object.", at)
+	}
+	index := -1
+	for _, rule := range union.TagCombinations {
+		matched := true
+		for _, match := range rule.Matches {
+			content, ok := unionTagContent(get(value, match.Wire))
+			if !ok || !slices.Contains(match.Values, content) {
+				matched = false
+				break
+			}
+		}
+		if matched {
+			index = rule.Index
+			break
+		}
+	}
+	if index < 0 {
+		for _, rule := range union.Presence {
+			if has(value, rule.Value) {
+				index = rule.Index
+				break
+			}
+		}
+	}
+	if index < 0 || index >= len(union.Variants) {
+		return "", invalid("A union default must select a known composed variant.", at)
+	}
+	variant := union.Variants[index]
+	if a.modelOrigins[variant] == nil || composition.Branches[index].Shape == nil {
+		return "", unsupported(at)
+	}
+	node, err := a.objectDefaultShapeNode(composition.Branches[index].Shape, a.modelPointers[variant], depth)
+	if err != nil {
+		return "", err
+	}
+	return node.value(value, at)
+}
+
+// unionTagContent mirrors the emitted `obj[key]?.jsonPrimitive?.content`
+// comparison, including the canonical spellings of number and boolean tokens.
+func unionTagContent(v *document.Value) (string, bool) {
+	if v == nil {
+		return "", false
+	}
+	switch v.Kind() {
+	case document.String:
+		return text(v), true
+	case document.Number:
+		number, ok := v.Numeric()
+		return string(number), ok
+	case document.Boolean:
+		flag, _ := v.Bool()
+		return strconv.FormatBool(flag), true
+	case document.Null:
+		return "null", true
+	}
+	return "", false
 }
 
 func (a *analyzer) primitiveUnionDefaultEncoded(f field, union *PrimitiveUnion) (string, *diagnostic.Diagnostic) {
@@ -257,7 +432,12 @@ func (a *analyzer) objectUnionEncoded(value *document.Value, at string, source *
 		}
 		return "null", nil
 	}
-	if !union.Content() || len(union.TagCombinations) != 0 || len(union.Tags) == 0 && len(union.Presence) == 0 {
+	if len(union.TagCombinations) != 0 {
+		// Cartesian composed variants select by conjoined tag pins; presence-only
+		// rules may coexist for pin-less variants.
+		return a.composedObjectUnionEncoded(value, at, source, sourcePointer, depth, union)
+	}
+	if !union.Content() || len(union.Tags) == 0 && len(union.Presence) == 0 {
 		return "", unsupported(at)
 	}
 	if value.Kind() != document.Object {
