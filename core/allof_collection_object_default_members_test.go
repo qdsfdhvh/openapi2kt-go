@@ -104,7 +104,6 @@ func TestAllOfCollectionObjectDefaultMemberGuards(t *testing.T) {
 	}
 	for _, member := range []string{
 		`{"type":"array","items":{"type":"array","items":` + allOfObjectMember + `,"default":[]}}`,
-		`{"$ref":"#/components/schemas/Rows"}`,
 		`{"type":"array","items":{"allOf":[{"$ref":"#/components/schemas/Target"}]}}`,
 	} {
 		input := schemas(`{"Target":` + allOfObjectMember + `,"Rows":{"type":"array","items":` + allOfObjectMember + `},"Holder":{"properties":{"v":` + allOfMemberField(member, `{}`) + `}}}`)

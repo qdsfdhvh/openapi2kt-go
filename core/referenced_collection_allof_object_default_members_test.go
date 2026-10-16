@@ -105,13 +105,12 @@ func TestReferencedCollectionAllOfMemberDiagnosticsAndGuards(t *testing.T) {
 		}
 	}
 	for _, rows := range []string{
-		`{"type":"array","items":` + allOfObjectMember + `}`,
 		`{"type":"array","items":{"$ref":"#/components/schemas/Rows"}}`,
 		`{"type":"array","items":{"$ref":"#/components/schemas/OtherRows"}}`,
 	} {
 		extra := aliases + `"OtherRows":{"type":"array","items":{"$ref":"#/components/schemas/Target"}},`
 		if _, err := core.GenerateWithDiagnostics(request(collectionMemberDocument(allOfObjectMember, rows, extra, member, `{}`), "Dto")); err == nil {
-			t.Fatal("bare/recursive/container reference expanded", rows)
+			t.Fatal("recursive/container reference expanded", rows)
 		}
 	}
 	counted := strings.Replace(collection, `"type":"array"`, `"type":"array","minItems":1`, 1)
@@ -137,6 +136,57 @@ func TestReferencedCollectionAllOfMemberContexts(t *testing.T) {
 				t.Fatal(field, err)
 			}
 		}
+	}
+}
+
+func TestReferencedCollectionBareAllOfMemberLeaf(t *testing.T) {
+	// A referenced collection with a bare inline ordinary allOf element leaf
+	// borrows the same retained constructor as the consuming-field role. The
+	// container declaration and warnings stay unchanged; only the annotation is added.
+	for _, tc := range []struct{ name, collection string }{
+		{"list", `{"type":"array","items":` + allOfObjectMember + `}`},
+		{"map", `{"type":"object","additionalProperties":` + allOfObjectMember + `}`},
+		{"mixed", `{"type":"array","items":{"type":"object","additionalProperties":` + allOfObjectMember + `}}`},
+		{"nested", `{"type":"array","items":{"type":"array","items":` + allOfObjectMember + `}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			value := `[{"label":"x"}]`
+			if tc.name == "map" {
+				value = `{"k":{"label":"x"}}`
+			} else if tc.name == "mixed" {
+				value = `[{"k":{"label":"x"}}]`
+			} else if tc.name == "nested" {
+				value = `[[{"label":"x"}]]`
+			}
+			input := collectionMemberDocument(allOfObjectMember, tc.collection, "", `{"$ref":"#/components/schemas/Rows"}`, `{"member":`+value+`}`)
+			for _, checked := range []bool{false, true} {
+				for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+					r := request(input, "Dto")
+					r.Options.Validation, r.Options.ModelStyle = checked, style
+					got, err := core.GenerateWithDiagnostics(r)
+					if err != nil {
+						t.Fatal(checked, style, err)
+					}
+					if text := source(t, got, "HolderDto"); !strings.Contains(text, "`openapi-kt model default ") {
+						t.Fatal(text)
+					}
+					// The bare leaf must still validate; a stray key fails at its member Pointer.
+					bad := collectionMemberDocument(allOfObjectMember, tc.collection, "", `{"$ref":"#/components/schemas/Rows"}`, `{"member":[{"label":false}]}`)
+					if tc.name == "map" {
+						bad = collectionMemberDocument(allOfObjectMember, tc.collection, "", `{"$ref":"#/components/schemas/Rows"}`, `{"member":{"k":{"label":false}}}`)
+					} else if tc.name == "mixed" {
+						bad = collectionMemberDocument(allOfObjectMember, tc.collection, "", `{"$ref":"#/components/schemas/Rows"}`, `{"member":[{"k":{"label":false}}]}`)
+					} else if tc.name == "nested" {
+						bad = collectionMemberDocument(allOfObjectMember, tc.collection, "", `{"$ref":"#/components/schemas/Rows"}`, `{"member":[[{"label":false}]]}`)
+					}
+					br := request(bad, "Dto")
+					br.Options.Validation = checked
+					if got, err := core.GenerateWithDiagnostics(br); err == nil || len(got.Artifacts.Files) != 0 {
+						t.Fatal("invalid bare leaf admitted", err)
+					}
+				}
+			}
+		})
 	}
 }
 

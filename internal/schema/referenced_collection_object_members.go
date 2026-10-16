@@ -6,12 +6,21 @@ import (
 	"openapi-kt/internal/naming"
 )
 
-// Route collection roots with an inline tree and a named allOf element ref.
-// Internal terminal binding can still be pending when the enclosing object is
-// planned, so that element role stays separate.
+// Route collection roots with an inline tree and an eligible allOf element.
+// A named/internal element reference keeps its original hop. A bare inline allOf
+// leaf owns its own original node, matching the consuming-field and inline
+// collection-member roles; the enclosing shared type plan still owns its
+// constructor. Internal element-reference binding can be pending when the
+// enclosing object is planned, so that role stays with the shared final linker.
 func (a *analyzer) namedAllOfCollectionMemberElement(v *document.Value) *document.Value {
 	leaf := a.inlineReferencedAllOfElement(v)
 	if leaf == nil {
+		// A bare inline allOf leaf has no reference edge of its own. The shared
+		// type plan must already retain a unique nonempty constructor under this
+		// original element; this detector only scopes the source permission.
+		if bare := inlineAllOfDefaultElement(v); bare != nil && composedModelCandidate(bare) {
+			return bare
+		}
 		return nil
 	}
 	v = leaf
