@@ -98,8 +98,9 @@ func TestAllOfObjectDefaultMemberContexts(t *testing.T) {
 		// The member's own annotation remains validated even when omitted.
 		bad := allOfMemberField(strings.TrimSuffix(allOfObjectMember, "}")+`,"default":{"label":false}}`, `{}`)
 		carrierDefaultFailure(t, carrierDefaultDocument(bad, false), checked, "E_SCHEMA_INVALID", "/components/schemas/Holder/properties/v/properties/member/default/label")
-		// An actual member ref and an annotation-only wrapper keep separate roles.
-		for _, member := range []string{`{"$ref":"#/components/schemas/Target"}`, `{"allOf":[{"$ref":"#/components/schemas/Target"}]}`} {
+		// Annotation-only wrappers keep their separate role; direct named refs
+		// are covered by TestReferencedAllOfObjectDefaultMembers.
+		for _, member := range []string{`{"allOf":[{"$ref":"#/components/schemas/Target"}]}`} {
 			input := schemas(`{"Target":` + allOfObjectMember + `,"Holder":{"properties":{"v":` + allOfMemberField(member, value) + `}}}`)
 			r := request(input, "Dto")
 			r.Options.Validation = checked
