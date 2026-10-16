@@ -9,22 +9,22 @@ import (
 
 func TestReferencedAllOfObjectDefaultMembersNativeParityAndPreservation(t *testing.T) {
 	const target = `{"allOf":[{"properties":{"name":{"type":"string"}},"required":["name"]},{"properties":{"n":{"type":"integer","default":2}}}]}`
-	for _, reference := range []string{"Target", "Outer", "Owner/properties/node", "InternalAlias", "Hops/properties/first", "Bridge", "Rows", "RowsAlias"} {
+	for _, reference := range []string{"Target", "Outer", "Owner/properties/node", "InternalAlias", "Hops/properties/first", "Bridge", "Rows", "RowsAlias", "RowsBridge", "RowsOuter", "RowsHops/properties/first", "Owner/properties/rows", "InternalRowsAlias"} {
 		for _, collection := range []bool{false, true} {
-			namedCollection := reference == "Rows" || reference == "RowsAlias"
-			if namedCollection && collection {
+			collectionMember := reference == "Rows" || reference == "RowsAlias" || reference == "RowsBridge" || reference == "RowsOuter" || reference == "RowsHops/properties/first" || reference == "Owner/properties/rows" || reference == "InternalRowsAlias"
+			if collectionMember && collection {
 				continue
 			}
 			member := `{"$ref":"#/components/schemas/` + reference + `"}`
 			valid, invalid, tail := `{"member":{"name":"x"}}`, `{"member":{"name":false}}`, "/name"
-			if collection || namedCollection {
+			if collection || collectionMember {
 				if collection {
 					member = `{"type":"array","items":{"type":"object","additionalProperties":` + member + `}}`
 				}
 				valid, invalid, tail = `{"member":[{"k":{"name":"x"}}]}`, `{"member":[{"k":{"name":false}}]}`, "/0/k/name"
 			}
 			document := func(value string) []byte {
-				return []byte(`{"openapi":"3.1.0","components":{"schemas":{"Target":` + target + `,"Owner":{"properties":{"node":` + target + `}},"Hops":{"properties":{"first":{"$ref":"#/components/schemas/Hops/properties/second"},"second":{"$ref":"#/components/schemas/InternalAlias"}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/first"},"InternalAlias":{"$ref":"#/components/schemas/Owner/properties/node"},"Alias":{"$ref":"#/components/schemas/Target"},"Outer":{"$ref":"#/components/schemas/Alias"},"Rows":{"type":"array","items":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Target"}}},"RowsAlias":{"$ref":"#/components/schemas/Rows"},"Holder":{"properties":{"cfg":{"properties":{"member":` + member + `},"default":` + value + `}}}}}}`)
+				return []byte(`{"openapi":"3.1.0","components":{"schemas":{"Target":` + target + `,"Owner":{"properties":{"node":` + target + `,"rows":{"type":"array","items":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Target"}}}}},"InternalRowsAlias":{"$ref":"#/components/schemas/Owner/properties/rows"},"Hops":{"properties":{"first":{"$ref":"#/components/schemas/Hops/properties/second"},"second":{"$ref":"#/components/schemas/InternalAlias"}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/first"},"InternalAlias":{"$ref":"#/components/schemas/Owner/properties/node"},"Alias":{"$ref":"#/components/schemas/Target"},"Outer":{"$ref":"#/components/schemas/Alias"},"Rows":{"type":"array","items":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Target"}}},"RowsAlias":{"$ref":"#/components/schemas/Rows"},"RowsHops":{"properties":{"first":{"$ref":"#/components/schemas/RowsHops/properties/second"},"second":{"$ref":"#/components/schemas/Rows"}}},"RowsBridge":{"$ref":"#/components/schemas/RowsHops/properties/first"},"RowsOuter":{"$ref":"#/components/schemas/RowsBridge"},"Holder":{"properties":{"cfg":{"properties":{"member":` + member + `},"default":` + value + `}}}}}}`)
 			}
 			for _, checked := range []bool{false, true} {
 				for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {

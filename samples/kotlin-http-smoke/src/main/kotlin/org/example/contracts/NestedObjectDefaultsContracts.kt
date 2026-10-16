@@ -69,6 +69,12 @@ private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMa
     "code" to value?.code, "when" to value?.`when`, "tags" to value?.tags,
     "counts" to value?.counts, "child" to value?.child, "childFlag" to value?.child?.flag,
     "leaf" to value?.leaf?.z, "note" to value?.note, "composed" to value?.composed, "linked" to value?.linked,
+    "viaBorrowedRows" to value?.viaBorrowedRows, "viaBorrowedNull" to value?.viaBorrowedNull,
+    "viaBorrowedMap" to value?.viaBorrowedMap, "viaBorrowedGrid" to value?.viaBorrowedGrid,
+    "viaInternalRows" to value?.viaInternalRows, "viaInternalNull" to value?.viaInternalNull,
+    "viaInternalMap" to value?.viaInternalMap, "viaInternalGrid" to value?.viaInternalGrid,
+    "viaCollectionRows" to value?.viaCollectionRows, "viaCollectionRowsNull" to value?.viaCollectionRowsNull,
+    "viaCollectionMap" to value?.viaCollectionMap, "viaCollectionGrid" to value?.viaCollectionGrid,
     "namedRows" to value?.namedRows, "namedMap" to value?.namedMap, "namedMapValues" to value?.namedMapValues, "namedGrid" to value?.namedGrid,
     "refRows" to value?.refRows, "refMap" to value?.refMap, "refGrid" to value?.refGrid, "refVariants" to value?.refVariants,
     "memberRows" to value?.memberRows, "memberMap" to value?.memberMap, "memberGrid" to value?.memberGrid,
@@ -122,6 +128,15 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.namedRows?.single()?.label == "outer named rows" && value.cfg?.namedRows?.single()?.child?.flag == true)
     check(value.cfg?.namedMap == null && value.cfg?.namedMapValues?.get("value")?.label == "outer named map" && value.cfg?.namedMapValues?.get("none") == null)
     check(value.cfg?.namedGrid?.single()?.get("k")?.label == "outer named grid")
+    check(value.cfg?.viaCollectionRows?.single()?.label == "outer bridge rows" && value.cfg?.viaCollectionRows?.single()?.child?.flag == true)
+    check(value.cfg?.viaCollectionRowsNull == null && value.cfg?.viaCollectionMap?.get("value")?.label == "outer bridge map" && value.cfg?.viaCollectionMap?.get("none") == null)
+    check(value.cfg?.viaCollectionGrid?.single()?.get("k")?.label == "outer bridge grid")
+    check(value.cfg?.viaInternalRows?.single()?.label == "outer internal rows" && value.cfg?.viaInternalRows?.single()?.child?.flag == true)
+    check(value.cfg?.viaInternalNull == null && value.cfg?.viaInternalMap?.get("value")?.label == "outer internal map" && value.cfg?.viaInternalMap?.get("none") == null)
+    check(value.cfg?.viaInternalGrid?.single()?.get("k")?.label == "outer internal grid")
+    check(value.cfg?.viaBorrowedRows?.single()?.label == "outer borrowed rows" && value.cfg?.viaBorrowedRows?.single()?.child?.flag == true)
+    check(value.cfg?.viaBorrowedNull == null && value.cfg?.viaBorrowedMap?.get("value")?.label == "outer borrowed map" && value.cfg?.viaBorrowedMap?.get("none") == null)
+    check(value.cfg?.viaBorrowedGrid?.single()?.get("k")?.label == "outer borrowed grid")
     check(value.requiredCfg.id == "x")
     check(value.allOfCfg?.z == "merged" && value.allOfCfg?.count == 5 && value.allOfCfg?.meta?.flag == true)
     check(value.allOfNull == null)
@@ -154,6 +169,20 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.namedRows?.single()?.child !== other.cfg?.namedRows?.single()?.child)
     check(value.cfg?.namedMapValues?.get("value") !== other.cfg?.namedMapValues?.get("value"))
     check(value.cfg?.namedGrid?.single()?.get("k") !== other.cfg?.namedGrid?.single()?.get("k"))
+    check(value.cfg?.viaCollectionRows?.single() !== other.cfg?.viaCollectionRows?.single())
+    check(value.cfg?.viaCollectionRows?.single()?.child !== other.cfg?.viaCollectionRows?.single()?.child)
+    check(value.cfg?.viaCollectionMap?.get("value") !== other.cfg?.viaCollectionMap?.get("value"))
+    check(value.cfg?.viaCollectionGrid?.single()?.get("k") !== other.cfg?.viaCollectionGrid?.single()?.get("k"))
+    check(value.cfg?.viaInternalRows !== other.cfg?.viaInternalRows && value.cfg?.viaInternalMap !== other.cfg?.viaInternalMap)
+    check(value.cfg?.viaInternalRows?.single() !== other.cfg?.viaInternalRows?.single())
+    check(value.cfg?.viaInternalRows?.single()?.child !== other.cfg?.viaInternalRows?.single()?.child)
+    check(value.cfg?.viaInternalMap?.get("value") !== other.cfg?.viaInternalMap?.get("value"))
+    check(value.cfg?.viaInternalGrid?.single()?.get("k") !== other.cfg?.viaInternalGrid?.single()?.get("k"))
+    check(value.cfg?.viaBorrowedRows !== other.cfg?.viaBorrowedRows && value.cfg?.viaBorrowedMap !== other.cfg?.viaBorrowedMap)
+    check(value.cfg?.viaBorrowedRows?.single() !== other.cfg?.viaBorrowedRows?.single())
+    check(value.cfg?.viaBorrowedRows?.single()?.child !== other.cfg?.viaBorrowedRows?.single()?.child)
+    check(value.cfg?.viaBorrowedMap?.get("value") !== other.cfg?.viaBorrowedMap?.get("value"))
+    check(value.cfg?.viaBorrowedGrid?.single()?.get("k") !== other.cfg?.viaBorrowedGrid?.single()?.get("k"))
     // A required object default keeps its constructor argument and no initializer.
     check(!HolderDto.serializer().descriptor.isElementOptional(1))
     // Fresh nested trees per instance, not one shared mutable default.
@@ -177,6 +206,12 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(fresh.refGrid?.single()?.get("k")?.label == "ref grid member" && fresh.refVariants?.single()?.label == "ref variant member")
     check(fresh.namedRows?.single()?.label == "named rows member" && fresh.namedMap == null)
     check(fresh.namedMapValues?.get("value")?.label == "named map member" && fresh.namedGrid?.single()?.get("k")?.label == "named grid member")
+    check(fresh.viaCollectionRows?.single()?.label == "bridge rows member" && fresh.viaCollectionRowsNull == null)
+    check(fresh.viaCollectionMap?.get("value")?.label == "bridge map member" && fresh.viaCollectionGrid?.single()?.get("k")?.label == "bridge grid member")
+    check(fresh.viaInternalRows?.single()?.label == "internal rows member" && fresh.viaInternalNull == null)
+    check(fresh.viaInternalMap?.get("value")?.label == "internal map member" && fresh.viaInternalGrid?.single()?.get("k")?.label == "internal grid member")
+    check(fresh.viaBorrowedRows?.single()?.label == "borrowed rows member" && fresh.viaBorrowedNull == null)
+    check(fresh.viaBorrowedMap?.get("value")?.label == "borrowed map member" && fresh.viaBorrowedGrid?.single()?.get("k")?.label == "borrowed grid member")
     if (checked) {
         nestedObjectReject("enum") { HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x"), cfg = HolderDto.Cfg(name = "n", code = 9)) }
     } else {
@@ -227,6 +262,39 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","namedMap":null}}""").cfg?.namedMap == null)
         check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","namedRows":[{}]}}""") }.isFailure)
         check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","namedRows":[null]}}""") }.isFailure)
+        check(overridden.cfg?.viaCollectionRows?.single()?.label == "bridge rows member" && overridden.cfg?.viaCollectionMap?.get("value")?.label == "bridge map member")
+        val bridged = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaCollectionRows":[{"label":"replacement"}],"viaCollectionRowsNull":[{"label":"set"}],"viaCollectionMap":{"nil":null,"new":{"label":"map"}},"viaCollectionGrid":[{"new":{"label":"grid"}}]}}""")
+        check(bridged.cfg?.viaCollectionRows?.single()?.label == "replacement" && bridged.cfg?.viaCollectionRows?.single()?.child?.flag == true)
+        check(bridged.cfg?.viaCollectionRowsNull?.single()?.label == "set")
+        check(bridged.cfg?.viaCollectionMap?.keys == setOf("nil", "new") && bridged.cfg?.viaCollectionMap?.get("nil") == null && bridged.cfg?.viaCollectionMap?.get("new")?.count == 2)
+        check(bridged.cfg?.viaCollectionGrid?.single()?.keys == setOf("new") && bridged.cfg?.viaCollectionGrid?.single()?.get("new")?.count == 2)
+        check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), bridged))) == nestedObjectHolderFields(bridged))
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaCollectionRowsNull":null}}""").cfg?.viaCollectionRowsNull == null)
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaCollectionRows":[]}}""").cfg?.viaCollectionRows?.isEmpty() == true)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaCollectionRows":[{}]}}""") }.isFailure)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaCollectionRows":[null]}}""") }.isFailure)
+        check(overridden.cfg?.viaInternalRows?.single()?.label == "internal rows member" && overridden.cfg?.viaInternalMap?.get("value")?.label == "internal map member")
+        val internal = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaInternalRows":[{"label":"replacement"}],"viaInternalNull":[{"label":"set"}],"viaInternalMap":{"nil":null,"new":{"label":"map"}},"viaInternalGrid":[{"new":{"label":"grid"}}]}}""")
+        check(internal.cfg?.viaInternalRows?.single()?.label == "replacement" && internal.cfg?.viaInternalRows?.single()?.child?.flag == true)
+        check(internal.cfg?.viaInternalNull?.single()?.label == "set")
+        check(internal.cfg?.viaInternalMap?.keys == setOf("nil", "new") && internal.cfg?.viaInternalMap?.get("nil") == null && internal.cfg?.viaInternalMap?.get("new")?.count == 2)
+        check(internal.cfg?.viaInternalGrid?.single()?.keys == setOf("new") && internal.cfg?.viaInternalGrid?.single()?.get("new")?.count == 2)
+        check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), internal))) == nestedObjectHolderFields(internal))
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaInternalNull":null}}""").cfg?.viaInternalNull == null)
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaInternalRows":[]}}""").cfg?.viaInternalRows?.isEmpty() == true)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaInternalRows":[{}]}}""") }.isFailure)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaInternalRows":[null]}}""") }.isFailure)
+        check(overridden.cfg?.viaBorrowedRows?.single()?.label == "borrowed rows member" && overridden.cfg?.viaBorrowedMap?.get("value")?.label == "borrowed map member")
+        val borrowed = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaBorrowedRows":[{"label":"replacement"}],"viaBorrowedNull":[{"label":"set"}],"viaBorrowedMap":{"nil":null,"new":{"label":"map"}},"viaBorrowedGrid":[{"new":{"label":"grid"}}]}}""")
+        check(borrowed.cfg?.viaBorrowedRows?.single()?.label == "replacement" && borrowed.cfg?.viaBorrowedRows?.single()?.child?.flag == true)
+        check(borrowed.cfg?.viaBorrowedNull?.single()?.label == "set")
+        check(borrowed.cfg?.viaBorrowedMap?.keys == setOf("nil", "new") && borrowed.cfg?.viaBorrowedMap?.get("nil") == null && borrowed.cfg?.viaBorrowedMap?.get("new")?.count == 2)
+        check(borrowed.cfg?.viaBorrowedGrid?.single()?.keys == setOf("new") && borrowed.cfg?.viaBorrowedGrid?.single()?.get("new")?.count == 2)
+        check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), borrowed))) == nestedObjectHolderFields(borrowed))
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaBorrowedNull":null}}""").cfg?.viaBorrowedNull == null)
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaBorrowedRows":[]}}""").cfg?.viaBorrowedRows?.isEmpty() == true)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaBorrowedRows":[{}]}}""") }.isFailure)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaBorrowedRows":[null]}}""") }.isFailure)
         val chainOverride = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaChain":{"label":"replacement"},"viaChainNull":{"label":"set"},"viaNamedChain":{"label":"named"}}}""")
         check(chainOverride.cfg?.viaChain?.label == "replacement" && chainOverride.cfg?.viaChain?.child?.flag == true)
         check(chainOverride.cfg?.viaChainNull?.label == "set" && chainOverride.cfg?.viaNamedChain?.label == "named")
@@ -269,13 +337,19 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["cfg"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["allOfCfg"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["aliasCfg"] === JsonNull)
-        val aliasUpdate = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"member":{"label":"update"},"owned":{"label":"owned update"},"chained":{"label":"chain update"},"rows":[{"label":"rows update"}],"refs":[{"label":"refs update"}],"namedRows":[{"label":"named update"}]}}""").aliasCfg
+        val aliasUpdate = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"member":{"label":"update"},"owned":{"label":"owned update"},"chained":{"label":"chain update"},"rows":[{"label":"rows update"}],"refs":[{"label":"refs update"}],"namedRows":[{"label":"named update"}],"collectionBridgeRows":[{"label":"bridge update"}],"collectionInternalRows":[{"label":"internal update"}],"collectionEntityRows":[{"label":"entity update"}]}}""").aliasCfg
         check(aliasUpdate is Patch.Value && aliasUpdate.value.member?.label == "update" && aliasUpdate.value.member?.count == 2)
         check(aliasUpdate.value.owned?.label == "owned update" && aliasUpdate.value.owned?.child?.flag == true)
         check(aliasUpdate.value.chained?.label == "chain update" && aliasUpdate.value.chained?.child?.flag == true)
         check(aliasUpdate.value.rows?.single()?.label == "rows update" && aliasUpdate.value.rows?.single()?.count == 2)
         check(aliasUpdate.value.refs?.single()?.label == "refs update" && aliasUpdate.value.refs?.single()?.child?.flag == true)
         check(aliasUpdate.value.namedRows?.single()?.label == "named update" && aliasUpdate.value.namedRows?.single()?.child?.flag == true)
+        check(aliasUpdate.value.collectionBridgeRows?.single()?.label == "bridge update" && aliasUpdate.value.collectionBridgeRows?.single()?.child?.flag == true)
+        check(aliasUpdate.value.collectionInternalRows?.single()?.label == "internal update" && aliasUpdate.value.collectionInternalRows?.single()?.child?.flag == true)
+        check(aliasUpdate.value.collectionEntityRows?.single()?.label == "entity update" && aliasUpdate.value.collectionEntityRows?.single()?.child?.flag == true)
+        check(runCatching { codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"collectionEntityRows":[{}]}}""") }.isFailure)
+        check(runCatching { codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"collectionInternalRows":[{}]}}""") }.isFailure)
+        check(runCatching { codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"collectionBridgeRows":[{}]}}""") }.isFailure)
         check(runCatching { codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"namedRows":[{}]}}""") }.isFailure)
         check(runCatching { codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"refs":[{}]}}""") }.isFailure)
         check(runCatching { codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"rows":[{}]}}""") }.isFailure)

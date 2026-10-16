@@ -41,6 +41,15 @@ fun main() = runBlocking {
     check(optimized.cfg?.namedRows?.single()?.label == "outer named rows" && optimized.cfg?.namedRows?.single()?.child?.flag == true)
     check(optimized.cfg?.namedMap == null && optimized.cfg?.namedMapValues?.get("value")?.label == "outer named map")
     check(optimized.cfg?.namedGrid?.single()?.get("k")?.label == "outer named grid")
+    check(optimized.cfg?.viaCollectionRows?.single()?.label == "outer bridge rows" && optimized.cfg?.viaCollectionRows?.single()?.child?.flag == true)
+    check(optimized.cfg?.viaCollectionRowsNull == null && optimized.cfg?.viaCollectionMap?.get("value")?.label == "outer bridge map")
+    check(optimized.cfg?.viaCollectionGrid?.single()?.get("k")?.label == "outer bridge grid")
+    check(optimized.cfg?.viaInternalRows?.single()?.label == "outer internal rows" && optimized.cfg?.viaInternalRows?.single()?.child?.flag == true)
+    check(optimized.cfg?.viaInternalNull == null && optimized.cfg?.viaInternalMap?.get("value")?.label == "outer internal map")
+    check(optimized.cfg?.viaInternalGrid?.single()?.get("k")?.label == "outer internal grid")
+    check(optimized.cfg?.viaBorrowedRows?.single()?.label == "outer borrowed rows" && optimized.cfg?.viaBorrowedRows?.single()?.child?.flag == true)
+    check(optimized.cfg?.viaBorrowedNull == null && optimized.cfg?.viaBorrowedMap?.get("value")?.label == "outer borrowed map")
+    check(optimized.cfg?.viaBorrowedGrid?.single()?.get("k")?.label == "outer borrowed grid")
     nestedObjectDefaultsContracts(CHECKED)
 }
 KOTLIN
