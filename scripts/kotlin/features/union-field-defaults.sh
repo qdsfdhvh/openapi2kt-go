@@ -22,6 +22,9 @@ fun main() = runBlocking {
     val optimized = org.example.uniondefopt.models.HolderDto(requiredUnion = org.example.uniondefopt.models.HolderDto.StringRequiredUnion("r"))
     check(optimized.str is org.example.uniondefopt.models.HolderDto.StringStr)
     check(optimized.i is org.example.uniondefopt.models.HolderDto.IntI)
+    val closed = optimized.closed as org.example.uniondefopt.models.ClosedDto.Variant1
+    check(closed.value == "closed" && closed.age == 7 && closed.meta?.flag == true)
+    check((optimized.closedNullable as org.example.uniondefopt.models.ClosedNullableDto.Variant2).value == 8 && optimized.closedNil == null)
     unionFieldDefaultsContracts(CHECKED)
 }
 KOTLIN

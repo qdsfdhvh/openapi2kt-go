@@ -31,11 +31,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import org.example.uniondef.UnionDef
+import org.example.uniondef.api.models.PatchClosedInputDto
 import org.example.uniondef.api.models.WatchHoldersEventDto
+import org.example.uniondef.models.ClosedDto
+import org.example.uniondef.models.ClosedNullableDto
 import org.example.uniondef.models.ComposedUnionDto
 import org.example.uniondef.models.HolderDto
+import org.example.uniondef.models.Patch
 import org.example.uniondef.models.RefObjUnionDto
 import org.example.uniondef.models.StringRefUnionDto
 import org.example.uniondef.models.RequiredCfgDto
@@ -70,6 +77,7 @@ private fun unionFieldDefaultsFields(value: HolderDto): Map<String, Any?> = link
     "objUnion" to value.objUnion, "constUnion" to value.constUnion, "presUnion" to value.presUnion,
     "refUnion" to value.refUnion, "refObjUnion" to value.refObjUnion,
     "composedInline" to value.composedInline, "composedRef" to value.composedRef,
+    "closed" to value.closed, "closedNullable" to value.closedNullable, "closedNil" to value.closedNil,
 )
 
 suspend fun unionFieldDefaultsContracts(checked: Boolean) {
@@ -93,11 +101,35 @@ suspend fun unionFieldDefaultsContracts(checked: Boolean) {
     check(value.composedInline is HolderDto.ComposedInline.Note && (value.composedInline as HolderDto.ComposedInline.Note).body == "x")
     check(value.composedRef is ComposedUnionDto.Count4 && (value.composedRef as ComposedUnionDto.Count4).count == 7)
     check(!HolderDto.serializer().descriptor.isElementOptional(5))
-    for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
-        val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }
+    val closed = value.closed as ClosedDto.Variant1
+    check(closed.value == "closed" && closed.age == 7 && closed.meta?.flag == true)
+    check((value.closedNullable as ClosedNullableDto.Variant2).value == 8 && value.closedNil == null)
+    val fresh = HolderDto(requiredUnion = HolderDto.StringRequiredUnion("r")).closed as ClosedDto.Variant1
+    check(fresh !== closed && fresh.meta !== closed.meta)
+    for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) for ((discriminator, arrays) in listOf("type" to false, "_kind" to false, "type" to true)) {
+        val codec = Json { encodeDefaults = defaults; explicitNulls = nulls; classDiscriminator = discriminator; useArrayPolymorphism = arrays }
         check(runCatching { codec.decodeFromString<HolderDto>("{}") }.isFailure)
         val missing = codec.decodeFromString<HolderDto>("""{"requiredUnion":"r"}""")
         check(unionFieldDefaultsFields(missing) == unionFieldDefaultsFields(value))
+        // Schema annotations use Json.Default; the resulting typed value honors
+        // this caller's discriminator or array polymorphism on every use.
+        val closedWire = codec.encodeToJsonElement(ClosedDto.serializer(), closed)
+        if (arrays) check((closedWire as JsonArray).first() == JsonPrimitive("Variant1"))
+        else check((closedWire as JsonObject)[discriminator] == JsonPrimitive("Variant1"))
+        check(codec.decodeFromJsonElement(ClosedDto.serializer(), closedWire) == closed)
+        val replacement = codec.encodeToJsonElement(ClosedDto.serializer(), ClosedDto.Variant2(value = 6))
+        val changed = codec.decodeFromJsonElement(HolderDto.serializer(), JsonObject(mapOf("requiredUnion" to JsonPrimitive("r"), "closed" to replacement)))
+        check((changed.closed as ClosedDto.Variant2).value == 6)
+        check(codec.decodeFromString<HolderDto>("""{"requiredUnion":"r","closed":null}""").closed == null)
+        val unknownClosed = if (arrays) JsonArray(listOf(JsonPrimitive("future"), JsonObject(emptyMap())))
+            else JsonObject(mapOf(discriminator to JsonPrimitive("future")))
+        unionFieldDefaultsReject { codec.decodeFromJsonElement(ClosedDto.serializer(), unknownClosed) }
+        val absent = codec.decodeFromString<PatchClosedInputDto>("{}")
+        check(absent.closed == Patch.Absent && (codec.encodeToJsonElement(PatchClosedInputDto.serializer(), absent) as JsonObject).isEmpty())
+        val cleared = codec.decodeFromString<PatchClosedInputDto>("""{"closed":null}""")
+        check(cleared.closed == Patch.Null && (codec.encodeToJsonElement(PatchClosedInputDto.serializer(), cleared) as JsonObject)["closed"] === JsonNull)
+        val update = codec.decodeFromJsonElement(PatchClosedInputDto.serializer(), JsonObject(mapOf("closed" to replacement)))
+        check((update.closed as Patch.Value<*>).value is ClosedDto.Variant2)
         val overridden = codec.decodeFromString<HolderDto>("""{"requiredUnion":"z","str":1,"i":"s","n":2.5,"b":false}""")
         check(overridden.requiredUnion is HolderDto.StringRequiredUnion && (overridden.requiredUnion as HolderDto.StringRequiredUnion).value == "z")
         check(overridden.str is HolderDto.IntStr && (overridden.str as HolderDto.IntStr).value == 1L)
@@ -121,6 +153,7 @@ private suspend fun unionFieldDefaultsWire(codec: Json, value: HolderDto, checke
     var payload = codec.encodeToString(HolderDto.serializer(), value)
     var calls = 0
     var callbacks = 0
+    var expectedPatch = JsonObject(emptyMap())
     val engine = UnionFieldDefaultsEngine(MockEngineConfig().apply { addHandler { request ->
         calls++
         check(callbacks == calls) { "Callback must run exactly once before dispatch" }
@@ -128,6 +161,10 @@ private suspend fun unionFieldDefaultsWire(codec: Json, value: HolderDto, checke
             "/holder" -> {
                 check(codec.parseToJsonElement(unionFieldDefaultsBody(request.body)) == codec.encodeToJsonElement(HolderDto.serializer(), value))
                 respond(payload, HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+            }
+            "/closed" -> {
+                check(codec.parseToJsonElement(unionFieldDefaultsBody(request.body)) == expectedPatch)
+                respond("", HttpStatusCode.NoContent)
             }
             "/required" -> {
                 val body = codec.encodeToString(RequiredCfgDto.serializer(), RequiredCfgDto(u = RequiredCfgDto.StringU("v")))
@@ -154,6 +191,10 @@ private suspend fun unionFieldDefaultsWire(codec: Json, value: HolderDto, checke
         val api = UnionDef(http, "http://example.test/", codec).defaults
         check(unionFieldDefaultsFields(api.sendHolder(value) { callbacks++ }) == unionFieldDefaultsFields(value))
         check(api.sendRequired(RequiredCfgDto(u = RequiredCfgDto.StringU("v"))) { callbacks++ }.u is RequiredCfgDto.StringU)
+        for (patch in listOf(PatchClosedInputDto(), PatchClosedInputDto(closed = Patch.Null), PatchClosedInputDto(closed = Patch.Value(ClosedDto.Variant2(value = 5))))) {
+            expectedPatch = codec.encodeToJsonElement(PatchClosedInputDto.serializer(), patch) as JsonObject
+            api.patchClosed(patch) { callbacks++ }
+        }
         val before = calls
         val beforeCallbacks = callbacks
         val stream = api.watchHolders { callbacks++ }

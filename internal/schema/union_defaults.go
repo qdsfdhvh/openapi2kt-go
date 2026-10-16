@@ -242,6 +242,12 @@ func (a *analyzer) planReferencedUnionDefault(plan referencedFieldDefault) (bool
 	validation := *a
 	validation.warnings = nil
 	var declaration Declaration
+	rootName := "Validation"
+	if owner := a.componentsByOriginalSchema(source); owner != nil {
+		// Closed subtype names reserve their actual root's name. A scratch
+		// owner spelling can otherwise change both ClassName and SerialName.
+		rootName = owner.Name
+	}
 	if has(source, "allOf") && !has(source, "oneOf") && !has(source, "anyOf") {
 		// A composed component mirrors its standalone root plan, including the
 		// standalone null variant for an explicitly nullable root.
@@ -252,7 +258,7 @@ func (a *analyzer) planReferencedUnionDefault(plan referencedFieldDefault) (bool
 		if view == nil {
 			return false, nil
 		}
-		model, err := validation.objectUnion(view, "Validation", 1, true)
+		model, err := validation.objectUnion(view, rootName, 1, true)
 		if err != nil {
 			return false, err
 		}
@@ -261,13 +267,19 @@ func (a *analyzer) planReferencedUnionDefault(plan referencedFieldDefault) (bool
 		}
 		declaration = model
 	} else {
-		declaration, err = validation.rootUnion(source, "Validation", sourcePointer, map[string]bool{})
+		declaration, err = validation.rootUnion(source, rootName, sourcePointer, map[string]bool{})
 		if err != nil {
 			return false, err
 		}
 	}
 	value := get(plan.Field.Schema, "default")
 	at := naming.Pointer(plan.Field.Pointer, "default")
+	if union, ok := declaration.(*ObjectUnion); ok && !union.Content() && value.Kind() != document.Null {
+		target := defaultBacking(plan.Type).WithoutRootNull()
+		if target.Kind != Named || target.Element != nil || target.Name != a.options.PackageName+".models."+union.ClassName {
+			return true, unsupported(at)
+		}
+	}
 	encoded, err := validation.unionDeclarationEncoded(value, at, source, sourcePointer, plan.Field.Depth, declaration)
 	if err != nil {
 		return false, err
@@ -437,7 +449,10 @@ func (a *analyzer) objectUnionEncoded(value *document.Value, at string, source *
 		// rules may coexist for pin-less variants.
 		return a.composedObjectUnionEncoded(value, at, source, sourcePointer, depth, union)
 	}
-	if !union.Content() || len(union.Tags) == 0 && len(union.Presence) == 0 {
+	if !union.Content() {
+		return a.closedObjectUnionEncoded(value, at, source, sourcePointer, depth, union)
+	}
+	if len(union.Tags) == 0 && len(union.Presence) == 0 {
 		return "", unsupported(at)
 	}
 	if value.Kind() != document.Object {

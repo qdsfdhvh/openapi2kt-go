@@ -318,6 +318,18 @@
               "a": "x"
             }
           },
+          "closed": {
+            "$ref": "#/components/schemas/Closed",
+            "default": {"type": "Variant1", "value": "closed", "meta": {"flag": true}}
+          },
+          "closedNullable": {
+            "$ref": "#/components/schemas/ClosedNullable",
+            "default": {"type": "Variant2", "value": 8}
+          },
+          "closedNil": {
+            "$ref": "#/components/schemas/ClosedNullable",
+            "default": null
+          },
           "composedInline": {
             "allOf": [
               {
@@ -380,6 +392,26 @@
         "enum": [
           "s1",
           "s2"
+        ]
+      },
+      "Closed": {
+        "oneOf": [
+          {
+            "properties": {
+              "value": {"type": "string"},
+              "age": {"type": "integer", "default": 7},
+              "meta": {"properties": {"flag": {"type": "boolean"}}}
+            },
+            "required": ["value"]
+          },
+          {"properties": {"value": {"type": "integer"}}, "required": ["value"]}
+        ]
+      },
+      "ClosedNullable": {
+        "nullable": true,
+        "anyOf": [
+          {"properties": {"value": {"type": "string"}}, "required": ["value"]},
+          {"properties": {"value": {"type": "integer"}}, "required": ["value"]}
         ]
       },
       "RefUnion": {
@@ -542,6 +574,24 @@
             }
           }
         }
+      }
+    },
+    "/closed": {
+      "patch": {
+        "operationId": "patchClosed",
+        "tags": ["defaults"],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {
+            "type": "object",
+            "properties": {"closed": {
+              "$ref": "#/components/schemas/Closed",
+              "nullable": true,
+              "default": {"type": "Variant1", "value": "patch"}
+            }}
+          }}}
+        },
+        "responses": {"204": {"description": "Updated"}}
       }
     },
     "/events": {
