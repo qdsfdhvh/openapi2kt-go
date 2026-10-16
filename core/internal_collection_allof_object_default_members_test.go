@@ -84,7 +84,6 @@ func TestInternalCollectionAllOfMemberDiagnosticsAndGuards(t *testing.T) {
 	}
 	for _, rows := range []string{
 		`{"type":"array","items":` + allOfObjectMember + `}`,
-		`{"type":"array","items":{"$ref":"#/components/schemas/Owner/properties/node"}}`,
 		`{"type":"array","items":{"$ref":"#/components/schemas/Owner/properties/other"}}`,
 		`{"type":"array","items":{"$ref":"#/components/schemas/Owner/properties/rows"}}`,
 	} {
@@ -92,6 +91,22 @@ func TestInternalCollectionAllOfMemberDiagnosticsAndGuards(t *testing.T) {
 		input = strings.Replace(input, `"Owner":{"properties":{`, `"Owner":{"properties":{"node":`+allOfObjectMember+`,"other":`+collection+`,`, 1)
 		if got, err := core.GenerateWithDiagnostics(request([]byte(input), "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
 			t.Fatal("excluded leaf/container expanded", rows, err)
+		}
+	}
+	// An original internal allOf terminal is now admitted through the shared
+	// resolver seam; the consuming member keeps the retained collection type.
+	terminal := string(internalCollectionMembers(`{"type":"array","items":{"$ref":"#/components/schemas/Owner/properties/node"}}`, `{"$ref":"#/components/schemas/Alias"}`, `{"member":[{"label":"x"}]}`))
+	terminal = strings.Replace(terminal, `"Owner":{"properties":{`, `"Owner":{"properties":{"node":`+allOfObjectMember+`,`, 1)
+	if got, err := core.GenerateWithDiagnostics(request([]byte(terminal), "Dto")); err != nil || !strings.Contains(source(t, got, "HolderDto"), "`openapi-kt model default ") {
+		t.Fatal("internal allOf terminal not admitted", err)
+	}
+	// A wrong or hierarchy-owned internal source still fails.
+	for _, bad := range []string{
+		strings.Replace(terminal, `"node":`+allOfObjectMember, `"node":{"allOf":[{"$ref":"#/components/schemas/Base"},{"properties":{"label":{"type":"string"}},"required":["label"]}]}`, 1),
+	} {
+		bad = strings.Replace(bad, `"schemas":{`, `"schemas":{"Base":{"type":"object","properties":{"kind":{"type":"string"}},"discriminator":{"propertyName":"kind"}},`, 1)
+		if got, err := core.GenerateWithDiagnostics(request([]byte(bad), "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
+			t.Fatal("hierarchy-owned internal terminal admitted", err)
 		}
 	}
 	for _, value := range []string{`{}`, `{"member":[]}`, `{"member":null}`} {

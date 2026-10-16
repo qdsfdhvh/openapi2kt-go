@@ -109,3 +109,53 @@ func TestReferencedCollectionBareAllOfMemberNativeParityAndPreservation(t *testi
 		})
 	}
 }
+
+// An internal allOf element terminal inside a named collection is admitted
+// through the shared resolver seam; native generation, readonly check and
+// failure preservation match the core plan.
+func TestReferencedCollectionInternalAllOfElementTerminalParity(t *testing.T) {
+	const target = `{"allOf":[{"properties":{"name":{"type":"string"}},"required":["name"]},{"properties":{"n":{"type":"integer","default":2}}}]}`
+	for _, tc := range []struct {
+		name, collection, valid, invalid, tail string
+	}{
+		{"list", `{"type":"array","items":{"$ref":"#/components/schemas/Owner/properties/node"}}`, `{"member":[{"name":"x"}]}`, `{"member":[{"name":false}]}`, "/0/name"},
+		{"map", `{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Owner/properties/node"}}`, `{"member":{"k":{"name":"x"}}}`, `{"member":{"k":{"name":false}}}`, "/k/name"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			document := func(value string) []byte {
+				return []byte(`{"openapi":"3.1.0","components":{"schemas":{"Owner":{"properties":{"node":` + target + `}},"Rows":` + tc.collection + `,"Alias":{"$ref":"#/components/schemas/Rows"},"Holder":{"properties":{"cfg":{"properties":{"member":{"$ref":"#/components/schemas/Alias"}},"default":` + value + `}}}}}}`)
+			}
+			for _, checked := range []bool{false, true} {
+				for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+					p := newProject(t)
+					input := document(tc.valid)
+					put(t, p.Input, input)
+					args := nestedObjectArgs(p.Input, p.Output, checked, style)
+					result(t, invoke(t, p.Root, args...), 0)
+					report, err := core.GenerateWithDiagnostics(core.GenerationRequest{Document: input, Options: core.GenerationOptions{PackageName: "org.example.catalog", ModelStyle: style, Validation: checked}})
+					if err != nil {
+						t.Fatal(err)
+					}
+					for _, file := range report.Artifacts.Files {
+						if string(read(t, p.Output+"/"+file.Path)) != file.Content {
+							t.Fatal("native/core mismatch", file.Path)
+						}
+					}
+					before := snapshot(t, p.Output)
+					result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
+					if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("check changed output")
+					}
+					put(t, p.Input, document(tc.invalid))
+					failure := fails(t, invoke(t, p.Root, args...), 1, "E_SCHEMA_INVALID")
+					if len(failure.Diagnostics) != 1 || failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != "/components/schemas/Holder/properties/cfg/default/member"+tc.tail {
+						t.Fatal(failure)
+					}
+					if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("failure changed output")
+					}
+				}
+			}
+		})
+	}
+}

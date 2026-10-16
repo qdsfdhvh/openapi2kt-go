@@ -93,6 +93,9 @@
               "memberBareRowsNull": {"$ref": "#/components/schemas/MemberBareRowsNullable", "default": null},
               "memberBareMap": {"$ref": "#/components/schemas/MemberBareMap", "nullable": false, "default": {"none": null, "value": {"label": "bare map member"}}},
               "memberBareGrid": {"$ref": "#/components/schemas/MemberBareGrid", "default": [{"k": {"label": "bare grid member"}}]},
+              "memberInternalRows": {"$ref": "#/components/schemas/MemberInternalRows", "default": [{"label": "internal rows member"}]},
+              "memberInternalNull": {"$ref": "#/components/schemas/MemberInternalRowsNullable", "default": null},
+              "memberInternalMap": {"$ref": "#/components/schemas/MemberInternalMap", "nullable": false, "default": {"none": null, "value": {"label": "internal map member"}}},
               "namedMap": {"$ref": "#/components/schemas/NamedMap", "nullable": false, "default": null},
               "namedMapValues": {"$ref": "#/components/schemas/NamedMap", "default": {"none": null, "value": {"label": "named map member"}}},
               "namedGrid": {"$ref": "#/components/schemas/NamedGrid", "default": [{"k": {"label": "named grid member"}}]},
@@ -192,6 +195,9 @@
               "memberBareRowsNull": null,
               "memberBareMap": {"none": null, "value": {"label": "outer bare map"}},
               "memberBareGrid": [{"k": {"label": "outer bare grid"}}],
+              "memberInternalRows": [{"label": "outer internal rows"}],
+              "memberInternalNull": null,
+              "memberInternalMap": {"none": null, "value": {"label": "outer internal map"}},
               "namedMap": null,
               "namedMapValues": {"none": null, "value": {"label": "outer named map"}},
               "namedGrid": [{"k": {"label": "outer named grid"}}],
@@ -366,6 +372,19 @@
         {"properties": {"label": {"type": "string"}}, "required": ["label"]},
         {"properties": {"count": {"type": "integer", "default": 2}}}
       ]}}},
+      "MemberInternalLeaves": {"properties": {
+        "leaf": {"allOf": [
+          {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+          {"properties": {"count": {"type": "integer", "default": 2}, "child": {"properties": {"flag": {"type": "boolean"}}, "default": {"flag": true}}}}
+        ]},
+        "soft": {"allOf": [
+          {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+          {"properties": {"count": {"type": "integer", "default": 2}}}
+        ], "nullable": true}
+      }},
+      "MemberInternalRows": {"type": "array", "items": {"$ref": "#/components/schemas/MemberInternalLeaves/properties/leaf"}},
+      "MemberInternalRowsNullable": {"type": "array", "nullable": true, "items": {"$ref": "#/components/schemas/MemberInternalLeaves/properties/leaf"}},
+      "MemberInternalMap": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/MemberInternalLeaves/properties/soft"}},
       "NamedRowsAlias": {"$ref": "#/components/schemas/NamedRows", "nullable": false},
       "NamedMap": {"type": "object", "nullable": true, "additionalProperties": {"$ref": "#/components/schemas/ComposedNullableOuter"}},
       "NamedGrid": {"type": "array", "items": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/ComposedOuter"}}},

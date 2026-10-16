@@ -44,6 +44,8 @@ fun main() = runBlocking {
     check(optimized.cfg?.memberBareRows?.single()?.label == "outer bare rows" && optimized.cfg?.memberBareRows?.single()?.child?.flag == true)
     check(optimized.cfg?.memberBareRowsNull == null && optimized.cfg?.memberBareMap?.get("value")?.label == "outer bare map")
     check(optimized.cfg?.memberBareGrid?.single()?.get("k")?.label == "outer bare grid")
+    check(optimized.cfg?.memberInternalRows?.single()?.label == "outer internal rows" && optimized.cfg?.memberInternalRows?.single()?.child?.flag == true)
+    check(optimized.cfg?.memberInternalNull == null && optimized.cfg?.memberInternalMap?.get("value")?.label == "outer internal map")
     check(optimized.cfg?.viaCollectionRows?.single()?.label == "outer bridge rows" && optimized.cfg?.viaCollectionRows?.single()?.child?.flag == true)
     check(optimized.cfg?.viaCollectionRowsNull == null && optimized.cfg?.viaCollectionMap?.get("value")?.label == "outer bridge map")
     check(optimized.cfg?.viaCollectionGrid?.single()?.get("k")?.label == "outer bridge grid")

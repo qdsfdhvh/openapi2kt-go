@@ -7,11 +7,12 @@ import (
 )
 
 // Route collection roots with an inline tree and an eligible allOf element.
-// A named/internal element reference keeps its original hop. A bare inline allOf
-// leaf owns its own original node, matching the consuming-field and inline
-// collection-member roles; the enclosing shared type plan still owns its
-// constructor. Internal element-reference binding can be pending when the
-// enclosing object is planned, so that role stays with the shared final linker.
+// A bare inline allOf leaf owns its own original node, matching the consuming
+// field and inline collection-member roles. A named element reference keeps its
+// original hop. An internal allOf terminal has no lexical component of its own;
+// the shared resolver seam binds that original node on demand so the eager
+// member walk can see its identity, and the final retained-declaration linker
+// still authorizes the declaration before any artifact emits.
 func (a *analyzer) namedAllOfCollectionMemberElement(v *document.Value) *document.Value {
 	leaf := a.inlineReferencedAllOfElement(v)
 	if leaf == nil {
@@ -25,7 +26,8 @@ func (a *analyzer) namedAllOfCollectionMemberElement(v *document.Value) *documen
 	}
 	v = leaf
 	for edges := 0; edges <= MaxSchemaDepth && has(v, "$ref"); edges++ {
-		source, pointer, err := a.defaultSource(text(get(v, "$ref")), "")
+		reference := text(get(v, "$ref"))
+		source, pointer, err := a.defaultSource(reference, "")
 		if err != nil {
 			return nil
 		}
@@ -34,6 +36,18 @@ func (a *analyzer) namedAllOfCollectionMemberElement(v *document.Value) *documen
 			owner := a.componentsByOriginalSchema(v)
 			if owner != nil && owner.Pointer == pointer && has(v, "allOf") {
 				return leaf
+			}
+			// An original internal allOf terminal has no lexical component. Bind
+			// that original node through the shared resolver seam, then require the
+			// same node, Pointer and lexical SourceCatalog the deferred member walk
+			// checks. A missing, copied or ambiguous declaration still fails there.
+			if owner == nil && composedModelCandidate(v) {
+				if _, err := a.resolveSchema(reference, ""); err != nil {
+					return nil
+				}
+				if a.internalAllOfDefaultMemberSource(v, pointer, reference) == nil {
+					return leaf
+				}
 			}
 			return nil
 		}

@@ -208,16 +208,6 @@ func TestReferencedCollectionAllOfObjectDefaultMembers(t *testing.T) {
 					r := request(input, "Dto")
 					r.Options.Validation, r.Options.ModelStyle = checked, style
 					got, err := core.GenerateWithDiagnostics(r)
-					if internal {
-						if err == nil || len(got.Artifacts.Files) != 0 {
-							t.Fatal("internal terminal entered named collection role", err)
-						}
-						r.Document = []byte(strings.Replace(string(input), `,"default":{"member":`+tc.value+`}`, "", 1))
-						if _, err := core.GenerateWithDiagnostics(r); err != nil {
-							t.Fatal("baseline internal typed collection", err)
-						}
-						continue
-					}
 					if err != nil {
 						t.Fatal(internal, tc.collection, checked, style, err)
 					}
@@ -233,6 +223,11 @@ func TestReferencedCollectionAllOfObjectDefaultMembers(t *testing.T) {
 						if source(t, got, name) != source(t, baseline, name) {
 							t.Fatal("declaration drift", name)
 						}
+					}
+					// The internal terminal keeps its original physical lexical owner; the
+					// consuming member still uses the actual retained Rows collection type.
+					if internal && !strings.Contains(source(t, got, "RowsDto"), "org.example.models.models.TargetDto.Node") {
+						t.Fatal("internal terminal lost its lexical owner", source(t, got, "RowsDto"))
 					}
 					r.Document = input
 					again, err := core.GenerateWithDiagnostics(r)
