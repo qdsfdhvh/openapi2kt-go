@@ -78,6 +78,39 @@
         "items": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/AllOfOwner/properties/node", "nullable": true}}
       },
       "AllOfNullableRows": {"type": "array", "items": {"$ref": "#/components/schemas/AllOfItem", "nullable": true}},
+      "BareAllRows": {
+        "type": "array",
+        "items": {"allOf": [
+          {"properties": {"name": {"type": "string"}}, "required": ["name"]},
+          {"properties": {"age": {"type": "integer", "default": 7}, "code": {"type": "integer", "enum": [1, 2]}, "child": {"properties": {"note": {"type": "string", "default": "inner"}}}}}
+        ]}
+      },
+      "BareAllAlias": {"$ref": "#/components/schemas/BareAllRows"},
+      "BareAllMaps": {
+        "type": "object",
+        "additionalProperties": {"allOf": [
+          {"properties": {"name": {"type": "string"}}, "required": ["name"]},
+          {"properties": {"age": {"type": "integer", "default": 7}}}
+        ]}
+      },
+      "BareAllMixed": {
+        "type": "array",
+        "items": {"type": "object", "additionalProperties": {"allOf": [
+          {"properties": {"name": {"type": "string"}}, "required": ["name"]},
+          {"properties": {"child": {"properties": {"note": {"type": "string", "default": "inner"}}}}}
+        ]}}
+      },
+      "BareAllNullable": {
+        "type": "array",
+        "items": {"allOf": [
+          {"nullable": true, "properties": {"name": {"type": "string"}}, "required": ["name"]},
+          {"properties": {"age": {"type": "integer", "default": 7}}}
+        ]}
+      },
+      "BareAllRequired": {
+        "properties": {"rows": {"$ref": "#/components/schemas/BareAllRows", "default": [{"name": "required-bare"}]}},
+        "required": ["rows"]
+      },
       "InlineAllOfRequired": {
         "properties": {"rows": {"type": "array", "items": {"$ref": "#/components/schemas/AllOfItem"}, "default": [{"name": "required-inline"}]}},
         "required": ["rows"]
@@ -163,7 +196,13 @@
           "allOfAlias": {"$ref": "#/components/schemas/AllOfAlias", "default": [{"name": "alias"}]},
           "allOfNested": {"$ref": "#/components/schemas/AllOfNested", "default": [{"k": {"name": "internal", "child": {}}, "nil": null}]},
           "allOfNullable": {"$ref": "#/components/schemas/AllOfNullableRows", "default": [null, {"name": "nullable"}]},
-          "allOfNil": {"$ref": "#/components/schemas/AllOfRows", "nullable": true, "default": null}
+          "allOfNil": {"$ref": "#/components/schemas/AllOfRows", "nullable": true, "default": null},
+          "bareRows": {"$ref": "#/components/schemas/BareAllRows", "default": [{"name": "bare", "child": {}}]},
+          "bareAlias": {"$ref": "#/components/schemas/BareAllAlias", "default": [{"name": "bare-alias"}]},
+          "bareMaps": {"$ref": "#/components/schemas/BareAllMaps", "default": {"k": {"name": "bare-map"}}},
+          "bareMixed": {"$ref": "#/components/schemas/BareAllMixed", "default": [{"k": {"name": "bare-mixed", "child": {}}}]},
+          "bareNullable": {"$ref": "#/components/schemas/BareAllNullable", "default": [null, {"name": "bare-nullable"}]},
+          "bareNil": {"$ref": "#/components/schemas/BareAllRows", "nullable": true, "default": null}
         },
         "required": [
           "requiredRows"
@@ -241,6 +280,7 @@
                     ]
                   },
                   "inlineAllRows": {"type": ["array", "null"], "items": {"$ref": "#/components/schemas/AllOfNodeAlias"}, "default": [{"name": "patch-inline"}]},
+                  "bareRows": {"$ref": "#/components/schemas/BareAllRows", "nullable": true, "default": [{"name": "patch-bare"}]},
                   "allOfRows": {"$ref": "#/components/schemas/AllOfRows", "nullable": true, "default": [{"name": "patch"}]},
                   "rows": {
                     "type": [

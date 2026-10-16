@@ -103,13 +103,13 @@ func TestReferencedAllOfCollectionDiagnosticsAndExclusions(t *testing.T) {
 				t.Fatal("empty collection default authorized excluded allOf source", err)
 			}
 		}
-		// A bare inline allOf element remains separate, including when another
-		// typed reference independently registers its nominal source binding.
+		// A bare leaf uses its own retained constructor; a separate typed use
+		// neither replaces its lexical owner nor changes the collection type.
 		inline := schemas(`{"Rows":{"type":"array","items":` + referencedAllOfCollectionItem + `},"Peer":{"properties":{"node":{"$ref":"#/components/schemas/Rows/items"}}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Rows","default":[]}}}}`)
 		r := request(inline, "Dto")
 		r.Options.Validation = checked
-		if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
-			t.Fatal("unrelated nominal binding authorized inline allOf leaf", err)
+		if got, err := core.GenerateWithDiagnostics(r); err != nil || !strings.Contains(source(t, got, "HolderDto"), "org.example.models.models.RowsDto? = `openapi-kt default tree ") {
+			t.Fatal("retained inline allOf collection leaf rejected or renamed", err)
 		}
 	}
 }

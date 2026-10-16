@@ -39,6 +39,8 @@ import org.example.refcol.api.models.WatchHoldersEventDto
 import org.example.refcol.models.AllOfItemDto
 import org.example.refcol.models.AllOfOwnerDto
 import org.example.refcol.models.AllOfRequiredDto
+import org.example.refcol.models.BareAllRequiredDto
+import org.example.refcol.models.BareAllRowsDtoInner
 import org.example.refcol.models.HolderDto
 import org.example.refcol.models.InlineAllOfRequiredDto
 import org.example.refcol.models.ItemDto
@@ -87,6 +89,12 @@ private fun referencedObjectCollectionFields(value: HolderDto): Map<String, Any?
     "inlineAllMixed" to value.inlineAllMixed?.map { row -> row.mapValues { listOf(it.value.name, it.value.child?.note) } },
     "inlineAllNullable" to value.inlineAllNullable?.map { it?.name },
     "inlineAllNil" to value.inlineAllNil?.map { it.name },
+    "bareRows" to value.bareRows?.map { listOf(it.name, it.age, it.code, it.child?.note) },
+    "bareAlias" to value.bareAlias?.map { listOf(it.name, it.age) },
+    "bareMaps" to value.bareMaps?.mapValues { listOf(it.value.name, it.value.age) },
+    "bareMixed" to value.bareMixed?.map { row -> row.mapValues { listOf(it.value.name, it.value.child?.note) } },
+    "bareNullable" to value.bareNullable?.map { it?.name },
+    "bareNil" to value.bareNil?.map { it.name },
 )
 
 suspend fun referencedObjectCollectionDefaultsContracts(checked: Boolean) {
@@ -116,9 +124,19 @@ suspend fun referencedObjectCollectionDefaultsContracts(checked: Boolean) {
     check(fresh.inlineAllRows !== value.inlineAllRows && fresh.inlineAllRows?.single() !== inline && fresh.inlineAllRows?.single()?.child !== inline.child)
     check(fresh.inlineAllMixed?.single()?.get("k")?.child !== mixed.child)
     check(!InlineAllOfRequiredDto.serializer().descriptor.isElementOptional(0))
+    val bare: BareAllRowsDtoInner = value.bareRows!!.single()
+    check(bare.name == "bare" && bare.age == 7 && bare.child?.note == "inner")
+    check(value.bareAlias?.single()?.name == "bare-alias" && value.bareMaps?.get("k")?.age == 7)
+    check(value.bareMixed?.single()?.get("k")?.name == "bare-mixed" && value.bareMixed?.single()?.get("k")?.child?.note == "inner")
+    check(value.bareNullable?.map { it?.name } == listOf(null, "bare-nullable") && value.bareNil == null)
+    check(fresh.bareRows !== value.bareRows && fresh.bareRows?.single() !== bare && fresh.bareRows?.single()?.child !== bare.child)
+    check(fresh.bareMixed?.single()?.get("k")?.child !== value.bareMixed?.single()?.get("k")?.child)
+    check(!BareAllRequiredDto.serializer().descriptor.isElementOptional(0))
     check(!HolderDto.serializer().descriptor.isElementOptional(4))
     check(HolderDto(requiredRows = requiredRows).inlineRows !== value.inlineRows)
     if (checked) {
+        referencedObjectCollectionReject("enum") { BareAllRowsDtoInner(name = "bad", code = 9) }
+        referencedObjectCollectionReject("minItems") { HolderDto(requiredRows = requiredRows, bareRows = emptyList()) }
         referencedObjectCollectionReject("enum") { AllOfItemDto(name = "bad", code = 9) }
         referencedObjectCollectionReject("minItems") { HolderDto(requiredRows = requiredRows, allOfRows = emptyList()) }
         referencedObjectCollectionReject("minItems") { HolderDto(requiredRows = requiredRows, inlineAllRows = emptyList()) }
@@ -130,6 +148,8 @@ suspend fun referencedObjectCollectionDefaultsContracts(checked: Boolean) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }
         check(runCatching { codec.decodeFromString<HolderDto>("{}") }.isFailure)
         check(runCatching { codec.decodeFromString<AllOfRequiredDto>("{}") }.isFailure)
+        check(runCatching { codec.decodeFromString<BareAllRequiredDto>("{}") }.isFailure)
+        check(codec.decodeFromString<BareAllRequiredDto>("""{"rows":[{"name":"supplied"}]}""").rows.single().age == 7)
         check(runCatching { codec.decodeFromString<InlineAllOfRequiredDto>("{}") }.isFailure)
         check(codec.decodeFromString<InlineAllOfRequiredDto>("""{"rows":[{"name":"supplied"}]}""").rows.single().age == 7)
         check(codec.decodeFromString<AllOfRequiredDto>("""{"rows":[{"name":"supplied"}]}""").rows.single().age == 7)
@@ -141,13 +161,16 @@ suspend fun referencedObjectCollectionDefaultsContracts(checked: Boolean) {
         check(suppliedAllOf.allOfRows?.single()?.name == "wire" && suppliedAllOf.allOfRows?.single()?.age == 7 && suppliedAllOf.allOfRows?.single()?.child == null && suppliedAllOf.allOfNil == null)
         val suppliedInline = codec.decodeFromString<HolderDto>("""{"requiredRows":[{"name":"r"}],"inlineAllRows":[{"name":"replacement"}],"inlineAllNil":null}""")
         check(suppliedInline.inlineAllRows?.single()?.name == "replacement" && suppliedInline.inlineAllRows?.single()?.age == 7 && suppliedInline.inlineAllRows?.single()?.child == null && suppliedInline.inlineAllNil == null)
+        val suppliedBare = codec.decodeFromString<HolderDto>("""{"requiredRows":[{"name":"r"}],"bareRows":[{"name":"replacement-bare"}],"bareNil":null}""")
+        check(suppliedBare.bareRows?.single()?.name == "replacement-bare" && suppliedBare.bareRows?.single()?.age == 7 && suppliedBare.bareRows?.single()?.child == null && suppliedBare.bareNil == null)
         check(codec.decodeFromString<HolderDto>("""{"requiredRows":[{"name":"r"}],"nilRows":null}""").nilRows == null)
         check(referencedObjectCollectionFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), missing))) == referencedObjectCollectionFields(missing))
         val absent = codec.decodeFromString<PatchHolderInputDto>("""{"required":null}""")
-        check(absent.rows == Patch.Absent && absent.allOfRows == Patch.Absent && absent.inlineAllRows == Patch.Absent)
-        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "rows" || it == "allOfRows" || it == "inlineAllRows" })
-        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"rows":null,"allOfRows":null,"inlineAllRows":null}""")
-        check(cleared.rows == Patch.Null && cleared.allOfRows == Patch.Null && cleared.inlineAllRows == Patch.Null)
+        check(absent.rows == Patch.Absent && absent.allOfRows == Patch.Absent && absent.inlineAllRows == Patch.Absent && absent.bareRows == Patch.Absent)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "rows" || it == "allOfRows" || it == "inlineAllRows" || it == "bareRows" })
+        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"rows":null,"allOfRows":null,"inlineAllRows":null,"bareRows":null}""")
+        check(cleared.rows == Patch.Null && cleared.allOfRows == Patch.Null && cleared.inlineAllRows == Patch.Null && cleared.bareRows == Patch.Null)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["bareRows"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["inlineAllRows"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["rows"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["allOfRows"] === JsonNull)
@@ -156,6 +179,8 @@ suspend fun referencedObjectCollectionDefaultsContracts(checked: Boolean) {
         check(((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), update) as JsonObject)["rows"] as List<*>).size == 1)
         val inlineUpdate = PatchHolderInputDto(required = null, inlineAllRows = Patch.Value(listOf(AllOfOwnerDto.Node(name = "inline-update"))))
         check(((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), inlineUpdate) as JsonObject)["inlineAllRows"] as List<*>).size == 1)
+        val bareUpdate = PatchHolderInputDto(required = null, bareRows = Patch.Value(listOf(BareAllRowsDtoInner(name = "bare-update"))))
+        check(((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), bareUpdate) as JsonObject)["bareRows"] as List<*>).size == 1)
         check(codec.decodeFromString<RequiredCfgDto>("""{"rows":[{"name":"a"},{"name":"b"}]}""").rows.map { it.name } == listOf("a", "b"))
         referencedObjectCollectionWire(codec, value, checked)
     }
@@ -212,7 +237,7 @@ private suspend fun referencedObjectCollectionWire(codec: Json, value: HolderDto
         expectedPatch = codec.encodeToJsonElement(PatchHolderInputDto.serializer(), PatchHolderInputDto(required = null)) as JsonObject
         api.patchHolder(PatchHolderInputDto(required = null)) { callbacks++ }
         for (change in listOf(Patch.Null, Patch.Value(listOf(AllOfItemDto(name = "update"))))) {
-            val patch = PatchHolderInputDto(required = null, allOfRows = change, inlineAllRows = if (change == Patch.Null) Patch.Null else Patch.Value(listOf(AllOfOwnerDto.Node(name = "wire"))))
+            val patch = PatchHolderInputDto(required = null, allOfRows = change, inlineAllRows = if (change == Patch.Null) Patch.Null else Patch.Value(listOf(AllOfOwnerDto.Node(name = "wire"))), bareRows = if (change == Patch.Null) Patch.Null else Patch.Value(listOf(BareAllRowsDtoInner(name = "bare-wire"))))
             expectedPatch = codec.encodeToJsonElement(PatchHolderInputDto.serializer(), patch) as JsonObject
             api.patchHolder(patch) { callbacks++ }
         }
@@ -239,6 +264,11 @@ private suspend fun referencedObjectCollectionWire(codec: Json, value: HolderDto
             withTimeout(10000) { framesWritten.last().await() }
             check(channels.last().isClosedForRead)
             payload = """{"requiredRows":[{"name":"r"}],"inlineAllRows":[{"name":"bad-inline","code":9}]}"""
+            referencedObjectCollectionReject("enum") { api.sendHolder(value) { callbacks++ } }
+            referencedObjectCollectionReject("enum") { withTimeout(10000) { api.watchHolders { callbacks++ }.toList() } }
+            withTimeout(10000) { framesWritten.last().await() }
+            check(channels.last().isClosedForRead)
+            payload = """{"requiredRows":[{"name":"r"}],"bareRows":[{"name":"bad-bare","code":9}]}"""
             referencedObjectCollectionReject("enum") { api.sendHolder(value) { callbacks++ } }
             referencedObjectCollectionReject("enum") { withTimeout(10000) { api.watchHolders { callbacks++ }.toList() } }
             withTimeout(10000) { framesWritten.last().await() }
