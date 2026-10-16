@@ -102,12 +102,12 @@ func TestInlineReferencedAllOfDiagnosticsBudgetsAndExclusions(t *testing.T) {
 		carrierDefaultFailure(t, []byte(chainDefault), checked, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Alias/default")
 		childDefault := strings.Replace(field, `"items":{"$ref"`, `"items":{"default":{"name":"child"},"$ref"`, 1)
 		carrierDefaultFailure(t, inlineReferencedAllOfDocument(childDefault), checked, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Inline/properties/v/items/default")
-		// Role detection must stop at object-member edges. A default on that
-		// outer object cannot authorize the nested collection's source role.
+		// The original outer-object rejection now uses its independently scoped
+		// collection-member permission; top-level role detection stays narrow.
 		r := request(inlineReferencedAllOfDocument(`{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Item"}}},"default":{}}`), "Dto")
 		r.Options.Validation = checked
-		if _, err := core.GenerateWithDiagnostics(r); err == nil {
-			t.Fatal("inline collection role escaped into object default")
+		if _, err := core.GenerateWithDiagnostics(r); err != nil {
+			t.Fatal("referenced collection member did not graduate", err)
 		}
 		fanout := objectDefaultFanoutDocument(14, `{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":[]}`)
 		fanout = []byte(strings.Replace(string(fanout), `"schemas":{`, `"schemas":{"Item":{"allOf":[{"properties":{"child":{"$ref":"#/components/schemas/Node00"}}},{"properties":{"n":{"type":"integer"}}}]},`, 1))

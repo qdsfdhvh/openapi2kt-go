@@ -233,9 +233,12 @@ type analyzer struct {
 	// Original inline object field roots in the direct DTO object default role.
 	// The shared object type planner must ignore their own annotation, which the
 	// dedicated default planner validates instead.
-	objectDefaultSchemas         map[*document.Value]bool
-	objectDefaultWork            *int            // Shared only by one source validation walk.
-	objectDefaultAllOfElement    *document.Value // One consuming inline collection's original leaf.
+	objectDefaultSchemas      map[*document.Value]bool
+	objectDefaultWork         *int            // Shared only by one source validation walk.
+	objectDefaultAllOfElement *document.Value // One consuming inline collection's original leaf.
+
+	objectDefaultAllOfMemberElement *document.Value // One collection-valued object's original leaf/reference.
+
 	declarationOwners            map[Declaration]*component
 	unionOrigins                 map[Declaration]nominalOrigin
 	enumOrigins                  map[Declaration]nominalOrigin

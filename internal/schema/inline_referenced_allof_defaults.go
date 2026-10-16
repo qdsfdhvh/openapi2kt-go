@@ -10,25 +10,37 @@ import (
 // ending at allOf. This is routing, not admission: the shared type plan and
 // final retained nominal/source checks still authorize the actual constructor.
 func (a *analyzer) inlineReferencedAllOfCollection(v *document.Value) bool {
+	return a.inlineReferencedAllOfElement(v) != nil
+}
+
+// Return the original element reference, not its resolved terminal. A caller
+// can scope an object property's source-walk permission to this exact node.
+func (a *analyzer) inlineReferencedAllOfElement(v *document.Value) *document.Value {
 	if has(v, "$ref") {
-		return false
+		return nil
 	}
-	crossedReference := false
+	var reference *document.Value
 	for edges := 0; edges <= MaxSchemaDepth && v != nil; edges++ {
 		if edges > 0 && has(v, "$ref") {
 			source, _, err := a.defaultSource(text(get(v, "$ref")), "")
 			if err != nil {
-				return false
+				return nil
 			}
-			v, crossedReference = source, true
+			if reference == nil {
+				reference = v
+			}
+			v = source
 			continue
 		}
-		if crossedReference {
-			return has(v, "allOf")
+		if reference != nil {
+			if has(v, "allOf") {
+				return reference
+			}
+			return nil
 		}
 		kind, _, err := schemaType(v, "")
 		if err != nil {
-			return false
+			return nil
 		}
 		switch {
 		case kind == "array":
@@ -36,10 +48,10 @@ func (a *analyzer) inlineReferencedAllOfCollection(v *document.Value) bool {
 		case dictionarySchema(v):
 			v = get(v, "additionalProperties")
 		default:
-			return false
+			return nil
 		}
 	}
-	return false
+	return nil
 }
 
 func (a *analyzer) deferredFieldDefault(v *document.Value) bool {

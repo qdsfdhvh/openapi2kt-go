@@ -95,13 +95,13 @@ func TestInlineAllOfCollectionDiagnosticsAndBoundaries(t *testing.T) {
 				t.Fatal("empty annotation admitted excluded source/constructor", element, err)
 			}
 		}
-		// An allOf element nested under an object member still needs its own
-		// collection role; direct allOf properties graduate below.
+		// Object properties have their own scoped inline collection permission;
+		// retain this former negative input as a positive graduation case.
 		field := `{"properties":{"rows":{"type":"array","items":` + referencedAllOfCollectionItem + `}},"default":{}}`
 		r := request(inlineAllOfCollectionDocument(field), "Dto")
 		r.Options.Validation = checked
-		if _, err := core.GenerateWithDiagnostics(r); err == nil {
-			t.Fatal("inline collection permission escaped to object member")
+		if _, err := core.GenerateWithDiagnostics(r); err != nil {
+			t.Fatal("allOf collection property did not graduate", err)
 		}
 		// Preserve the original negative input as a positive graduation case:
 		// a plain element object can now contain an inline allOf property.

@@ -218,6 +218,12 @@ func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, 
 		return a.objectDefaultConstNode(v, pointer)
 	case a.primitiveUnionElementCandidate(v):
 		return a.primitiveUnionElementNode(v, pointer, depth)
+	case a.allOfDefaultMemberElement(v) != nil:
+		// Borrow only this property's original leaf/reference. The enclosing
+		// type plan owns its constructor and final nominal binding.
+		validation := *a
+		validation.objectDefaultAllOfMemberElement = a.allOfDefaultMemberElement(v)
+		return validation.objectDefaultNode(v, pointer, depth, allowOwnDefault)
 	case objectDefaultCandidateSchema(v):
 		return a.objectDefaultNode(v, pointer, depth, allowOwnDefault)
 	default:
@@ -324,11 +330,14 @@ func (a *analyzer) objectDefaultConstNode(v *document.Value, pointer string) (*n
 
 // objectDefaultPropertyReference resolves an object property's direct local
 // `$ref`. Plain object and named/internal ordinary allOf targets recurse as
-// objects; named aliases to allOf preserve each original hop and nullable intent.
-// Internal reference hops and chains to other terminal roles remain separate.
+// objects; finite named/internal allOf chains preserve original hops and nullable
+// intent. Chains to other terminal roles remain separate.
 func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	if err := checkKeys(v, []string{"$ref", "nullable", "default"}, pointer); err != nil {
 		return nil, err
+	}
+	if a.referencedCollectionAllOfMember(v) {
+		return a.referencedCollectionAllOfMemberNode(v, pointer, depth)
 	}
 	source, sourcePointer, err := a.defaultSource(text(get(v, "$ref")), pointer)
 	if err != nil {
@@ -367,6 +376,17 @@ func (a *analyzer) objectDefaultChild(v *document.Value, pointer string, depth i
 	if err != nil {
 		return nil, err
 	}
+	if v == a.objectDefaultAllOfMemberElement && v != nil {
+		if has(v, "$ref") {
+			// Element annotations are narrower than property annotations. Keep
+			// the complete original chain and terminal's existing source gate.
+			if err := checkKeys(v, []string{"$ref", "nullable"}, pointer); err != nil {
+				return nil, err
+			}
+			return a.objectDefaultPropertyReference(v, pointer, depth)
+		}
+		return a.inlineAllOfObjectDefaultMember(v, pointer, depth, false)
+	}
 	if v == a.objectDefaultAllOfElement && v != nil {
 		return a.ordinaryAllOfDefaultNode(v, pointer, depth)
 	}
@@ -401,7 +421,9 @@ func (a *analyzer) objectDefaultChild(v *document.Value, pointer string, depth i
 	if a.primitiveUnionElementCandidate(v) {
 		return a.primitiveUnionElementNode(v, pointer, depth)
 	}
-	if objectDefaultCandidateSchema(v) || a.objectDefaultAllOfElement != nil && inlineAllOfDefaultElement(v) == a.objectDefaultAllOfElement {
+	if objectDefaultCandidateSchema(v) ||
+		a.objectDefaultAllOfElement != nil && inlineAllOfDefaultElement(v) == a.objectDefaultAllOfElement ||
+		a.objectDefaultAllOfMemberElement != nil && a.allOfDefaultMemberElement(v) == a.objectDefaultAllOfMemberElement {
 		return a.objectDefaultNode(v, pointer, depth, false)
 	}
 	return a.nestedDefaultSchema(v, "Validation", pointer, nil, nil, depth, false)
