@@ -63,6 +63,9 @@ func (a *analyzer) modelDefaultType(f field, ordinary bool, name string, nested 
 		ty, err := a.referencedDefaultType(f, ordinary)
 		return ty, nil, err
 	}
+	if a.inlineReferencedAllOfCollection(f.Schema) {
+		return a.inlineReferencedAllOfDefaultType(f, ordinary, name, nested, used)
+	}
 	if has(f.Schema, "oneOf") || has(f.Schema, "anyOf") {
 		ty, err := a.unionDefaultField(f, name, nested, used)
 		return ty, nil, err
@@ -242,7 +245,7 @@ func (a *analyzer) modelDefault(f field, ty TypeRef, required bool) (string, *di
 	if !exists {
 		return "", nil
 	}
-	if has(f.Schema, "$ref") {
+	if a.deferredFieldDefault(f.Schema) {
 		return "", nil // Final linked backing supplies the typed default plan.
 	}
 	pointer := naming.Pointer(f.Pointer, "default")

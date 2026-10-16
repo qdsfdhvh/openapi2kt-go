@@ -151,7 +151,7 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 				if err != nil {
 					return nil, err
 				}
-				if has(f.Schema, "$ref") {
+				if a.deferredFieldDefault(f.Schema) {
 					*a.referencedDefaults = append(*a.referencedDefaults, referencedFieldDefault{Field: f, Type: ty})
 				}
 			}
@@ -366,7 +366,7 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 		if err != nil {
 			return nil, err
 		}
-		if has(f.Schema, "$ref") && has(f.Schema, "default") {
+		if has(f.Schema, "default") && a.deferredFieldDefault(f.Schema) {
 			*a.referencedDefaults = append(*a.referencedDefaults, referencedFieldDefault{Field: f, Type: annotationType, Model: model, Index: len(model.Properties)})
 		}
 		model.Properties = append(model.Properties, Property{Name: property, WireName: f.Wire, Type: ty, DefaultNull: defaultNull, Default: initializer, Validation: validation})

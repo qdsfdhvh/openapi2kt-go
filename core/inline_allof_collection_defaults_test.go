@@ -130,12 +130,12 @@ func TestInlineAllOfCollectionSourceBudgetAndMemberReferences(t *testing.T) {
 			t.Fatal("existing named allOf contribution rejected", err)
 		}
 		carrierDefaultFailure(t, []byte(strings.Replace(string(input), `"name":"member"`, `"name":false`, 1)), checked, "E_SCHEMA_INVALID", "/components/schemas/Holder/properties/v/default/0/name")
-		// Direct inline collection elements that are refs to allOf Models retain
-		// their separate role; this increment grants only a bare original leaf.
+		// Preserve the former separate-role input as a positive graduation case.
 		refField := schemas(`{"Item":` + referencedAllOfCollectionItem + `,"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":[]}}}}`)
 		r.Document = refField
-		if _, err := core.GenerateWithDiagnostics(r); err == nil {
-			t.Fatal("inline collection role leaked to referenced element")
+		got, err = core.GenerateWithDiagnostics(r)
+		if err != nil || !strings.Contains(source(t, got, "HolderDto"), "`openapi-kt default tree List Alias") {
+			t.Fatal("inline referenced allOf element did not graduate", err)
 		}
 	}
 }
