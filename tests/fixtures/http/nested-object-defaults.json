@@ -76,6 +76,37 @@
                 "nullable": true,
                 "default": {"label": "member"}
               },
+              "namedRows": {"$ref": "#/components/schemas/NamedRowsAlias", "default": [{"label": "named rows member"}]},
+              "namedMap": {"$ref": "#/components/schemas/NamedMap", "nullable": false, "default": null},
+              "namedMapValues": {"$ref": "#/components/schemas/NamedMap", "default": {"none": null, "value": {"label": "named map member"}}},
+              "namedGrid": {"$ref": "#/components/schemas/NamedGrid", "default": [{"k": {"label": "named grid member"}}]},
+              "refRows": {"type": "array", "nullable": true, "items": {"$ref": "#/components/schemas/CfgBridge"}, "default": [{"label": "ref rows member"}]},
+              "refMap": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/ComposedNullableOuter"}, "default": {"none": null, "value": {"label": "ref map member"}}},
+              "refGrid": {"type": "array", "items": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/OwnedRows/items"}}, "default": [{"k": {"label": "ref grid member"}}]},
+              "refVariants": {"type": "array", "items": {"$ref": "#/components/schemas/OwnedUnion/oneOf/0"}, "default": [{"kind": "all", "label": "ref variant member"}]},
+              "memberRows": {
+                "type": "array", "nullable": true,
+                "items": {"allOf": [
+                  {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+                  {"properties": {"count": {"type": "integer", "default": 2}, "child": {"properties": {"flag": {"type": "boolean"}}, "default": {"flag": true}}}}
+                ]},
+                "default": [{"label": "rows member"}]
+              },
+              "memberMap": {
+                "type": "object",
+                "additionalProperties": {"allOf": [
+                  {"nullable": true, "properties": {"label": {"type": "string"}}, "required": ["label"]},
+                  {"properties": {"count": {"type": "integer", "default": 2}}}
+                ]},
+                "default": {"none": null, "value": {"label": "map member"}}
+              },
+              "memberGrid": {
+                "type": "array", "items": {"type": "object", "additionalProperties": {"allOf": [
+                  {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+                  {"properties": {"count": {"type": "integer", "default": 2}}}
+                ]}},
+                "default": [{"k": {"label": "grid member"}}]
+              },
               "linked": {
                 "$ref": "#/components/schemas/ComposedCfg",
                 "nullable": true,
@@ -85,6 +116,9 @@
                 "$ref": "#/components/schemas/ComposedOuter",
                 "default": {"label": "alias member"}
               },
+              "viaChain": {"$ref": "#/components/schemas/CfgBridge", "default": {"label": "chain member"}},
+              "viaChainNull": {"$ref": "#/components/schemas/CfgBridge", "nullable": true, "default": null},
+              "viaNamedChain": {"$ref": "#/components/schemas/CfgHops/properties/named", "default": {"label": "named chain member"}},
               "aliasNull": {
                 "$ref": "#/components/schemas/ComposedNullableOuter",
                 "default": null
@@ -125,7 +159,21 @@
               },
               "composed": {"label": "outer member", "count": 3, "child": {"flag": false}},
               "linked": {"label": "outer linked"},
+              "namedRows": [{"label": "outer named rows"}],
+              "namedMap": null,
+              "namedMapValues": {"none": null, "value": {"label": "outer named map"}},
+              "namedGrid": [{"k": {"label": "outer named grid"}}],
+              "refRows": [{"label": "outer ref rows"}],
+              "refMap": {"none": null, "value": {"label": "outer ref map"}},
+              "refGrid": [{"k": {"label": "outer ref grid"}}],
+              "refVariants": [{"kind": "all", "label": "outer ref variant"}],
+              "memberRows": [{"label": "outer rows"}],
+              "memberMap": {"none": null, "value": {"label": "outer map"}},
+              "memberGrid": [{"k": {"label": "outer grid"}}],
               "viaAlias": {"label": "outer alias"},
+              "viaChain": {"label": "outer chain"},
+              "viaChainNull": null,
+              "viaNamedChain": {"label": "outer named chain"},
               "aliasNull": null,
               "owned": {"label": "outer owned"},
               "ownedAlias": null,
@@ -251,6 +299,16 @@
           "value"
         ]
       },
+      "NamedRows": {"type": "array", "nullable": true, "items": {"$ref": "#/components/schemas/ComposedOuter"}},
+      "NamedRowsAlias": {"$ref": "#/components/schemas/NamedRows", "nullable": false},
+      "NamedMap": {"type": "object", "nullable": true, "additionalProperties": {"$ref": "#/components/schemas/ComposedNullableOuter"}},
+      "NamedGrid": {"type": "array", "items": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/ComposedOuter"}}},
+      "CfgBridge": {"$ref": "#/components/schemas/CfgHops/properties/first"},
+      "CfgHops": {"properties": {
+        "first": {"$ref": "#/components/schemas/CfgHops/properties/second", "nullable": false},
+        "second": {"$ref": "#/components/schemas/OwnedCfgAlias", "nullable": true},
+        "named": {"$ref": "#/components/schemas/ComposedOuter"}
+      }},
       "OwnedCfgAlias": {"$ref": "#/components/schemas/OwnedCfg/properties/node", "nullable": true},
       "OwnedCfg": {"properties": {"node": {
         "allOf": [
@@ -366,8 +424,18 @@
                   "aliasCfg": {
                     "type": "object",
                     "nullable": true,
-                    "properties": {"member": {"$ref": "#/components/schemas/ComposedOuter"}, "owned": {"$ref": "#/components/schemas/OwnedCfg/properties/node", "nullable": false}},
-                    "default": {"member": {"label": "patch default"}, "owned": {"label": "owned patch default"}}
+                    "properties": {
+                      "member": {"$ref": "#/components/schemas/ComposedOuter"},
+                      "owned": {"$ref": "#/components/schemas/OwnedCfg/properties/node", "nullable": false},
+                      "chained": {"$ref": "#/components/schemas/CfgBridge"},
+                      "namedRows": {"$ref": "#/components/schemas/NamedRowsAlias"},
+                      "refs": {"type": "array", "items": {"$ref": "#/components/schemas/CfgBridge"}},
+                      "rows": {"type": "array", "items": {"allOf": [
+                        {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+                        {"properties": {"count": {"type": "integer", "default": 2}}}
+                      ]}}
+                    },
+                    "default": {"member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}]}
                   },
                   "allOfCfg": {
                     "allOf": [

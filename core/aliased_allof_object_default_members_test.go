@@ -110,9 +110,9 @@ func TestAliasedAllOfObjectDefaultMemberGuardsAndContexts(t *testing.T) {
 			t.Fatal("unsupported alias target admitted", target, err)
 		}
 	}
-	internal := schemas(`{"Owner":{"properties":{"n":` + allOfObjectMember + `,"hop":{"$ref":"#/components/schemas/Owner/properties/n"}}},"Alias":{"$ref":"#/components/schemas/Owner/properties/hop"},"Holder":{"properties":{"v":` + allOfMemberField(`{"$ref":"#/components/schemas/Alias"}`, `{}`) + `}}}`)
+	internal := schemas(`{"Scalar":{"type":"string"},"Owner":{"properties":{"n":` + allOfObjectMember + `,"hop":{"$ref":"#/components/schemas/Scalar"}}},"Alias":{"$ref":"#/components/schemas/Owner/properties/hop"},"Holder":{"properties":{"v":` + allOfMemberField(`{"$ref":"#/components/schemas/Alias"}`, `{}`) + `}}}`)
 	if _, err := core.GenerateWithDiagnostics(request(internal, "Dto")); err == nil {
-		t.Fatal("internal alias hop admitted")
+		t.Fatal("internal chain to scalar admitted by allOf role")
 	}
 	cycle := strings.Replace(allOfMemberAliases, `"Alias":{"$ref":"#/components/schemas/Target"}`, `"Alias":{"$ref":"#/components/schemas/Outer"}`, 1)
 	if _, err := core.GenerateWithDiagnostics(request(aliasedAllOfMemberDocument(allOfObjectMember, cycle, member, `{}`), "Dto")); err == nil {

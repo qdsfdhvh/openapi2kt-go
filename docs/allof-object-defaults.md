@@ -69,7 +69,7 @@ An ordinary direct inline finite List/typed Map field may own an outer default w
 
 List, typed Map and finite mixed paths such as List of Map values keep their original nested constructor and public collection type. The shared type plan must create exactly one constructor Model with at least one property on that path. Empty/raw, const-only and union projections do not obtain the role. The value walk borrows the original leaf and its merged fields; no component, source schema copy or borrowed classifier is added.
 
-Permission is scoped to that consuming field's original allOf element node in a shallow validation copy. A structurally equal copy or another object member cannot acquire it. It follows only inline container edges and stops at reference edges. [Direct inline collections with referenced elements](#direct-inline-collections-with-referenced-elements) use the final nominal validation role below; [Bare allOf elements inside referenced collections](#bare-allof-elements-in-referenced-collections) use final retained declaration authority. Direct allOf object properties use the [member role](#inline-allof-properties-inside-object-defaults); a collection-valued property inside an object default does not acquire an allOf element role from it. Primitive allOf compositions keep their existing default/diagnostic path.
+Permission is scoped to that consuming field's original allOf element node in a shallow validation copy. A structurally equal copy or another object member cannot acquire it. It follows only inline container edges and stops at reference edges. [Direct inline collections with referenced elements](#direct-inline-collections-with-referenced-elements) use the final nominal validation role below; [Bare allOf elements inside referenced collections](#bare-allof-elements-in-referenced-collections) use final retained declaration authority. Direct allOf object properties use the [member role](#inline-allof-properties-inside-object-defaults); inline collections under an object-default property use the [collection member role](#inline-collection-properties-inside-object-defaults). Primitive allOf compositions keep their existing default/diagnostic path.
 
 The merged required names, leaf checks, original Pointers/depths, source planning and original/canonical value budgets apply even to empty/null annotations. Container and element nullable intent remain independent; effective element intent may come from an allOf member, and an explicit root false narrows it. Optional presence alone does not authorize annotation null. Required/Patch/discarded annotations validate before suppression, and existing no-drop guards still reject discarded runtime constraints. Element/container-child own defaults remain rejected; ordinary fields inside the element retain their own admitted defaults.
 
@@ -122,7 +122,7 @@ An ordinary direct local `$ref` field may own an outer default when its existing
 
 The shared collection plan must already retain a unique nonempty constructor Model for the original element under its lexical component. Final nominal linking, original node/Pointer/SourceCatalog, actual classifier and hierarchy exclusions authorize the source. Root collection peers may retain a package-relative type name; validation matches that same emitted classifier to its complete final name. A matching spelling or another typed use alone cannot grant ownership. The annotation changes neither public collection/element types nor target declaration bytes/warnings, and adds no reference or type admission.
 
-Every original merged field, required name, nullable layer, source depth and leaf check is retained. Member-derived element nullability and explicit false remain independent of container/alias intent and optional presence. Complete source and value validation precedes required/Patch/discarded suppression, including empty/null annotations; source16,384, value16,384 and original/canonical32KiB budgets apply. No-drop runtime-constraint guards remain. Only the consuming outer field owns a default; aliases, target components, elements and inner containers cannot supply inherited defaults. Internal reference hops, hierarchy, wrappers, repeated-property aggregation and extras/counts keep their existing exclusions.
+Every original merged field, required name, nullable layer, source depth and leaf check is retained. Member-derived element nullability and explicit false remain independent of container/alias intent and optional presence. Complete source and value validation precedes required/Patch/discarded suppression, including empty/null annotations; source16,384, value16,384 and original/canonical32KiB budgets apply. No-drop runtime-constraint guards remain. Only the consuming outer field owns a default; aliases, target components, elements and inner containers cannot supply inherited defaults. Reference chains ending in other terminal roles, hierarchy, wrappers, repeated-property aggregation and extras/counts keep their existing exclusions.
 
 The helper uses the final actual collection serializer after optimization and produces fresh containers, DTOs and supplied nested objects. Missing element fields keep their own admitted initializers; supplied collections replace the outer default. [Core type/nullable/suppression/diagnostic/budget regressions](../core/referenced_inline_allof_defaults_test.go), [original constructor/name/owner/depth checks](../internal/schema/referenced_inline_allof_defaults_test.go) and [native parity/check/failure preservation](../internal/cli/referenced_inline_allof_defaults_process_test.go) define this role. The referenced collection fixture/consumer and `bash scripts/test.sh feature referenced-object-collection-defaults` cover List/Map/mixed, aliases, fresh nested defaults, nullable/required/Patch, four Json configurations, HTTP/live SSE and optimized/locked helper binding across Data/Plain × validation off/on. Checked profiles add admitted named collection counts; preparation alone is not Kotlin compilation/runtime evidence.
 
@@ -144,7 +144,7 @@ An already accepted object-default walk may contain a direct inline ordinary all
 }
 ```
 
-The enclosing field's shared type plan owns the nested constructor and serializer. The value walk borrows the member's original merged fields, required names, nullable intent, Pointers and depths. At least one non-const constructor property is required. Empty/raw, const-only, hierarchy and object-union compositions, reference wrappers, repeated contributions, fixed extras and whole-object counts remain excluded. A property whose schema is an actual `$ref` to an allOf target uses the separate [direct named reference rule](#referenced-allof-properties-inside-object-defaults). Nor does this rule grant a new role to allOf leaves under a collection-valued property.
+The enclosing field's shared type plan owns the nested constructor and serializer. The value walk borrows the member's original merged fields, required names, nullable intent, Pointers and depths. At least one non-const constructor property is required. Empty/raw, const-only, hierarchy and object-union compositions, reference wrappers, repeated contributions, fixed extras and whole-object counts remain excluded. A property whose schema is an actual `$ref` to an allOf target uses the separate [direct named reference rule](#referenced-allof-properties-inside-object-defaults). AllOf leaves under a collection-valued property use the separate [inline collection member rule](#inline-collection-properties-inside-object-defaults).
 
 The rule applies recursively wherever the existing object walk validates ordinary properties, including referenced plain DTO targets, object elements in accepted collections and ordinary merged shapes. Every declared member is checked even when omitted from the annotation. A member may retain its independently validated own field default; omission uses that initializer, while a supplied member replaces it and still uses its own nested field initializers. Required names must be supplied. Explicit or member-derived nullable intent permits null; explicit false narrows it, and optional presence does not authorize annotation null.
 
@@ -154,7 +154,7 @@ Default values retain original-order diagnostics and canonical key sorting. Requ
 
 ## Referenced allOf properties inside object defaults
 
-An existing object-default walk may contain a local `$ref` property to an eligible named or internal ordinary allOf constructor, directly or through a finite chain of named aliases. For example, with the disjoint component `Value` above:
+An existing object-default walk may contain a local `$ref` property to an eligible named or internal ordinary allOf constructor, directly or through a finite chain of named aliases and already admitted internal reference hops. For example, with the disjoint component `Value` above:
 
 ```json
 {
@@ -163,25 +163,112 @@ An existing object-default walk may contain a local `$ref` property to an eligib
 }
 ```
 
-Every named alias edge must match its original component node and Pointer. Internal terminals use the original lexical binding described below. The enclosing shared type plan owns the nominal reference and its final declaration; validation creates no classifier. The same nonempty constructor, disjoint fields and hierarchy/union/wrapper/extras/count exclusions as the inline member rule apply. Internal reference hops (an internal target that is itself a `$ref`), defaults on intermediate aliases or the terminal, and alias chains ending in other source roles remain excluded. This member rule grants no new collection-element role.
+Every named alias edge must match its original component node and Pointer. Internal hops retain their original schema node, Pointer and current lexical `SourceCatalog`; they do not acquire nominal identity. Internal terminals use the original lexical binding described below. The enclosing shared type plan owns the nominal reference and its final declaration; validation creates no classifier. The same nonempty constructor, disjoint fields and hierarchy/union/wrapper/extras/count exclusions as the inline member rule apply. Defaults on intermediate aliases/hops or the terminal, and chains ending in other source roles remain excluded. This member rule grants no new collection-element role; [references inside inline collection properties](#referenced-elements-in-collection-properties) have their own original-element permission.
 
 For example, components `Alias: {"$ref":"#/components/schemas/Value","nullable":true}` and `Outer: {"$ref":"#/components/schemas/Alias","nullable":false}` may be consumed by `member: {"$ref":"#/components/schemas/Outer"}`. The member uses the actual `Value` DTO and rejects annotation null. Setting `nullable:true` on that member permits null again. Alias declaration bytes and canonical target ownership remain unchanged; aliases do not contribute inherited defaults.
 
-The walker borrows the target's merged original fields, required names, leaf checks and source locations. Nullable precedence is explicit consuming property intent, then the nearest explicit named-alias intent, then the target's effective intent; false is distinct from absence. Optional Kotlin presence alone does not allow annotation null. Every declared member is checked even when omitted. Target fields retain their own admitted initializers, and the referring property may retain an independently validated own default. A supplied object replaces that member default; it still uses omitted target-field initializers.
+The walker borrows the target's merged original fields, required names, leaf checks and source locations. Nullable precedence is explicit consuming property intent, then the nearest explicit named-alias/internal-hop intent, then the target's effective intent; false is distinct from absence. Optional Kotlin presence alone does not allow annotation null. Every declared member is checked even when omitted. Target fields retain their own admitted initializers, and the referring property may retain an independently validated own default. A supplied object replaces that member default; it still uses omitted target-field initializers.
 
-The rule is shared by inline objects, referenced DTO targets, accepted object-containing collections and ordinary merged shapes. Required/Patch/discarded annotations validate before suppression. Every reference traversal consumes source depth, and each alias consumes a step of the enclosing 16,384-step source budget. Cached canonical bindings do not skip original hops, source annotations or nullable intent. These limits apply even to omitted or recursive members. Original-order value diagnostics, canonical keys and original/canonical 32 KiB value budgets are unchanged. Decoding uses the final enclosing serializer after optimization and creates fresh referenced objects and nested defaults. Adding the annotation leaves the referenced component's generated bytes and warnings unchanged.
+The rule is shared by inline objects, referenced DTO targets, accepted object-containing collections and ordinary merged shapes. Required/Patch/discarded annotations validate before suppression. Every reference traversal consumes source depth, and each named alias or internal hop consumes a step of the enclosing 16,384-step source budget. Cached canonical bindings do not skip original hops, source annotations or nullable intent. These limits apply even to omitted or recursive members. Original-order value diagnostics, canonical keys and original/canonical 32 KiB value budgets are unchanged. Decoding uses the final enclosing serializer after optimization and creates fresh referenced objects and nested defaults. Adding the annotation leaves the referenced component's generated bytes and warnings unchanged.
 
 [Core contexts/nullable/diagnostic tests](../core/referenced_allof_object_default_members_test.go), [named alias tests](../core/aliased_allof_object_default_members_test.go), [original source/depth/budget tests](../internal/schema/referenced_allof_object_default_members_test.go), [alias hop budgets](../internal/schema/aliased_allof_object_default_members_test.go) and [native parity/check/failure preservation](../internal/cli/referenced_allof_object_default_members_process_test.go) define the increment. The nested-object fixture and consumer cover direct and aliased members, missing/replacement/null, required members, nested own defaults, fresh instances, Patch states, four Json configurations and HTTP/live SSE. `bash scripts/test.sh feature nested-object-defaults` runs Data/Plain × validation off/on and optimized/locked helper binding.
 
 ## Internal allOf properties inside object defaults
 
-A member may directly reference an already admitted internal ordinary allOf constructor, for example `{"$ref":"#/components/schemas/Owner/properties/node"}`, or reach it through named aliases. Its public type remains the original lexical constructor, such as `OwnerDto.Node`. Existing eligible scopes include nested properties, List/typed Map elements, root collection peers and unique concrete composition-owned Models. A concrete union variant uses its own ordinary serializer and business fields, without adding a root-union discriminator envelope.
+A member may directly reference an already admitted internal ordinary allOf constructor, for example `{"$ref":"#/components/schemas/Owner/properties/node"}`, or reach it through a finite mixed named/internal reference chain. Its public type remains the original lexical constructor, such as `OwnerDto.Node`. Existing eligible scopes include nested properties, List/typed Map elements, root collection peers and unique concrete composition-owned Models. A concrete union variant uses its own ordinary serializer and business fields, without adding a root-union discriminator envelope.
 
 The default walk requires the shared type planner's existing binding for the exact source node, Pointer and current lexical component. Schema lookup must confirm the same `SourceCatalog`. It neither registers a new binding nor grants new reference admission. Source validation can run before a forward target is emitted; successful generation still passes the shared final linker, which requires a unique retained nonempty constructor at that original scope. Missing, copied or ambiguous declarations cannot authorize output. Hierarchy sources and hierarchy lexical owners remain excluded.
 
-Merged required names, original member Pointers, nullable intent (including member-derived target nullability), leaf checks and all source/value budgets are preserved. Explicit consumer intent precedes nearest named-alias intent and the target. Required/Patch/discarded annotations validate before suppression. An internal target's own default is not inherited, even if valid as an independent field annotation; internal `$ref` hops retain their separate role. The enclosing serializer binds the actual final type after optimization and creates fresh referenced and nested default values.
+Merged required names, original member Pointers, nullable intent (including member-derived target nullability), leaf checks and all source/value budgets are preserved. Explicit consumer intent precedes nearest named-alias/internal-hop intent and the target. Required/Patch/discarded annotations validate before suppression. An internal target's or intermediate hop's own default is not inherited, even if valid as an independent field annotation. The enclosing serializer binds the actual final type after optimization and creates fresh referenced and nested default values.
 
 [Internal member contexts/nullable/guards](../core/internal_allof_object_default_members_test.go), [source authority and final declaration checks](../internal/schema/internal_allof_object_default_members_test.go) and the shared native parity/preservation test define this extension. The nested-object fixture/consumer cover internal properties and aliases, root collection peers, concrete variants, fresh defaults, missing/replacement/null/required members, Patch, HTTP/live SSE and optimized helper binding under Data/Plain × validation and four Json configurations.
+
+## Internal reference chains inside object defaults
+
+An object-default member may traverse already admitted finite internal `$ref` hops interleaved with named aliases, ending in an eligible named or internal allOf constructor. For example, `member → Bridge → Hops.properties.first → Hops.properties.second → Alias → Owner.properties.node` keeps the actual `OwnerDto.Node` constructor and serializer. This extends only the annotation walk; the shared reference planner must already accept the typed path.
+
+Each internal hop is checked against its original node, Pointer and current lexical `SourceCatalog`. The walker follows original edges instead of the resolver's cached terminal so intermediate defaults and invalid keys cannot be hidden. Hierarchy-owned hops remain excluded, as do chains ending in plain objects, scalars or other roles outside this allOf-member contract. The terminal keeps its original ownership and final retained-declaration checks.
+
+Nullable precedence follows the complete consumer-to-terminal path, with the nearest explicit true or false winning. Every hop consumes depth and shared source-work budget even after type-resolution caches are populated; cycles remain bounded. All declared source members validate even when omitted or null in the annotation. Required/Patch/discarded handling, original-order value diagnostics and original/canonical value limits remain unchanged.
+
+[Core mixed-chain regressions](../core/chained_allof_object_default_members_test.go), [original-hop identity and exact budget checks](../internal/schema/chained_allof_object_default_members_test.go) and the shared native parity/preservation test define this increment. The nested-object feature adds named and internal terminals through mixed chains, nullable overrides, fresh defaults, missing/replacement/null/required fields, Patch and optimized/locked helper binding to its four-profile HTTP/live SSE runtime coverage.
+
+## Inline collection properties inside object defaults
+
+An object-default property may contain a finite direct inline List/typed Map tree whose bare leaf is an ordinary disjoint allOf constructor. For example:
+
+```json
+{
+  "properties": {
+    "rows": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+          {"properties": {"count": {"type": "integer", "default": 2}}}
+        ]
+      }
+    }
+  },
+  "default": {"rows": [{"label": "initial"}]}
+}
+```
+
+This also covers typed Map values and mixed paths such as `List<Map<String, DTO>>`, recursively within existing plain, referenced or merged object-default walks and object elements. The shared type planner owns the original nonempty constructor and public collection type. Each property grants permission only to its own original inline allOf leaf on a shallow validation copy. Structurally equal nodes, sibling paths and reference edges cannot borrow that permission. The same ordinary constructor gate rejects empty/raw, const-only, hierarchy/union, wrapper, repeated-field and extras/count projections.
+
+Each container retains independent nullable intent and supported count checks; each element retains original merged fields, required names, bounds and effective nullable intent, including member-derived true and explicit root false. Optional Kotlin presence alone does not authorize annotation null. The collection property may retain its own independently validated field default. Inner-container and element defaults remain rejected. Supplied collections replace the member default; omitted fields inside each supplied element use their own existing initializers.
+
+Every source is validated even when the member is omitted, null or empty. The complete object shares source depth/work and original/canonical value budgets across sibling collections and nested objects. Diagnostics retain original schema locations and value order, including escaped Map keys and array indices. Required/Patch/discarded annotations validate before suppression. Decoding through the final enclosing serializer produces fresh containers, DTO elements and nested defaults, including after optimization and name locking.
+
+Bare-leaf permission stops at reference edges. [Referenced elements in inline collection properties](#referenced-elements-in-collection-properties) use their own original-reference permission; [named collection properties](#named-collection-properties-inside-object-defaults) have a separate bounded role. Fields without defaults retain their public type and wire behavior. This closes only the direct inline collection-member subitem of D03.
+
+[Core collection-member regressions](../core/allof_collection_object_default_members_test.go), [source identity/scope/budget checks](../internal/schema/allof_collection_object_default_members_test.go) and [native parity/check/failure preservation](../internal/cli/allof_object_default_members_process_test.go) define admission. The nested-object fixture and runtime consumer cover List/Map/mixed members, fresh values, independent nullable layers, missing/replacement/required elements, Patch and HTTP/live SSE, with optimized/locked helpers in all four feature profiles.
+
+## Referenced elements in collection properties
+
+An object-default property may also contain a finite direct inline List/typed Map tree whose element is an actual local `$ref` to an eligible named or internal ordinary allOf constructor. In the `rows` example above, `items` may be `{"$ref":"#/components/schemas/Value"}` with the disjoint component `Value`. Mixed paths such as `List<Map<String, ValueDto>>` and admitted finite named/internal element-reference chains retain the same contract.
+
+Permission is scoped to the property's original element-reference node, not a copied schema or the resolved terminal alone. The source walk follows every original hop and reuses the [allOf member source rules](#referenced-allof-properties-inside-object-defaults). Internal terminals require their exact node, Pointer, current lexical owner and lookup `SourceCatalog`; the shared type plan and final linker retain the actual unique constructor. Source validation may precede final linking and does not register new declarations. Existing internal property/collection-owned Models, root collection peers and concrete union variants use their physical constructor and serializer. A concrete variant keeps its business payload without adding a root-union envelope.
+
+Element nullability follows the explicit element reference, then nearest alias/internal-hop intent, then the terminal. Explicit false narrows true; container nullability remains independent. Every container and reference edge consumes source depth, and all siblings/terminal fields share the source-work counter even when the collection is omitted, null or empty. The original-order value diagnostics, required names, leaf checks, container counts and original/canonical value budgets apply unchanged. Required/Patch/discarded annotations validate before suppression.
+
+The collection property may retain its separately validated own field default. Element, intermediate-hop, target and inner-container defaults remain rejected. The same constructor/hierarchy/wrapper/repeated-field/extras/count restrictions apply as for referenced object members. References ending in collections do not obtain this element role; properties referencing named collections use the [named collection member contract](#named-collection-properties-inside-object-defaults). Adding an enclosing annotation preserves target/alias declaration bytes and warnings; decoding binds the final enclosing serializer after optimization and creates fresh containers, elements and nested defaults.
+
+[Core reference/context/nullable/guard tests](../core/referenced_allof_collection_object_default_members_test.go), [source/permission/budget checks](../internal/schema/referenced_allof_collection_object_default_members_test.go), [final retained-declaration checks](../internal/schema/internal_allof_object_default_members_test.go) and [native parity/check/failure preservation](../internal/cli/referenced_allof_object_default_members_process_test.go) define this extension. The shared nested-object feature tests named/internal mixed chains, root peers and concrete variants, missing/replacement/null/required elements, Patch, independent instances, HTTP/live SSE and optimized/locked helper binding under Data/Plain × validation and four Json configurations.
+
+## Named collection properties inside object defaults
+
+An object-default property may directly reference a named List/typed Map component, or a finite named alias chain to it, when its inline container tree ends in an actual reference to an eligible **named** ordinary allOf constructor. For example:
+
+```json
+{
+  "Value": {
+    "allOf": [
+      {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+      {"properties": {"count": {"type": "integer", "default": 2}}}
+    ]
+  },
+  "Rows": {"type": "array", "items": {"$ref": "#/components/schemas/Value"}},
+  "Holder": {
+    "properties": {
+      "cfg": {
+        "properties": {"rows": {"$ref": "#/components/schemas/Rows"}},
+        "default": {"rows": [{"label": "initial"}]}
+      }
+    }
+  }
+}
+```
+
+Typed Map and mixed inline paths such as `List<Map<String, ValueDto>>` are also eligible. Element references may traverse already admitted named/internal hops, but must end at a named allOf component. The collection path before the containers uses only original named component nodes and finite named aliases. Each hop retains its node and Pointer, and the terminal container scopes permission to its original element reference. The shared type plan owns the collection alias and element classifier; adding the enclosing default leaves those declarations and warnings unchanged, including when the collection declaration follows its consumer.
+
+Root nullability comes from the existing named component/alias view and consuming override. This preserves the historical direct nullable Map behavior: a direct named Map's `nullable:false` consumer does not remove its existing intrinsic nullability, while named collection aliases and arrays retain their existing narrowing behavior. Inner container and element nullability remain independent. Supported container counts and element checks apply before required/Patch/discarded suppression; supplied values replace defaults, and omitted element fields retain their own initializers. The collection property may own a separately validated default, but collection-target, intermediate-alias, element and inner-container defaults remain rejected.
+
+Original source depth and the shared source-work budget continue across collection aliases, containers, element references and object members. Omitted/null/empty members still validate the complete source. Original-order value diagnostics, canonical keys and original/canonical value budgets remain. Decoding uses the final enclosing serializer after optimization and creates fresh containers, referenced DTOs and nested defaults.
+
+This bounded member role excludes internal collection roots, bare allOf leaves, references between container layers and internal allOf element terminals. The corresponding consuming-field own-default roles and inline collection-member roles retain their separate contracts. General D03 remains open.
+
+[Core named-collection/context/nullable/guard tests](../core/referenced_collection_allof_object_default_members_test.go), [original source/depth/work checks](../internal/schema/referenced_collection_object_members_test.go) and the shared [native parity/preservation test](../internal/cli/referenced_allof_object_default_members_process_test.go) define admission. The nested-object feature covers aliases, nullable Maps, mixed containers, fresh defaults, missing/replacement/null/required elements, Patch, HTTP/live SSE and optimized/locked helpers in all four profiles.
 
 ## Bounded admission
 
@@ -190,7 +277,7 @@ Inline fields and references to eligible named or internal constructor Models ap
 - annotation-only reference wrappers: a single component ref plus metadata/nullable members must retain its canonical referenced type;
 - target/root/component defaults and default inheritance;
 - repeated-property/default/constraint aggregation, fixed extras (`additionalProperties`) and whole-object property counts;
-- empty/raw and const-only projections, hierarchy/common/inherited fields and internal reference hops inside object defaults;
+- empty/raw and const-only projections, hierarchy/common/inherited fields and chains to other terminal roles inside object defaults;
 - object-union products, which use the separate [composed union default contract](union-field-defaults.md).
 
 Existing input8MiB, source48, composition-work16,384, checked-collection16 and constructor-slot240 limits remain. Object default walks also share the independent [16,384-step source planning budget](nested-object-defaults.md#object-source-planning-budget). The annotation retains the shared 16,384 JSON value-node and 32 KiB original/canonical JSON budgets. Exceeding a value budget returns `E_MODEL_LIMIT` at the original member; generation failure leaves existing output intact.

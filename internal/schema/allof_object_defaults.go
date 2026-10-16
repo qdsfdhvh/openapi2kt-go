@@ -6,9 +6,9 @@ import (
 	"openapi-kt/internal/naming"
 )
 
-// inlineAllOfDefaultElement detects only the consuming inline collection path.
-// It grants no reference, object-member or component-root default role. The
-// shared type plan must still retain a constructor Model for this exact leaf.
+// inlineAllOfDefaultElement detects only an inline collection path. Its caller
+// chooses the consuming field or object-property role; this detector grants no
+// reference or component-root role. Shared type planning owns the constructor.
 func inlineAllOfDefaultElement(v *document.Value) *document.Value {
 	for edges := 0; edges <= MaxSchemaDepth && v != nil; edges++ {
 		if has(v, "$ref") {
@@ -41,10 +41,20 @@ func inlineAllOfDefaultElement(v *document.Value) *document.Value {
 	return nil
 }
 
+// allOfDefaultMemberElement scopes a collection property to its original bare
+// allOf leaf or element reference. Referenced collection roots stay separate.
+func (a *analyzer) allOfDefaultMemberElement(v *document.Value) *document.Value {
+	if leaf := inlineAllOfDefaultElement(v); leaf != nil {
+		return leaf
+	}
+	return a.inlineReferencedAllOfElement(v)
+}
+
 // inlineAllOfObjectDefaultMember admits only an ordinary inline constructor
 // property in an object value walk. The enclosing field's shared type plan has
 // already planned its declarations; this walk borrows sources, never declares
-// a type or grants a reference/collection-element role.
+// a type or widens reference/collection admission. Collection properties may
+// explicitly delegate their original inline leaf to this same constructor gate.
 func (a *analyzer) inlineAllOfObjectDefaultMember(v *document.Value, pointer string, depth int, allowOwnDefault bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	if !composedModelCandidate(v) || a.hierarchySources[v] ||
 		!allowOwnDefault && has(v, "default") ||
@@ -66,8 +76,8 @@ func (a *analyzer) inlineAllOfObjectDefaultMember(v *document.Value, pointer str
 }
 
 // referencedAllOfObjectDefaultMember borrows a named or internal allOf terminal
-// through finite named aliases. Type planning owns the actual reference and
-// final declaration; this walk retains every original hop and nullable intent.
+// through finite named/internal reference chains. Type planning owns the actual
+// reference and final declaration; this walk retains every original hop and nullable intent.
 func (a *analyzer) referencedAllOfObjectDefaultMember(v *document.Value, pointer, reference string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	var nullable *bool
 	for {
@@ -75,7 +85,14 @@ func (a *analyzer) referencedAllOfObjectDefaultMember(v *document.Value, pointer
 			return nil, err
 		}
 		owner := a.componentsByOriginalSchema(v)
-		if owner == nil {
+		if owner == nil && has(v, "$ref") {
+			// A transparent internal hop has source identity, not a nominal
+			// declaration of its own. Keep its original annotations and location;
+			// the terminal still needs the existing constructor binding below.
+			if err := a.internalAllOfDefaultMemberHop(v, pointer, reference); err != nil {
+				return nil, err
+			}
+		} else if owner == nil {
 			// Internal terminals require the existing typed use's original
 			// lexical binding. The shared final linker will reject missing,
 			// copied or ambiguous declarations before any artifacts can emit.
@@ -122,6 +139,18 @@ func (a *analyzer) referencedAllOfObjectDefaultMember(v *document.Value, pointer
 		}
 		depth++
 	}
+}
+
+// internalAllOfDefaultMemberHop checks only the original source path. The
+// enclosing type plan already admitted the chain; no new type is resolved here.
+func (a *analyzer) internalAllOfDefaultMemberHop(v *document.Value, pointer, reference string) *diagnostic.Diagnostic {
+	source, err := a.lookupSchemaReference(reference, pointer)
+	if err != nil || reference != "#"+pointer || source.Schema != v || source.Pointer != pointer ||
+		source.SourceCatalog == nil || a.components[source.SourceCatalog.Wire] != source.SourceCatalog ||
+		a.hierarchySources[source.SourceCatalog.Schema] || a.hierarchySources[v] {
+		return unsupported(naming.Pointer(pointer, "$ref"))
+	}
+	return nil
 }
 
 // internalAllOfDefaultMemberSource confirms an original typed terminal without

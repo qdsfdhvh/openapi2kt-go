@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"strings"
 	"testing"
 
 	"openapi-kt/internal/document"
@@ -71,42 +72,48 @@ func TestInternalAllOfObjectDefaultMemberAuthority(t *testing.T) {
 }
 
 func TestInternalAllOfObjectDefaultMemberFinalDeclaration(t *testing.T) {
-	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Owner/properties/node"}},"default":{"member":{"label":"x"}}}}},"Owner":{"properties":{"node":{"allOf":[{"properties":{"label":{"type":"string"}},"required":["label"]},{"properties":{"n":{"type":"integer"}}}]}}}}}}`)
-	root, err := document.Load(input, document.JSON, "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	pending := []referencedFieldDefault{}
-	a := &analyzer{root: root, options: Options{PackageName: "org.example.defaults", Suffix: "Dto"}, components: map[string]*component{}, emissionHints: EmissionHints{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}, referencedDefaults: &pending}
-	ds, err := a.analyze(root)
-	if err != nil {
-		t.Fatal(err)
-	}
-	// Holder sorts before Owner: its annotation is checked provisionally, but
-	// emission still requires the original unique retained Owner.Node Model.
-	var owner Declaration
-	var missing []Declaration
-	for _, d := range ds {
-		if d.Name() == "OwnerDto" {
-			owner = d
-		} else {
-			missing = append(missing, d)
+	for _, collection := range []bool{false, true} {
+		input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Owner/properties/node"}},"default":{"member":{"label":"x"}}}}},"Owner":{"properties":{"node":{"allOf":[{"properties":{"label":{"type":"string"}},"required":["label"]},{"properties":{"n":{"type":"integer"}}}]}}}}}}`)
+		if collection {
+			input = []byte(strings.ReplaceAll(string(input), `"member":{"$ref":"#/components/schemas/Owner/properties/node"}`, `"member":{"type":"array","items":{"$ref":"#/components/schemas/Owner/properties/node"}}`))
+			input = []byte(strings.ReplaceAll(string(input), `"member":{"label":"x"}`, `"member":[{"label":"x"}]`))
 		}
-	}
-	if owner == nil {
-		t.Fatal("missing owner")
-	}
-	if err := a.linkNominalDeclarations(map[string]*Hierarchy{}, missing, true); err == nil || err.Code != "E_REF_UNSUPPORTED" {
-		t.Fatal("missing retained owner authorized", err)
-	}
-	repeated := append(append([]Declaration{}, ds...), owner)
-	if err := a.linkNominalDeclarations(map[string]*Hierarchy{}, repeated, true); err == nil || err.Code != "E_REF_UNSUPPORTED" {
-		t.Fatal("ambiguous owner authorized", err)
-	}
-	if err := a.linkNominalDeclarations(map[string]*Hierarchy{}, ds, true); err != nil {
-		t.Fatal(err)
-	}
-	if err := a.validateInternalModels(ds); err != nil {
-		t.Fatal(err)
+		root, err := document.Load(input, document.JSON, "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		pending := []referencedFieldDefault{}
+		a := &analyzer{root: root, options: Options{PackageName: "org.example.defaults", Suffix: "Dto"}, components: map[string]*component{}, emissionHints: EmissionHints{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}, referencedDefaults: &pending}
+		ds, err := a.analyze(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// Holder sorts before Owner: its annotation is checked provisionally, but
+		// emission still requires the original unique retained Owner.Node Model.
+		var owner Declaration
+		var missing []Declaration
+		for _, d := range ds {
+			if d.Name() == "OwnerDto" {
+				owner = d
+			} else {
+				missing = append(missing, d)
+			}
+		}
+		if owner == nil {
+			t.Fatal("missing owner")
+		}
+		if err := a.linkNominalDeclarations(map[string]*Hierarchy{}, missing, true); err == nil || err.Code != "E_REF_UNSUPPORTED" {
+			t.Fatal("missing retained owner authorized", err)
+		}
+		repeated := append(append([]Declaration{}, ds...), owner)
+		if err := a.linkNominalDeclarations(map[string]*Hierarchy{}, repeated, true); err == nil || err.Code != "E_REF_UNSUPPORTED" {
+			t.Fatal("ambiguous owner authorized", err)
+		}
+		if err := a.linkNominalDeclarations(map[string]*Hierarchy{}, ds, true); err != nil {
+			t.Fatal(err)
+		}
+		if err := a.validateInternalModels(ds); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
