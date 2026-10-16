@@ -1,10 +1,31 @@
 package schema
 
 import (
+	"strings"
+
 	"openapi-kt/internal/diagnostic"
 	"openapi-kt/internal/document"
 	"openapi-kt/internal/naming"
 )
+
+// A root collection's retained constructor peer may use a package-relative name
+// in the collection TypeRef. Normalize only that same emitted name for the final
+// binding check; original source/owner/Pointer authority still comes from the
+// shared allOf checker. Keep the consuming type on the value-validation node.
+func (a *analyzer) referencedAllOfCollectionElementNode(v *document.Value, pointer string, ty TypeRef, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	actual := defaultBacking(ty)
+	qualified := actual.WithoutRootNull()
+	prefix := a.options.PackageName + ".models."
+	if binding := a.deferredNominals[v]; binding != nil && strings.HasPrefix(binding.Name, prefix) && qualified.Name == strings.TrimPrefix(binding.Name, prefix) {
+		qualified.Name = binding.Name
+	}
+	node, err := a.referencedAllOfObjectDefaultNode(v, pointer, qualified, depth)
+	if err != nil {
+		return nil, err
+	}
+	node.ty = actual
+	return node, nil
+}
 
 // A consuming reference's own default may use a disjoint ordinary allOf DTO
 // only after the existing final nominal barrier has retained its actual Model

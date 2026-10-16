@@ -20,6 +20,7 @@ import sys
 for name in ('input.json', 'opt.json'):
     path = Path(sys.argv[1]) / name
     value = json.loads(path.read_text())
+    value['components']['schemas']['BareAllRows'].update(minItems=1, maxItems=3)
     value['components']['schemas']['AllOfRows'].update(minItems=1, maxItems=3)
     value['components']['schemas']['Holder']['properties']['inlineAllRows'].update(minItems=1, maxItems=3)
     path.write_text(json.dumps(value))
@@ -42,6 +43,10 @@ fun main() = runBlocking {
     check(optimized.inlineAllRows?.single()?.name == "inline" && optimized.inlineAllRows?.single()?.child?.note == "inner")
     check(optimized.inlineAllMap?.get("k")?.name == "map" && optimized.inlineAllMixed?.single()?.get("k")?.name == "internal-inline")
     check(optimized.inlineAllNullable?.map { it?.name } == listOf(null, "nullable-inline") && optimized.inlineAllNil == null)
+    check(optimized.bareRows?.single()?.name == "bare" && optimized.bareRows?.single()?.age == 7 && optimized.bareRows?.single()?.child?.note == "inner")
+    check(optimized.bareAlias?.single()?.name == "bare-alias" && optimized.bareMaps?.get("k")?.name == "bare-map")
+    check(optimized.bareMixed?.single()?.get("k")?.child?.note == "inner")
+    check(optimized.bareNullable?.map { it?.name } == listOf(null, "bare-nullable") && optimized.bareNil == null)
     referencedObjectCollectionDefaultsContracts(CHECKED)
 }
 KOTLIN

@@ -129,8 +129,8 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 			return nil, err
 		}
 		if role == referencedCollectionOwnDefault && has(source, "allOf") && defaultBacking(ty).WithoutRootNull().Kind == Named {
-			// Only an actual reference edge grants this element role. A bare
-			// inline allOf leaf stays separate even if another use binds it.
+			// Reference edges require the exact linked element classifier. Bare
+			// collection leaves use their retained constructor role below.
 			return a.referencedAllOfObjectDefaultNode(source, p, defaultBacking(ty), depth+1)
 		}
 		return a.referencedDefaultSchemaRole(source, p, ty, depth+1, false, role)
@@ -143,8 +143,13 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 	}
 	actual := defaultBacking(ty)
 	bare := actual.WithoutRootNull()
-	if has(v, "allOf") && role == referencedNamedOwnDefault {
-		return a.referencedAllOfObjectDefaultNode(v, pointer, actual, depth)
+	if has(v, "allOf") {
+		if role == referencedNamedOwnDefault {
+			return a.referencedAllOfObjectDefaultNode(v, pointer, actual, depth)
+		}
+		if role == referencedCollectionOwnDefault {
+			return a.referencedAllOfCollectionElementNode(v, pointer, actual, depth)
+		}
 	}
 	node := &nestedDefaultNode{schema: v, pointer: pointer, ty: actual}
 	keys := []string{"type", "nullable", "format"}
