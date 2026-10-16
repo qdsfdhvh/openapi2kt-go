@@ -37,6 +37,12 @@ With `--validation`, the default value is checked against each property's retain
 
 The existing 8 MiB document, source-depth 48, checked-collection-depth 16 and 240 serialized constructor-slot limits are unchanged. The whole annotation reuses the nested default budget: 16,384 JSON value nodes and 32 KiB compact JSON bytes per original `/default`, with the canonical encoding independently limited to 32 KiB. Exceeded budgets return `E_MODEL_LIMIT` at an original Pointer with no partial artifacts. These bounds apply to required/Patch/discarded annotations as well as emitted initializers; independent width/depth/byte probes do not establish a maximum-width × maximum-depth guarantee.
 
+## Object source planning budget
+
+Object-default source planning has an independent 16,384-step budget per validation walk. Entering a plain object/container node, a merged object shape, a property dispatch or a container-element dispatch consumes one step; repeated references share the counter and each traversal consumes work. This bounds repeated expansion of a small nominal DAG even for `{}` or `null` annotations. Exceeding the budget returns `E_MODEL_LIMIT` at the original schema Pointer before an unbounded validation tree is allocated.
+
+The same walk is used by referenced DTOs, object-containing collections, ordinary allOf defaults and selected object-union variants. Required/Patch/discarded annotations retain this bound before suppression. Independent annotations receive fresh counters; source nodes and typed-reference admission are unchanged. [Core fanout/suppression regressions](../core/object_default_source_budget_test.go), [exact boundary and walk-isolation checks](../internal/schema/object_default_source_budget_test.go) and [native failure-preservation checks](../internal/cli/object_default_source_budget_process_test.go) define the limit.
+
 ## Compatibility and verification
 
 These inline object defaults previously failed with `E_SCHEMA_UNSUPPORTED`. Existing single-layer, collection, enum, temporal and referenced roles retain their contracts and emitted bytes. This closes only the direct inline ordinary DTO object field-default subitem of D03 and extends M01/M03/M04/M07/M08 with the existing M12/V05 and typed A03/A05/A08 consumers; referenced named DTO defaults, union/hierarchy fields, root/component defaults, container-child defaults and general D03/D04 remain open.

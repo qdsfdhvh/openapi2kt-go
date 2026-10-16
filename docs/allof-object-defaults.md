@@ -60,7 +60,7 @@ Inline fields and references to eligible named or internal constructor Models ap
 - empty/raw and const-only projections, hierarchy/common/inherited fields, collection elements and nested defaulted-object members whose own schema is `allOf`;
 - object-union products, which use the separate [composed union default contract](union-field-defaults.md).
 
-Existing input8MiB, source48, composition-work16,384, checked-collection16 and constructor-slot240 limits remain. The annotation retains the shared 16,384 JSON value-node and 32 KiB original/canonical JSON budgets. Exceeding a value budget returns `E_MODEL_LIMIT` at the original member; generation failure leaves existing output intact.
+Existing input8MiB, source48, composition-work16,384, checked-collection16 and constructor-slot240 limits remain. Object default walks also share the independent [16,384-step source planning budget](nested-object-defaults.md#object-source-planning-budget). The annotation retains the shared 16,384 JSON value-node and 32 KiB original/canonical JSON budgets. Exceeding a value budget returns `E_MODEL_LIMIT` at the original member; generation failure leaves existing output intact.
 
 ## Verification and compatibility
 

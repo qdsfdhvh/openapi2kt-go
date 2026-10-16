@@ -107,11 +107,33 @@ func objectDefaultRequiredNames(v *document.Value, pointer string) (map[string]b
 	return required, nil
 }
 
+// objectDefaultStep bounds source planning independently of annotation size.
+// Repeated references can otherwise expand a small nominal DAG exponentially,
+// including for empty/null values or annotations suppressed after validation.
+// Keep the counter on a shallow validation copy, scoped to one source walk.
+func (a *analyzer) objectDefaultStep(pointer string) (*analyzer, *diagnostic.Diagnostic) {
+	if a.objectDefaultWork == nil {
+		validation := *a
+		work := 0
+		validation.objectDefaultWork = &work
+		a = &validation
+	}
+	*a.objectDefaultWork++
+	if *a.objectDefaultWork > maxNestedDefaultNodes {
+		return nil, diagnostic.At("E_MODEL_LIMIT", "Object default source planning exceeds the supported 16,384 steps.", pointer)
+	}
+	return a, nil
+}
+
 // objectDefaultNode mirrors the accepted plain-object and List/typed Map source
 // grammar. Property and container elements retain the existing leaf/container
 // planner, which validates their own grammar, bounds, counts and enum
 // vocabularies against original nodes.
 func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth int, allowOwnDefault bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	a, err := a.objectDefaultStep(pointer)
+	if err != nil {
+		return nil, err
+	}
 	if err := depthCheck(depth, pointer); err != nil {
 		return nil, err
 	}
@@ -177,6 +199,10 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 // children are validated by the existing planner, which never creates
 // declarations here, so identity stays with the field type plan.
 func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, depth int, allowOwnDefault bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	a, err := a.objectDefaultStep(pointer)
+	if err != nil {
+		return nil, err
+	}
 	switch {
 	case has(v, "$ref"):
 		// A referenced plain object property borrows its resolved target; the
@@ -197,6 +223,10 @@ func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, 
 // their borrowed source nodes and pointers; no declarations are created. The
 // consuming role grants ordinary object members their own default annotations.
 func (a *analyzer) objectDefaultShapeNode(s *shape, pointer string, allowOwnDefault bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	a, err := a.objectDefaultStep(pointer)
+	if err != nil {
+		return nil, err
+	}
 	node := &nestedDefaultNode{pointer: pointer, ty: TypeRef{Kind: JSON}, object: true}
 	declared := map[string]bool{}
 	for _, f := range s.Fields {
@@ -325,6 +355,10 @@ func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer str
 // target; every other element stays with the existing leaf/container planner.
 // Element schemas cannot own the default annotation themselves.
 func (a *analyzer) objectDefaultChild(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	a, err := a.objectDefaultStep(pointer)
+	if err != nil {
+		return nil, err
+	}
 	if has(v, "$ref") {
 		if err := checkKeys(v, []string{"$ref", "nullable"}, pointer); err != nil {
 			return nil, err

@@ -234,6 +234,7 @@ type analyzer struct {
 	// The shared object type planner must ignore their own annotation, which the
 	// dedicated default planner validates instead.
 	objectDefaultSchemas         map[*document.Value]bool
+	objectDefaultWork            *int // Shared only by one source validation walk.
 	declarationOwners            map[Declaration]*component
 	unionOrigins                 map[Declaration]nominalOrigin
 	enumOrigins                  map[Declaration]nominalOrigin
