@@ -198,9 +198,17 @@ func TestReferencedAllOfDefaultExclusions(t *testing.T) {
 	carrierDefaultFailure(t, referencedAllOfDocument(withDefault, `{"$ref":"#/components/schemas/Value","default":{"label":"consumer"}}`), true, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Value/default")
 	intermediate := schemas(`{"Value":` + referencedAllOfTarget + `,"Alias":{"$ref":"#/components/schemas/Value","default":{"label":"alias"}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias","default":{"label":"x"}}}}}`)
 	carrierDefaultFailure(t, intermediate, true, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Alias/default")
-	// Collection defaults containing an allOf leaf retain their separate role.
+	// Preserve the original rejecting collection case as a graduation regression:
+	// a consuming referenced collection now owns its outer default annotation.
 	collection := schemas(`{"Value":` + referencedAllOfTarget + `,"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Value"}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Rows","default":[{"label":"x"}]}}}}`)
-	carrierDefaultFailure(t, collection, true, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Value/allOf")
+	for _, checked := range []bool{false, true} {
+		r := request(collection, "Dto")
+		r.Options.Validation = checked
+		got, err := core.GenerateWithDiagnostics(r)
+		if err != nil || !strings.Contains(source(t, got, "HolderDto"), "`openapi-kt default tree Alias") {
+			t.Fatal("referenced allOf collection default did not graduate", err)
+		}
+	}
 	hierarchy := schemas(`{"Base":{"oneOf":[{"$ref":"#/components/schemas/Leaf"}],"discriminator":{"propertyName":"kind","mapping":{"leaf":"#/components/schemas/Leaf"}}},"Leaf":{"allOf":[{"properties":{"label":{"type":"string"}}}]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Leaf","default":{"kind":"leaf","label":"x"}}}}}`)
 	baseline := []byte(strings.Replace(string(hierarchy), `,"default":{"kind":"leaf","label":"x"}`, "", 1))
 	if _, err := core.GenerateWithDiagnostics(request(baseline, "Dto")); err != nil {

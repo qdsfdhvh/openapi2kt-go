@@ -36,7 +36,7 @@ Transparent named aliases and already accepted finite internal reference hops ma
 
 Reference nullability follows the shared reference planner before optional presence: explicit consumer intent, nearest alias/internal hop intent, then terminal intent. Explicit false narrows even an intrinsically nullable allOf component. A valid null annotation emits literal `null`; non-null values use the final actual DTO serializer and create fresh objects, including omitted members with their own defaults. Required, Patch and discarded defaults undergo complete validation before suppression.
 
-The same referenced role also covers eligible [internal allOf DTOs](#references-to-internal-allof-dtos). Annotation-only allOf reference wrappers, hierarchy/common/inherited projections and List/Map defaults containing allOf leaves retain separate roles. Defaults on the target component or an intermediate reference are rejected rather than inherited. Repeated properties, fixed extras and whole-object counts remain excluded.
+The same referenced role also covers eligible [internal allOf DTOs](#references-to-internal-allof-dtos). Annotation-only allOf reference wrappers and hierarchy/common/inherited projections retain separate roles. [Referenced collection fields](#referenced-collection-field-defaults) separately admit DTO element references. Defaults on the target component or an intermediate reference are rejected rather than inherited. Repeated properties, fixed extras and whole-object counts remain excluded.
 
 ## References to internal allOf DTOs
 
@@ -48,7 +48,19 @@ Source authorization combines the final retained nominal binding with the origin
 
 Original field nodes, required names, leaf checks and source depths are reused. Nearest consumer/alias/internal nullable intent precedes terminal effective shape intent, including member-derived nullable on internal Models; explicit false narrows it and a later true may re-enable null. The helper binds the final actual type after optimization and produces fresh values. Target/chain annotations remain rejected, even when the target field's own initializer is otherwise valid. Required/Patch/discarded annotations and original/canonical budgets follow the same full validation before suppression.
 
-The consuming field defaults a single DTO value: references may target Models located in collections, but defaults on a collection containing allOf leaves and allOf-valued members inside another object default retain separate roles.
+The consuming field defaults a single DTO value. [Referenced collection fields](#referenced-collection-field-defaults) separately support references to these Models as elements; allOf-valued members inside another object default remain outside the walk.
+
+## Referenced collection field defaults
+
+An ordinary DTO field whose direct local `$ref` resolves to an already admitted finite named/internal List/typed Map tree may own an outer default when its element references an eligible named or internal ordinary allOf constructor Model. Accepted collection aliases and element reference chains retain their existing physical types and source limits. For example, `Rows` may declare `items: {"$ref":"#/components/schemas/Value"}` for the disjoint allOf above, and a consuming field may use `{"$ref":"#/components/schemas/Rows","default":[{"label":"initial","count":2}]}`. Mixed finite paths such as List of typed Map values are supported by the same walk.
+
+Only crossing an actual element reference edge grants this role. The final named element type, retained nominal binding, original source node/Pointer/owner and hierarchy exclusions are checked by the same referenced DTO authority above. A bare inline allOf collection element remains excluded, including when another typed use has independently registered its nominal source. Direct inline collection field defaults with allOf leaves and allOf-valued members inside object defaults remain separate.
+
+Every element validates the original disjoint shape, required names and leaves. Container and element nullable intent remain independent; an explicit false element reference narrows a nullable terminal, and optional field presence alone does not authorize annotation null. Source planning and original/canonical value budgets apply even to empty/null collections. Required/Patch/discarded annotations fully validate before initializer suppression; existing no-drop checks still reject discarded runtime constraints. Source annotations are not inherited. Named collection count constraints retain their existing validation opt-in.
+
+The helper decodes the complete collection using its final actual collection/alias serializer. Each default evaluation creates fresh containers, DTOs and supplied nested objects; omitted DTO fields retain their own declared initializers. Optimization and locks retain the effective type/default/check identity.
+
+[Core scope/nullable/suppression/diagnostic/budget regressions](../core/referenced_allof_collection_defaults_test.go), [original source/final element authority checks](../internal/schema/referenced_allof_collection_defaults_test.go) and [native parity/check/failure preservation](../internal/cli/referenced_allof_collection_defaults_process_test.go) define this extension. The [referenced collection fixture](../tests/fixtures/http/referenced-object-collection-defaults.json), [consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ReferencedObjectCollectionDefaultsContracts.kt) and `bash scripts/test.sh feature referenced-object-collection-defaults` cover Data/Plain × validation off/on, four Json configurations, concrete internal serializers, fresh nested values, required/Patch, HTTP/live SSE and optimized/locked helpers. The checked profile adds admitted named collection counts to its generated input; preparation alone is not compilation/runtime evidence.
 
 ## Bounded admission
 
@@ -57,7 +69,7 @@ Inline fields and references to eligible named or internal constructor Models ap
 - annotation-only reference wrappers: a single component ref plus metadata/nullable members must retain its canonical referenced type;
 - target/root/component defaults and default inheritance;
 - repeated-property/default/constraint aggregation, fixed extras (`additionalProperties`) and whole-object property counts;
-- empty/raw and const-only projections, hierarchy/common/inherited fields, collection elements and nested defaulted-object members whose own schema is `allOf`;
+- empty/raw and const-only projections, hierarchy/common/inherited fields, bare inline allOf collection elements and nested defaulted-object members whose own schema is `allOf`;
 - object-union products, which use the separate [composed union default contract](union-field-defaults.md).
 
 Existing input8MiB, source48, composition-work16,384, checked-collection16 and constructor-slot240 limits remain. Object default walks also share the independent [16,384-step source planning budget](nested-object-defaults.md#object-source-planning-budget). The annotation retains the shared 16,384 JSON value-node and 32 KiB original/canonical JSON budgets. Exceeding a value budget returns `E_MODEL_LIMIT` at the original member; generation failure leaves existing output intact.

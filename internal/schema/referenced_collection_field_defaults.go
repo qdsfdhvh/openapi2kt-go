@@ -128,6 +128,11 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		if err != nil {
 			return nil, err
 		}
+		if role == referencedCollectionOwnDefault && has(source, "allOf") && defaultBacking(ty).WithoutRootNull().Kind == Named {
+			// Only an actual reference edge grants this element role. A bare
+			// inline allOf leaf stays separate even if another use binds it.
+			return a.referencedAllOfObjectDefaultNode(source, p, defaultBacking(ty), depth+1)
+		}
 		return a.referencedDefaultSchemaRole(source, p, ty, depth+1, false, role)
 	}
 	// This source grammar is deliberately narrower than the type planner. No

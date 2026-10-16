@@ -12,6 +12,18 @@ for style in data_class plain_class; do
     cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ReferencedObjectCollectionDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
     cp tests/fixtures/http/referenced-object-collection-defaults.json "$project/input.json"
     cp tests/fixtures/http/referenced-object-collection-defaults.json "$project/opt.json"
+    if [[ "$checked" == true ]]; then
+      python3 - "$project" <<'PY'
+import json
+from pathlib import Path
+import sys
+for name in ('input.json', 'opt.json'):
+    path = Path(sys.argv[1]) / name
+    value = json.loads(path.read_text())
+    value['components']['schemas']['AllOfRows'].update(minItems=1, maxItems=3)
+    path.write_text(json.dumps(value))
+PY
+    fi
     cat > "$project/src/main/kotlin/org/example/contracts/Main.kt" <<'KOTLIN'
 package org.example.contracts
 
@@ -22,6 +34,10 @@ fun main() = runBlocking {
     val optimized = org.example.refcolopt.models.HolderDto(requiredRows = listOf(org.example.refcolopt.models.ItemDto(name = "r")))
     check(optimized.inlineRows?.map { it.name } == listOf("a", "b"))
     check(optimized.namedRows == listOf(org.example.refcolopt.models.ItemDto(name = "d")))
+    check(optimized.allOfRows?.single()?.name == "all" && optimized.allOfRows?.single()?.child?.note == "inner")
+    check(optimized.allOfAlias?.single()?.name == "alias")
+    check(optimized.allOfNested?.single()?.get("k")?.name == "internal" && optimized.allOfNested?.single()?.get("k")?.child?.note == "inner")
+    check(optimized.allOfNullable?.map { it?.name } == listOf(null, "nullable") && optimized.allOfNil == null)
     referencedObjectCollectionDefaultsContracts(CHECKED)
 }
 KOTLIN

@@ -16,6 +16,8 @@
 }
 ```
 
+The referenced collection form also supports [disjoint ordinary allOf DTO element references](allof-object-defaults.md#referenced-collection-field-defaults) across admitted named/internal finite collection trees and aliases. These require an actual element `$ref` to a retained named/internal constructor Model and preserve its original lexical serializer, merged source fields and effective nullable intent. Bare inline allOf elements, direct inline collection fields with allOf leaves, hierarchy and nested allOf-valued object-default members retain separate roles.
+
 The field keeps its actual collection type (`List<ItemDto>?`, `RowsDto?`) and the emitted helper decodes the canonical JSON through the final actual serializer, binding the final relocated element/alias type after optimization and deduplicating per wrapper shape. Each evaluation produces a fresh tree, and omitted element object keys use the element DTO's own property defaults.
 
 ## Annotation, presence and source fidelity
@@ -29,6 +31,8 @@ Nullable intent follows the existing reference contracts: nearest explicit consu
 ## Validation and resources
 
 With `--validation`, default values satisfy each retained element/container count and leaf bound, and each element DTO's own `init` checks run when the decoded default is constructed. Null bypasses only its own non-null checks. The existing input8MiB, source48, checked-collection16 and 240 serialized constructor-slot limits are unchanged; the whole annotation reuses the 16,384 value-node and 32 KiB compact/canonical JSON budgets. Exceeded budgets return `E_MODEL_LIMIT` at an original Pointer with no partial artifacts.
+
+Object-containing source walks independently retain the [16,384-step source budget](nested-object-defaults.md#object-source-planning-budget), including empty annotations and repeated references.
 
 ## Compatibility and verification
 
