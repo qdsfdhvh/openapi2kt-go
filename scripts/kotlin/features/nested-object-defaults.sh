@@ -25,6 +25,11 @@ fun main() = runBlocking {
     check(optimized.allOfCfg?.z == "merged" && optimized.allOfCfg?.count == 5 && optimized.allOfCfg?.meta?.flag == true)
     check(optimized.allOfNull == null)
     check(optimized.cfg?.composed?.label == "outer member" && optimized.cfg?.composed?.count == 3 && optimized.cfg?.composed?.child?.flag == false)
+    check(optimized.cfg?.linked?.label == "outer linked" && optimized.cfg?.linked?.count == 2 && optimized.cfg?.linked?.child?.flag == true)
+    check(optimized.cfg?.viaAlias?.label == "outer alias" && optimized.cfg?.viaAlias?.count == 2 && optimized.cfg?.viaAlias?.child?.flag == true)
+    check(optimized.cfg?.aliasNull == null)
+    check(optimized.cfg?.owned?.label == "outer owned" && optimized.cfg?.owned?.child?.flag == true && optimized.cfg?.ownedAlias == null)
+    check(optimized.cfg?.ownedRow?.label == "outer row" && optimized.cfg?.ownedVariant?.label == "outer variant")
     nestedObjectDefaultsContracts(CHECKED)
 }
 KOTLIN

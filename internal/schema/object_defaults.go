@@ -323,9 +323,9 @@ func (a *analyzer) objectDefaultConstNode(v *document.Value, pointer string) (*n
 }
 
 // objectDefaultPropertyReference resolves an object property's direct local
-// `$ref`. Plain object targets recurse as objects; scalar/enum/collection
-// targets keep the existing leaf/container validation against the resolved
-// source. Reference chains stay with their separate roles.
+// `$ref`. Plain object and named/internal ordinary allOf targets recurse as
+// objects; named aliases to allOf preserve each original hop and nullable intent.
+// Internal reference hops and chains to other terminal roles remain separate.
 func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	if err := checkKeys(v, []string{"$ref", "nullable", "default"}, pointer); err != nil {
 		return nil, err
@@ -335,7 +335,9 @@ func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer str
 		return nil, err
 	}
 	var node *nestedDefaultNode
-	if objectDefaultCandidateSchema(source) {
+	if has(source, "allOf") || has(source, "$ref") {
+		node, err = a.referencedAllOfObjectDefaultMember(source, sourcePointer, text(get(v, "$ref")), depth+1)
+	} else if objectDefaultCandidateSchema(source) {
 		node, err = a.objectDefaultNode(source, sourcePointer, depth, false)
 	} else {
 		node, err = a.nestedDefaultSchema(source, "Validation", sourcePointer, nil, nil, depth, false)

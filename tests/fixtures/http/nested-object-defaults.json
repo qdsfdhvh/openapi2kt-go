@@ -76,6 +76,27 @@
                 "nullable": true,
                 "default": {"label": "member"}
               },
+              "linked": {
+                "$ref": "#/components/schemas/ComposedCfg",
+                "nullable": true,
+                "default": {"label": "linked member"}
+              },
+              "viaAlias": {
+                "$ref": "#/components/schemas/ComposedOuter",
+                "default": {"label": "alias member"}
+              },
+              "aliasNull": {
+                "$ref": "#/components/schemas/ComposedNullableOuter",
+                "default": null
+              },
+              "owned": {
+                "$ref": "#/components/schemas/OwnedCfg/properties/node",
+                "nullable": false,
+                "default": {"label": "owned member"}
+              },
+              "ownedAlias": {"$ref": "#/components/schemas/OwnedCfgAlias", "default": null},
+              "ownedRow": {"$ref": "#/components/schemas/OwnedRows/items", "default": {"label": "row member"}},
+              "ownedVariant": {"$ref": "#/components/schemas/OwnedUnion/oneOf/0", "default": {"kind": "all", "label": "variant member"}},
               "note": {
                 "type": [
                   "string",
@@ -103,6 +124,13 @@
                 "flag": false
               },
               "composed": {"label": "outer member", "count": 3, "child": {"flag": false}},
+              "linked": {"label": "outer linked"},
+              "viaAlias": {"label": "outer alias"},
+              "aliasNull": null,
+              "owned": {"label": "outer owned"},
+              "ownedAlias": null,
+              "ownedRow": {"label": "outer row"},
+              "ownedVariant": {"kind": "all", "label": "outer variant"},
               "note": null,
               "leaf": {
                 "z": "deep"
@@ -223,6 +251,41 @@
           "value"
         ]
       },
+      "OwnedCfgAlias": {"$ref": "#/components/schemas/OwnedCfg/properties/node", "nullable": true},
+      "OwnedCfg": {"properties": {"node": {
+        "allOf": [
+          {"nullable": true, "properties": {"label": {"type": "string"}}, "required": ["label"]},
+          {"properties": {
+            "count": {"type": "integer", "default": 2},
+            "child": {"properties": {"flag": {"type": "boolean"}}, "default": {"flag": true}}
+          }}
+        ]
+      }}},
+      "OwnedRows": {"type": "array", "items": {
+        "allOf": [
+          {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+          {"properties": {"count": {"type": "integer", "default": 2}}}
+        ]
+      }},
+      "OwnedUnion": {"oneOf": [
+        {"allOf": [
+          {"properties": {"kind": {"const": "all"}, "label": {"type": "string"}}, "required": ["label"]},
+          {"properties": {"count": {"type": "integer", "default": 2}}}
+        ]},
+        {"properties": {"kind": {"const": "other"}, "value": {"type": "integer"}}}
+      ]},
+      "ComposedAlias": {"$ref": "#/components/schemas/ComposedCfg", "nullable": true},
+      "ComposedOuter": {"$ref": "#/components/schemas/ComposedAlias", "nullable": false},
+      "ComposedNullableOuter": {"$ref": "#/components/schemas/ComposedOuter", "nullable": true},
+      "ComposedCfg": {
+        "allOf": [
+          {"properties": {"label": {"type": "string"}}, "required": ["label"]},
+          {"properties": {
+            "count": {"type": "integer", "default": 2},
+            "child": {"properties": {"flag": {"type": "boolean"}}, "default": {"flag": true}}
+          }}
+        ]
+      },
       "LeafCfg": {
         "type": "object",
         "required": [
@@ -299,6 +362,12 @@
                     "default": {
                       "a": "x"
                     }
+                  },
+                  "aliasCfg": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {"member": {"$ref": "#/components/schemas/ComposedOuter"}, "owned": {"$ref": "#/components/schemas/OwnedCfg/properties/node", "nullable": false}},
+                    "default": {"member": {"label": "patch default"}, "owned": {"label": "owned patch default"}}
                   },
                   "allOfCfg": {
                     "allOf": [

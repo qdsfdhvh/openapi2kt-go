@@ -68,7 +68,9 @@ private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMa
     "name" to value?.name, "age" to value?.age, "status" to value?.status,
     "code" to value?.code, "when" to value?.`when`, "tags" to value?.tags,
     "counts" to value?.counts, "child" to value?.child, "childFlag" to value?.child?.flag,
-    "leaf" to value?.leaf?.z, "note" to value?.note, "composed" to value?.composed,
+    "leaf" to value?.leaf?.z, "note" to value?.note, "composed" to value?.composed, "linked" to value?.linked,
+    "viaAlias" to value?.viaAlias, "aliasNull" to value?.aliasNull,
+    "owned" to value?.owned, "ownedAlias" to value?.ownedAlias, "ownedRow" to value?.ownedRow, "ownedVariant" to value?.ownedVariant,
 )
 
 private fun nestedObjectHolderFields(value: HolderDto): Map<String, Any?> = linkedMapOf(
@@ -97,6 +99,13 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.child?.flag == false && value.cfg?.note == null)
     check(value.cfg?.leaf?.z == "deep")
     check(value.cfg?.composed?.label == "outer member" && value.cfg?.composed?.count == 3 && value.cfg?.composed?.child?.flag == false)
+    check(value.cfg?.linked?.label == "outer linked" && value.cfg?.linked?.count == 2 && value.cfg?.linked?.child?.flag == true)
+    check(value.cfg?.viaAlias?.label == "outer alias" && value.cfg?.viaAlias?.count == 2 && value.cfg?.viaAlias?.child?.flag == true)
+    check(value.cfg?.aliasNull == null)
+    check(value.cfg?.owned?.label == "outer owned" && value.cfg?.owned?.count == 2 && value.cfg?.owned?.child?.flag == true)
+    check(value.cfg?.ownedAlias == null)
+    check(value.cfg?.ownedRow?.label == "outer row" && value.cfg?.ownedRow?.count == 2)
+    check(value.cfg?.ownedVariant?.label == "outer variant" && value.cfg?.ownedVariant?.count == 2)
     check(value.requiredCfg.id == "x")
     check(value.allOfCfg?.z == "merged" && value.allOfCfg?.count == 5 && value.allOfCfg?.meta?.flag == true)
     check(value.allOfNull == null)
@@ -105,6 +114,14 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.allOfCfg?.meta !== other.allOfCfg?.meta)
     check(value.cfg?.composed == other.cfg?.composed && value.cfg?.composed !== other.cfg?.composed)
     check(value.cfg?.composed?.child !== other.cfg?.composed?.child)
+    check(value.cfg?.linked == other.cfg?.linked && value.cfg?.linked !== other.cfg?.linked)
+    check(value.cfg?.linked?.child !== other.cfg?.linked?.child)
+    check(value.cfg?.viaAlias == other.cfg?.viaAlias && value.cfg?.viaAlias !== other.cfg?.viaAlias)
+    check(value.cfg?.viaAlias?.child !== other.cfg?.viaAlias?.child)
+    check(value.cfg?.owned == other.cfg?.owned && value.cfg?.owned !== other.cfg?.owned)
+    check(value.cfg?.owned?.child !== other.cfg?.owned?.child)
+    check(value.cfg?.ownedRow == other.cfg?.ownedRow && value.cfg?.ownedRow !== other.cfg?.ownedRow)
+    check(value.cfg?.ownedVariant == other.cfg?.ownedVariant && value.cfg?.ownedVariant !== other.cfg?.ownedVariant)
     // A required object default keeps its constructor argument and no initializer.
     check(!HolderDto.serializer().descriptor.isElementOptional(1))
     // Fresh nested trees per instance, not one shared mutable default.
@@ -113,6 +130,11 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     val fresh = HolderDto.Cfg(name = "n")
     check(fresh.age == 7 && fresh.child?.flag == true && fresh.status == null && fresh.code == null)
     check(fresh.composed?.label == "member" && fresh.composed?.count == 2 && fresh.composed?.child?.flag == true)
+    check(fresh.linked?.label == "linked member" && fresh.linked?.count == 2 && fresh.linked?.child?.flag == true)
+    check(fresh.viaAlias?.label == "alias member" && fresh.viaAlias?.count == 2 && fresh.viaAlias?.child?.flag == true)
+    check(fresh.aliasNull == null)
+    check(fresh.owned?.label == "owned member" && fresh.owned?.count == 2 && fresh.owned?.child?.flag == true)
+    check(fresh.ownedAlias == null && fresh.ownedRow?.label == "row member" && fresh.ownedVariant?.label == "variant member")
     if (checked) {
         nestedObjectReject("enum") { HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x"), cfg = HolderDto.Cfg(name = "n", code = 9)) }
     } else {
@@ -127,6 +149,23 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         val overridden = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"y"},"cfg":{"name":"z"}}""")
         check(overridden.requiredCfg.id == "y" && overridden.cfg?.name == "z" && overridden.cfg?.age == 7 && overridden.cfg?.child?.flag == true)
         check(overridden.cfg?.composed?.label == "member" && overridden.cfg?.composed?.count == 2)
+        check(overridden.cfg?.linked?.label == "linked member" && overridden.cfg?.linked?.count == 2)
+        check(overridden.cfg?.viaAlias?.label == "alias member" && overridden.cfg?.viaAlias?.count == 2 && overridden.cfg?.aliasNull == null)
+        check(overridden.cfg?.owned?.label == "owned member" && overridden.cfg?.ownedRow?.label == "row member" && overridden.cfg?.ownedVariant?.label == "variant member")
+        val ownedOverride = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","owned":{"label":"replacement"},"ownedAlias":{"label":"set"},"ownedRow":{"label":"row"},"ownedVariant":{"label":"variant"}}}""")
+        check(ownedOverride.cfg?.owned?.label == "replacement" && ownedOverride.cfg?.owned?.count == 2 && ownedOverride.cfg?.owned?.child?.flag == true)
+        check(ownedOverride.cfg?.ownedAlias?.label == "set" && ownedOverride.cfg?.ownedAlias?.child?.flag == true)
+        check(ownedOverride.cfg?.ownedRow?.label == "row" && ownedOverride.cfg?.ownedVariant?.label == "variant")
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","ownedAlias":null}}""").cfg?.ownedAlias == null)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","owned":{}}}""") }.isFailure)
+        val aliasOverride = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaAlias":{"label":"replacement"},"aliasNull":{"label":"set"}}}""")
+        check(aliasOverride.cfg?.viaAlias?.label == "replacement" && aliasOverride.cfg?.viaAlias?.child?.flag == true)
+        check(aliasOverride.cfg?.aliasNull?.label == "set" && aliasOverride.cfg?.aliasNull?.count == 2)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaAlias":{}}}""") }.isFailure)
+        val linkedOverride = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","linked":{"label":"replacement"}}}""")
+        check(linkedOverride.cfg?.linked?.label == "replacement" && linkedOverride.cfg?.linked?.count == 2 && linkedOverride.cfg?.linked?.child?.flag == true)
+        check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","linked":null}}""").cfg?.linked == null)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","linked":{}}}""") }.isFailure)
         val memberOverride = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","composed":{"label":"replacement"}}}""")
         check(memberOverride.cfg?.composed?.label == "replacement" && memberOverride.cfg?.composed?.count == 2 && memberOverride.cfg?.composed?.child?.flag == true)
         check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","composed":null}}""").cfg?.composed == null)
@@ -142,12 +181,17 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check(referenced.cfg?.a == "x" && referenced.cfgNullable == null)
         // Inline request object defaults keep complete validation but Patch.Absent.
         val absent = codec.decodeFromString<PatchHolderInputDto>("""{"required":null}""")
-        check(absent.cfg == Patch.Absent && absent.allOfCfg == Patch.Absent && absent.required == null)
-        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "cfg" || it == "allOfCfg" })
-        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"cfg":null,"allOfCfg":null}""")
-        check(cleared.cfg == Patch.Null && cleared.allOfCfg == Patch.Null)
+        check(absent.cfg == Patch.Absent && absent.allOfCfg == Patch.Absent && absent.aliasCfg == Patch.Absent && absent.required == null)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), absent) as JsonObject).keys.none { it == "cfg" || it == "allOfCfg" || it == "aliasCfg" })
+        val cleared = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"cfg":null,"allOfCfg":null,"aliasCfg":null}""")
+        check(cleared.cfg == Patch.Null && cleared.allOfCfg == Patch.Null && cleared.aliasCfg == Patch.Null)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["cfg"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["allOfCfg"] === JsonNull)
+        check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["aliasCfg"] === JsonNull)
+        val aliasUpdate = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"member":{"label":"update"},"owned":{"label":"owned update"}}}""").aliasCfg
+        check(aliasUpdate is Patch.Value && aliasUpdate.value.member?.label == "update" && aliasUpdate.value.member?.count == 2)
+        check(aliasUpdate.value.owned?.label == "owned update" && aliasUpdate.value.owned?.child?.flag == true)
+        check(runCatching { codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"member":{}}}""") }.isFailure)
         val mergedUpdate = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"allOfCfg":{"a":"u","b":3}}""")
         check(mergedUpdate.allOfCfg == Patch.Value(PatchHolderInputDto.AllOfCfg(a = "u", b = 3)))
         val update = PatchHolderInputDto(required = null, cfg = Patch.Value(PatchHolderInputDto.Cfg(a = "u")))
