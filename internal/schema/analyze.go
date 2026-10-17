@@ -252,11 +252,19 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 			a.components[wire].AliasType = TypeRef{Kind: JSON, SchemaSteps: recursiveJSON}
 		}
 		if a.options.Validation && has(v, "enum") && !has(v, "x-native-type") && !has(v, "const") && !has(v, "x-kotlin-value-class") && (kind == "integer" || kind == "number" || kind == "boolean") {
+			// A component root's own `default` is owned by the factory planner, so
+			// keep the field role's membership/validation semantics here and only
+			// let the key check accept the annotation.
 			_, checks, e := a.nativeEnumFieldType(field{Schema: v, Pointer: pointer}, false)
 			if e != nil {
 				return nil, e
 			}
 			a.components[wire].Validation = checks
+			if a.componentDefaultSchemas[v] {
+				// The factory planner re-runs this profile on a warning-free copy, so
+				// emit the component's own approximation warning here exactly once.
+				a.nativeEnumWarn(kind, v, pointer)
+			}
 		}
 	}
 	// Root aliases need physical target names before catalog binding. Hierarchy

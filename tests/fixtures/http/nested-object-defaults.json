@@ -499,6 +499,7 @@
       "ComponentDefaultNames": {"type": "array", "items": {"type": "string"}, "default": ["component-name"]},
       "ComponentDefaultDates": {"type": "array", "items": {"type": "string", "format": "date"}, "default": ["2024-02-29"]},
       "ComponentDefaultWhen": {"type": "string", "format": "date-time", "default": "2024-01-02T03:04:05Z"},
+      "ComponentDefaultCode": {"type": "integer", "format": "int32", "enum": [7, 8], "default": 7},
       "TimeRows": {"type": "array", "items": {"$ref": "#/components/schemas/TimeValue"}}
     }
   },

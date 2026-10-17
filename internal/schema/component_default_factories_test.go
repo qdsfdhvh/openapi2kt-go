@@ -106,7 +106,6 @@ func TestComponentDefaultFactoryScalarExclusions(t *testing.T) {
 	for _, tc := range []struct{ name, schemas string }{
 		{"bytes", `{"S":{"type":"string","format":"byte","default":"x"}}`},
 		{"caller native", `{"S":{"type":"string","x-native-type":"org.example.Money","default":"x"}}`},
-		{"native enum", `{"S":{"type":"integer","format":"int32","enum":[1,2],"default":1}}`},
 		{"nullable scalar", `{"S":{"type":"string","nullable":true,"default":"x"}}`},
 		{"const", `{"S":{"type":"string","const":"x","default":"x"}}`},
 	} {
@@ -206,6 +205,48 @@ func TestComponentDefaultFactoryTemporalExclusions(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if _, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true}); err == nil {
 				t.Fatal("excluded temporal root admitted")
+			}
+		})
+	}
+}
+
+// A native enum component attaches the canonical annotation to its ScalarAlias
+// and keeps the scalar wire type.
+func TestComponentDefaultFactoryNativeEnumAuthority(t *testing.T) {
+	plan, warnings, err := Analyze(loadComponentDocument(t, `{"Code":{"type":"integer","format":"int32","enum":[1,2],"default":1},"Flag":{"type":"boolean","enum":[true,false],"default":true}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct{ name, scalar string }{{"CodeDto", "kotlin.Int"}, {"FlagDto", "kotlin.Boolean"}} {
+		declaration := componentDeclaration(plan.Models, tc.name)
+		alias, ok := declaration.(*ScalarAlias)
+		if !ok || alias.Scalar != tc.scalar || alias.ComponentDefault == "" {
+			t.Fatalf("%s: lost native scalar alias or factory: %+v", tc.name, declaration)
+		}
+	}
+	// The approximation warning is reported once per component.
+	count := 0
+	for _, warning := range warnings {
+		if warning.Code == "W_ENUM_NATIVE_APPROXIMATION" {
+			count++
+		}
+	}
+	if count != 2 {
+		t.Fatalf("want one native-enum warning per component, got %d: %v", count, warnings)
+	}
+}
+
+// An unformatted numeric enum component keeps its existing rejection; a
+// non-member value is rejected before rounding.
+func TestComponentDefaultFactoryNativeEnumExclusions(t *testing.T) {
+	for _, tc := range []struct{ name, schemas string }{
+		{"unformatted numeric enum", `{"S":{"type":"integer","enum":[1],"default":1}}`},
+		{"native non-member", `{"S":{"type":"integer","format":"int32","enum":[1,2],"default":9}}`},
+		{"boolean non-member", `{"S":{"type":"boolean","enum":[true],"default":false}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if _, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true}); err == nil {
+				t.Fatal("excluded native enum role admitted")
 			}
 		})
 	}

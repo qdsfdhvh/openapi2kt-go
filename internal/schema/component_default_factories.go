@@ -116,8 +116,9 @@ func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Di
 	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
 		return "", err
 	}
+	// Do not clear warnings here: the shared type plan owns source warnings such
+	// as W_ENUM_NATIVE_APPROXIMATION and they must reach the caller once.
 	validation := *a
-	validation.warnings = nil
 	validation.objectDefaultWork = nil
 	if validation.objectDefaultSchemas == nil {
 		validation.objectDefaultSchemas = map[*document.Value]bool{}
@@ -138,6 +139,7 @@ func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Di
 		if len(encoded) > maxNestedDefaultBytes {
 			return "", diagnostic.At("E_MODEL_LIMIT", "Canonical component default exceeds the supported 32 KiB JSON byte limit.", at)
 		}
+		a.warnings = mergeWarnings(a.warnings, validation.warnings)
 		return string(encoded), nil
 	}
 	node, err := validation.componentDefaultNode(c)
@@ -148,6 +150,7 @@ func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Di
 	if err != nil {
 		return "", err
 	}
+	a.warnings = mergeWarnings(a.warnings, validation.warnings)
 	if value.Kind() == document.Null {
 		return "null", nil
 	}
@@ -191,13 +194,30 @@ func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
 		has(c.Schema, "allOf") || has(c.Schema, "$ref") {
 		return false
 	}
-	// A `format` is admitted only for the standard temporal scalars, whose field
-	// default role already exists. Bytes and other formats stay excluded.
+	// An enum vocabulary owns its own format handling: a plain String vocabulary
+	// has no format restriction here, and a numeric/Boolean native vocabulary
+	// keeps its scalar wire type under its own role.
+	if has(c.Schema, "enum") {
+		if kind == "" || kind == "string" {
+			// A String enum with a format keeps the separate temporal/bytes roles.
+			return !has(c.Schema, "format")
+		}
+		// A Boolean vocabulary has no format of its own; a numeric one needs the
+		// explicit native format that identifies its wire type. An unformatted
+		// numeric enum component keeps its existing rejection.
+		if kind == "boolean" {
+			return true
+		}
+		if !has(c.Schema, "format") {
+			return false
+		}
+		return kind == "integer" || kind == "number"
+	}
+	// A non-enum `format` is admitted only for the standard temporal scalars,
+	// whose field default role already exists. Bytes and other formats stay
+	// excluded.
 	if has(c.Schema, "format") && !isTemporalScalarRoot(c.Schema, kind) {
 		return false
-	}
-	if has(c.Schema, "enum") {
-		return kind == "" || kind == "string"
 	}
 	return isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind)
 }
@@ -300,6 +320,18 @@ func (a *analyzer) scalarComponentNode(c *component) (*nestedDefaultNode, *diagn
 	if has(c.Schema, "enum") {
 		// The enum role owns its own vocabulary check and node kind.
 		field := field{Wire: c.Name, Pointer: c.Pointer, Schema: c.Schema, Depth: 0}
+		kind, _, kindErr := schemaType(c.Schema, c.Pointer)
+		if kindErr != nil {
+			return nil, kindErr
+		}
+		if kind == "integer" || kind == "number" || kind == "boolean" {
+			// Native numeric/Boolean vocabularies keep their scalar wire type and
+			// exact pre-rounding membership check.
+			if _, _, err := a.nativeEnumFieldType(field, true); err != nil {
+				return nil, err
+			}
+			return &nestedDefaultNode{schema: c.Schema, pointer: c.Pointer, ty: TypeRef{Kind: JSON}}, nil
+		}
 		if _, err := a.enumDefaultType(field, c.Name, nil, nil); err != nil {
 			return nil, err
 		}
@@ -357,4 +389,29 @@ func isTemporalScalarRoot(v *document.Value, kind string) bool {
 		return true
 	}
 	return false
+}
+
+// mergeWarnings appends only warnings the caller does not already have, so a
+// probe that re-runs the type plan cannot duplicate a source warning.
+func mergeWarnings(existing, extra []diagnostic.Diagnostic) []diagnostic.Diagnostic {
+	seen := make(map[string]bool, len(existing))
+	for _, w := range existing {
+		key := w.Code
+		if w.Pointer != nil {
+			key += "|" + *w.Pointer
+		}
+		seen[key] = true
+	}
+	for _, w := range extra {
+		key := w.Code
+		if w.Pointer != nil {
+			key += "|" + *w.Pointer
+		}
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		existing = append(existing, w)
+	}
+	return existing
 }

@@ -137,7 +137,6 @@ func TestComponentDefaultFactoryScalarGuards(t *testing.T) {
 	}
 	// Native markers, temporal, bytes and value-class roots keep their roles.
 	for _, tc := range []struct{ name, schemas string }{
-		{"native enum", `{"S":{"type":"integer","format":"int32","enum":[1,2],"default":1}}`},
 		{"bytes", `{"S":{"type":"string","format":"byte","default":"x"}}`},
 		{"caller native", `{"S":{"type":"string","x-native-type":"org.example.Money","default":"x"}}`},
 	} {
@@ -255,6 +254,56 @@ func TestComponentDefaultFactoryTemporal(t *testing.T) {
 			r.Options.Validation = true
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
 				t.Fatalf("excluded temporal root admitted: %v", err)
+			}
+		})
+	}
+}
+
+// A numeric/Boolean native enum component root may own its root default. The
+// scalar wire type, the original exact vocabulary membership and the existing
+// approximation warning are retained.
+func TestComponentDefaultFactoryNativeEnum(t *testing.T) {
+	for _, checked := range []bool{false, true} {
+		for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+			r := request([]byte(`{"openapi":"3.1.0","components":{"schemas":{"Code":{"type":"integer","format":"int32","enum":[1,2,3],"default":1},"Wide":{"type":"integer","format":"int64","enum":[10,20],"default":10},"Flag":{"type":"boolean","enum":[true,false],"default":true},"Ratio":{"type":"number","format":"double","enum":[1.5,2.5],"default":1.5}}}}`), "Dto")
+			r.Options.Validation, r.Options.ModelStyle = checked, style
+			got, err := core.GenerateWithDiagnostics(r)
+			if err != nil {
+				t.Fatal(checked, style, err)
+			}
+			for _, marker := range []struct{ file, want string }{
+				{"CodeDto", "public typealias CodeDto = kotlin.Int"},
+				{"WideDto", "public typealias WideDto = kotlin.Long"},
+				{"FlagDto", "public typealias FlagDto = kotlin.Boolean"},
+				{"RatioDto", "public typealias RatioDto = kotlin.Double"},
+			} {
+				if text := source(t, got, marker.file); !strings.Contains(text, marker.want) ||
+					!strings.Contains(text, "public fun `"+marker.file+" default`(): "+marker.file+" =") {
+					t.Fatal(marker.file, text)
+				}
+			}
+			// The native approximation warning stays.
+			found := false
+			for _, w := range got.Warnings {
+				if w.Code == "W_ENUM_NATIVE_APPROXIMATION" {
+					found = true
+				}
+			}
+			if !found {
+				t.Fatal("native enum approximation warning lost", got.Warnings)
+			}
+		}
+	}
+	// A non-member value keeps the exact pre-rounding membership check.
+	for _, tc := range []struct{ name, schemas string }{
+		{"native non-member", `{"S":{"type":"integer","format":"int32","enum":[1,2],"default":9}}`},
+		{"boolean non-member", `{"S":{"type":"boolean","enum":[true],"default":false}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request(schemas(tc.schemas), "Dto")
+			r.Options.Validation = true
+			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
+				t.Fatalf("native non-member admitted: %v", err)
 			}
 		})
 	}
