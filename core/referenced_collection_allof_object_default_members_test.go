@@ -334,3 +334,54 @@ func TestObjectDefaultPlainDTOCollectionAliases(t *testing.T) {
 		t.Fatal("consumer override did not restore nullable alias", err)
 	}
 }
+
+// A named or internal plain-DTO collection member may contain a finite nested
+// List/typed Map tree whose leaf is the referenced plain DTO. This mirrors the
+// allOf-element member and consuming-field roles; the member profile is scoped
+// to this walk, and inter-container references stay excluded.
+func TestObjectDefaultPlainDTOCollectionNestedContainers(t *testing.T) {
+	const item = `{"type":"object","required":["name"],"properties":{"name":{"type":"string"},"count":{"type":"integer","default":2}}}`
+	definitions := `"Item":` + item + `,"Nested":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Item"}}},"Mixed":{"type":"array","items":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Item"}}},"MapList":{"type":"object","additionalProperties":{"type":"array","items":{"$ref":"#/components/schemas/Item"}}},"NestedAlias":{"$ref":"#/components/schemas/Nested"},`
+	for _, tc := range []struct{ name, member, value string }{
+		{"named list of list", `{"$ref":"#/components/schemas/Nested"}`, `{"member":[[{"name":"a"}]]}`},
+		{"named list of map", `{"$ref":"#/components/schemas/Mixed"}`, `{"member":[{"k":{"name":"a"}}]}`},
+		{"named map of list", `{"$ref":"#/components/schemas/MapList"}`, `{"member":{"k":[{"name":"a"}]}}`},
+		{"nested alias", `{"$ref":"#/components/schemas/NestedAlias"}`, `{"member":[[{"name":"a"}]]}`},
+	} {
+		for _, checked := range []bool{false, true} {
+			for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+				input := schemas(`{` + definitions + `"Holder":{"properties":{"v":` + allOfMemberField(tc.member, tc.value) + `}}}`)
+				r := request(input, "Dto")
+				r.Options.Validation, r.Options.ModelStyle = checked, style
+				got, err := core.GenerateWithDiagnostics(r)
+				if err != nil {
+					t.Fatal(tc.name, checked, style, err)
+				}
+				if text := source(t, got, "HolderDto"); !strings.Contains(text, "`openapi-kt model default ") {
+					t.Fatal(tc.name, text)
+				}
+				// The leaf plain DTO still validates its own members through the
+				// nested container path.
+				bad := schemas(`{` + definitions + `"Holder":{"properties":{"v":` + allOfMemberField(tc.member, strings.Replace(tc.value, `{"name":"a"}`, `{"name":false}`, 1)) + `}}}`)
+				carrierDefaultFailure(t, bad, checked, "E_SCHEMA_INVALID", "/components/schemas/Holder/properties/v/default/member"+nestedLeafTail(tc.name))
+			}
+		}
+	}
+	// A nested container whose leaf is an inter-container reference keeps its
+	// separate excluded role.
+	interContainer := schemas(`{"Item":` + item + `,"Inner":{"type":"array","items":{"$ref":"#/components/schemas/Item"}},"Outer":{"type":"array","items":{"$ref":"#/components/schemas/Inner"}},"Holder":{"properties":{"v":` + allOfMemberField(`{"$ref":"#/components/schemas/Outer"}`, `{"member":[[{"name":"a"}]]}`) + `}}}`)
+	if got, err := core.GenerateWithDiagnostics(request(interContainer, "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
+		t.Fatal("inter-container reference gained the nested member role", err)
+	}
+}
+
+func nestedLeafTail(name string) string {
+	switch name {
+	case "named list of map":
+		return "/0/k/name"
+	case "named map of list":
+		return "/k/0/name"
+	default:
+		return "/0/0/name"
+	}
+}
