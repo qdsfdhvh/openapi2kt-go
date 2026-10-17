@@ -70,7 +70,6 @@ func TestArrayComponentGuardsAndCycles(t *testing.T) {
 		{`{"type":"array","items":{"type":"string"},"minItems":-1}`, "E_SCHEMA_INVALID", "/components/schemas/Root/minItems"},
 		{`{"type":"array","items":{"type":"string","minLength":-1}}`, "E_SCHEMA_INVALID", "/components/schemas/Root/items/minLength"},
 		{`{"type":"array","items":{"type":"number"},"uniqueItems":true}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Root/uniqueItems"},
-		{`{"type":"array","items":{"type":"string"},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Root/default"},
 		{`{"type":"array","items":{"$ref":"#/components/schemas/Root"}}`, "E_REF_CYCLE", "/components/schemas/Root"},
 	} {
 		aliasFailure(t, schemas(`{"Root":`+tc.schema+`}`), tc.code, tc.at)

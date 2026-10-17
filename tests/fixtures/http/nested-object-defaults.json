@@ -496,6 +496,8 @@
       "ComponentDefaultName": {"type": "string", "default": "component-name"},
       "ComponentDefaultMode": {"type": "string", "enum": ["on", "off"], "default": "on"},
       "ComponentDefaultAllOf": {"allOf": [{"type": "object", "required": ["n"], "properties": {"n": {"type": "integer"}}}, {"type": "object", "properties": {"extra": {"type": "string"}}}], "default": {"n": 9}},
+      "ComponentDefaultNames": {"type": "array", "items": {"type": "string"}, "default": ["component-name"]},
+      "ComponentDefaultDates": {"type": "array", "items": {"type": "string", "format": "date"}, "default": ["2024-02-29"]},
       "TimeRows": {"type": "array", "items": {"$ref": "#/components/schemas/TimeValue"}}
     }
   },

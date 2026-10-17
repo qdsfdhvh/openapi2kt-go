@@ -99,7 +99,7 @@ func TestNamedCollectionReferenceChainsForwardSourceAndNoDrop(t *testing.T) {
 				t.Fatal("forwardoriginalnamedcollectionbacking", checked, terminal, err)
 			}
 		}
-		for _, terminal := range []string{`{"type":"array","items":{"type":"string"},"default":[]}`, `{"additionalProperties":{"type":"string"},"required":["x"]}`, `{"type":"array","items":{"type":"string","default":"x"}}`} {
+		for _, terminal := range []string{`{"type":"array","items":{"type":"string"},"minItems":-1}`, `{"additionalProperties":{"type":"string"},"required":["x"]}`, `{"type":"array","items":{"type":"string","default":"x"}}`} {
 			doc := schemas(`{"Value":` + terminal + `,"Hops":{"properties":{"value":{"$ref":"#/components/schemas/Value"}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/value"}}`)
 			r := request(doc, "Dto")
 			r.Options.Validation = checked

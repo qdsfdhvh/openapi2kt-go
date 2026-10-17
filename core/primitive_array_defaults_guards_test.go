@@ -32,7 +32,6 @@ func TestPrimitiveArrayDefaultsValidateOriginalMembersAndExcludedGrammar(t *test
 
 func TestPrimitiveArrayDefaultsKeepValueAndPinnedRolesExcludedAndDiscardedSourcesChecked(t *testing.T) {
 	for _, input := range []string{
-		`{"Array":{"type":"array","items":{"type":"string"},"default":[]}}`,
 		`{"Holder":{"properties":{"value":{"type":"array","items":{"type":"array","items":{"type":"string"},"default":[]}}}}}`,
 		`{"Holder":{"properties":{"value":{"allOf":[{"type":"array","items":{"type":"string"}}],"default":[]}}}}`,
 		`{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"value":{"type":"array","items":{"type":"string"},"default":[]}}},{"properties":{"tag":{"const":"two"}}}]}}`,

@@ -161,6 +161,9 @@ func (*ScalarAlias) declaration()   {}
 type ValueAlias struct {
 	ClassName string
 	Type      TypeRef
+	// ComponentDefault holds the canonical JSON of the component's own root
+	// `default`; the opt-in factory decodes through the alias's serializer.
+	ComponentDefault string
 }
 
 func (m *ValueAlias) Name() string { return m.ClassName }

@@ -107,7 +107,6 @@ func TestNativeEnumCollectionDefaultsCheckedBoundsAndNullVocabulary(t *testing.T
 func TestNativeEnumCollectionDefaultsExcludedRolesAndOriginalSources(t *testing.T) {
 	field := `{"type":"array","items":{"type":"integer","enum":[1,2]},"default":[1]}`
 	for _, input := range []string{
-		`{"Codes":` + field + `}`,
 		`{"Code":{"type":"integer","enum":[1,2]},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Code"},"default":[1]}}}}`,
 		`{"Holder":{"properties":{"value":{"type":"array","items":` + field + `}}}}`,
 		`{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,

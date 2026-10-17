@@ -45,7 +45,6 @@ func TestCheckedPrimitiveArrayDefaultsDoNotLoseOriginalSources(t *testing.T) {
 	for _, input := range []string{
 		`{"Holder":{"allOf":[{"properties":{"value":{"type":"array","items":{"type":"integer","minimum":2},"default":[1]}}},{"properties":{"value":{"type":"string"}}}]}}`,
 		`{"Holder":{"allOf":[{"properties":{"value":{"type":"array","items":{"type":"integer","minimum":2},"default":[2]}}},{"properties":{"value":{"type":"string"}}}]}}`,
-		`{"Array":{"type":"array","minItems":1,"items":{"type":"string"},"default":["x"]}}`,
 		`{"Holder":{"properties":{"value":{"type":"array","items":{"type":"array","minItems":1,"items":{"type":"string"},"default":["x"]}}}}}`,
 		`{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"value":{"type":"array","minItems":1,"items":{"type":"string"},"default":["x"]}}},{"properties":{"tag":{"const":"two"}}}]}}`,
 	} {

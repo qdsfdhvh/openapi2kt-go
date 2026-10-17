@@ -71,7 +71,6 @@ func TestPrimitiveMapDefaultsRetainChecksAndExcludedRoles(t *testing.T) {
 	}
 	mapSchema := `{"type":"object","additionalProperties":{"type":"integer"},"default":{"x":1}}`
 	for _, input := range []string{
-		`{"Bag":` + mapSchema + `}`,
 		`{"Holder":{"properties":{"value":{"type":"array","items":` + mapSchema + `}}}}`,
 		`{"Holder":{"properties":{"value":{"type":"object","additionalProperties":` + mapSchema + `}}}}`,
 		`{"Holder":{"properties":{"value":{"allOf":[` + mapSchema + `]}}}}`,

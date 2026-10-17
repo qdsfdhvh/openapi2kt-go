@@ -123,6 +123,15 @@ func emitObjectDefaultHelpers(declaration schema.Declaration, owner string, out 
 			for _, n := range d.Nested {
 				visit(n, scope+"."+d.ClassName)
 			}
+		case *schema.ValueAlias:
+			if d.ComponentDefault != "" {
+				name := componentDefaultHelperName(scope, d.ClassName)
+				if !seen[name] {
+					seen[name] = true
+					ty := RenderType(schema.TypeRef{Kind: schema.Named, Name: d.ClassName})
+					fmt.Fprintf(out, "\nprivate fun %s(source: kotlin.String): %s = kotlinx.serialization.json.Json.decodeFromString(kotlinx.serialization.serializer<%s>(), source)\n", name, ty, ty)
+				}
+			}
 		case *schema.StringEnum:
 			if d.ComponentDefault != "" {
 				name := componentDefaultHelperName(scope, d.ClassName)

@@ -46,7 +46,6 @@ func TestComponentDefaultFactoryAuthority(t *testing.T) {
 func TestComponentDefaultFactoryExclusions(t *testing.T) {
 	for _, tc := range []struct{ name, schemas string }{
 		{"empty raw object", `{"S":{"type":"object","default":{}}}`},
-		{"collection alias", `{"S":{"type":"array","items":{"type":"string"},"default":["a"]}}`},
 		{"reference wrapper", `{"T":{"type":"object","properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}`},
 		{"inline union", `{"S":{"oneOf":[{"type":"string"},{"type":"integer"}],"default":"x"}}`},
 	} {
@@ -136,5 +135,44 @@ func TestComponentDefaultFactoryAllOfAuthority(t *testing.T) {
 	}
 	if _, _, err := Analyze(loadComponentDocument(t, `{"T":{"type":"object","required":["z"],"properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto"}); err == nil {
 		t.Fatal("$ref wrapper component admitted")
+	}
+}
+
+// A single-layer collection component attaches the canonical annotation to its
+// ValueAlias without changing the declared element type.
+func TestComponentDefaultFactoryCollectionAuthority(t *testing.T) {
+	plan, _, err := Analyze(loadComponentDocument(t, `{"Names":{"type":"array","items":{"type":"string"},"default":["a"]},"Bags":{"type":"object","additionalProperties":{"type":"integer"},"default":{"k":1}}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	names := componentDeclaration(plan.Models, "NamesDto")
+	alias, ok := names.(*ValueAlias)
+	if !ok || alias.ComponentDefault != `["a"]` {
+		t.Fatalf("lost List alias or factory: %+v", names)
+	}
+	if alias.Type.Kind != List || alias.Type.Element == nil {
+		t.Fatalf("collection alias shape changed: %+v", alias.Type)
+	}
+	bags := componentDeclaration(plan.Models, "BagsDto")
+	bag, ok := bags.(*ValueAlias)
+	if !ok || bag.ComponentDefault != `{"k":1}` {
+		t.Fatalf("lost Map alias or factory: %+v", bags)
+	}
+}
+
+// Collection roles the field walk already excludes stay excluded at the root.
+func TestComponentDefaultFactoryCollectionExclusionAuthority(t *testing.T) {
+	for _, tc := range []struct{ name, schemas string }{
+		{"nested container", `{"S":{"type":"array","items":{"type":"array","items":{"type":"string"}},"default":[["a"]]}}`},
+		{"allOf wrapped", `{"S":{"allOf":[{"type":"array","items":{"type":"string"}}],"default":["a"]}}`},
+		{"ref element", `{"T":{"type":"string"},"S":{"type":"array","items":{"$ref":"#/components/schemas/T"},"default":["a"]}}`},
+		{"nullable root", `{"S":{"type":"array","nullable":true,"items":{"type":"string"},"default":null}}`},
+		{"bad element", `{"S":{"type":"array","items":{"type":"integer"},"default":["a"]}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if _, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true}); err == nil {
+				t.Fatal("excluded collection role admitted")
+			}
+		})
 	}
 }
