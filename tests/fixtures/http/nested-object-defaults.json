@@ -175,6 +175,9 @@
               },
               "unionProp": {
                 "$ref": "#/components/schemas/PlainUnion"
+              },
+              "timeRows": {
+                "$ref": "#/components/schemas/TimeRows"
               }
             },
             "default": {
@@ -252,7 +255,8 @@
               "leafAlias": {
                 "z": "aliased"
               },
-              "unionProp": "union member"
+              "unionProp": "union member",
+              "timeRows": ["2024-01-02T03:04:05Z"]
             }
           },
           "requiredCfg": {
@@ -486,7 +490,9 @@
         }
       },
       "LeafAliasCfg": {"$ref": "#/components/schemas/LeafCfg"},
-      "PlainUnion": {"oneOf": [{"type": "string"}, {"type": "integer"}]}
+      "PlainUnion": {"oneOf": [{"type": "string"}, {"type": "integer"}]},
+      "TimeValue": {"type": "string", "format": "date-time"},
+      "TimeRows": {"type": "array", "items": {"$ref": "#/components/schemas/TimeValue"}}
     }
   },
   "paths": {

@@ -370,6 +370,15 @@ Root nullability comes from the named/internal view, nearer ref intent and the c
 
 [Core entity/alias/nullable/context/guard tests](../core/internal_collection_allof_object_default_members_test.go) and [source, budget and retained-declaration tests](../internal/schema/internal_collection_object_members_test.go) define this role. Native CLI parity/check/output preservation and the shared Kotlin fixture cover direct/aliased Rows, nullable Map values, mixed containers, missing/replacement/null/required values, fresh instances, Patch, HTTP/live SSE and optimized/locked helpers.
 
+## Scalar element collections in member defaults
+
+An object-default member may reference a named or internal List/typed Map whose elements resolve to a **scalar, temporal or enum** leaf instead of an object. For example, `member → Times` where `Times.items` is `{"$ref":"#/components/schemas/Time"}` and `Time` is `{"type":"string","format":"date-time"}`.
+
+Element values reuse the existing nested collection leaf planner: the resolved terminal's own kind, format and enum vocabulary apply, per-layer nullability and container counts stay independent, and a bad element keeps the original `/default/member/...` Pointer. The original container node and Pointer stay the collection authority, and the shared type plan and final enclosing serializer are unchanged. Elements that are themselves containers (a referenced collection of `List`/typed `Map`) stay excluded, as do union and composition elements, matching the separate roles above.
+
+[Core member/nullable/guard tests](../core/referenced_collection_allof_object_default_members_test.go), [original container/element source checks](../internal/schema/referenced_collection_object_members_test.go) and [native parity/check/failure preservation](../internal/cli/referenced_allof_object_default_members_process_test.go) define admission. The nested-object feature adds a referenced temporal List with fresh defaults and element diagnostics across Data/Plain × validation.
+
+
 ## Bounded admission
 
 Inline fields and references to eligible named or internal constructor Models apply in ordinary shared/response/request DTOs. These remain separate:
