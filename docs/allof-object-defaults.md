@@ -337,6 +337,27 @@ Root nullability uses the named/internal view, nearer ref intent and the consumi
 
 [Core member/nullable/guard tests](../core/internal_collection_allof_object_default_members_test.go), [core terminal admission tests](../core/referenced_collection_allof_object_default_members_test.go), [original source/binding checks](../internal/schema/referenced_collection_object_members_test.go) and [native parity/check/failure preservation](../internal/cli/referenced_allof_object_default_members_process_test.go) define admission. The nested-object feature adds internal List/Map elements with fresh defaults, replacement/null/required decoding and optimized/locked helper binding across Data/Plain × validation.
 
+## Plain DTO elements in referenced collection members
+
+An object-default property may directly reference a named or internal List/typed Map component whose inline element tree ends in a plain ordinary DTO — either a direct `$ref` to that DTO or a finite transparent alias chain to it. This mirrors the [referenced collection field role](referenced-object-collection-defaults.md) and the inline-collection member profile above. For example:
+
+```json
+{
+  "Item": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}}},
+  "Rows": {"type": "array", "items": {"$ref": "#/components/schemas/Item"}},
+  "Holder": {"properties": {"cfg": {
+    "properties": {"rows": {"$ref": "#/components/schemas/Rows"}},
+    "default": {"rows": [{"name": "initial"}]}
+  }}}
+}
+```
+
+Typed Map values, inline List/typed Map trees with a referenced plain-DTO element, internal collection entities and finite element alias chains are eligible. The walker follows the transparent local `$ref` chain to the original terminal plain object and reuses its declared fields, required names, leaf checks and per-member Pointers. The shared type plan still owns the actual collection/alias/element types and the final enclosing serializer; adding the annotation leaves those declarations and warnings unchanged. A chain ending in a scalar, enum, composition or another collection is not a plain object target and keeps its own role.
+
+Root nullability comes from the named/internal view, nearer ref intent and the consuming override; container and element intent stay independent. Every source hop, container and member consumes the existing depth/work budgets, and the original/canonical value budgets apply. The consuming property may own a separately validated default; element, inner-container, target and intermediate defaults remain rejected rather than inherited. Required/Patch/discarded checks validate before suppression, and decoding creates fresh containers and DTO elements per evaluation. References between container layers and plain-object property `$ref` chains inside the element stay separate.
+
+[Core collection-member/nullable/guard tests](../core/referenced_object_collection_defaults_test.go) and [original source/alias-terminal checks](../internal/schema/referenced_collection_object_members_test.go) define admission. The nested-object feature covers named/aliased List and Map values, inline containers, internal entities, fresh defaults, missing/replacement/null/required elements, Patch, HTTP/live SSE and optimized/locked helper binding across Data/Plain × validation.
+
 [Core entity/alias/nullable/context/guard tests](../core/internal_collection_allof_object_default_members_test.go) and [source, budget and retained-declaration tests](../internal/schema/internal_collection_object_members_test.go) define this role. Native CLI parity/check/output preservation and the shared Kotlin fixture cover direct/aliased Rows, nullable Map values, mixed containers, missing/replacement/null/required values, fresh instances, Patch, HTTP/live SSE and optimized/locked helpers.
 
 ## Bounded admission

@@ -176,3 +176,31 @@ func TestReferencedCollectionInternalAllOfMemberSources(t *testing.T) {
 		t.Fatal("rewrote original sources")
 	}
 }
+
+// An object-default property may reference a collection whose element resolves
+// to a plain named ordinary DTO. The walker follows finite transparent alias
+// chains and keeps the original terminal object's merged fields and Pointers.
+func TestReferencedCollectionPlainDTOElementSources(t *testing.T) {
+	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Item":{"type":"object","required":["name"],"properties":{"name":{"type":"string"},"age":{"type":"integer","default":7}}},"ItemAlias":{"$ref":"#/components/schemas/Item"},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/ItemAlias"}},"Holder":{"properties":{"v":{"properties":{"m":{"$ref":"#/components/schemas/Rows"}},"default":{"m":[{"name":"a"}]}}}}}}}`)
+	a, root := referencedCollectionTestAnalyzer(t, input)
+	member := get(get(get(get(get(referencedSchemas(root), "Holder"), "properties"), "v"), "properties"), "m")
+	item := get(referencedSchemas(root), "Item")
+	name := get(get(item, "properties"), "name")
+	before, _ := root.MarshalJSON()
+	node, err := a.objectDefaultPropertyNode(member, "/member", 1, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if node.schema != get(referencedSchemas(root), "Rows") || node.element == nil || !node.element.object ||
+		node.element.schema != item || node.element.pointer != "/components/schemas/Item" ||
+		node.element.objectFields[0].node.schema != name {
+		t.Fatal("lost plain DTO element source/alias terminal", node)
+	}
+	if a.objectDefaultAllOfMemberElement != nil {
+		t.Fatal("member element permission escaped")
+	}
+	after, _ := root.MarshalJSON()
+	if string(before) != string(after) {
+		t.Fatal("rewrote original sources")
+	}
+}
