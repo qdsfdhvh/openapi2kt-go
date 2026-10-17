@@ -208,7 +208,9 @@ func emitModelContext(model *schema.Model, indent int, owner, superType string, 
 		}
 		fmt.Fprintf(out, "%s    public %sval %s: %s%s,\n", pad, override(p.WireName), p.Name, RenderType(p.Type), defaultNull)
 	}
-	if !model.Plain && len(model.Properties) != 0 && len(model.Nested) == 0 && len(model.Constants) == 0 && !modelHasValidation(model) && model.PropertyCount == nil {
+	// A component-level default never becomes an initializer. The class keeps its
+	// constructor and presence classification; the factory below is opt-in.
+	if !model.Plain && len(model.Properties) != 0 && len(model.Nested) == 0 && len(model.Constants) == 0 && !modelHasValidation(model) && model.PropertyCount == nil && model.ComponentDefault == "" {
 		fmt.Fprintf(out, "%s)%s\n", pad, superclass)
 		return
 	}
@@ -242,6 +244,9 @@ func emitModelContext(model *schema.Model, indent int, owner, superType string, 
 	}
 	if model.PropertyCount != nil {
 		emitPropertyCountSerializer(model, indent+1, owner, out)
+	}
+	if model.ComponentDefault != "" {
+		emitComponentDefaultFactory(model, indent+1, owner, out)
 	}
 	for i, nested := range model.Nested {
 		if i > 0 || len(model.Constants) != 0 {

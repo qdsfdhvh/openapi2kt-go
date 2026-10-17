@@ -106,6 +106,18 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	ordered := slices.Clone(schemas.Members())
 	sort.Slice(ordered, func(i, j int) bool { return ordered[i].Name < ordered[j].Name })
 	used := map[string]bool{}
+	// A component's own root `default` emits an opt-in factory and never an
+	// initializer. Only plain ordinary object components qualify; every other
+	// role keeps its existing rejection at the original `.../default` Pointer.
+	for _, entry := range schemas.Members() {
+		pointer := naming.Pointer("/components/schemas", entry.Name)
+		if !has(entry.Value, "default") {
+			continue
+		}
+		if err := a.markComponentDefaultSource(entry.Value, pointer); err != nil {
+			return nil, err
+		}
+	}
 	// Catalog validation follows source declaration order, preserving which
 	// original node receives a collision diagnostic. Declaration emission and
 	// warning analysis below use sorted components.
@@ -484,6 +496,9 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 			a.recordRawTrueOrigin(model, component)
 			declarations = append(declarations, model)
 		}
+	}
+	if err := a.planComponentDefaultFactories(declarations); err != nil {
+		return nil, err
 	}
 	if err := a.validateBorrowedDTOLeaves(declarations); err != nil {
 		return nil, err

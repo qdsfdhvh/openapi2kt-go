@@ -118,6 +118,8 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.leaf?.z == "deep" && value.cfg?.leafAlias?.z == "aliased")
     check(value.cfg?.unionProp != null)
     check(value.cfg?.timeRows?.single()?.toString() == "2024-01-02T03:04:05Z")
+    // A component-level default is an opt-in factory, not a constructor initializer.
+    check(org.example.nestedobject.models.ComponentDefaultDto.default().label == "component")
     check(value.cfg?.composed?.label == "outer member" && value.cfg?.composed?.count == 3 && value.cfg?.composed?.child?.flag == false)
     check(value.cfg?.linked?.label == "outer linked" && value.cfg?.linked?.count == 2 && value.cfg?.linked?.child?.flag == true)
     check(value.cfg?.viaAlias?.label == "outer alias" && value.cfg?.viaAlias?.count == 2 && value.cfg?.viaAlias?.child?.flag == true)
