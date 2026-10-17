@@ -66,3 +66,44 @@ func TestObjectDefaultReferencedPropertiesPreserveOutputOnFailure(t *testing.T) 
 		t.Fatal("failed generation changed existing output")
 	}
 }
+
+func objectDefaultPlainObjectAliasDocument(defaultValue string) []byte {
+	return []byte(`{"openapi":"3.1.0","components":{"schemas":{"Leaf":{"type":"object","required":["z"],"properties":{"z":{"type":"string"}}},"Alias":{"$ref":"#/components/schemas/Leaf","nullable":true},"Outer":{"$ref":"#/components/schemas/Alias","nullable":false},"Holder":{"properties":{"v":{"type":"object","properties":{"leaf":{"$ref":"#/components/schemas/Outer"}},"default":` + defaultValue + `}}}}}}`)
+}
+
+// A finite transparent chain to a plain object terminal keeps the original
+// terminal's default and diagnostics. Native generation, readonly check and
+// failure preservation match the core plan.
+func TestObjectDefaultPlainObjectAliasNativeCoreParity(t *testing.T) {
+	const definitions = `"Leaf":{"type":"object","required":["z"],"properties":{"z":{"type":"string"}}},"Alias":{"$ref":"#/components/schemas/Leaf","nullable":true},"Outer":{"$ref":"#/components/schemas/Alias","nullable":false},`
+	for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+		for _, checked := range []bool{false, true} {
+			t.Run(string(style)+"/checked="+map[bool]string{false: "0", true: "1"}[checked], func(t *testing.T) {
+				p := newProject(t)
+				valid := []byte(`{"openapi":"3.1.0","components":{"schemas":{` + definitions + `"Holder":{"properties":{"v":{"type":"object","properties":{"leaf":{"$ref":"#/components/schemas/Outer"}},"default":{"leaf":{"z":"1"}}}}}}}}`)
+				put(t, p.Input, valid)
+				report, err := core.GenerateWithDiagnostics(core.GenerationRequest{Document: valid, Options: core.GenerationOptions{PackageName: "org.example.catalog", ModelNameSuffix: "Dto", ModelStyle: style, Validation: checked}})
+				if err != nil {
+					t.Fatal(err)
+				}
+				args := objectDefaultReferencedPropertyArgs(p.Input, p.Output, checked, style)
+				result(t, invoke(t, p.Root, args...), 0)
+				for _, file := range report.Artifacts.Files {
+					if string(read(t, p.Output+"/"+file.Path)) != file.Content {
+						t.Fatal("native/core source mismatch", file.Path)
+					}
+				}
+				before := snapshot(t, p.Output)
+				result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
+				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+					t.Fatal("check changed bytes/modes/mtimes")
+				}
+				put(t, p.Input, []byte(`{"openapi":"3.1.0","components":{"schemas":{`+definitions+`"Holder":{"properties":{"v":{"type":"object","properties":{"leaf":{"$ref":"#/components/schemas/Outer"}},"default":{"leaf":{}}}}}}}}`))
+				fails(t, invoke(t, p.Root, args...), 1, "E_SCHEMA_INVALID")
+				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+					t.Fatal("failed generation changed existing output")
+				}
+			})
+		}
+	}
+}

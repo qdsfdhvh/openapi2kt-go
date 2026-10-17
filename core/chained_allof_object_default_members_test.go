@@ -90,8 +90,11 @@ func TestChainedAllOfObjectDefaultMemberGuards(t *testing.T) {
 			}
 		}
 	}
+	// A finite transparent chain to a plain object terminal joins the member role.
+	if got, err := core.GenerateWithDiagnostics(request(chainedAllOfMemberDocument(`{"properties":{"label":{"type":"string"}}}`, allOfMemberHops, member, `{}`, false), "Dto")); err != nil || len(got.Artifacts.Files) == 0 {
+		t.Fatal("plain-object alias terminal not admitted", err)
+	}
 	for _, target := range []string{
-		`{"properties":{"label":{"type":"string"}}}`,
 		`{"type":"string"}`,
 		`{"allOf":[{},{}]}`,
 		`{"allOf":[{"properties":{"tag":{"const":"x"}}}]}`,

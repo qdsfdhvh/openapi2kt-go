@@ -97,8 +97,11 @@ func TestAliasedAllOfObjectDefaultMemberGuardsAndContexts(t *testing.T) {
 		}
 	}
 	// This extension must not admit aliases ending in other source roles.
+	// A finite transparent chain to a plain object terminal joins the member role.
+	if got, err := core.GenerateWithDiagnostics(request(aliasedAllOfMemberDocument(`{"properties":{"label":{"type":"string"}}}`, allOfMemberAliases, member, `{}`), "Dto")); err != nil || len(got.Artifacts.Files) == 0 {
+		t.Fatal("plain-object alias terminal not admitted", err)
+	}
 	for _, target := range []string{
-		`{"properties":{"label":{"type":"string"}}}`,
 		`{"type":"string"}`,
 		`{"allOf":[{"properties":{"a":{"type":"string"}}},{"properties":{"a":{"type":"string"}}}]}`,
 		`{"allOf":[{"properties":{"tag":{"const":"x"}}}]}`,

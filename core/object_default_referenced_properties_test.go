@@ -30,6 +30,13 @@ func TestObjectDefaultReferencedProperties(t *testing.T) {
 	if !strings.Contains(source(t, got, "HolderDto"), `{\"leaf\":{\"z\":\"1\"}}`) {
 		t.Fatal(source(t, got, "HolderDto"))
 	}
+	// A finite transparent chain to a plain object terminal matches the
+	// consuming-field role, keeping the original terminal's member diagnostics.
+	alias := schemas(`{"Leaf":{"type":"object","required":["z"],"properties":{"z":{"type":"string"}}},"Alias":{"$ref":"#/components/schemas/Leaf"},"Alias2":{"$ref":"#/components/schemas/Alias"},"Holder":{"properties":{"v":{"type":"object","properties":{"leaf":{"$ref":"#/components/schemas/Alias2"}},"default":{"leaf":{"z":"1"}}}}}}`)
+	got = report(t, alias, "Dto")
+	if !strings.Contains(source(t, got, "HolderDto"), `{\"leaf\":{\"z\":\"1\"}}`) {
+		t.Fatal(source(t, got, "HolderDto"))
+	}
 }
 
 func TestObjectDefaultReferencedPropertiesGuards(t *testing.T) {
@@ -43,14 +50,9 @@ func TestObjectDefaultReferencedPropertiesGuards(t *testing.T) {
 	if !ok || len(ds) == 0 || ds[0].Code != "E_SCHEMA_INVALID" || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/Holder/properties/v/default/leaf" || !reflect.DeepEqual(report, core.GenerationReport{}) {
 		t.Fatalf("missing required referenced property: %v", err)
 	}
-	// Reference chains stay with their separate roles.
-	for _, input := range []string{
-		`{"Leaf":{"type":"object","properties":{"z":{"type":"string"}}},"Alias":{"$ref":"#/components/schemas/Leaf"},"Holder":{"properties":{"v":{"type":"object","properties":{"leaf":{"$ref":"#/components/schemas/Alias"}},"default":{"leaf":{"z":"1"}}}}}}`,
-	} {
-		r := request(schemas(input), "Dto")
-		r.Options.Validation = true
-		if err := func() (err error) { _, err = core.GenerateWithDiagnostics(r); return }(); err == nil {
-			t.Fatalf("excluded referenced property role leaked: %s", input)
-		}
+	// A scalar-valued transparent chain keeps its separate leaf role.
+	scalarAlias := schemas(`{"Scalar":{"type":"string"},"ScalarAlias":{"$ref":"#/components/schemas/Scalar"},"Holder":{"properties":{"v":{"type":"object","properties":{"leaf":{"$ref":"#/components/schemas/ScalarAlias"}},"default":{"leaf":"1"}}}}}`)
+	if got, err := core.GenerateWithDiagnostics(request(scalarAlias, "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
+		t.Fatalf("scalar reference chain gained an object member role: %v", err)
 	}
 }
