@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"openapi-kt/internal/naming"
 	"openapi-kt/internal/schema"
 )
 
@@ -85,6 +86,17 @@ func emitObjectDefaultHelpers(declaration schema.Declaration, owner string, out 
 	visit = func(d schema.Declaration, scope string) {
 		switch d := d.(type) {
 		case *schema.Model:
+			if d.ComponentDefault != "" {
+				name := componentDefaultHelperName(scope, d.ClassName)
+				if !seen[name] {
+					seen[name] = true
+					ty := schema.TypeRef{Kind: schema.Named, Name: d.ClassName}
+					if d.Nullable {
+						ty = ty.Null()
+					}
+					fmt.Fprintf(out, "\nprivate fun %s(source: kotlin.String): %s = kotlinx.serialization.json.Json.decodeFromString(kotlinx.serialization.serializer<%s>(), source)\n", name, RenderType(schema.TypeRef{Kind: schema.Named, Name: d.ClassName}), RenderType(schema.TypeRef{Kind: schema.Named, Name: d.ClassName}))
+				}
+			}
 			for _, p := range d.Properties {
 				if strings.HasPrefix(p.Default, "`openapi-kt json default`(") {
 					jsonDefault = true
@@ -132,4 +144,28 @@ func emitObjectDefaultHelpers(declaration schema.Declaration, owner string, out 
 	if objectDefault {
 		out.WriteString("\nprivate fun `openapi-kt object default`(source: kotlin.String): kotlinx.serialization.json.JsonObject = kotlinx.serialization.json.Json.parseToJsonElement(source) as kotlinx.serialization.json.JsonObject\n")
 	}
+}
+
+// componentDefaultHelperName keys the factory helper by the component's fully
+// qualified name so equal short names in different packages never collide.
+func componentDefaultHelperName(owner, className string) string {
+	return "`openapi-kt component default " + strings.ReplaceAll(owner+"."+className, ".", " ") + "`"
+}
+
+// emitComponentDefaultFactory writes the opt-in `default()` companion factory.
+// It is additive: no property gains an initializer, so the constructor,
+// presence classification and serializer are byte-identical to a component
+// without the annotation.
+func emitComponentDefaultFactory(model *schema.Model, indent int, owner string, out *strings.Builder) {
+	// indent already addresses the class body, so members sit one level deeper.
+	pad := strings.Repeat("    ", indent)
+	returnType := RenderType(schema.TypeRef{Kind: schema.Named, Name: model.ClassName})
+	if model.Nullable {
+		returnType += "?"
+	}
+	fmt.Fprintf(out, "\n%spublic companion object {\n", pad)
+	fmt.Fprintf(out, "%s    // The OpenAPI component default for this schema.\n", pad)
+	fmt.Fprintf(out, "%s    public fun default(): %s =\n", pad, returnType)
+	fmt.Fprintf(out, "%s        %s(%s)\n", pad, componentDefaultHelperName(owner, model.ClassName), naming.Literal(model.ComponentDefault))
+	fmt.Fprintf(out, "%s}\n", pad)
 }

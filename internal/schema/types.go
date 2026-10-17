@@ -123,6 +123,10 @@ type Model struct {
 	Nullable   bool
 	// JSON wire counts belong to the nominal ordinary DTO, not its constructor.
 	PropertyCount *CollectionValidation
+	// ComponentDefault holds the canonical JSON of this component's own root
+	// `default`. It emits an opt-in factory and never an initializer, so the
+	// constructor, presence classification and serializer stay unchanged.
+	ComponentDefault string
 }
 
 func (m *Model) Name() string { return m.ClassName }

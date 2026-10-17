@@ -492,6 +492,7 @@
       "LeafAliasCfg": {"$ref": "#/components/schemas/LeafCfg"},
       "PlainUnion": {"oneOf": [{"type": "string"}, {"type": "integer"}]},
       "TimeValue": {"type": "string", "format": "date-time"},
+      "ComponentDefault": {"type": "object", "required": ["label"], "properties": {"label": {"type": "string"}}, "default": {"label": "component"}},
       "TimeRows": {"type": "array", "items": {"$ref": "#/components/schemas/TimeValue"}}
     }
   },
