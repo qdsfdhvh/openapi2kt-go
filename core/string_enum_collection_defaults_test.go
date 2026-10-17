@@ -99,7 +99,6 @@ func TestStringEnumCollectionDefaultsChecksAndExcludedRoles(t *testing.T) {
 	}
 	field := `{"type":"array","items":{"type":"string","enum":["one","two"]},"default":["one"]}`
 	for _, input := range []string{
-		`{"Codes":` + field + `}`,
 		`{"Code":{"type":"string","enum":["one"]},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Code"},"default":["one"]}}}}`,
 		`{"Holder":{"properties":{"value":{"type":"array","items":` + field + `}}}}`,
 		`{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,

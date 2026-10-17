@@ -40,6 +40,15 @@ public fun `NameDto default`(): NameDto = `openapi-kt component default ... Name
 
 Enum components already emit a companion, so their factory uses the same top-level form as scalars for one uniform call shape.
 
+A single-layer List/typed Map root also emits the top-level form, because its declaration is a `typealias`:
+
+```kotlin
+public typealias NamesDto = kotlin.collections.List<kotlin.String>
+
+// The OpenAPI component default for this schema.
+public fun `NamesDto default`(): NamesDto = `openapi-kt component default ... NamesDto`("[\"a\"]")
+```
+
 A disjoint ordinary `allOf` constructor emits the companion form, mirroring the consuming-field allOf walk:
 
 ```kotlin
@@ -71,6 +80,7 @@ Admission reuses the existing default planner for property defaults; this contra
 - plain inline ordinary object (explicit or inferred `type: "object"` with declared properties);
 - disjoint ordinary `allOf` constructor roots;
 - plain scalar roots (`string`, `integer`, `number`, `boolean`) and plain unformatted String-enum roots;
+- a single-layer List or typed Map root whose element/value is a leaf the nested collection default walk already supports (builtin scalar, temporal, String enum, native enum);
 - disjoint ordinary `allOf` constructor;
 - named/internal `$ref` collection trees already admitted by the referenced collection default roles;
 - scalar, temporal, String enum, numeric/Boolean native enum, `bigint`, and primitive union leaves;
@@ -81,7 +91,8 @@ Admission reuses the existing default planner for property defaults; this contra
 ## Exclusions
 
 - A bare reference wrapper (a component whose body is only `$ref` plus `nullable`) has no value of its own and stays rejected.
-- Scalar roots with a `format` (temporal, bytes), `x-native-type`, `x-kotlin-value-class`, native enum vocabularies, `const`, `nullable`, `oneOf`/`anyOf`, collection aliases and `$ref` wrappers keep their own roles and their existing rejection at the original `.../default` Pointer.
+- Scalar roots with a `format` (temporal, bytes), `x-native-type`, `x-kotlin-value-class`, native enum vocabularies, `const`, `nullable`, `oneOf`/`anyOf` and `$ref` wrappers keep their own roles and their existing rejection at the original `.../default` Pointer.
+- Collection roots keep every exclusion the field role enforces: a nested container element, an `allOf`-wrapped container, a `$ref` element, a nullable root, a composition element and an out-of-vocabulary element all stay rejected. Counts and `uniqueItems` retain their existing opt-in behaviour.
 - Empty/raw and const-only object projections, hierarchy sources and object-union products keep their separate contracts.
 - A component default is **not inherited**: a property referencing the component does not acquire it, and a consumer's own annotation is unchanged.
 - Request/response inline schemas and operation parameters are unaffected.

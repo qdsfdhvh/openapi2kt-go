@@ -71,7 +71,6 @@ func TestComponentDefaultFactoryGuards(t *testing.T) {
 	// Roles outside this contract keep their existing rejection location.
 	for _, tc := range []struct{ name, input, pointer string }{
 		{"empty raw object", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"object","default":{}}}}}`, "/components/schemas/S/default"},
-		{"collection alias", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","items":{"type":"string"},"default":["a"]}}}}`, "/components/schemas/S/default"},
 		{"reference wrapper", `{"openapi":"3.1.0","components":{"schemas":{"T":{"type":"object","properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}}}`, "/components/schemas/S/default"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -178,5 +177,48 @@ func TestComponentDefaultFactoryAllOf(t *testing.T) {
 	ds, ok := err2.(core.Diagnostics)
 	if !ok || len(ds) == 0 || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/S/default" || !reflect.DeepEqual(report, core.GenerationReport{}) {
 		t.Fatalf("$ref wrapper admitted: %v", err2)
+	}
+}
+
+// A single-layer List/typed Map component root may own its root default and
+// emits a top-level factory, since a typealias cannot carry members.
+func TestComponentDefaultFactoryCollections(t *testing.T) {
+	for _, checked := range []bool{false, true} {
+		for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+			r := request([]byte(`{"openapi":"3.1.0","components":{"schemas":{"Names":{"type":"array","items":{"type":"string"},"default":["a","b"]},"Counts":{"type":"array","items":{"type":"integer"},"default":[1,2]},"Bags":{"type":"object","additionalProperties":{"type":"integer"},"default":{"k":1}},"Dates":{"type":"array","items":{"type":"string","format":"date"},"default":["2024-02-29"]},"Codes":{"type":"array","items":{"type":"string","enum":["one","two"]},"default":["one"]}}}}`), "Dto")
+			r.Options.Validation, r.Options.ModelStyle = checked, style
+			got, err := core.GenerateWithDiagnostics(r)
+			if err != nil {
+				t.Fatal(checked, style, err)
+			}
+			for _, file := range []string{"NamesDto", "CountsDto", "BagsDto", "DatesDto", "CodesDto"} {
+				if text := source(t, got, file); !strings.Contains(text, "public fun `"+file+" default`(): "+file+" =") {
+					t.Fatal(file, text)
+				}
+			}
+			if text := source(t, got, "NamesDto"); !strings.Contains(text, "public typealias NamesDto = kotlin.collections.List<kotlin.String>") {
+				t.Fatal("collection alias changed", text)
+			}
+		}
+	}
+}
+
+// Nested containers, allOf-wrapped containers, reference elements, nullable
+// roots and bad elements keep the exclusions the field role already enforces.
+func TestComponentDefaultFactoryCollectionExclusions(t *testing.T) {
+	for _, tc := range []struct{ name, input string }{
+		{"nested container", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","items":{"type":"array","items":{"type":"string"}},"default":[["a"]]}}}}`},
+		{"allOf wrapped", `{"openapi":"3.1.0","components":{"schemas":{"S":{"allOf":[{"type":"array","items":{"type":"string"}}],"default":["a"]}}}}`},
+		{"ref element", `{"openapi":"3.1.0","components":{"schemas":{"T":{"type":"string"},"S":{"type":"array","items":{"$ref":"#/components/schemas/T"},"default":["a"]}}}}`},
+		{"nullable root", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","nullable":true,"items":{"type":"string"},"default":null}}}}`},
+		{"bad element", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","items":{"type":"integer"},"default":["a"]}}}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request([]byte(tc.input), "Dto")
+			r.Options.Validation = true
+			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
+				t.Fatalf("excluded collection role admitted: %v", err)
+			}
+		})
 	}
 }

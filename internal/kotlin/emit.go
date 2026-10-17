@@ -87,6 +87,11 @@ func emitDeclaration(declaration schema.Declaration, indent int, owner string, h
 		}
 	case *schema.ValueAlias:
 		fmt.Fprintf(out, "public typealias %s = %s\n", d.ClassName, RenderType(d.Type))
+		if d.ComponentDefault != "" {
+			// A typealias cannot own members, so the factory is top-level.
+			fmt.Fprintf(out, "\n// The OpenAPI component default for this schema.\npublic fun `%s default`(): %s = `openapi-kt component default %s`(%s)\n",
+				d.ClassName, d.ClassName, strings.ReplaceAll(owner+"."+d.ClassName, ".", " "), naming.Literal(d.ComponentDefault))
+		}
 	case *schema.Model:
 		if len(d.Properties) == 0 && len(d.Constants) == 0 {
 			raw := schema.TypeRef{Kind: schema.JSON}

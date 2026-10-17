@@ -15,91 +15,103 @@ import (
 // generator adds an opt-in `default()` factory that decodes the canonical JSON
 // through the component's own serializer.
 //
-// Validation reuses the property default walk. Every rule that governs a
-// property default - declared members, required names, leaf kinds, enum
-// vocabularies, counts and bounds, and the value budgets - applies unchanged;
-// only the reporting root differs, at the original `.../default/...` Pointer.
+// Validation reuses the property default walks. Every rule that governs a field
+// default - declared members, required names, leaf kinds, enum vocabularies,
+// counts and bounds, and the value budgets - applies unchanged; only the
+// reporting root differs, at the original `.../default` Pointer. This contract
+// adds no new shape grammar: a component root is admitted exactly when the
+// equivalent field default would be.
 
 // componentDefaultCandidate reports the components whose root may own the
-// annotation. Only ordinary object models can carry the factory; every other
-// component role (scalar alias, enum, union, collection alias, const, raw, and
-// hierarchy) keeps its existing contract and is not extended here.
+// annotation. The dispatch mirrors the field default dispatch, so a shape that a
+// field would reject stays rejected here too.
 func (a *analyzer) componentDefaultCandidate(c *component) bool {
 	if c == nil || !has(c.Schema, "default") {
-		return false
-	}
-	// A scalar or String-enum component owns its value outright, so the factory
-	// returns the alias type directly instead of a constructor.
-	if c.Scalar != "" || has(c.Schema, "enum") {
-		return a.scalarComponentDefaultCandidate(c)
-	}
-	if c.InternalModelTarget != nil || c.BindingTarget != nil || c.ValueClass ||
-		c.NullableStructuredConst || c.NullableTemporal || c.NullableBigint || c.NullableBytes ||
-		c.NullableCallerNative || c.NullablePrimitive || c.NullableNativeEnum || c.NullableEnum ||
-		c.NullableRaw || c.RecursiveJSON || c.BooleanRoot || c.NullableHierarchy {
-		return false
-	}
-	if c.Scalar != "" || has(c.Schema, "enum") || has(c.Schema, "$ref") ||
-		has(c.Schema, "oneOf") || has(c.Schema, "anyOf") || has(c.Schema, "const") {
 		return false
 	}
 	kind, nullable, err := schemaType(c.Schema, c.Pointer)
 	if err != nil || nullable {
 		return false
 	}
-	if has(c.Schema, "allOf") {
+	// A Scalar only exists after the declaration loop, and markComponentDefaultSource
+	// runs before it. Key the dispatch off the schema itself so both callers agree.
+	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) {
+		return a.scalarComponentDefaultCandidate(c)
+	}
+	switch {
+	case has(c.Schema, "allOf"):
 		// A disjoint ordinary allOf constructor reuses the field allOf walk.
 		return !has(c.Schema, "oneOf") && !has(c.Schema, "anyOf") && !has(c.Schema, "$ref")
+	case kind == "array" || dictionarySchema(c.Schema):
+		// A List/typed Map root reuses the nested collection default walk, which
+		// already scopes the element/value leaves it supports.
+		return a.collectionComponentDefaultCandidate(c)
+	case kind == "object":
+		return objectDefaultCandidateSchema(c.Schema)
 	}
-	if kind != "object" {
-		return false
+	return false
+}
+
+// markComponentDefaultSource registers only the components whose root `default`
+// this contract admits, so the shared type plan accepts the annotation on the
+// same original node it reuses. Anything else keeps its existing rejection at
+// the original `.../default` Pointer.
+func (a *analyzer) markComponentDefaultSource(v *document.Value, pointer string) *diagnostic.Diagnostic {
+	if err := object(v, pointer); err != nil {
+		return err
 	}
-	return objectDefaultCandidateSchema(c.Schema)
+	if has(v, "$ref") || has(v, "oneOf") || has(v, "anyOf") || has(v, "const") {
+		return nil
+	}
+	c := &component{Wire: pointer, Name: pointer, Pointer: pointer, Schema: v}
+	if !a.componentDefaultCandidate(c) {
+		return nil
+	}
+	// Both markers are set: the object walk consults objectDefaultSchemas, while
+	// the scalar/enum and collection type planners consult componentDefaultSchemas.
+	if a.objectDefaultSchemas == nil {
+		a.objectDefaultSchemas = map[*document.Value]bool{}
+	}
+	a.objectDefaultSchemas[v] = true
+	if a.componentDefaultSchemas == nil {
+		a.componentDefaultSchemas = map[*document.Value]bool{}
+	}
+	a.componentDefaultSchemas[v] = true
+	return nil
 }
 
 // planComponentDefaultFactories attaches the canonical annotation to each
-// eligible model and validates it through the shared object-default walk. It
-// runs after declaration planning so the shared type plan already accepted the
-// annotated node.
+// eligible declaration and validates it through the shared default walk. It runs
+// after declaration planning so the shared type plan already accepted the node.
 func (a *analyzer) planComponentDefaultFactories(declarations []Declaration) *diagnostic.Diagnostic {
 	for _, name := range sortedComponentNames(a.components) {
 		c := a.components[name]
 		if !a.componentDefaultCandidate(c) {
 			continue
 		}
-		if c.Scalar != "" || has(c.Schema, "enum") {
-			encoded, err := a.scalarComponentDefaultEncoded(c)
-			if err != nil {
-				return err
-			}
-			switch declaration := componentDeclaration(declarations, c.Name).(type) {
-			case *StringEnum:
-				declaration.ComponentDefault = encoded
-			case *ScalarAlias:
-				declaration.ComponentDefault = encoded
-			}
-			continue
-		}
-		model := componentModel(declarations, c.Name)
-		if model == nil {
-			// The component planned to a non-model declaration; its own default
-			// belongs to that role's separate contract.
-			continue
-		}
-		encoded, err := a.componentDefaultEncoded(c, model)
+		encoded, err := a.componentDefaultEncoded(c)
 		if err != nil {
 			return err
 		}
-		model.ComponentDefault = encoded
+		switch declaration := componentDeclaration(declarations, c.Name).(type) {
+		case *Model:
+			declaration.ComponentDefault = encoded
+		case *StringEnum:
+			declaration.ComponentDefault = encoded
+		case *ScalarAlias:
+			declaration.ComponentDefault = encoded
+		case *ValueAlias:
+			declaration.ComponentDefault = encoded
+		}
 	}
 	return nil
 }
 
-// componentDefaultEncoded validates the annotation on its own shallow copy so
-// no declaration or warning leaks from the probe, then returns canonical JSON.
-func (a *analyzer) componentDefaultEncoded(c *component, model *Model) (string, *diagnostic.Diagnostic) {
-	value := get(c.Schema, "default")
+// componentDefaultEncoded validates the annotation on a shallow copy so no
+// declaration or warning leaks from the probe, then returns canonical JSON.
+func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Diagnostic) {
 	at := naming.Pointer(c.Pointer, "default")
+	value := get(c.Schema, "default")
 	work, bytes := 0, 0
 	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
 		return "", err
@@ -107,20 +119,28 @@ func (a *analyzer) componentDefaultEncoded(c *component, model *Model) (string, 
 	validation := *a
 	validation.warnings = nil
 	validation.objectDefaultWork = nil
-	// The shared type plan already ran and saw this original node. Register it so
-	// the object walk accepts the annotation it owns, exactly as a field's own
-	// default registers its source node.
 	if validation.objectDefaultSchemas == nil {
 		validation.objectDefaultSchemas = map[*document.Value]bool{}
 	}
 	validation.objectDefaultSchemas[c.Schema] = true
-	var node *nestedDefaultNode
-	var err *diagnostic.Diagnostic
-	if has(c.Schema, "allOf") {
-		node, err = validation.ordinaryAllOfDefaultNode(c.Schema, c.Pointer, 0)
-	} else {
-		node, err = validation.objectDefaultNode(c.Schema, c.Pointer, 0, true)
+
+	kind, _, _ := schemaType(c.Schema, c.Pointer)
+	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) {
+		// The enum/scalar roles own their own validation above; the canonical
+		// value is the literal JSON of the annotation itself.
+		if _, err := validation.scalarComponentNode(c); err != nil {
+			return "", err
+		}
+		encoded, marshalErr := value.MarshalJSON()
+		if marshalErr != nil {
+			return "", diagnostic.At("E_JSON_INVALID", "Component default must encode to valid JSON.", at)
+		}
+		if len(encoded) > maxNestedDefaultBytes {
+			return "", diagnostic.At("E_MODEL_LIMIT", "Canonical component default exceeds the supported 32 KiB JSON byte limit.", at)
+		}
+		return string(encoded), nil
 	}
+	node, err := validation.componentDefaultNode(c)
 	if err != nil {
 		return "", err
 	}
@@ -129,8 +149,6 @@ func (a *analyzer) componentDefaultEncoded(c *component, model *Model) (string, 
 		return "", err
 	}
 	if value.Kind() == document.Null {
-		// A root-level null keeps its literal form but still requires the
-		// component's own explicit nullability, which the walk above enforced.
 		return "null", nil
 	}
 	if len(encoded) > maxNestedDefaultBytes {
@@ -140,6 +158,99 @@ func (a *analyzer) componentDefaultEncoded(c *component, model *Model) (string, 
 		return "", diagnostic.At("E_JSON_INVALID", "Component default must encode to valid JSON.", at)
 	}
 	return encoded, nil
+}
+
+// componentDefaultNode dispatches to the walk that owns this root shape.
+func (a *analyzer) componentDefaultNode(c *component) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	if has(c.Schema, "allOf") {
+		return a.ordinaryAllOfDefaultNode(c.Schema, c.Pointer, 0)
+	}
+	kind, _, err := schemaType(c.Schema, c.Pointer)
+	if err != nil {
+		return nil, err
+	}
+	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) {
+		return a.scalarComponentNode(c)
+	}
+	if kind == "array" || dictionarySchema(c.Schema) {
+		return a.nestedDefaultSchema(c.Schema, c.Name, c.Pointer, nil, nil, 0, true)
+	}
+	return a.objectDefaultNode(c.Schema, c.Pointer, 0, true)
+}
+
+// scalarComponentDefaultCandidate admits the plain scalar and String-enum roots
+// whose field default role exists. Native enum, temporal, bytes, caller-native,
+// bigint and value-class components keep their own contracts.
+func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
+	kind, nullable, err := schemaType(c.Schema, c.Pointer)
+	if err != nil || nullable {
+		return false
+	}
+	if has(c.Schema, "format") || has(c.Schema, "x-native-type") || has(c.Schema, "x-kotlin-value-class") ||
+		has(c.Schema, "const") || has(c.Schema, "oneOf") || has(c.Schema, "anyOf") ||
+		has(c.Schema, "allOf") || has(c.Schema, "$ref") {
+		return false
+	}
+	if has(c.Schema, "enum") {
+		return kind == "" || kind == "string"
+	}
+	return isPlainScalarRoot(c.Schema, kind)
+}
+
+// collectionComponentDefaultCandidate admits a List/typed Map root when the
+// nested collection default walk accepts the whole tree. Nested containers,
+// allOf-wrapped containers, union variants, reference elements, counts and
+// uniqueItems keep exactly the boundaries that walk already enforces.
+func (a *analyzer) collectionComponentDefaultCandidate(c *component) bool {
+	// A component root is a *single* container layer over a leaf element. Nested
+	// containers, allOf-wrapped containers and union variants keep exactly the
+	// exclusions the field role already enforces.
+	kind, nullable, err := schemaType(c.Schema, c.Pointer)
+	if err != nil || nullable {
+		return false
+	}
+	edge := ""
+	switch {
+	case kind == "array":
+		edge = "items"
+	case dictionarySchema(c.Schema):
+		edge = "additionalProperties"
+	default:
+		return false
+	}
+	if has(c.Schema, "oneOf") || has(c.Schema, "anyOf") || has(c.Schema, "allOf") {
+		return false
+	}
+	element := get(c.Schema, edge)
+	if element == nil {
+		return false
+	}
+	elementKind, elementNullable, err := schemaType(element, naming.Pointer(c.Pointer, edge))
+	if err != nil || elementNullable {
+		return false
+	}
+	if elementKind == "array" || dictionarySchema(element) ||
+		has(element, "oneOf") || has(element, "anyOf") || has(element, "allOf") || has(element, "$ref") {
+		return false
+	}
+	probe := *a
+	probe.warnings = nil
+	probe.objectDefaultWork = nil
+	if probe.objectDefaultSchemas == nil {
+		probe.objectDefaultSchemas = map[*document.Value]bool{}
+	}
+	probe.objectDefaultSchemas[c.Schema] = true
+	_, failure := probe.nestedDefaultSchema(c.Schema, c.Name, c.Pointer, nil, nil, 0, true)
+	return failure == nil
+}
+
+func componentDeclaration(declarations []Declaration, name string) Declaration {
+	for _, declaration := range declarations {
+		if declaration.Name() == name {
+			return declaration
+		}
+	}
+	return nil
 }
 
 func componentModel(declarations []Declaration, name string) *Model {
@@ -161,118 +272,44 @@ func sortedComponentNames(components map[string]*component) []string {
 	return names
 }
 
-// markComponentDefaultSource registers only the components whose root `default`
-// this contract admits, so the shared type plan accepts the annotation on the
-// same original node it reuses. Anything else is left untouched and keeps its
-// existing rejection at the original `.../default` Pointer.
-func (a *analyzer) markComponentDefaultSource(v *document.Value, pointer string) *diagnostic.Diagnostic {
-	if err := object(v, pointer); err != nil {
-		return err
-	}
-	if has(v, "$ref") || has(v, "oneOf") || has(v, "anyOf") ||
-		has(v, "const") || dictionarySchema(v) {
-		return nil
-	}
-	kind, nullable, err := schemaType(v, pointer)
-	if err != nil {
-		return nil
-	}
-	if has(v, "allOf") {
-		if a.objectDefaultSchemas == nil {
-			a.objectDefaultSchemas = map[*document.Value]bool{}
-		}
-		a.objectDefaultSchemas[v] = true
-		return nil
-	}
-	if kind != "object" {
-		// A plain scalar or String-enum component root accepts the annotation
-		// through its own field walk. Native markers, formats, temporal, bytes
-		// and value-class roots keep their existing rejection.
-		if nullable || has(v, "format") || has(v, "x-native-type") || has(v, "x-kotlin-value-class") {
-			return nil
-		}
-		if has(v, "enum") {
-			if kind != "" && kind != "string" {
-				return nil
-			}
-		} else if kind != "" && kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
-			return nil
-		}
-		if a.componentDefaultSchemas == nil {
-			a.componentDefaultSchemas = map[*document.Value]bool{}
-		}
-		a.componentDefaultSchemas[v] = true
-		return nil
-	}
-	// Only a non-empty declared property map becomes an ordinary Model. Empty,
-	// raw, const-only and nullable raw projections keep their own role and their
-	// existing rejection at the original `.../default` Pointer.
-	if nullable || !objectDefaultCandidateSchema(v) {
-		return nil
-	}
-	if a.objectDefaultSchemas == nil {
-		a.objectDefaultSchemas = map[*document.Value]bool{}
-	}
-	a.objectDefaultSchemas[v] = true
-	return nil
-}
-
-// scalarComponentDefaultCandidate admits the plain scalar and String-enum roots
-// whose field default role already exists. Native enum, temporal, bytes,
-// caller-native, bigint and value-class components keep their own contracts.
-func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
-	kind, nullable, err := schemaType(c.Schema, c.Pointer)
-	if err != nil || nullable {
+// isPlainScalarRoot reports a plain scalar schema root without markers, formats
+// or composition, which is the shape the scalar component factory admits.
+func isPlainScalarRoot(v *document.Value, kind string) bool {
+	if kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
 		return false
 	}
-	if has(c.Schema, "format") || has(c.Schema, "x-native-type") || has(c.Schema, "x-kotlin-value-class") ||
-		has(c.Schema, "const") || has(c.Schema, "oneOf") || has(c.Schema, "anyOf") ||
-		has(c.Schema, "allOf") || has(c.Schema, "$ref") {
+	if has(v, "format") || has(v, "x-native-type") || has(v, "x-kotlin-value-class") ||
+		has(v, "const") || has(v, "oneOf") || has(v, "anyOf") || has(v, "allOf") ||
+		has(v, "$ref") || has(v, "enum") || dictionarySchema(v) {
 		return false
 	}
-	if has(c.Schema, "enum") {
-		return (kind == "" || kind == "string") && c.Scalar == ""
-	}
-	switch kind {
-	case "string", "integer", "number", "boolean":
-		return c.Scalar != ""
-	}
-	return false
+	return true
 }
 
-// scalarComponentDefaultEncoded validates the annotation through the same
-// field-enum / scalar walk and returns canonical JSON.
-func (a *analyzer) scalarComponentDefaultEncoded(c *component) (string, *diagnostic.Diagnostic) {
+// scalarComponentNode validates a scalar or String-enum component default with
+// the same leaf grammar and vocabulary membership the field role uses. The
+// shared nested walk already owns both shapes, so it is reused directly.
+func (a *analyzer) scalarComponentNode(c *component) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	at := naming.Pointer(c.Pointer, "default")
 	value := get(c.Schema, "default")
-	work, bytes := 0, 0
-	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
-		return "", err
-	}
-	validation := *a
-	validation.warnings = nil
-	field := field{Wire: c.Name, Pointer: c.Pointer, Schema: c.Schema, Depth: 0}
 	if has(c.Schema, "enum") {
-		if _, err := validation.enumDefaultType(field, c.Name, nil, nil); err != nil {
-			return "", err
+		// The enum role owns its own vocabulary check and node kind.
+		field := field{Wire: c.Name, Pointer: c.Pointer, Schema: c.Schema, Depth: 0}
+		if _, err := a.enumDefaultType(field, c.Name, nil, nil); err != nil {
+			return nil, err
 		}
-	} else if err := validation.scalarComponentValue(c.Schema, value, at); err != nil {
-		return "", err
+		return &nestedDefaultNode{schema: c.Schema, pointer: c.Pointer, ty: TypeRef{Kind: JSON}}, nil
 	}
-	encoded, err := value.MarshalJSON()
-	if err != nil {
-		return "", diagnostic.At("E_JSON_INVALID", "Component default must encode to valid JSON.", at)
+	if err := a.scalarComponentValue(c.Schema, value, at); err != nil {
+		return nil, err
 	}
-	if len(encoded) > maxNestedDefaultBytes {
-		return "", diagnostic.At("E_MODEL_LIMIT", "Canonical component default exceeds the supported 32 KiB JSON byte limit.", at)
-	}
-	return string(encoded), nil
+	return a.nestedDefaultSchema(c.Schema, c.Name, c.Pointer, nil, nil, 0, true)
 }
 
 // scalarComponentValue validates a plain scalar component default against its
 // declared kind, mirroring the field scalar default rules.
 func (a *analyzer) scalarComponentValue(schema, value *document.Value, at string) *diagnostic.Diagnostic {
-	kind, _, err := schemaType(schema, at)
+	kind, _, err := schemaType(schema, "")
 	if err != nil {
 		return err
 	}
@@ -295,15 +332,6 @@ func (a *analyzer) scalarComponentValue(schema, value *document.Value, at string
 		}
 	default:
 		return unsupported(at)
-	}
-	return nil
-}
-
-func componentDeclaration(declarations []Declaration, name string) Declaration {
-	for _, declaration := range declarations {
-		if declaration.Name() == name {
-			return declaration
-		}
 	}
 	return nil
 }
