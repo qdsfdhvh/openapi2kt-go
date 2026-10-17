@@ -78,6 +78,7 @@ private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMa
     "namedRows" to value?.namedRows, "namedMap" to value?.namedMap, "namedMapValues" to value?.namedMapValues, "namedGrid" to value?.namedGrid,
     "plainDtoRows" to value?.plainDtoRows, "plainDtoAliasRows" to value?.plainDtoAliasRows, "plainDtoMap" to value?.plainDtoMap,
     "plainDtoInternalRows" to value?.plainDtoInternalRows, "plainDtoInlineRows" to value?.plainDtoInlineRows,
+    "plainDtoRowsAlias" to value?.plainDtoRowsAlias, "plainDtoBridge" to value?.plainDtoBridge, "plainDtoEntityAlias" to value?.plainDtoEntityAlias,
     "memberBareRows" to value?.memberBareRows, "memberBareRowsNull" to value?.memberBareRowsNull,
     "memberBareMap" to value?.memberBareMap, "memberBareGrid" to value?.memberBareGrid,
     "memberInternalRows" to value?.memberInternalRows, "memberInternalNull" to value?.memberInternalNull,
@@ -139,6 +140,9 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.plainDtoMap?.get("value")?.label == "outer plain map" && value.cfg?.plainDtoMap?.get("value")?.count == 2)
     check(value.cfg?.plainDtoInternalRows?.single()?.label == "outer plain internal rows")
     check(value.cfg?.plainDtoInlineRows?.single()?.label == "outer plain inline rows")
+    check(value.cfg?.plainDtoRowsAlias?.single()?.label == "outer plain alias-chain rows" && value.cfg?.plainDtoRowsAlias?.single()?.count == 2)
+    check(value.cfg?.plainDtoBridge?.single()?.label == "outer plain bridge rows" && value.cfg?.plainDtoBridge?.single()?.count == 2)
+    check(value.cfg?.plainDtoEntityAlias?.single()?.label == "outer plain entity alias rows")
     check(value.cfg?.memberBareRows?.single()?.label == "outer bare rows" && value.cfg?.memberBareRows?.single()?.child?.flag == true)
     check(value.cfg?.memberBareRowsNull == null && value.cfg?.memberBareMap?.get("value")?.label == "outer bare map" && value.cfg?.memberBareMap?.get("none") == null)
     check(value.cfg?.memberBareGrid?.single()?.get("k")?.label == "outer bare grid")
@@ -190,6 +194,9 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.plainDtoMap?.get("value") !== other.cfg?.plainDtoMap?.get("value"))
     check(value.cfg?.plainDtoInternalRows?.single() !== other.cfg?.plainDtoInternalRows?.single())
     check(value.cfg?.plainDtoInlineRows?.single() !== other.cfg?.plainDtoInlineRows?.single())
+    check(value.cfg?.plainDtoRowsAlias?.single() !== other.cfg?.plainDtoRowsAlias?.single())
+    check(value.cfg?.plainDtoBridge?.single() !== other.cfg?.plainDtoBridge?.single())
+    check(value.cfg?.plainDtoEntityAlias?.single() !== other.cfg?.plainDtoEntityAlias?.single())
     check(value.cfg?.memberBareRows?.single() !== other.cfg?.memberBareRows?.single())
     check(value.cfg?.memberBareRows?.single()?.child !== other.cfg?.memberBareRows?.single()?.child)
     check(value.cfg?.memberBareMap?.get("value") !== other.cfg?.memberBareMap?.get("value"))
@@ -238,6 +245,9 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(fresh.plainDtoAliasRows?.single()?.label == "plain alias rows member")
     check(fresh.plainDtoMap?.get("value")?.label == "plain map member" && fresh.plainDtoInternalRows?.single()?.label == "plain internal rows member")
     check(fresh.plainDtoInlineRows?.single()?.label == "plain inline rows member")
+    check(fresh.plainDtoRowsAlias?.single()?.label == "plain alias-chain rows member" && fresh.plainDtoRowsAlias?.single()?.count == 2)
+    check(fresh.plainDtoBridge?.single()?.label == "plain bridge rows member")
+    check(fresh.plainDtoEntityAlias?.single()?.label == "plain entity alias rows member")
     check(fresh.memberBareRows?.single()?.label == "bare rows member" && fresh.memberBareRows?.single()?.child?.flag == true && fresh.memberBareRowsNull == null)
     check(fresh.memberBareMap?.get("value")?.label == "bare map member" && fresh.memberBareGrid?.single()?.get("k")?.label == "bare grid member")
     check(fresh.memberInternalRows?.single()?.label == "internal rows member" && fresh.memberInternalRows?.single()?.child?.flag == true && fresh.memberInternalNull == null)
@@ -329,6 +339,12 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","plainDtoRows":[]}}""").cfg?.plainDtoRows?.isEmpty() == true)
         check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","plainDtoRows":[{}]}}""") }.isFailure)
         check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","plainDtoRows":[null]}}""") }.isFailure)
+        val plainAlias = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","plainDtoRowsAlias":[{"label":"alias-chain replacement"}],"plainDtoBridge":[{"label":"bridge replacement"}],"plainDtoEntityAlias":[{"label":"entity alias replacement"}]}}""")
+        check(plainAlias.cfg?.plainDtoRowsAlias?.single()?.label == "alias-chain replacement" && plainAlias.cfg?.plainDtoRowsAlias?.single()?.count == 2)
+        check(plainAlias.cfg?.plainDtoBridge?.single()?.label == "bridge replacement" && plainAlias.cfg?.plainDtoEntityAlias?.single()?.label == "entity alias replacement")
+        check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), plainAlias))) == nestedObjectHolderFields(plainAlias))
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","plainDtoRowsAlias":[{}]}}""") }.isFailure)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","plainDtoBridge":[null]}}""") }.isFailure)
         check(overridden.cfg?.viaCollectionRows?.single()?.label == "bridge rows member" && overridden.cfg?.viaCollectionMap?.get("value")?.label == "bridge map member")
         val bridged = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","viaCollectionRows":[{"label":"replacement"}],"viaCollectionRowsNull":[{"label":"set"}],"viaCollectionMap":{"nil":null,"new":{"label":"map"}},"viaCollectionGrid":[{"new":{"label":"grid"}}]}}""")
         check(bridged.cfg?.viaCollectionRows?.single()?.label == "replacement" && bridged.cfg?.viaCollectionRows?.single()?.child?.flag == true)

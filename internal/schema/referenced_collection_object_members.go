@@ -55,6 +55,28 @@ func (a *analyzer) namedAllOfCollectionMemberElement(v *document.Value) *documen
 	return nil
 }
 
+// plainDTOCollectionMember reports whether an original collection entity's
+// inline element tree resolves to a plain ordinary DTO rather than an allOf
+// constructor. Such a collection uses the same member profile as a direct
+// plain-DTO collection, so an alias or internal bridge to it does not fall
+// through to the allOf terminal role.
+func (a *analyzer) plainDTOCollectionMember(v *document.Value) bool {
+	if v == nil || has(v, "$ref") {
+		return false
+	}
+	kind, _, err := schemaType(v, "")
+	if err != nil {
+		return false
+	}
+	if kind != "array" && !dictionarySchema(v) {
+		return false
+	}
+	if a.namedAllOfCollectionMemberElement(v) != nil {
+		return false
+	}
+	return a.objectDefaultCandidate(v)
+}
+
 // Admission remains with the shared type planner. Original named/internal ref
 // hops may precede an original named or internal collection entity.
 func (a *analyzer) referencedCollectionAllOfMember(v *document.Value) bool {
@@ -69,7 +91,7 @@ func (a *analyzer) referencedCollectionAllOfMember(v *document.Value) bool {
 		}
 		v = source
 		if !has(v, "$ref") {
-			return a.namedAllOfCollectionMemberElement(v) != nil
+			return a.namedAllOfCollectionMemberElement(v) != nil || a.plainDTOCollectionMember(v)
 		}
 	}
 	return false
@@ -130,11 +152,12 @@ func (a *analyzer) referencedCollectionAllOfMemberNode(v *document.Value, pointe
 		}
 		if !has(v, "$ref") {
 			leaf := a.namedAllOfCollectionMemberElement(v)
-			if leaf == nil {
+			validation := *a
+			if leaf != nil {
+				validation.objectDefaultAllOfMemberElement = leaf
+			} else if !a.plainDTOCollectionMember(v) {
 				return nil, unsupported(pointer)
 			}
-			validation := *a
-			validation.objectDefaultAllOfMemberElement = leaf
 			node, err := validation.objectDefaultNode(v, pointer, depth, false)
 			if err != nil {
 				return nil, err

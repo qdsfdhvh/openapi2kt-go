@@ -204,3 +204,33 @@ func TestReferencedCollectionPlainDTOElementSources(t *testing.T) {
 		t.Fatal("rewrote original sources")
 	}
 }
+
+// A plain-DTO-element collection reached through a named alias or internal
+// bridge keeps every original hop while borrowing the terminal plain object.
+func TestReferencedCollectionPlainDTOAliasSources(t *testing.T) {
+	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Item":{"type":"object","required":["name"],"properties":{"name":{"type":"string"}}},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Item"}},"RowsAlias":{"$ref":"#/components/schemas/Rows"},"Holder":{"properties":{"v":{"properties":{"m":{"$ref":"#/components/schemas/RowsAlias"}},"default":{"m":[{"name":"a"}]}}}}}}}`)
+	a, root := referencedCollectionTestAnalyzer(t, input)
+	holder := get(referencedSchemas(root), "Holder")
+	member := get(get(get(get(holder, "properties"), "v"), "properties"), "m")
+	rowsAlias := get(referencedSchemas(root), "RowsAlias")
+	rows := get(referencedSchemas(root), "Rows")
+	item := get(referencedSchemas(root), "Item")
+	before, _ := root.MarshalJSON()
+	node, err := a.objectDefaultPropertyNode(member, "/member", 1, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if node.object || node.element == nil || !node.element.object || node.schema != rows || node.pointer != "/components/schemas/Rows" {
+		t.Fatal("alias did not borrow the terminal collection", node)
+	}
+	if node.element.schema != item {
+		t.Fatal("lost plain DTO element terminal", node)
+	}
+	if a.components["RowsAlias"] != a.componentsByOriginalSchema(rowsAlias) || a.componentsByOriginalSchema(rowsAlias) == nil {
+		t.Fatal("alias source identity changed")
+	}
+	after, _ := root.MarshalJSON()
+	if string(before) != string(after) {
+		t.Fatal("rewrote original sources")
+	}
+}
