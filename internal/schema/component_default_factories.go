@@ -44,7 +44,14 @@ func (a *analyzer) componentDefaultCandidate(c *component) bool {
 		return false
 	}
 	kind, nullable, err := schemaType(c.Schema, c.Pointer)
-	if err != nil || kind != "object" || nullable {
+	if err != nil || nullable {
+		return false
+	}
+	if has(c.Schema, "allOf") {
+		// A disjoint ordinary allOf constructor reuses the field allOf walk.
+		return !has(c.Schema, "oneOf") && !has(c.Schema, "anyOf") && !has(c.Schema, "$ref")
+	}
+	if kind != "object" {
 		return false
 	}
 	return objectDefaultCandidateSchema(c.Schema)
@@ -107,8 +114,13 @@ func (a *analyzer) componentDefaultEncoded(c *component, model *Model) (string, 
 		validation.objectDefaultSchemas = map[*document.Value]bool{}
 	}
 	validation.objectDefaultSchemas[c.Schema] = true
-	field := field{Wire: model.ClassName, Pointer: c.Pointer, Schema: c.Schema, Depth: 0}
-	node, err := validation.objectDefaultNode(c.Schema, c.Pointer, 0, true)
+	var node *nestedDefaultNode
+	var err *diagnostic.Diagnostic
+	if has(c.Schema, "allOf") {
+		node, err = validation.ordinaryAllOfDefaultNode(c.Schema, c.Pointer, 0)
+	} else {
+		node, err = validation.objectDefaultNode(c.Schema, c.Pointer, 0, true)
+	}
 	if err != nil {
 		return "", err
 	}
@@ -127,7 +139,6 @@ func (a *analyzer) componentDefaultEncoded(c *component, model *Model) (string, 
 	if !json.Valid([]byte(encoded)) {
 		return "", diagnostic.At("E_JSON_INVALID", "Component default must encode to valid JSON.", at)
 	}
-	_ = field
 	return encoded, nil
 }
 
@@ -158,12 +169,19 @@ func (a *analyzer) markComponentDefaultSource(v *document.Value, pointer string)
 	if err := object(v, pointer); err != nil {
 		return err
 	}
-	if has(v, "$ref") || has(v, "allOf") || has(v, "oneOf") || has(v, "anyOf") ||
+	if has(v, "$ref") || has(v, "oneOf") || has(v, "anyOf") ||
 		has(v, "const") || dictionarySchema(v) {
 		return nil
 	}
 	kind, nullable, err := schemaType(v, pointer)
 	if err != nil {
+		return nil
+	}
+	if has(v, "allOf") {
+		if a.objectDefaultSchemas == nil {
+			a.objectDefaultSchemas = map[*document.Value]bool{}
+		}
+		a.objectDefaultSchemas[v] = true
 		return nil
 	}
 	if kind != "object" {
@@ -177,7 +195,7 @@ func (a *analyzer) markComponentDefaultSource(v *document.Value, pointer string)
 			if kind != "" && kind != "string" {
 				return nil
 			}
-		} else if kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
+		} else if kind != "" && kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
 			return nil
 		}
 		if a.componentDefaultSchemas == nil {
