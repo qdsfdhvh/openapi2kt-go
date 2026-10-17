@@ -197,3 +197,39 @@ func TestComponentDefaultFactoryTemporalParity(t *testing.T) {
 		}
 	}
 }
+
+// A native enum component factory keeps native/core parity.
+func TestComponentDefaultFactoryNativeEnumParity(t *testing.T) {
+	const document = `{"openapi":"3.1.0","components":{"schemas":{"Code":{"type":"integer","format":"int32","enum":[1,2],"default":1},"Flag":{"type":"boolean","enum":[true,false],"default":true}}}}`
+	for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+		for _, checked := range []bool{false, true} {
+			t.Run(string(style)+"/checked="+map[bool]string{false: "0", true: "1"}[checked], func(t *testing.T) {
+				p := newProject(t)
+				put(t, p.Input, []byte(document))
+				args := objectDefaultReferencedPropertyArgs(p.Input, p.Output, checked, style)
+				result(t, invoke(t, p.Root, args...), 0)
+				report, err := core.GenerateWithDiagnostics(core.GenerationRequest{Document: []byte(document), Options: core.GenerationOptions{PackageName: "org.example.catalog", ModelNameSuffix: "Dto", ModelStyle: style, Validation: checked}})
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, file := range report.Artifacts.Files {
+					content := read(t, p.Output+"/"+file.Path)
+					if string(content) != file.Content {
+						t.Fatal("native/core mismatch", file.Path)
+					}
+					if strings.Contains(file.Path, "/CodeDto.kt") && !strings.Contains(string(content), "public fun `CodeDto default`(): CodeDto =") {
+						t.Fatal("native Int factory missing", content)
+					}
+					if strings.Contains(file.Path, "/FlagDto.kt") && !strings.Contains(string(content), "public fun `FlagDto default`(): FlagDto =") {
+						t.Fatal("native Boolean factory missing", content)
+					}
+				}
+				before := snapshot(t, p.Output)
+				result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
+				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+					t.Fatal("check changed bytes/modes/mtimes")
+				}
+			})
+		}
+	}
+}

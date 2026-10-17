@@ -79,7 +79,7 @@ Admission reuses the existing default planner for property defaults; this contra
 
 - plain inline ordinary object (explicit or inferred `type: "object"` with declared properties);
 - disjoint ordinary `allOf` constructor roots;
-- plain scalar roots (`string`, `integer`, `number`, `boolean`), standard temporal roots (`format: date` / `date-time`) and plain unformatted String-enum roots;
+- plain scalar roots (`string`, `integer`, `number`, `boolean`), standard temporal roots (`format: date` / `date-time`), plain unformatted String-enum roots, and numeric/Boolean native enum roots (`int32`/`int64`/`float`/`double` numeric vocabularies and Boolean vocabularies);
 - a single-layer List or typed Map root whose element/value is a leaf the nested collection default walk already supports (builtin scalar, temporal, String enum, native enum);
 - disjoint ordinary `allOf` constructor;
 - named/internal `$ref` collection trees already admitted by the referenced collection default roles;
@@ -91,7 +91,8 @@ Admission reuses the existing default planner for property defaults; this contra
 ## Exclusions
 
 - A bare reference wrapper (a component whose body is only `$ref` plus `nullable`) has no value of its own and stays rejected.
-- Scalar roots with a non-temporal `format` (bytes), `x-native-type`, `x-kotlin-value-class`, native enum vocabularies, `const`, `nullable`, `oneOf`/`anyOf` and `$ref` wrappers keep their own roles and their existing rejection at the original `.../default` Pointer. A temporal root validates its lexeme through the existing temporal role, so a bad date or instant value is rejected at the annotation.
+- Scalar roots with a non-temporal `format` (bytes), `x-native-type`, `x-kotlin-value-class`, `const`, `nullable`, `oneOf`/`anyOf` and `$ref` wrappers keep their own roles and their existing rejection at the original `.../default` Pointer.
+- An **unformatted numeric** enum root keeps its existing rejection; a numeric native vocabulary needs the explicit native `format`. The native enum's scalar wire type, exact pre-rounding vocabulary membership and the existing `W_ENUM_NATIVE_APPROXIMATION` warning are retained. A temporal root validates its lexeme through the existing temporal role, so a bad date or instant value is rejected at the annotation.
 - Collection roots keep every exclusion the field role enforces: a nested container element, an `allOf`-wrapped container, a `$ref` element, a nullable root, a composition element and an out-of-vocabulary element all stay rejected. Counts and `uniqueItems` retain their existing opt-in behaviour.
 - Empty/raw and const-only object projections, hierarchy sources and object-union products keep their separate contracts.
 - A component default is **not inherited**: a property referencing the component does not acquire it, and a consumer's own annotation is unchanged.

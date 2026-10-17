@@ -221,7 +221,9 @@ func (a *analyzer) nativeEnum(kind string, v *document.Value, pointer string) (s
 	if kind == "null" {
 		return nullOnlyEnumType(v, pointer)
 	}
-	return a.nativeEnumKeys(kind, v, pointer, false)
+	// A component root's own `default` is validated by the factory planner; the
+	// shared type plan borrows the same node and must not reject the annotation.
+	return a.nativeEnumKeys(kind, v, pointer, a != nil && a.componentDefaultSchemas[v])
 }
 
 func (a *analyzer) nativeEnumKeys(kind string, v *document.Value, pointer string, fieldDefault bool) (string, *diagnostic.Diagnostic) {
@@ -230,7 +232,10 @@ func (a *analyzer) nativeEnumKeys(kind string, v *document.Value, pointer string
 
 func (a *analyzer) nativeEnumProfile(kind string, v *document.Value, pointer string, fieldDefault, checkedBounds bool) (string, *diagnostic.Diagnostic) {
 	keys := []string{"type", "nullable", "format", "enum"}
-	if fieldDefault {
+	// A component root's own `default` is validated by the factory planner; the
+	// shared type plan borrows the same node and must accept the key without
+	// taking on the field role's membership semantics.
+	if fieldDefault || a != nil && a.componentDefaultSchemas[v] {
 		keys = append(keys, "default")
 	}
 	if checkedBounds {
@@ -395,4 +400,11 @@ func stringEnumValues(name string, values []string, pointer string) (*StringEnum
 		result.Members = append(result.Members, EnumMember{Name: member, Wire: wire})
 	}
 	return result, nil
+}
+
+// nativeEnumWarn emits the native-enum approximation warning for a component
+// root whose default is validated by the factory planner, without re-running
+// the vocabulary parse.
+func (a *analyzer) nativeEnumWarn(kind string, v *document.Value, pointer string) {
+	a.warn("W_ENUM_NATIVE_APPROXIMATION", "A native scalar enum retains its scalar wire type but does not enforce membership.", naming.Pointer(pointer, "enum"))
 }
