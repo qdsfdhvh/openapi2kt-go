@@ -293,3 +293,44 @@ func TestObjectDefaultCollectionReferencedDTOGuards(t *testing.T) {
 		t.Fatal("scalar element chain gained object member role", err)
 	}
 }
+
+// A plain-DTO-element collection reached through a finite named alias or an
+// internal bridge uses the same member profile as a direct collection
+// reference, matching the consuming-field role. Intermediate nullable intent
+// and the consuming override still decide annotation null.
+func TestObjectDefaultPlainDTOCollectionAliases(t *testing.T) {
+	const item = `{"type":"object","required":["name"],"properties":{"name":{"type":"string"},"count":{"type":"integer","default":2}}}`
+	definitions := `"Item":` + item + `,"Rows":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/Item"}},"RowsAlias":{"$ref":"#/components/schemas/Rows"},"Hops":{"properties":{"first":{"$ref":"#/components/schemas/RowsAlias"},"second":{"$ref":"#/components/schemas/RowsAlias","nullable":false}}},"Entities":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Item"}}}},"EntitiesAlias":{"$ref":"#/components/schemas/Entities/properties/rows"},`
+	for _, tc := range []struct{ name, member string }{
+		{"named alias", `{"$ref":"#/components/schemas/RowsAlias"}`},
+		{"internal bridge", `{"$ref":"#/components/schemas/Hops/properties/first"}`},
+		{"internal prefix narrowing", `{"$ref":"#/components/schemas/Hops/properties/second"}`},
+		{"internal entity alias", `{"$ref":"#/components/schemas/EntitiesAlias"}`},
+	} {
+		for _, checked := range []bool{false, true} {
+			for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+				input := schemas(`{` + definitions + `"Holder":{"properties":{"v":` + allOfMemberField(tc.member, `{"member":[{"name":"a"}]}`) + `}}}`)
+				r := request(input, "Dto")
+				r.Options.Validation, r.Options.ModelStyle = checked, style
+				got, err := core.GenerateWithDiagnostics(r)
+				if err != nil {
+					t.Fatal(tc.name, checked, style, err)
+				}
+				if text := source(t, got, "HolderDto"); !strings.Contains(text, "`openapi-kt model default ") {
+					t.Fatal(tc.name, text)
+				}
+				// The terminal plain object still validates its own members.
+				bad := schemas(`{` + definitions + `"Holder":{"properties":{"v":` + allOfMemberField(tc.member, `{"member":[{"name":false}]}`) + `}}}`)
+				carrierDefaultFailure(t, bad, checked, "E_SCHEMA_INVALID", "/components/schemas/Holder/properties/v/default/member/0/name")
+			}
+		}
+	}
+	// The intermediate explicit false narrows a nullable terminal: annotation
+	// null then fails, while an explicit consumer true restores it.
+	narrowed := schemas(`{` + definitions + `"Holder":{"properties":{"v":` + allOfMemberField(`{"$ref":"#/components/schemas/Hops/properties/second"}`, `{"member":null}`) + `}}}`)
+	carrierDefaultFailure(t, narrowed, true, "E_SCHEMA_INVALID", "/components/schemas/Holder/properties/v/default/member")
+	widened := schemas(`{` + definitions + `"Holder":{"properties":{"v":` + allOfMemberField(`{"$ref":"#/components/schemas/Hops/properties/second","nullable":true}`, `{"member":null}`) + `}}}`)
+	if _, err := core.GenerateWithDiagnostics(request(widened, "Dto")); err != nil {
+		t.Fatal("consumer override did not restore nullable alias", err)
+	}
+}
