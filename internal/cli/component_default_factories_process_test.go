@@ -50,3 +50,45 @@ func TestComponentDefaultFactoryParity(t *testing.T) {
 		}
 	}
 }
+
+// Scalar and String-enum component factories keep native/core parity. A
+// typealias cannot own members, so both forms emit a top-level function.
+func TestComponentDefaultFactoryScalarParity(t *testing.T) {
+	const document = `{"openapi":"3.1.0","components":{"schemas":{"Name":{"type":"string","default":"x"},"Mode":{"type":"string","enum":["a","b"],"default":"a"}}}}`
+	for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+		for _, checked := range []bool{false, true} {
+			t.Run(string(style)+"/checked="+map[bool]string{false: "0", true: "1"}[checked], func(t *testing.T) {
+				p := newProject(t)
+				put(t, p.Input, []byte(document))
+				args := objectDefaultReferencedPropertyArgs(p.Input, p.Output, checked, style)
+				result(t, invoke(t, p.Root, args...), 0)
+				report, err := core.GenerateWithDiagnostics(core.GenerationRequest{Document: []byte(document), Options: core.GenerationOptions{PackageName: "org.example.catalog", ModelNameSuffix: "Dto", ModelStyle: style, Validation: checked}})
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, file := range report.Artifacts.Files {
+					content := read(t, p.Output+"/"+file.Path)
+					if string(content) != file.Content {
+						t.Fatal("native/core mismatch", file.Path)
+					}
+					if strings.Contains(file.Path, "/NameDto.kt") && !strings.Contains(string(content), "public fun `NameDto default`(): NameDto =") {
+						t.Fatal("scalar factory missing", content)
+					}
+					if strings.Contains(file.Path, "/ModeDto.kt") && !strings.Contains(string(content), "public fun `ModeDto default`(): ModeDto =") {
+						t.Fatal("enum factory missing", content)
+					}
+				}
+				before := snapshot(t, p.Output)
+				result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
+				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+					t.Fatal("check changed bytes/modes/mtimes")
+				}
+				put(t, p.Input, []byte(`{"openapi":"3.1.0","components":{"schemas":{"Name":{"type":"string","default":5}}}}`))
+				fails(t, invoke(t, p.Root, args...), 1, "E_SCHEMA_INVALID")
+				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+					t.Fatal("failed generation changed existing output")
+				}
+			})
+		}
+	}
+}

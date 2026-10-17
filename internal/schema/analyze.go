@@ -222,7 +222,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 					scalar = bare(ty).Name
 					validation = bounds
 				} else {
-					scalar, err = scalarType(kind, v, pointer)
+					scalar, err = scalarTypeFor(a, kind, v, pointer)
 				}
 			}
 			if err != nil {
@@ -430,7 +430,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 			a.recordCallerNativeOrigin(model, component)
 			declarations = append(declarations, model)
 		case has(v, "enum"):
-			model, err := buildStringEnum(component.Name, v, pointer)
+			model, err := buildStringEnumKeysFor(component.Name, v, pointer, false, a)
 			if err != nil {
 				return nil, err
 			}

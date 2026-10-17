@@ -29,6 +29,17 @@ private fun `openapi-kt component default org example models SimpleDto`(source: 
     kotlinx.serialization.json.Json.decodeFromString(kotlinx.serialization.serializer<org.example.models.SimpleDto>(), source)
 ```
 
+A scalar or String-enum component owns its value outright, so its factory returns the alias type. A Kotlin `typealias` cannot own members, so that form is a top-level function:
+
+```kotlin
+public typealias NameDto = kotlin.String
+
+// The OpenAPI component default for this schema.
+public fun `NameDto default`(): NameDto = `openapi-kt component default ... NameDto`("\"x\"")
+```
+
+Enum components already emit a companion, so their factory uses the same top-level form as scalars for one uniform call shape.
+
 ## Why a factory, not a constructor initializer
 
 A constructor initializer would silently change wire behavior. `required: ["z"]` with a component default means "the caller may omit the value and the producer supplies it", not "the Kotlin property is optional". Giving `z` an initializer would:
@@ -44,6 +55,7 @@ The factory keeps the constructor, the public property list, the `required`/Patc
 Admission reuses the existing default planner for property defaults; this contract adds no new shape grammar. A component is eligible when its own node carries `default` and the value validates through the same walk that the equivalent **property** default would use:
 
 - plain inline ordinary object (explicit or inferred `type: "object"` with declared properties);
+- plain scalar roots (`string`, `integer`, `number`, `boolean`) and plain unformatted String-enum roots;
 - disjoint ordinary `allOf` constructor;
 - named/internal `$ref` collection trees already admitted by the referenced collection default roles;
 - scalar, temporal, String enum, numeric/Boolean native enum, `bigint`, and primitive union leaves;
@@ -54,6 +66,7 @@ Admission reuses the existing default planner for property defaults; this contra
 ## Exclusions
 
 - A bare reference wrapper (a component whose body is only `$ref` plus `nullable`) has no value of its own and stays rejected.
+- Scalar roots with a `format` (temporal, bytes), `x-native-type`, `x-kotlin-value-class`, native enum vocabularies, `const`, `nullable`, `oneOf`/`anyOf`, `allOf` and collection aliases keep their own roles and their existing rejection at the original `.../default` Pointer.
 - Empty/raw and const-only object projections, hierarchy sources and object-union products keep their separate contracts.
 - A component default is **not inherited**: a property referencing the component does not acquire it, and a consumer's own annotation is unchanged.
 - Request/response inline schemas and operation parameters are unaffected.
@@ -72,7 +85,9 @@ A component default never changes a type, a declaration, a serializer, a warning
 
 ## Naming and collisions
 
-The factory is always named `default`. The helper keeps the established dotted-path form (`openapi-kt component default <package path> <ClassName>`) so two components with the same short name in different packages cannot collide. If a component's own property would be named `default`, the property keeps its generated name and the companion factory is disambiguated by the existing member-collision rules rather than silently overwriting either.
+The factory is named `default` in both forms: a companion member for object components and a top-level function for scalar, String-enum and other alias components (whose `typealias` cannot own members). The helper keeps the established dotted-path form (`openapi-kt component default <package path> <ClassName>`) so two components with the same short name in different packages cannot collide, and it is emitted once per file even when hoisting or deduplication shares one declaration across consumers.
+
+A property may itself be named `default`; Kotlin resolves the property access and the companion function independently, so both may coexist.
 
 ## Compatibility
 
@@ -83,4 +98,4 @@ This is an additive role for previously rejected input. Components without a `de
 - [Core contract tests](../core/component_default_factories_test.go) cover Data/Plain × validation off/on, adoption identity, required/Patch preservation and original diagnostics.
 - [Source authority tests](../internal/schema/component_default_factories_test.go) cover the eligible shapes, exclusion list and budget behaviour on original nodes.
 - [Native parity/preservation](../internal/cli/component_default_factories_process_test.go) checks native output, readonly `--check` and unchanged output on failure.
-- The nested-object feature fixture and Kotlin consumer call a generated factory, proving the factory compiles and decodes to the same value as an explicitly constructed instance.
+- The nested-object feature fixture and Kotlin consumer call generated factories for an object, a scalar and a String-enum component, proving each form compiles and decodes to the same value as an explicitly constructed instance.

@@ -71,8 +71,6 @@ func TestComponentDefaultFactoryGuards(t *testing.T) {
 	// Roles outside this contract keep their existing rejection location.
 	for _, tc := range []struct{ name, input, pointer string }{
 		{"empty raw object", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"object","default":{}}}}}`, "/components/schemas/S/default"},
-		{"string enum", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"string","enum":["a"],"default":"a"}}}}`, "/components/schemas/S/default"},
-		{"scalar", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"string","default":"x"}}}}`, "/components/schemas/S/default"},
 		{"collection alias", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","items":{"type":"string"},"default":["a"]}}}}`, "/components/schemas/S/default"},
 		{"reference wrapper", `{"openapi":"3.1.0","components":{"schemas":{"T":{"type":"object","properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}}}`, "/components/schemas/S/default"},
 	} {
@@ -83,6 +81,73 @@ func TestComponentDefaultFactoryGuards(t *testing.T) {
 			ds, ok := err.(core.Diagnostics)
 			if !ok || len(ds) == 0 || ds[0].Pointer == nil || *ds[0].Pointer != tc.pointer || !reflect.DeepEqual(report, core.GenerationReport{}) {
 				t.Fatalf("excluded role admitted: %v", err)
+			}
+		})
+	}
+}
+
+// Scalar and String-enum components own their value outright, so their factory
+// returns the alias type instead of a constructor. A typealias cannot own
+// members, so the scalar form is a top-level function.
+func TestComponentDefaultFactoryScalarAndEnum(t *testing.T) {
+	const document = `{"Name":{"type":"string","default":"x"},"Count":{"type":"integer","default":5},"Ratio":{"type":"number","default":1.5},"Flag":{"type":"boolean","default":true},"Mode":{"type":"string","enum":["a","b"],"default":"a"}}`
+	for _, checked := range []bool{false, true} {
+		for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+			r := request(schemas(document), "Dto")
+			r.Options.Validation, r.Options.ModelStyle = checked, style
+			got, err := core.GenerateWithDiagnostics(r)
+			if err != nil {
+				t.Fatal(checked, style, err)
+			}
+			for _, marker := range []struct{ file, want string }{
+				{"NameDto", "public fun `NameDto default`(): NameDto ="},
+				{"CountDto", "public fun `CountDto default`(): CountDto ="},
+				{"RatioDto", "public fun `RatioDto default`(): RatioDto ="},
+				{"FlagDto", "public fun `FlagDto default`(): FlagDto ="},
+				{"ModeDto", "public fun `ModeDto default`(): ModeDto ="},
+			} {
+				if text := source(t, got, marker.file); !strings.Contains(text, marker.want) {
+					t.Fatal(marker.file, text)
+				}
+			}
+			// The alias and enum declarations themselves are unchanged.
+			if text := source(t, got, "NameDto"); !strings.Contains(text, "public typealias NameDto = kotlin.String\n") {
+				t.Fatal("scalar alias changed", text)
+			}
+		}
+	}
+}
+
+// The scalar/enum factory keeps the original annotation Pointer and admits only
+// the plain scalar kinds whose field role exists.
+func TestComponentDefaultFactoryScalarGuards(t *testing.T) {
+	for _, tc := range []struct{ name, schemas, pointer string }{
+		{"wrong kind", `{"S":{"type":"string","default":5}}`, "/components/schemas/S/default"},
+		{"enum non-member", `{"S":{"type":"string","enum":["a"],"default":"z"}}`, "/components/schemas/S/default"},
+		{"integer non-integral", `{"S":{"type":"integer","default":1.5}}`, "/components/schemas/S/default"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request(schemas(tc.schemas), "Dto")
+			r.Options.Validation = true
+			report, err := core.GenerateWithDiagnostics(r)
+			ds, ok := err.(core.Diagnostics)
+			if !ok || len(ds) == 0 || ds[0].Pointer == nil || *ds[0].Pointer != tc.pointer || !reflect.DeepEqual(report, core.GenerationReport{}) {
+				t.Fatalf("want %s, got %v", tc.pointer, err)
+			}
+		})
+	}
+	// Native markers, temporal, bytes and value-class roots keep their roles.
+	for _, tc := range []struct{ name, schemas string }{
+		{"temporal", `{"S":{"type":"string","format":"date-time","default":"2024-01-02T03:04:05Z"}}`},
+		{"native enum", `{"S":{"type":"integer","format":"int32","enum":[1,2],"default":1}}`},
+		{"bytes", `{"S":{"type":"string","format":"byte","default":"x"}}`},
+		{"caller native", `{"S":{"type":"string","x-native-type":"org.example.Money","default":"x"}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request(schemas(tc.schemas), "Dto")
+			r.Options.Validation = true
+			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
+				t.Fatalf("excluded scalar root admitted: %v", err)
 			}
 		})
 	}

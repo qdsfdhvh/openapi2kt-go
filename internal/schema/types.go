@@ -137,12 +137,21 @@ type StringEnum struct {
 	Plain     bool
 	ClassName string
 	Members   []EnumMember
+	// ComponentDefault holds the canonical JSON of the component's own root
+	// `default`; it emits an opt-in factory beside the existing companion.
+	ComponentDefault string
 }
 
 func (m *StringEnum) Name() string { return m.ClassName }
 func (*StringEnum) declaration()   {}
 
-type ScalarAlias struct{ ClassName, Scalar string }
+type ScalarAlias struct {
+	ClassName string
+	Scalar    string
+	// ComponentDefault holds the canonical JSON of the component's own root
+	// `default`; the factory decodes through the actual scalar serializer.
+	ComponentDefault string
+}
 
 func (m *ScalarAlias) Name() string { return m.ClassName }
 func (*ScalarAlias) declaration()   {}
@@ -237,7 +246,10 @@ type analyzer struct {
 	// Original inline object field roots in the direct DTO object default role.
 	// The shared object type planner must ignore their own annotation, which the
 	// dedicated default planner validates instead.
-	objectDefaultSchemas      map[*document.Value]bool
+	objectDefaultSchemas map[*document.Value]bool
+	// componentDefaultSchemas marks original component roots whose own `default`
+	// the factory planner validates instead of the shared type plan.
+	componentDefaultSchemas   map[*document.Value]bool
 	objectDefaultWork         *int            // Shared only by one source validation walk.
 	objectDefaultAllOfElement *document.Value // One consuming inline collection's original leaf.
 

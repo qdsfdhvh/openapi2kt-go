@@ -101,12 +101,22 @@ func TestBuiltinReferenceChainsCheckedDepthAndOriginalSourceDiagnostics(t *testi
 		{`{"Value":{"type":"string"},"Hops":{"properties":{"value":{"$ref":"#/components/schemas/Value","minLength":1}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/value"}}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Hops/properties/value/minLength"},
 		{`{"Value":{"type":"string"},"Hops":{"properties":{"value":{"$ref":"#/components/schemas/Missing"}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/value"}}`, "E_REF_MISSING", "/components/schemas/Hops/properties/value/$ref"},
 		{`{"Value":{"type":"string"},"Hops":{"properties":{"value":{"$ref":"other.json#/Value"}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/value"}}`, "E_REF_UNSUPPORTED", "/components/schemas/Hops/properties/value/$ref"},
-		{`{"Value":{"type":"string","default":"x"},"Hops":{"properties":{"value":{"$ref":"#/components/schemas/Value"}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/value"}}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Value/default"},
+		// A scalar component's own root default now emits an opt-in factory; the
+		// bridge/consumer paths and their source-role rules are unchanged.
+		{`{"Value":{"type":"string","default":"x"},"Hops":{"properties":{"value":{"$ref":"#/components/schemas/Value"}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/value"}}`, "scalar-component-default", ""},
 	} {
 		if tc.code == "caller-graduated" {
 			got, err := core.GenerateWithDiagnostics(request(schemas(tc.body), "Dto"))
 			if err != nil || !strings.Contains(source(t, got, "BridgeDto"), "= kotlin.Long\n") || strings.Contains(source(t, got, "HopsDto"), "LongAsStringSerializer") {
 				t.Fatal("original caller Long acquired magic profile", err)
+			}
+		} else if tc.code == "scalar-component-default" {
+			got, err := core.GenerateWithDiagnostics(request(schemas(tc.body), "Dto"))
+			if err != nil || !strings.Contains(source(t, got, "ValueDto"), "public fun `ValueDto default`(): ValueDto =") {
+				t.Fatal("scalar component default factory missing", err)
+			}
+			if !strings.Contains(source(t, got, "BridgeDto"), "public typealias BridgeDto = kotlin.String\n") {
+				t.Fatal("bridge source role changed by the component factory", source(t, got, "BridgeDto"))
 			}
 		} else if tc.code == "bigint-graduated" {
 			got, err := core.GenerateWithDiagnostics(request(schemas(tc.body), "Dto"))

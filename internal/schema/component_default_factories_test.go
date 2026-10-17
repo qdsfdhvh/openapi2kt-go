@@ -46,8 +46,6 @@ func TestComponentDefaultFactoryAuthority(t *testing.T) {
 func TestComponentDefaultFactoryExclusions(t *testing.T) {
 	for _, tc := range []struct{ name, schemas string }{
 		{"empty raw object", `{"S":{"type":"object","default":{}}}`},
-		{"scalar", `{"S":{"type":"string","default":"x"}}`},
-		{"string enum", `{"S":{"type":"string","enum":["a"],"default":"a"}}`},
 		{"collection alias", `{"S":{"type":"array","items":{"type":"string"},"default":["a"]}}`},
 		{"reference wrapper", `{"T":{"type":"object","properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}`},
 		{"inline union", `{"S":{"oneOf":[{"type":"string"},{"type":"integer"}],"default":"x"}}`},
@@ -83,4 +81,41 @@ func loadComponentDocument(t *testing.T, schemas string) *document.Value {
 		t.Fatal(err)
 	}
 	return root
+}
+
+// Scalar and String-enum components attach the canonical annotation to their
+// alias declaration without changing the declared type.
+func TestComponentDefaultFactoryScalarAuthority(t *testing.T) {
+	plan, _, err := Analyze(loadComponentDocument(t, `{"Name":{"type":"string","default":"x"},"Mode":{"type":"string","enum":["a","b"],"default":"a"}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	name := componentDeclaration(plan.Models, "NameDto")
+	alias, ok := name.(*ScalarAlias)
+	if !ok || alias.Scalar != "kotlin.String" || alias.ComponentDefault != `"x"` {
+		t.Fatalf("lost scalar alias or factory: %+v", name)
+	}
+	mode := componentDeclaration(plan.Models, "ModeDto")
+	enum, ok := mode.(*StringEnum)
+	if !ok || len(enum.Members) != 2 || enum.ComponentDefault != `"a"` {
+		t.Fatalf("lost enum members or factory: %+v", mode)
+	}
+}
+
+// A scalar component factory never widens admission for other scalar roots.
+func TestComponentDefaultFactoryScalarExclusions(t *testing.T) {
+	for _, tc := range []struct{ name, schemas string }{
+		{"temporal", `{"S":{"type":"string","format":"date-time","default":"2024-01-02T03:04:05Z"}}`},
+		{"bytes", `{"S":{"type":"string","format":"byte","default":"x"}}`},
+		{"caller native", `{"S":{"type":"string","x-native-type":"org.example.Money","default":"x"}}`},
+		{"native enum", `{"S":{"type":"integer","format":"int32","enum":[1,2],"default":1}}`},
+		{"nullable scalar", `{"S":{"type":"string","nullable":true,"default":"x"}}`},
+		{"const", `{"S":{"type":"string","const":"x","default":"x"}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if _, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto"}); err == nil {
+				t.Fatal("excluded scalar root admitted")
+			}
+		})
+	}
 }
