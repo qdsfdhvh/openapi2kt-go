@@ -77,3 +77,34 @@ func TestObjectDefaultPlainObjectAliasAuthority(t *testing.T) {
 		t.Fatal("rewrote original nodes")
 	}
 }
+
+// An object-default property may reference a primitive union component. The
+// node keeps the referenced component as its source and its shared union
+// declaration for kind/pin validation, and encodes a matching member value.
+func TestObjectDefaultReferencedUnionPropertyAuthority(t *testing.T) {
+	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"V":{"oneOf":[{"type":"string"},{"type":"integer"}]},"Holder":{"properties":{"v":{"type":"object","properties":{"u":{"$ref":"#/components/schemas/V"}}}}}}}}`)
+	a, root := referencedCollectionTestAnalyzer(t, input)
+	holder := get(get(referencedSchemas(root), "Holder"), "properties")
+	v := get(holder, "v")
+	union := get(referencedSchemas(root), "V")
+	before, _ := root.MarshalJSON()
+	node, failure := a.objectDefaultPropertyNode(v, "/components/schemas/Holder/properties/v", 1, true)
+	if failure != nil {
+		t.Fatal(failure)
+	}
+	u := get(get(v, "properties"), "u")
+	child, failure := a.objectDefaultPropertyNode(u, "/components/schemas/Holder/properties/v/properties/u", 2, true)
+	if failure != nil {
+		t.Fatal(failure)
+	}
+	if child.union == nil || child.schema != union || child.pointer != "/components/schemas/V" || child.object {
+		t.Fatalf("lost referenced union source or declaration: %+v", child)
+	}
+	if len(node.objectFields) != 1 || node.objectFields[0].wire != "u" || node.objectFields[0].node.union == nil {
+		t.Fatalf("enclosing object did not borrow the union child: %+v", node.objectFields[0].node)
+	}
+	after, _ := root.MarshalJSON()
+	if string(before) != string(after) {
+		t.Fatal("rewrote original nodes")
+	}
+}

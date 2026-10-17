@@ -172,6 +172,9 @@
               },
               "leafAlias": {
                 "$ref": "#/components/schemas/LeafAliasCfg"
+              },
+              "unionProp": {
+                "$ref": "#/components/schemas/PlainUnion"
               }
             },
             "default": {
@@ -248,7 +251,8 @@
               },
               "leafAlias": {
                 "z": "aliased"
-              }
+              },
+              "unionProp": "union member"
             }
           },
           "requiredCfg": {
@@ -481,7 +485,8 @@
           }
         }
       },
-      "LeafAliasCfg": {"$ref": "#/components/schemas/LeafCfg"}
+      "LeafAliasCfg": {"$ref": "#/components/schemas/LeafCfg"},
+      "PlainUnion": {"oneOf": [{"type": "string"}, {"type": "integer"}]}
     }
   },
   "paths": {
