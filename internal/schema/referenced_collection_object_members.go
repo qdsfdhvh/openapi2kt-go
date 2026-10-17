@@ -155,7 +155,9 @@ func (a *analyzer) referencedCollectionAllOfMemberNode(v *document.Value, pointe
 			validation := *a
 			if leaf != nil {
 				validation.objectDefaultAllOfMemberElement = leaf
-			} else if !a.plainDTOCollectionMember(v) {
+			} else if a.plainDTOCollectionMember(v) {
+				validation.objectDefaultPlainDTOMember = true
+			} else {
 				return nil, unsupported(pointer)
 			}
 			node, err := validation.objectDefaultNode(v, pointer, depth, false)

@@ -455,7 +455,8 @@ func (a *analyzer) objectDefaultChild(v *document.Value, pointer string, depth i
 	}
 	if objectDefaultCandidateSchema(v) ||
 		a.objectDefaultAllOfElement != nil && inlineAllOfDefaultElement(v) == a.objectDefaultAllOfElement ||
-		a.objectDefaultAllOfMemberElement != nil && a.allOfDefaultMemberElement(v) == a.objectDefaultAllOfMemberElement {
+		a.objectDefaultAllOfMemberElement != nil && a.allOfDefaultMemberElement(v) == a.objectDefaultAllOfMemberElement ||
+		a.objectDefaultPlainDTOMember && a.plainDTOCollectionMember(v) {
 		return a.objectDefaultNode(v, pointer, depth, false)
 	}
 	return a.nestedDefaultSchema(v, "Validation", pointer, nil, nil, depth, false)

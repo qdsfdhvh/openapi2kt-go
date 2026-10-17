@@ -234,3 +234,30 @@ func TestReferencedCollectionPlainDTOAliasSources(t *testing.T) {
 		t.Fatal("rewrote original sources")
 	}
 }
+
+// A nested container inside a plain-DTO collection member keeps the same member
+// profile and preserves the original container chain and leaf object node.
+func TestReferencedCollectionPlainDTONestedContainerSources(t *testing.T) {
+	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Item":{"type":"object","required":["name"],"properties":{"name":{"type":"string"}}},"Nested":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Item"}}},"Holder":{"properties":{"v":{"properties":{"m":{"$ref":"#/components/schemas/Nested"}},"default":{"m":[[{"name":"a"}]]}}}}}}}`)
+	a, root := referencedCollectionTestAnalyzer(t, input)
+	holder := get(referencedSchemas(root), "Holder")
+	member := get(get(get(get(holder, "properties"), "v"), "properties"), "m")
+	nested := get(referencedSchemas(root), "Nested")
+	item := get(referencedSchemas(root), "Item")
+	before, _ := root.MarshalJSON()
+	node, err := a.objectDefaultPropertyNode(member, "/member", 1, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if node.object || node.element == nil || node.schema != nested || node.pointer != "/components/schemas/Nested" {
+		t.Fatal("lost nested container source", node)
+	}
+	inner := node.element
+	if inner.element == nil || !inner.element.object || inner.element.schema != item || inner.element.pointer != "/components/schemas/Item" {
+		t.Fatal("lost nested plain DTO leaf", inner)
+	}
+	after, _ := root.MarshalJSON()
+	if string(before) != string(after) {
+		t.Fatal("rewrote original sources")
+	}
+}

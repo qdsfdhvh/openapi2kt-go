@@ -239,6 +239,11 @@ type analyzer struct {
 
 	objectDefaultAllOfMemberElement *document.Value // One collection-valued object's original leaf/reference.
 
+	// One plain-DTO collection member walk. Nested containers inside this walk
+	// keep the same member profile; the flag is scoped to a shallow validation
+	// copy so it cannot leak into sibling roles.
+	objectDefaultPlainDTOMember bool
+
 	declarationOwners            map[Declaration]*component
 	unionOrigins                 map[Declaration]nominalOrigin
 	enumOrigins                  map[Declaration]nominalOrigin
