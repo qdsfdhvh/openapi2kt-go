@@ -261,3 +261,32 @@ func TestReferencedCollectionPlainDTONestedContainerSources(t *testing.T) {
 		t.Fatal("rewrote original sources")
 	}
 }
+
+// A referenced collection whose elements are scalar/temporal leaves keeps its
+// original container source and the resolved element leaf node.
+func TestReferencedCollectionScalarElementSources(t *testing.T) {
+	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Times":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/Time"}},"Holder":{"properties":{"v":{"properties":{"m":{"$ref":"#/components/schemas/Times"}},"default":{"m":["2024-01-02T03:04:05Z"]}}}}}}}`)
+	a, root := referencedCollectionTestAnalyzer(t, input)
+	holder := get(referencedSchemas(root), "Holder")
+	member := get(get(get(get(holder, "properties"), "v"), "properties"), "m")
+	times := get(referencedSchemas(root), "Times")
+	time := get(referencedSchemas(root), "Time")
+	before, _ := root.MarshalJSON()
+	node, failure := a.objectDefaultPropertyNode(member, "/member", 1, true)
+	if failure != nil {
+		t.Fatal(failure)
+	}
+	if node.object || node.element == nil || node.schema != times || node.pointer != "/components/schemas/Times" {
+		t.Fatalf("lost scalar collection source: %+v", node)
+	}
+	if node.element.schema != time || node.element.pointer != "/components/schemas/Time" {
+		t.Fatalf("lost resolved temporal element leaf: %+v", node.element)
+	}
+	if node.ty.Kind != Nullable {
+		t.Fatalf("lost container nullability: %+v", node.ty)
+	}
+	after, _ := root.MarshalJSON()
+	if string(before) != string(after) {
+		t.Fatal("rewrote original sources")
+	}
+}

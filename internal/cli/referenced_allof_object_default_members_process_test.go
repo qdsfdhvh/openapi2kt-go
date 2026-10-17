@@ -313,3 +313,50 @@ func TestReferencedCollectionPlainDTONestedContainerParity(t *testing.T) {
 		})
 	}
 }
+
+// A referenced scalar/temporal collection member keeps native/core parity, and
+// a bad element keeps the original member Pointer.
+func TestReferencedCollectionScalarElementParity(t *testing.T) {
+	document := func(member, value string) []byte {
+		return []byte(`{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Times":{"type":"array","items":{"$ref":"#/components/schemas/Time"}},"TimeMap":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}},"Mode":{"type":"string","enum":["a","b"]},"Modes":{"type":"array","items":{"$ref":"#/components/schemas/Mode"}},"Holder":{"properties":{"v":{"properties":{"member":` + member + `},"default":` + value + `}}}}}}`)
+	}
+	for _, tc := range []struct{ name, member, valid, invalid, tail string }{
+		{"temporal list", `{"$ref":"#/components/schemas/Times"}`, `{"member":["2024-01-02T03:04:05Z"]}`, `{"member":["nope"]}`, "/member/0"},
+		{"temporal map", `{"$ref":"#/components/schemas/TimeMap"}`, `{"member":{"k":"2024-01-02T03:04:05Z"}}`, `{"member":{"k":"nope"}}`, "/member/k"},
+		{"string enum list", `{"$ref":"#/components/schemas/Modes"}`, `{"member":["a"]}`, `{"member":["z"]}`, "/member/0"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, checked := range []bool{false, true} {
+				for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+					p := newProject(t)
+					input := document(tc.member, tc.valid)
+					put(t, p.Input, input)
+					args := nestedObjectArgs(p.Input, p.Output, checked, style)
+					result(t, invoke(t, p.Root, args...), 0)
+					report, err := core.GenerateWithDiagnostics(core.GenerationRequest{Document: input, Options: core.GenerationOptions{PackageName: "org.example.catalog", ModelStyle: style, Validation: checked}})
+					if err != nil {
+						t.Fatal(err)
+					}
+					for _, file := range report.Artifacts.Files {
+						if string(read(t, p.Output+"/"+file.Path)) != file.Content {
+							t.Fatal("native/core mismatch", file.Path)
+						}
+					}
+					before := snapshot(t, p.Output)
+					result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
+					if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("check changed output")
+					}
+					put(t, p.Input, document(tc.member, tc.invalid))
+					failure := fails(t, invoke(t, p.Root, args...), 1, "E_SCHEMA_INVALID")
+					if len(failure.Diagnostics) != 1 || failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != "/components/schemas/Holder/properties/v/default"+tc.tail {
+						t.Fatal(failure)
+					}
+					if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("failure changed output")
+					}
+				}
+			}
+		})
+	}
+}

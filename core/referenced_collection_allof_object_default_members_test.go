@@ -385,3 +385,37 @@ func nestedLeafTail(name string) string {
 		return "/0/0/name"
 	}
 }
+
+// A named or internal collection whose elements reference a scalar, temporal or
+// enum leaf may own the member default, matching the consuming-field collection
+// role. Element values reuse the existing leaf planner, nullable layers and
+// container counts; internal mixed containers stay excluded.
+func TestObjectDefaultReferencedScalarCollectionMembers(t *testing.T) {
+	for _, tc := range []struct{ name, valid, invalid, tail string }{
+		{"temporal list", `{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Times":{"type":"array","items":{"$ref":"#/components/schemas/Time"}},"TimeMap":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}},"Date":{"type":"string","format":"date"},"DatesNullable":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/Date"}},"Mode":{"type":"string","enum":["a","b"]},"Modes":{"type":"array","items":{"$ref":"#/components/schemas/Mode"}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Times"}},"default":{"member":["2024-01-02T03:04:05Z"]}}}}}}}`, `{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Times":{"type":"array","items":{"$ref":"#/components/schemas/Time"}},"TimeMap":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}},"Date":{"type":"string","format":"date"},"DatesNullable":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/Date"}},"Mode":{"type":"string","enum":["a","b"]},"Modes":{"type":"array","items":{"$ref":"#/components/schemas/Mode"}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Times"}},"default":{"member":["nope"]}}}}}}}`, "/member/0"},
+		{"temporal map", `{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Times":{"type":"array","items":{"$ref":"#/components/schemas/Time"}},"TimeMap":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}},"Date":{"type":"string","format":"date"},"DatesNullable":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/Date"}},"Mode":{"type":"string","enum":["a","b"]},"Modes":{"type":"array","items":{"$ref":"#/components/schemas/Mode"}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/TimeMap"}},"default":{"member":{"k":"2024-01-02T03:04:05Z"}}}}}}}}`, `{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Times":{"type":"array","items":{"$ref":"#/components/schemas/Time"}},"TimeMap":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}},"Date":{"type":"string","format":"date"},"DatesNullable":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/Date"}},"Mode":{"type":"string","enum":["a","b"]},"Modes":{"type":"array","items":{"$ref":"#/components/schemas/Mode"}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/TimeMap"}},"default":{"member":{"k":"nope"}}}}}}}}`, "/member/k"},
+		{"date list", `{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Times":{"type":"array","items":{"$ref":"#/components/schemas/Time"}},"TimeMap":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}},"Date":{"type":"string","format":"date"},"DatesNullable":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/Date"}},"Mode":{"type":"string","enum":["a","b"]},"Modes":{"type":"array","items":{"$ref":"#/components/schemas/Mode"}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/DatesNullable"}},"default":{"member":["2024-01-02"]}}}}}}}`, `{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Times":{"type":"array","items":{"$ref":"#/components/schemas/Time"}},"TimeMap":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}},"Date":{"type":"string","format":"date"},"DatesNullable":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/Date"}},"Mode":{"type":"string","enum":["a","b"]},"Modes":{"type":"array","items":{"$ref":"#/components/schemas/Mode"}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/DatesNullable"}},"default":{"member":["nope"]}}}}}}}`, "/member/0"},
+		{"string enum list", `{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Times":{"type":"array","items":{"$ref":"#/components/schemas/Time"}},"TimeMap":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}},"Date":{"type":"string","format":"date"},"DatesNullable":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/Date"}},"Mode":{"type":"string","enum":["a","b"]},"Modes":{"type":"array","items":{"$ref":"#/components/schemas/Mode"}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Modes"}},"default":{"member":["a"]}}}}}}}`, `{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Times":{"type":"array","items":{"$ref":"#/components/schemas/Time"}},"TimeMap":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}},"Date":{"type":"string","format":"date"},"DatesNullable":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/Date"}},"Mode":{"type":"string","enum":["a","b"]},"Modes":{"type":"array","items":{"$ref":"#/components/schemas/Mode"}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Modes"}},"default":{"member":["z"]}}}}}}}`, "/member/0"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, checked := range []bool{false, true} {
+				for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+					r := request([]byte(tc.valid), "Dto")
+					r.Options.Validation, r.Options.ModelStyle = checked, style
+					got, err := core.GenerateWithDiagnostics(r)
+					if err != nil {
+						t.Fatal(checked, style, err)
+					}
+					if text := source(t, got, "HolderDto"); !strings.Contains(text, "`openapi-kt model default ") {
+						t.Fatal(text)
+					}
+					carrierDefaultFailure(t, []byte(tc.invalid), checked, "E_SCHEMA_INVALID", "/components/schemas/Holder/properties/v/default"+tc.tail)
+				}
+			}
+		})
+	}
+	// An internal mixed container reference keeps its separate excluded role.
+	if got, err := core.GenerateWithDiagnostics(request([]byte(`{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Mixed":{"type":"array","items":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Mixed"}},"default":{"member":[{"k":"2024-01-02T03:04:05Z"}]}}}}}}}`), "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
+		t.Fatal("internal mixed container gained the scalar collection member role", err)
+	}
+}

@@ -458,6 +458,10 @@ func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer str
 		// The analyzer-aware gate also admits a referenced collection whose
 		// element resolves to a plain object target, matching the field role.
 		node, err = a.objectDefaultNode(source, sourcePointer, depth, false)
+	} else if a.objectDefaultReferencedScalarCollection(source) {
+		// A referenced List/typed Map whose elements are scalar/temporal/enum
+		// leaves reuses the existing collection leaf planner.
+		node, err = a.objectDefaultScalarCollectionNode(source, sourcePointer, depth)
 	} else {
 		node, err = a.nestedDefaultSchema(source, "Validation", sourcePointer, nil, nil, depth, false)
 	}
@@ -665,4 +669,90 @@ func (node *nestedDefaultNode) objectValue(v *document.Value, pointer string) (s
 		members = append(members, string(key)+":"+entry.value)
 	}
 	return "{" + strings.Join(members, ",") + "}", nil
+}
+
+// objectDefaultReferencedScalarCollection reports whether a named/internal
+// collection entity resolves its elements to non-object leaves. Such a
+// reference reuses the existing nested collection leaf planner, matching the
+// consuming-field collection role; inter-container references stay separate.
+func (a *analyzer) objectDefaultReferencedScalarCollection(v *document.Value) bool {
+	if v == nil || has(v, "$ref") {
+		return false
+	}
+	kind, _, err := schemaType(v, "")
+	if err != nil {
+		return false
+	}
+	var element *document.Value
+	switch {
+	case kind == "array":
+		element = get(v, "items")
+	case dictionarySchema(v):
+		element = get(v, "additionalProperties")
+	default:
+		return false
+	}
+	if element == nil || has(element, "oneOf") || has(element, "anyOf") || has(element, "allOf") {
+		return false
+	}
+	if has(element, "$ref") {
+		source, _, err := a.defaultSource(text(get(element, "$ref")), "")
+		if err != nil {
+			return false
+		}
+		element = source
+	}
+	elementKind, _, err := schemaType(element, "")
+	if err != nil || elementKind == "object" || elementKind == "array" || dictionarySchema(element) {
+		return false
+	}
+	return true
+}
+
+// objectDefaultScalarCollectionNode plans the referenced collection's declared
+// shape without its own annotation. Element values still follow the existing
+// leaf checks, nullable layers and container counts.
+func (a *analyzer) objectDefaultScalarCollectionNode(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	kind, _, err := schemaType(v, pointer)
+	if err != nil {
+		return nil, err
+	}
+	edge := "items"
+	ty := TypeRef{Kind: List, Element: &TypeRef{Kind: JSON}}
+	if kind != "array" && dictionarySchema(v) {
+		edge = "additionalProperties"
+		ty = TypeRef{Kind: Map, Element: &TypeRef{Kind: JSON}}
+	}
+	keys := a.collectionKeys([]string{"type", "nullable", edge})
+	if err := checkKeys(v, keys, pointer); err != nil {
+		return nil, err
+	}
+	edgeSchema := get(v, edge)
+	edgePointer := naming.Pointer(pointer, edge)
+	if has(edgeSchema, "$ref") {
+		// A referenced scalar/enum/temporal element keeps the existing leaf
+		// planner against the resolved source.
+		if err := checkKeys(edgeSchema, []string{"$ref", "nullable"}, edgePointer); err != nil {
+			return nil, err
+		}
+		source, sourcePointer, err := a.defaultSource(text(get(edgeSchema, "$ref")), edgePointer)
+		if err != nil {
+			return nil, err
+		}
+		edgeSchema, edgePointer = source, sourcePointer
+	}
+	child, err := a.nestedDefaultSchema(edgeSchema, "Validation", edgePointer, nil, nil, depth+1, false)
+	if err != nil {
+		return nil, err
+	}
+	ty.Element = &child.ty
+	checked, err := a.checkedCollection(ty, v, pointer)
+	if err != nil {
+		return nil, err
+	}
+	node := &nestedDefaultNode{schema: v, pointer: pointer, element: child, ty: checked}
+	if _, nullable, _ := schemaType(v, pointer); nullable {
+		node.ty = node.ty.Null()
+	}
+	return node, nil
 }
