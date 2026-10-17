@@ -36,7 +36,7 @@ func TestGenerationPhaseObserverReportsEnteredBoundariesAndIdenticalArtifacts(t 
 		{"options", func(r *core.GenerationRequest) { r.Options.PackageName = "" }, core.PhaseOptions},
 		{"parse", func(r *core.GenerationRequest) { r.Document = []byte(`{"openapi":`) }, core.PhaseParse},
 		{"analyze", func(r *core.GenerationRequest) {
-			r.Document = []byte(`{"openapi":"3.1.0","components":{"schemas":{"Bad":{"type":"string","default":"x"}}}}`)
+			r.Document = []byte(`{"openapi":"3.1.0","components":{"schemas":{"Bad":{"type":"object","default":{}}}}}`)
 		}, core.PhaseAnalyze},
 		{"lock_parse", func(r *core.GenerationRequest) {
 			r.Options.HoistSharedShapes = true

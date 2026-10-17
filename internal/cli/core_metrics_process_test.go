@@ -61,7 +61,7 @@ func TestCoreMetricsNativeInputFailuresAndNoopPreservation(t *testing.T) {
 	}
 	put(t, p.Input, []byte(`{"openapi":`))
 	assertCoreMetrics(t, p.generate(t, "--metrics"), 1, "options", "parse")
-	put(t, p.Input, []byte(`{"openapi":"3.1.0","components":{"schemas":{"Bad":{"type":"string","default":"x"}}}}`))
+	put(t, p.Input, []byte(`{"openapi":"3.1.0","components":{"schemas":{"Bad":{"type":"object","default":{}}}}}`))
 	assertCoreMetrics(t, p.generate(t, "--metrics"), 1, "options", "parse", "analyze")
 	p.Input = filepath.Join(p.Root, "missing.json")
 	assertCoreMetrics(t, p.generate(t, "--metrics"), 4)

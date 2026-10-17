@@ -76,6 +76,15 @@ func emitDeclaration(declaration schema.Declaration, indent int, owner string, h
 		emitValueClass(d, out)
 	case *schema.ScalarAlias:
 		fmt.Fprintf(out, "public typealias %s = %s\n", d.ClassName, d.Scalar)
+		if d.ComponentDefault != "" {
+			// A typealias cannot own members, so the factory is a top-level
+			// function with the same opt-in contract.
+			helper := "`openapi-kt component default " + strings.ReplaceAll(owner+"."+d.ClassName, ".", " ") + "`"
+			fmt.Fprintf(out, "\n// The OpenAPI component default for this schema.\npublic fun `%s default`(): %s = %s(%s)\n",
+				d.ClassName, d.ClassName, helper, naming.Literal(d.ComponentDefault))
+			fmt.Fprintf(out, "\nprivate fun %s(source: kotlin.String): %s = kotlinx.serialization.json.Json.decodeFromString(kotlinx.serialization.serializer<%s>(), source)\n",
+				helper, d.ClassName, d.ClassName)
+		}
 	case *schema.ValueAlias:
 		fmt.Fprintf(out, "public typealias %s = %s\n", d.ClassName, RenderType(d.Type))
 	case *schema.Model:
@@ -294,6 +303,8 @@ func emitStringEnum(model *schema.StringEnum, indent int, owner string, out *str
 		"        public val entries: kotlin.collections.List<"+ty+"> by kotlin.lazy {",
 		"            kotlin.collections.listOf("+strings.Join(members, ", ")+")", "        }",
 		"", "        public fun fromSerialName(value: kotlin.String): "+ty+" = Serializer.fromSerialName(value)",
+	)
+	lines = append(lines,
 		"    }", "", "    public object Serializer : kotlinx.serialization.KSerializer<"+ty+"> {",
 		"        override val descriptor: kotlinx.serialization.descriptors.SerialDescriptor =",
 		"            kotlinx.serialization.descriptors.PrimitiveSerialDescriptor("+naming.Literal(qualified)+", kotlinx.serialization.descriptors.PrimitiveKind.STRING)",

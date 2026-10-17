@@ -282,8 +282,14 @@ func buildStringEnum(name string, v *document.Value, pointer string) (*StringEnu
 }
 
 func buildStringEnumKeys(name string, v *document.Value, pointer string, fieldDefault bool) (*StringEnum, *diagnostic.Diagnostic) {
+	return buildStringEnumKeysFor(name, v, pointer, fieldDefault, nil)
+}
+
+// buildStringEnumKeysFor additionally admits a component root's own `default`
+// when the caller's analyzer marked that original node.
+func buildStringEnumKeysFor(name string, v *document.Value, pointer string, fieldDefault bool, a *analyzer) (*StringEnum, *diagnostic.Diagnostic) {
 	keys := []string{"type", "nullable", "format", "enum", "x-native-type"}
-	if fieldDefault {
+	if fieldDefault || a != nil && a.componentDefaultSchemas[v] {
 		keys = append(keys, "default")
 	}
 	return buildStringEnumAllowedKeys(name, v, pointer, keys)

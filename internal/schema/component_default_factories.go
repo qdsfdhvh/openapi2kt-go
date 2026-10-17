@@ -28,6 +28,11 @@ func (a *analyzer) componentDefaultCandidate(c *component) bool {
 	if c == nil || !has(c.Schema, "default") {
 		return false
 	}
+	// A scalar or String-enum component owns its value outright, so the factory
+	// returns the alias type directly instead of a constructor.
+	if c.Scalar != "" || has(c.Schema, "enum") {
+		return a.scalarComponentDefaultCandidate(c)
+	}
 	if c.InternalModelTarget != nil || c.BindingTarget != nil || c.ValueClass ||
 		c.NullableStructuredConst || c.NullableTemporal || c.NullableBigint || c.NullableBytes ||
 		c.NullableCallerNative || c.NullablePrimitive || c.NullableNativeEnum || c.NullableEnum ||
@@ -53,6 +58,19 @@ func (a *analyzer) planComponentDefaultFactories(declarations []Declaration) *di
 	for _, name := range sortedComponentNames(a.components) {
 		c := a.components[name]
 		if !a.componentDefaultCandidate(c) {
+			continue
+		}
+		if c.Scalar != "" || has(c.Schema, "enum") {
+			encoded, err := a.scalarComponentDefaultEncoded(c)
+			if err != nil {
+				return err
+			}
+			switch declaration := componentDeclaration(declarations, c.Name).(type) {
+			case *StringEnum:
+				declaration.ComponentDefault = encoded
+			case *ScalarAlias:
+				declaration.ComponentDefault = encoded
+			}
 			continue
 		}
 		model := componentModel(declarations, c.Name)
@@ -141,11 +159,31 @@ func (a *analyzer) markComponentDefaultSource(v *document.Value, pointer string)
 		return err
 	}
 	if has(v, "$ref") || has(v, "allOf") || has(v, "oneOf") || has(v, "anyOf") ||
-		has(v, "enum") || has(v, "const") || dictionarySchema(v) {
+		has(v, "const") || dictionarySchema(v) {
 		return nil
 	}
 	kind, nullable, err := schemaType(v, pointer)
-	if err != nil || kind != "object" {
+	if err != nil {
+		return nil
+	}
+	if kind != "object" {
+		// A plain scalar or String-enum component root accepts the annotation
+		// through its own field walk. Native markers, formats, temporal, bytes
+		// and value-class roots keep their existing rejection.
+		if nullable || has(v, "format") || has(v, "x-native-type") || has(v, "x-kotlin-value-class") {
+			return nil
+		}
+		if has(v, "enum") {
+			if kind != "" && kind != "string" {
+				return nil
+			}
+		} else if kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
+			return nil
+		}
+		if a.componentDefaultSchemas == nil {
+			a.componentDefaultSchemas = map[*document.Value]bool{}
+		}
+		a.componentDefaultSchemas[v] = true
 		return nil
 	}
 	// Only a non-empty declared property map becomes an ordinary Model. Empty,
@@ -158,5 +196,96 @@ func (a *analyzer) markComponentDefaultSource(v *document.Value, pointer string)
 		a.objectDefaultSchemas = map[*document.Value]bool{}
 	}
 	a.objectDefaultSchemas[v] = true
+	return nil
+}
+
+// scalarComponentDefaultCandidate admits the plain scalar and String-enum roots
+// whose field default role already exists. Native enum, temporal, bytes,
+// caller-native, bigint and value-class components keep their own contracts.
+func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
+	kind, nullable, err := schemaType(c.Schema, c.Pointer)
+	if err != nil || nullable {
+		return false
+	}
+	if has(c.Schema, "format") || has(c.Schema, "x-native-type") || has(c.Schema, "x-kotlin-value-class") ||
+		has(c.Schema, "const") || has(c.Schema, "oneOf") || has(c.Schema, "anyOf") ||
+		has(c.Schema, "allOf") || has(c.Schema, "$ref") {
+		return false
+	}
+	if has(c.Schema, "enum") {
+		return (kind == "" || kind == "string") && c.Scalar == ""
+	}
+	switch kind {
+	case "string", "integer", "number", "boolean":
+		return c.Scalar != ""
+	}
+	return false
+}
+
+// scalarComponentDefaultEncoded validates the annotation through the same
+// field-enum / scalar walk and returns canonical JSON.
+func (a *analyzer) scalarComponentDefaultEncoded(c *component) (string, *diagnostic.Diagnostic) {
+	at := naming.Pointer(c.Pointer, "default")
+	value := get(c.Schema, "default")
+	work, bytes := 0, 0
+	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
+		return "", err
+	}
+	validation := *a
+	validation.warnings = nil
+	field := field{Wire: c.Name, Pointer: c.Pointer, Schema: c.Schema, Depth: 0}
+	if has(c.Schema, "enum") {
+		if _, err := validation.enumDefaultType(field, c.Name, nil, nil); err != nil {
+			return "", err
+		}
+	} else if err := validation.scalarComponentValue(c.Schema, value, at); err != nil {
+		return "", err
+	}
+	encoded, err := value.MarshalJSON()
+	if err != nil {
+		return "", diagnostic.At("E_JSON_INVALID", "Component default must encode to valid JSON.", at)
+	}
+	if len(encoded) > maxNestedDefaultBytes {
+		return "", diagnostic.At("E_MODEL_LIMIT", "Canonical component default exceeds the supported 32 KiB JSON byte limit.", at)
+	}
+	return string(encoded), nil
+}
+
+// scalarComponentValue validates a plain scalar component default against its
+// declared kind, mirroring the field scalar default rules.
+func (a *analyzer) scalarComponentValue(schema, value *document.Value, at string) *diagnostic.Diagnostic {
+	kind, _, err := schemaType(schema, at)
+	if err != nil {
+		return err
+	}
+	switch kind {
+	case "string":
+		if _, ok := value.Text(); !ok {
+			return invalid("A String default must be a JSON string.", at)
+		}
+	case "integer":
+		if !unionIntegerToken(value) {
+			return invalid("An integer default must be an integral JSON number.", at)
+		}
+	case "number":
+		if !unionNumberToken(value) {
+			return invalid("A number default must be a JSON number.", at)
+		}
+	case "boolean":
+		if _, ok := value.Bool(); !ok {
+			return invalid("A Boolean default must be true or false.", at)
+		}
+	default:
+		return unsupported(at)
+	}
+	return nil
+}
+
+func componentDeclaration(declarations []Declaration, name string) Declaration {
+	for _, declaration := range declarations {
+		if declaration.Name() == name {
+			return declaration
+		}
+	}
 	return nil
 }

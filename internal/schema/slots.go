@@ -149,7 +149,17 @@ func scalarMapping(kind string, v *document.Value, pointer string) (string, *dia
 }
 
 func scalarType(kind string, v *document.Value, pointer string) (string, *diagnostic.Diagnostic) {
-	if err := checkKeys(v, []string{"type", "nullable", "format", "x-native-type"}, pointer); err != nil {
+	return scalarTypeFor(nil, kind, v, pointer)
+}
+
+// scalarTypeFor additionally admits a component root's own `default` when the
+// caller's analyzer marked that original node for the factory planner.
+func scalarTypeFor(a *analyzer, kind string, v *document.Value, pointer string) (string, *diagnostic.Diagnostic) {
+	keys := []string{"type", "nullable", "format", "x-native-type"}
+	if a != nil && a.componentDefaultSchemas[v] {
+		keys = append(keys, "default")
+	}
+	if err := checkKeys(v, keys, pointer); err != nil {
 		return "", err
 	}
 	return scalarMapping(kind, v, pointer)
