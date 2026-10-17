@@ -104,7 +104,6 @@ func TestComponentDefaultFactoryScalarAuthority(t *testing.T) {
 // A scalar component factory never widens admission for other scalar roots.
 func TestComponentDefaultFactoryScalarExclusions(t *testing.T) {
 	for _, tc := range []struct{ name, schemas string }{
-		{"temporal", `{"S":{"type":"string","format":"date-time","default":"2024-01-02T03:04:05Z"}}`},
 		{"bytes", `{"S":{"type":"string","format":"byte","default":"x"}}`},
 		{"caller native", `{"S":{"type":"string","x-native-type":"org.example.Money","default":"x"}}`},
 		{"native enum", `{"S":{"type":"integer","format":"int32","enum":[1,2],"default":1}}`},
@@ -172,6 +171,41 @@ func TestComponentDefaultFactoryCollectionExclusionAuthority(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			if _, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true}); err == nil {
 				t.Fatal("excluded collection role admitted")
+			}
+		})
+	}
+}
+
+// A temporal component attaches the canonical lexeme to its ValueAlias and keeps
+// the actual Instant/LocalDate declaration.
+func TestComponentDefaultFactoryTemporalAuthority(t *testing.T) {
+	plan, _, err := Analyze(loadComponentDocument(t, `{"When":{"type":"string","format":"date-time","default":"2024-01-02T03:04:05Z"},"Day":{"type":"string","format":"date","default":"2024-02-29"}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	when := componentDeclaration(plan.Models, "WhenDto")
+	alias, ok := when.(*ScalarAlias)
+	if !ok || alias.ComponentDefault != `"2024-01-02T03:04:05Z"` || alias.Scalar != "kotlin.time.Instant" {
+		t.Fatalf("lost Instant alias or factory: %+v", when)
+	}
+	day := componentDeclaration(plan.Models, "DayDto")
+	dayAlias, ok := day.(*ScalarAlias)
+	if !ok || dayAlias.ComponentDefault != `"2024-02-29"` || dayAlias.Scalar != "kotlinx.datetime.LocalDate" {
+		t.Fatalf("lost LocalDate alias or factory: %+v", day)
+	}
+}
+
+// A bad lexeme and a non-temporal format keep their existing rejection.
+func TestComponentDefaultFactoryTemporalExclusions(t *testing.T) {
+	for _, tc := range []struct{ name, schemas string }{
+		{"bad date lexeme", `{"S":{"type":"string","format":"date","default":"2023-02-29"}}`},
+		{"bad instant lexeme", `{"S":{"type":"string","format":"date-time","default":"nope"}}`},
+		{"bytes format", `{"S":{"type":"string","format":"byte","default":"AAEC"}}`},
+		{"nullable temporal", `{"S":{"type":"string","nullable":true,"format":"date","default":null}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if _, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true}); err == nil {
+				t.Fatal("excluded temporal root admitted")
 			}
 		})
 	}

@@ -90,7 +90,6 @@ func TestReferencedTemporalScalarFieldDefaultsReferenceAndInheritanceGuards(t *t
 	for _, checked := range []bool{false, true} {
 		for _, own := range []string{"", `,"default":null`} {
 			for _, body := range []string{
-				`{"Day":{"type":"string","format":"date","default":"2024-02-29"},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Day"` + own + `}}}}`,
 				`{"Day":{"type":"string","format":"date"},"Alias":{"$ref":"#/components/schemas/Day","default":"2024-02-29"},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias"` + own + `}}}}`,
 				`{"Day":{"type":"string","format":"date"},"Hops":{"properties":{"v":{"$ref":"#/components/schemas/Day","default":"2024-02-29"}}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Hops/properties/v"` + own + `}}}}`,
 			} {

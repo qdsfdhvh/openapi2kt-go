@@ -35,7 +35,7 @@ func (a *analyzer) componentDefaultCandidate(c *component) bool {
 	}
 	// A Scalar only exists after the declaration loop, and markComponentDefaultSource
 	// runs before it. Key the dispatch off the schema itself so both callers agree.
-	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) {
+	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) {
 		return a.scalarComponentDefaultCandidate(c)
 	}
 	switch {
@@ -125,7 +125,7 @@ func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Di
 	validation.objectDefaultSchemas[c.Schema] = true
 
 	kind, _, _ := schemaType(c.Schema, c.Pointer)
-	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) {
+	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) {
 		// The enum/scalar roles own their own validation above; the canonical
 		// value is the literal JSON of the annotation itself.
 		if _, err := validation.scalarComponentNode(c); err != nil {
@@ -169,7 +169,7 @@ func (a *analyzer) componentDefaultNode(c *component) (*nestedDefaultNode, *diag
 	if err != nil {
 		return nil, err
 	}
-	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) {
+	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) {
 		return a.scalarComponentNode(c)
 	}
 	if kind == "array" || dictionarySchema(c.Schema) {
@@ -186,15 +186,20 @@ func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
 	if err != nil || nullable {
 		return false
 	}
-	if has(c.Schema, "format") || has(c.Schema, "x-native-type") || has(c.Schema, "x-kotlin-value-class") ||
+	if has(c.Schema, "x-native-type") || has(c.Schema, "x-kotlin-value-class") ||
 		has(c.Schema, "const") || has(c.Schema, "oneOf") || has(c.Schema, "anyOf") ||
 		has(c.Schema, "allOf") || has(c.Schema, "$ref") {
+		return false
+	}
+	// A `format` is admitted only for the standard temporal scalars, whose field
+	// default role already exists. Bytes and other formats stay excluded.
+	if has(c.Schema, "format") && !isTemporalScalarRoot(c.Schema, kind) {
 		return false
 	}
 	if has(c.Schema, "enum") {
 		return kind == "" || kind == "string"
 	}
-	return isPlainScalarRoot(c.Schema, kind)
+	return isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind)
 }
 
 // collectionComponentDefaultCandidate admits a List/typed Map root when the
@@ -313,6 +318,11 @@ func (a *analyzer) scalarComponentValue(schema, value *document.Value, at string
 	if err != nil {
 		return err
 	}
+	if isTemporalScalarRoot(schema, kind) {
+		// The temporal role owns its own lexeme validation and canonical form.
+		_, err := scalarSchemaDefault(schema, "")
+		return err
+	}
 	switch kind {
 	case "string":
 		if _, ok := value.Text(); !ok {
@@ -334,4 +344,17 @@ func (a *analyzer) scalarComponentValue(schema, value *document.Value, at string
 		return unsupported(at)
 	}
 	return nil
+}
+
+// isTemporalScalarRoot reports a standard date/date-time scalar root, the two
+// formats whose field default role already exists.
+func isTemporalScalarRoot(v *document.Value, kind string) bool {
+	if kind != "string" {
+		return false
+	}
+	switch text(get(v, "format")) {
+	case "date", "date-time":
+		return true
+	}
+	return false
 }

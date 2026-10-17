@@ -137,7 +137,6 @@ func TestComponentDefaultFactoryScalarGuards(t *testing.T) {
 	}
 	// Native markers, temporal, bytes and value-class roots keep their roles.
 	for _, tc := range []struct{ name, schemas string }{
-		{"temporal", `{"S":{"type":"string","format":"date-time","default":"2024-01-02T03:04:05Z"}}`},
 		{"native enum", `{"S":{"type":"integer","format":"int32","enum":[1,2],"default":1}}`},
 		{"bytes", `{"S":{"type":"string","format":"byte","default":"x"}}`},
 		{"caller native", `{"S":{"type":"string","x-native-type":"org.example.Money","default":"x"}}`},
@@ -218,6 +217,44 @@ func TestComponentDefaultFactoryCollectionExclusions(t *testing.T) {
 			r.Options.Validation = true
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
 				t.Fatalf("excluded collection role admitted: %v", err)
+			}
+		})
+	}
+}
+
+// A standard temporal scalar component root may own its root default. The
+// factory returns the actual Instant/LocalDate alias and validates the lexeme
+// through the existing temporal role.
+func TestComponentDefaultFactoryTemporal(t *testing.T) {
+	for _, checked := range []bool{false, true} {
+		for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+			r := request([]byte(`{"openapi":"3.1.0","components":{"schemas":{"When":{"type":"string","format":"date-time","default":"2024-01-02T03:04:05Z"},"Day":{"type":"string","format":"date","default":"2024-02-29"}}}}`), "Dto")
+			r.Options.Validation, r.Options.ModelStyle = checked, style
+			got, err := core.GenerateWithDiagnostics(r)
+			if err != nil {
+				t.Fatal(checked, style, err)
+			}
+			if text := source(t, got, "WhenDto"); !strings.Contains(text, "public typealias WhenDto = kotlin.time.Instant") ||
+				!strings.Contains(text, "public fun `WhenDto default`(): WhenDto =") {
+				t.Fatal("Instant factory", text)
+			}
+			if text := source(t, got, "DayDto"); !strings.Contains(text, "public typealias DayDto = kotlinx.datetime.LocalDate") ||
+				!strings.Contains(text, "public fun `DayDto default`(): DayDto =") {
+				t.Fatal("LocalDate factory", text)
+			}
+		}
+	}
+	// A bad lexeme and a non-temporal format keep their existing rejection.
+	for _, tc := range []struct{ name, schemas string }{
+		{"bad date lexeme", `{"S":{"type":"string","format":"date","default":"2023-02-29"}}`},
+		{"bad instant lexeme", `{"S":{"type":"string","format":"date-time","default":"nope"}}`},
+		{"bytes format", `{"S":{"type":"string","format":"byte","default":"AAEC"}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request(schemas(tc.schemas), "Dto")
+			r.Options.Validation = true
+			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
+				t.Fatalf("excluded temporal root admitted: %v", err)
 			}
 		})
 	}

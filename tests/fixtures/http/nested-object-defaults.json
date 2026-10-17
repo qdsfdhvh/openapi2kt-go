@@ -498,6 +498,7 @@
       "ComponentDefaultAllOf": {"allOf": [{"type": "object", "required": ["n"], "properties": {"n": {"type": "integer"}}}, {"type": "object", "properties": {"extra": {"type": "string"}}}], "default": {"n": 9}},
       "ComponentDefaultNames": {"type": "array", "items": {"type": "string"}, "default": ["component-name"]},
       "ComponentDefaultDates": {"type": "array", "items": {"type": "string", "format": "date"}, "default": ["2024-02-29"]},
+      "ComponentDefaultWhen": {"type": "string", "format": "date-time", "default": "2024-01-02T03:04:05Z"},
       "TimeRows": {"type": "array", "items": {"$ref": "#/components/schemas/TimeValue"}}
     }
   },

@@ -161,3 +161,39 @@ func TestComponentDefaultFactoryCollectionParity(t *testing.T) {
 		}
 	}
 }
+
+// A temporal component factory keeps native/core parity.
+func TestComponentDefaultFactoryTemporalParity(t *testing.T) {
+	const document = `{"openapi":"3.1.0","components":{"schemas":{"When":{"type":"string","format":"date-time","default":"2024-01-02T03:04:05Z"},"Day":{"type":"string","format":"date","default":"2024-02-29"}}}}`
+	for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+		for _, checked := range []bool{false, true} {
+			t.Run(string(style)+"/checked="+map[bool]string{false: "0", true: "1"}[checked], func(t *testing.T) {
+				p := newProject(t)
+				put(t, p.Input, []byte(document))
+				args := objectDefaultReferencedPropertyArgs(p.Input, p.Output, checked, style)
+				result(t, invoke(t, p.Root, args...), 0)
+				report, err := core.GenerateWithDiagnostics(core.GenerationRequest{Document: []byte(document), Options: core.GenerationOptions{PackageName: "org.example.catalog", ModelNameSuffix: "Dto", ModelStyle: style, Validation: checked}})
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, file := range report.Artifacts.Files {
+					content := read(t, p.Output+"/"+file.Path)
+					if string(content) != file.Content {
+						t.Fatal("native/core mismatch", file.Path)
+					}
+					if strings.Contains(file.Path, "/WhenDto.kt") && !strings.Contains(string(content), "public fun `WhenDto default`(): WhenDto =") {
+						t.Fatal("Instant factory missing", content)
+					}
+					if strings.Contains(file.Path, "/DayDto.kt") && !strings.Contains(string(content), "public fun `DayDto default`(): DayDto =") {
+						t.Fatal("LocalDate factory missing", content)
+					}
+				}
+				before := snapshot(t, p.Output)
+				result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
+				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+					t.Fatal("check changed bytes/modes/mtimes")
+				}
+			})
+		}
+	}
+}
