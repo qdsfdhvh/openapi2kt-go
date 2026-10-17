@@ -187,11 +187,19 @@ Merged required names, original member Pointers, nullable intent (including memb
 
 An object-default member may traverse already admitted finite internal `$ref` hops interleaved with named aliases, ending in an eligible named or internal allOf constructor. For example, `member → Bridge → Hops.properties.first → Hops.properties.second → Alias → Owner.properties.node` keeps the actual `OwnerDto.Node` constructor and serializer. This extends only the annotation walk; the shared reference planner must already accept the typed path.
 
-Each internal hop is checked against its original node, Pointer and current lexical `SourceCatalog`. The walker follows original edges instead of the resolver's cached terminal so intermediate defaults and invalid keys cannot be hidden. Hierarchy-owned hops remain excluded, as do chains ending in plain objects, scalars or other roles outside this allOf-member contract. The terminal keeps its original ownership and final retained-declaration checks.
+Each internal hop is checked against its original node, Pointer and current lexical `SourceCatalog`. The walker follows original edges instead of the resolver's cached terminal so intermediate defaults and invalid keys cannot be hidden. Hierarchy-owned hops remain excluded, as do chains ending in scalars or other roles outside this allOf-member contract; a chain ending in a plain object target instead follows the [plain-object chain rule](#plain-object-chains-inside-object-defaults). The terminal keeps its original ownership and final retained-declaration checks.
 
 Nullable precedence follows the complete consumer-to-terminal path, with the nearest explicit true or false winning. Every hop consumes depth and shared source-work budget even after type-resolution caches are populated; cycles remain bounded. All declared source members validate even when omitted or null in the annotation. Required/Patch/discarded handling, original-order value diagnostics and original/canonical value limits remain unchanged.
 
 [Core mixed-chain regressions](../core/chained_allof_object_default_members_test.go), [original-hop identity and exact budget checks](../internal/schema/chained_allof_object_default_members_test.go) and the shared native parity/preservation test define this increment. The nested-object feature adds named and internal terminals through mixed chains, nullable overrides, fresh defaults, missing/replacement/null/required fields, Patch and optimized/locked helper binding to its four-profile HTTP/live SSE runtime coverage.
+
+## Plain-object chains inside object defaults
+
+An object-default property may resolve a finite chain of transparent local `$ref`s whose terminal is a plain ordinary DTO. The walker keeps every original hop, its Pointer and the nearest explicit nullable intent, and borrows the terminal plain object's declared fields, required names, leaf checks and per-member Pointers. This mirrors the [referenced object field role](referenced-object-defaults.md) and reuses the member walk's depth/work and value budgets. It is selected only when the terminal is a plain object schema, so a chain ending in a scalar, enum, composition, allOf constructor or collection keeps its separate role.
+
+Each hop consumes one source-work step and the shared depth budget. Intermediate defaults are rejected rather than inherited, hierarchy-owned hops stay excluded, and a mismatched or copied hop identity is rejected before output. The consuming property's own explicit nullable intent still overrides the nearest hop. The shared type plan and final enclosing serializer own the generated declarations and public types.
+
+[Core plain-object/nested/guard tests](../core/object_default_referenced_properties_test.go), [original hop/budget authority checks](../internal/schema/object_default_referenced_properties_test.go) and the shared native parity/preservation test define this increment. The nested-object feature adds a chained plain-object member with fresh defaults, missing/required members and optimized/locked helper binding across Data/Plain × validation.
 
 ## Inline collection properties inside object defaults
 

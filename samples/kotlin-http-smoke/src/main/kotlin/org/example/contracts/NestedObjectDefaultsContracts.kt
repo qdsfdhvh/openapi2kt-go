@@ -68,7 +68,7 @@ private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMa
     "name" to value?.name, "age" to value?.age, "status" to value?.status,
     "code" to value?.code, "when" to value?.`when`, "tags" to value?.tags,
     "counts" to value?.counts, "child" to value?.child, "childFlag" to value?.child?.flag,
-    "leaf" to value?.leaf?.z, "note" to value?.note, "composed" to value?.composed, "linked" to value?.linked,
+    "leaf" to value?.leaf?.z, "leafAlias" to value?.leafAlias?.z, "note" to value?.note, "composed" to value?.composed, "linked" to value?.linked,
     "viaBorrowedRows" to value?.viaBorrowedRows, "viaBorrowedNull" to value?.viaBorrowedNull,
     "viaBorrowedMap" to value?.viaBorrowedMap, "viaBorrowedGrid" to value?.viaBorrowedGrid,
     "viaInternalRows" to value?.viaInternalRows, "viaInternalNull" to value?.viaInternalNull,
@@ -115,7 +115,7 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.`when`?.toString() == "2024-01-02")
     check(value.cfg?.tags == listOf("a", "b") && value.cfg?.counts == mapOf("k" to 1))
     check(value.cfg?.child?.flag == false && value.cfg?.note == null)
-    check(value.cfg?.leaf?.z == "deep")
+    check(value.cfg?.leaf?.z == "deep" && value.cfg?.leafAlias?.z == "aliased")
     check(value.cfg?.composed?.label == "outer member" && value.cfg?.composed?.count == 3 && value.cfg?.composed?.child?.flag == false)
     check(value.cfg?.linked?.label == "outer linked" && value.cfg?.linked?.count == 2 && value.cfg?.linked?.child?.flag == true)
     check(value.cfg?.viaAlias?.label == "outer alias" && value.cfg?.viaAlias?.count == 2 && value.cfg?.viaAlias?.child?.flag == true)
