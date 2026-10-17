@@ -107,3 +107,43 @@ func TestObjectDefaultPlainObjectAliasNativeCoreParity(t *testing.T) {
 		}
 	}
 }
+
+// An object-default property may reference a primitive union component. Native
+// generation, readonly check and failure preservation match the core plan, and a
+// non-member keeps the original member Pointer.
+func TestObjectDefaultReferencedUnionPropertyParity(t *testing.T) {
+	const definitions = `"V":{"oneOf":[{"type":"string"},{"type":"integer"}]},`
+	document := func(member string) []byte {
+		return []byte(`{"openapi":"3.1.0","components":{"schemas":{` + definitions + `"Holder":{"properties":{"v":{"type":"object","properties":{"u":{"$ref":"#/components/schemas/V"}},"default":{"u":` + member + `}}}}}}}`)
+	}
+	for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+		for _, checked := range []bool{false, true} {
+			t.Run(string(style)+"/checked="+map[bool]string{false: "0", true: "1"}[checked], func(t *testing.T) {
+				p := newProject(t)
+				valid := document(`"x"`)
+				put(t, p.Input, valid)
+				args := objectDefaultReferencedPropertyArgs(p.Input, p.Output, checked, style)
+				result(t, invoke(t, p.Root, args...), 0)
+				report, err := core.GenerateWithDiagnostics(core.GenerationRequest{Document: valid, Options: core.GenerationOptions{PackageName: "org.example.catalog", ModelNameSuffix: "Dto", ModelStyle: style, Validation: checked}})
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, file := range report.Artifacts.Files {
+					if string(read(t, p.Output+"/"+file.Path)) != file.Content {
+						t.Fatal("native/core mismatch", file.Path)
+					}
+				}
+				before := snapshot(t, p.Output)
+				result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
+				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+					t.Fatal("check changed bytes/modes/mtimes")
+				}
+				put(t, p.Input, document(`true`))
+				fails(t, invoke(t, p.Root, args...), 1, "E_SCHEMA_INVALID")
+				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+					t.Fatal("failed generation changed existing output")
+				}
+			})
+		}
+	}
+}

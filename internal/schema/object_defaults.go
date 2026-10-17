@@ -450,6 +450,10 @@ func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer str
 		} else {
 			node, err = a.referencedAllOfObjectDefaultMember(source, sourcePointer, text(get(v, "$ref")), depth+1)
 		}
+	} else if a.primitiveUnionElementCandidate(source) {
+		// A direct local `$ref` to a primitive union component reuses the
+		// object-default property's primitive-union member role.
+		node, err = a.primitiveUnionElementNode(source, sourcePointer, depth)
 	} else if a.objectDefaultCandidate(source) {
 		// The analyzer-aware gate also admits a referenced collection whose
 		// element resolves to a plain object target, matching the field role.

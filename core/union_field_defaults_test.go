@@ -268,3 +268,39 @@ func TestReferencedUnionComponentDefaults(t *testing.T) {
 		}
 	}
 }
+
+// An object-default property may reference a primitive union component with its
+// outer default; the enclosing object helper still owns the member value and a
+// non-member keeps the original member Pointer.
+func TestObjectDefaultPropertyReferencedUnionDefaults(t *testing.T) {
+	for _, tc := range []struct{ name, input string }{
+		{"string branch", `{"V":{"oneOf":[{"type":"string"},{"type":"integer"}]},"Holder":{"properties":{"v":{"properties":{"u":{"$ref":"#/components/schemas/V"}},"default":{"u":"x"}}}}}`},
+		{"integer branch", `{"V":{"oneOf":[{"type":"string"},{"type":"integer"}]},"Holder":{"properties":{"v":{"properties":{"u":{"$ref":"#/components/schemas/V"}},"default":{"u":1}}}}}`},
+	} {
+		got, err := core.GenerateWithDiagnostics(request(schemas(tc.input), "Dto"))
+		if err != nil {
+			t.Fatal(tc.name, err)
+		}
+		if text := source(t, got, "HolderDto"); !strings.Contains(text, "`openapi-kt model default ") {
+			t.Fatal(tc.name, text)
+		}
+	}
+	r := request(schemas(`{"V":{"oneOf":[{"type":"string"},{"type":"integer"}]},"Holder":{"properties":{"v":{"properties":{"u":{"$ref":"#/components/schemas/V"}},"default":{"u":true}}}}}`), "Dto")
+	r.Options.Validation = true
+	report, err := core.GenerateWithDiagnostics(r)
+	ds, ok := err.(core.Diagnostics)
+	if !ok || len(ds) == 0 || ds[0].Code != "E_SCHEMA_INVALID" || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/Holder/properties/v/default/u" || !reflect.DeepEqual(report, core.GenerationReport{}) {
+		t.Fatalf("member union Pointer: %v", err)
+	}
+	// A union alias chain and an object union keep their separate roles.
+	for _, input := range []string{
+		`{"V":{"oneOf":[{"type":"string"},{"type":"integer"}]},"Alias":{"$ref":"#/components/schemas/V"},"Holder":{"properties":{"v":{"properties":{"u":{"$ref":"#/components/schemas/Alias"}},"default":{"u":"x"}}}}}`,
+		`{"V":{"oneOf":[{"type":"object","required":["kind"],"properties":{"kind":{"type":"string","enum":["a"]}}},{"type":"object","required":["kind"],"properties":{"kind":{"type":"string","enum":["b"]}}}]},"Holder":{"properties":{"v":{"properties":{"u":{"$ref":"#/components/schemas/V"}},"default":{"u":{"kind":"a"}}}}}}`,
+	} {
+		r := request(schemas(input), "Dto")
+		r.Options.Validation = true
+		if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
+			t.Fatal("excluded member union default leaked", input, err)
+		}
+	}
+}
