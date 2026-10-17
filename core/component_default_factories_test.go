@@ -152,3 +152,31 @@ func TestComponentDefaultFactoryScalarGuards(t *testing.T) {
 		})
 	}
 }
+
+// An allOf component's own root default emits the factory, mirroring the
+// consuming-field allOf walk. A `$ref` wrapper component stays excluded.
+func TestComponentDefaultFactoryAllOf(t *testing.T) {
+	for _, checked := range []bool{false, true} {
+		for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+			input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"S":{"allOf":[{"properties":{"a":{"type":"string"}},"required":["a"]},{"properties":{"b":{"type":"integer"}}}],"default":{"a":"x"}}}}}`)
+			r := request(input, "Dto")
+			r.Options.Validation, r.Options.ModelStyle = checked, style
+			got, err := core.GenerateWithDiagnostics(r)
+			if err != nil {
+				t.Fatal(checked, style, err)
+			}
+			if text := source(t, got, "SDto"); !strings.Contains(text, "public fun default(): SDto =") {
+				t.Fatal(checked, style, text)
+			}
+		}
+	}
+	// The wrapper component keeps its rejection.
+	wrapper := []byte(`{"openapi":"3.1.0","components":{"schemas":{"T":{"type":"object","required":["z"],"properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}}}`)
+	r2 := request(wrapper, "Dto")
+	r2.Options.Validation = true
+	report, err2 := core.GenerateWithDiagnostics(r2)
+	ds, ok := err2.(core.Diagnostics)
+	if !ok || len(ds) == 0 || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/S/default" || !reflect.DeepEqual(report, core.GenerationReport{}) {
+		t.Fatalf("$ref wrapper admitted: %v", err2)
+	}
+}

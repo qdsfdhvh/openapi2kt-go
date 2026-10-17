@@ -119,3 +119,22 @@ func TestComponentDefaultFactoryScalarExclusions(t *testing.T) {
 		})
 	}
 }
+
+// An allOf component attaches the canonical annotation to its Model without
+// touching the merged shape; a `$ref` wrapper component stays excluded.
+func TestComponentDefaultFactoryAllOfAuthority(t *testing.T) {
+	plan, _, err := Analyze(loadComponentDocument(t, `{"S":{"allOf":[{"properties":{"a":{"type":"string"}},"required":["a"]},{"properties":{"b":{"type":"integer"}}}],"default":{"a":"x"}}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	model := componentModel(plan.Models, "SDto")
+	if model == nil || model.ComponentDefault != `{"a":"x"}` {
+		t.Fatalf("lost allOf component default: %+v", model)
+	}
+	if len(model.Properties) != 2 {
+		t.Fatalf("allOf component default changed the property list: %+v", model.Properties)
+	}
+	if _, _, err := Analyze(loadComponentDocument(t, `{"T":{"type":"object","required":["z"],"properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto"}); err == nil {
+		t.Fatal("$ref wrapper component admitted")
+	}
+}

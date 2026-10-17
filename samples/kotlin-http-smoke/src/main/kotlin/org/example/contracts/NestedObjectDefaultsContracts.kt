@@ -124,6 +124,7 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     // alias type directly; the scalar form is a top-level function.
     check(org.example.nestedobject.models.`ComponentDefaultNameDto default`() == "component-name")
     check(org.example.nestedobject.models.`ComponentDefaultModeDto default`() == org.example.nestedobject.models.ComponentDefaultModeDto.ON)
+    check(org.example.nestedobject.models.ComponentDefaultAllOfDto.default().n == 9)
     check(value.cfg?.composed?.label == "outer member" && value.cfg?.composed?.count == 3 && value.cfg?.composed?.child?.flag == false)
     check(value.cfg?.linked?.label == "outer linked" && value.cfg?.linked?.count == 2 && value.cfg?.linked?.child?.flag == true)
     check(value.cfg?.viaAlias?.label == "outer alias" && value.cfg?.viaAlias?.count == 2 && value.cfg?.viaAlias?.child?.flag == true)

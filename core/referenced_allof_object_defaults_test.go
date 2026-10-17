@@ -193,9 +193,14 @@ func TestReferencedAllOfDefaultExclusions(t *testing.T) {
 			}
 		}
 	}
-	// Definitions do not acquire root defaults through the new consuming role.
+	// Definitions may own their root default as an opt-in factory; the
+	// consuming role still never inherits it.
 	withDefault := strings.TrimSuffix(referencedAllOfTarget, "}") + `,"default":{"label":"target"}}`
-	carrierDefaultFailure(t, referencedAllOfDocument(withDefault, `{"$ref":"#/components/schemas/Value","default":{"label":"consumer"}}`), true, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Value/default")
+	if got, err := core.GenerateWithDiagnostics(request(referencedAllOfDocument(withDefault, `{"$ref":"#/components/schemas/Value"}`), "Dto")); err != nil {
+		t.Fatal(err)
+	} else if text := source(t, got, "ValueDto"); !strings.Contains(text, "public fun default(): ValueDto =") {
+		t.Fatal("allOf component factory missing", text)
+	}
 	intermediate := schemas(`{"Value":` + referencedAllOfTarget + `,"Alias":{"$ref":"#/components/schemas/Value","default":{"label":"alias"}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias","default":{"label":"x"}}}}}`)
 	carrierDefaultFailure(t, intermediate, true, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Alias/default")
 	// Preserve the original rejecting collection case as a graduation regression:
