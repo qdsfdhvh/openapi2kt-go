@@ -239,3 +239,57 @@ func TestReferencedCollectionAllOfObjectDefaultMembers(t *testing.T) {
 		}
 	}
 }
+
+// An object-default property may reference a collection whose element resolves
+// to a plain named ordinary DTO, matching the consuming-field role. The named
+// collection may be referenced directly or through finite alias chains, and
+// inline containers with a referenced element participate too.
+func TestObjectDefaultCollectionPropertiesOfReferencedDTOs(t *testing.T) {
+	const item = `{"type":"object","required":["name"],"properties":{"name":{"type":"string"},"age":{"type":"integer","default":7}}}`
+	definitions := `"Item":` + item + `,"ItemAlias":{"$ref":"#/components/schemas/Item"},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Item"}},"AliasRows":{"type":"array","items":{"$ref":"#/components/schemas/ItemAlias"}},"MapRows":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Item"}},"Owner":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Item"}}}},`
+	for _, tc := range []struct{ name, member, value string }{
+		{"named list", `{"$ref":"#/components/schemas/Rows"}`, `[{"name":"a"}]`},
+		{"named map", `{"$ref":"#/components/schemas/MapRows"}`, `{"k":{"name":"a"}}`},
+		{"alias-chain element", `{"$ref":"#/components/schemas/AliasRows"}`, `[{"name":"a"}]`},
+		{"inline list", `{"type":"array","items":{"$ref":"#/components/schemas/Item"}}`, `[{"name":"a"}]`},
+		{"inline map", `{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Item"}}`, `{"k":{"name":"a"}}`},
+		{"internal collection", `{"$ref":"#/components/schemas/Owner/properties/rows"}`, `[{"name":"a"}]`},
+	} {
+		for _, checked := range []bool{false, true} {
+			for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+				input := schemas(`{` + definitions + `"Holder":{"properties":{"v":` + allOfMemberField(tc.member, `{"member":`+tc.value+`}`) + `}}}`)
+				r := request(input, "Dto")
+				r.Options.Validation, r.Options.ModelStyle = checked, style
+				got, err := core.GenerateWithDiagnostics(r)
+				if err != nil {
+					t.Fatal(tc.name, checked, style, err)
+				}
+				if text := source(t, got, "HolderDto"); !strings.Contains(text, "`openapi-kt model default ") {
+					t.Fatal(tc.name, text)
+				}
+			}
+		}
+	}
+}
+
+func TestObjectDefaultCollectionReferencedDTOGuards(t *testing.T) {
+	const item = `{"type":"object","required":["name"],"properties":{"name":{"type":"string"}}}`
+	base := func(member, value string) []byte {
+		return schemas(`{"Item":` + item + `,"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Item"}},"Holder":{"properties":{"v":` + allOfMemberField(member, value) + `}}}`)
+	}
+	for _, tc := range []struct{ value, tail string }{
+		{`{"member":[{}]}`, "/member/0"},
+		{`{"member":[{"name":false}]}`, "/member/0/name"},
+		{`{"member":[{"extra/~":1}]}`, "/member/0/extra~1~0"},
+		{`{"member":[null]}`, "/member/0"},
+	} {
+		for _, checked := range []bool{false, true} {
+			carrierDefaultFailure(t, base(`{"$ref":"#/components/schemas/Rows"}`, tc.value), checked, "E_SCHEMA_INVALID", "/components/schemas/Holder/properties/v/default"+tc.tail)
+		}
+	}
+	// A scalar/enum element chain is not a plain object target.
+	scalar := schemas(`{"S":{"type":"string"},"SA":{"$ref":"#/components/schemas/S"},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/SA"}},"Holder":{"properties":{"v":` + allOfMemberField(`{"$ref":"#/components/schemas/Rows"}`, `{"member":["x"]}`) + `}}}`)
+	if got, err := core.GenerateWithDiagnostics(request(scalar, "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
+		t.Fatal("scalar element chain gained object member role", err)
+	}
+}

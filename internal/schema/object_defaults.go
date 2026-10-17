@@ -78,14 +78,38 @@ func (a *analyzer) objectDefaultCandidate(v *document.Value) bool {
 	if dictionarySchema(v) {
 		return a.objectDefaultCandidate(get(v, "additionalProperties"))
 	}
-	if has(v, "$ref") {
+	// Follow finite transparent local `$ref` chains to the plain object a
+	// container element or field resolves to, mirroring the consuming-field
+	// role. Chains ending in a scalar, enum, composition or collection are not
+	// object targets and keep their own roles.
+	for depth := 0; depth <= MaxSchemaDepth && has(v, "$ref"); depth++ {
 		source, _, err := a.defaultSource(text(get(v, "$ref")), "")
 		if err != nil {
 			return false
 		}
-		return objectDefaultCandidateSchema(source)
+		v = source
 	}
 	return a.primitiveUnionElementCandidate(v) || objectDefaultCandidateSchema(v)
+}
+
+// objectDefaultReferenceTarget follows finite transparent local `$ref` chains
+// to the plain object a container element or field resolves to, returning that
+// original terminal node and Pointer. It reuses the consuming-field source walk
+// and never expands references; a chain ending in a scalar, enum, composition
+// or collection is not an object target and keeps its own role.
+func (a *analyzer) objectDefaultReferenceTarget(v *document.Value) (*document.Value, string, bool) {
+	pointer := ""
+	for depth := 0; depth <= MaxSchemaDepth && has(v, "$ref"); depth++ {
+		source, p, err := a.defaultSource(text(get(v, "$ref")), pointer)
+		if err != nil {
+			return nil, "", false
+		}
+		v, pointer = source, p
+	}
+	if objectDefaultCandidateSchema(v) {
+		return v, pointer, true
+	}
+	return nil, "", false
 }
 
 func objectDefaultRequiredNames(v *document.Value, pointer string) (map[string]bool, *diagnostic.Diagnostic) {
@@ -224,7 +248,7 @@ func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, 
 		validation := *a
 		validation.objectDefaultAllOfMemberElement = a.allOfDefaultMemberElement(v)
 		return validation.objectDefaultNode(v, pointer, depth, allowOwnDefault)
-	case objectDefaultCandidateSchema(v):
+	case a.objectDefaultCandidate(v):
 		return a.objectDefaultNode(v, pointer, depth, allowOwnDefault)
 	default:
 		return a.nestedDefaultSchema(v, "Validation", pointer, nil, nil, depth, true)
@@ -346,7 +370,9 @@ func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer str
 	var node *nestedDefaultNode
 	if has(source, "allOf") || has(source, "$ref") {
 		node, err = a.referencedAllOfObjectDefaultMember(source, sourcePointer, text(get(v, "$ref")), depth+1)
-	} else if objectDefaultCandidateSchema(source) {
+	} else if a.objectDefaultCandidate(source) {
+		// The analyzer-aware gate also admits a referenced collection whose
+		// element resolves to a plain object target, matching the field role.
 		node, err = a.objectDefaultNode(source, sourcePointer, depth, false)
 	} else {
 		node, err = a.nestedDefaultSchema(source, "Validation", sourcePointer, nil, nil, depth, false)
@@ -398,7 +424,13 @@ func (a *analyzer) objectDefaultChild(v *document.Value, pointer string, depth i
 		if err != nil {
 			return nil, err
 		}
-		if !objectDefaultCandidateSchema(source) {
+		// Follow any finite transparent alias chain to the plain object terminal
+		// so an element alias chain matches the consuming-field role. The exact
+		// original code below still handles a direct plain object target.
+		if target, targetPointer, ok := a.objectDefaultReferenceTarget(v); ok {
+			source, sourcePointer = target, targetPointer
+		}
+		if !a.objectDefaultCandidate(source) {
 			return nil, unsupported(naming.Pointer(pointer, "$ref"))
 		}
 		node, err := a.objectDefaultNode(source, sourcePointer, depth, false)

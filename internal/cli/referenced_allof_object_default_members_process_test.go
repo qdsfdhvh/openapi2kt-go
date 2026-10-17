@@ -159,3 +159,54 @@ func TestReferencedCollectionInternalAllOfElementTerminalParity(t *testing.T) {
 		})
 	}
 }
+
+// An object-default property may reference a collection whose element resolves
+// to a plain named ordinary DTO (directly or through a finite alias chain or an
+// inline container). Native generation, readonly check and failure preservation
+// match the core plan.
+func TestReferencedCollectionPlainDTOElementsParity(t *testing.T) {
+	const item = `{"type":"object","required":["name"],"properties":{"name":{"type":"string"},"age":{"type":"integer","default":7}}}`
+	for _, tc := range []struct{ name, member, valid, invalid, tail string }{
+		{"named list", `{"$ref":"#/components/schemas/Rows"}`, `{"member":[{"name":"a"}]}`, `{"member":[{"name":false}]}`, "/member/0/name"},
+		{"named map", `{"$ref":"#/components/schemas/MapRows"}`, `{"member":{"k":{"name":"a"}}}`, `{"member":{"k":{}}}`, "/member/k"},
+		{"alias-chain element", `{"$ref":"#/components/schemas/AliasRows"}`, `{"member":[{"name":"a"}]}`, `{"member":[{}]}`, "/member/0"},
+		{"inline list", `{"type":"array","items":{"$ref":"#/components/schemas/Item"}}`, `{"member":[{"name":"a"}]}`, `{"member":[{"z":1}]}`, "/member/0/z"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			document := func(value string) []byte {
+				return []byte(`{"openapi":"3.1.0","components":{"schemas":{"Item":` + item + `,"ItemAlias":{"$ref":"#/components/schemas/Item"},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Item"}},"AliasRows":{"type":"array","items":{"$ref":"#/components/schemas/ItemAlias"}},"MapRows":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Item"}},"Holder":{"properties":{"v":{"properties":{"member":` + tc.member + `},"default":` + value + `}}}}}}`)
+			}
+			for _, checked := range []bool{false, true} {
+				for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+					p := newProject(t)
+					input := document(tc.valid)
+					put(t, p.Input, input)
+					args := nestedObjectArgs(p.Input, p.Output, checked, style)
+					result(t, invoke(t, p.Root, args...), 0)
+					report, err := core.GenerateWithDiagnostics(core.GenerationRequest{Document: input, Options: core.GenerationOptions{PackageName: "org.example.catalog", ModelStyle: style, Validation: checked}})
+					if err != nil {
+						t.Fatal(err)
+					}
+					for _, file := range report.Artifacts.Files {
+						if string(read(t, p.Output+"/"+file.Path)) != file.Content {
+							t.Fatal("native/core mismatch", file.Path)
+						}
+					}
+					before := snapshot(t, p.Output)
+					result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
+					if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("check changed output")
+					}
+					put(t, p.Input, document(tc.invalid))
+					failure := fails(t, invoke(t, p.Root, args...), 1, "E_SCHEMA_INVALID")
+					if len(failure.Diagnostics) != 1 || failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != "/components/schemas/Holder/properties/v/default"+tc.tail {
+						t.Fatal(failure)
+					}
+					if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("failure changed output")
+					}
+				}
+			}
+		})
+	}
+}
