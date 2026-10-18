@@ -109,7 +109,7 @@ public companion object {
 }
 ```
 
-A nullable root that also declares whole-object counts keeps its separate nullable-component-counts role, and a non-null annotation on a nullable root keeps its existing rejection.
+A nullable root that also declares whole-object counts keeps its separate nullable-component-counts role. A **non-null** annotation on an explicitly nullable root follows the separate [nullable component root contract](nullable-component-defaults.md): the declaration keeps its nullable public type and the factory returns a non-null instance of it.
 
 A nullable component still emits its normal nullable public type; the factory signature follows the component's own generated type, not the annotation.
 

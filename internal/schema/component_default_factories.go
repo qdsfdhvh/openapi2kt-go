@@ -47,16 +47,23 @@ func (a *analyzer) componentDefaultShape(c *component) bool {
 	if has(c.Schema, "$ref") {
 		return a.referenceWrapperDefaultCandidate(c)
 	}
-	// A nullable root is admitted only when the annotation is the null literal,
-	// matching the field rule that optional presence never authorizes null.
-	if nullable {
+	// A nullable root keeps the field rule that optional presence never
+	// authorizes a null annotation, so `default: null` stays limited to ordinary
+	// object roots. A **non-null** annotation is an ordinary value of the same
+	// admitted shapes: the declaration keeps its nullable public type and the
+	// factory simply returns a non-null instance of it.
+	if nullable && get(c.Schema, "default").Kind() == document.Null {
 		// Keep the nullable-component-counts role out of this contract: a root
 		// that also declares whole-object counts retains its own diagnostic.
 		if hasObjectCounts(c.Schema) {
 			return false
 		}
-		return kind == "object" && get(c.Schema, "default").Kind() == document.Null &&
-			objectDefaultCandidateSchema(c.Schema) && !has(c.Schema, "oneOf") && !has(c.Schema, "anyOf") && !has(c.Schema, "$ref") && !has(c.Schema, "allOf")
+		return kind == "object" && objectDefaultCandidateSchema(c.Schema) &&
+			!has(c.Schema, "oneOf") && !has(c.Schema, "anyOf") && !has(c.Schema, "allOf")
+	}
+	if nullable && hasObjectCounts(c.Schema) {
+		// A counted nullable root is a separate role regardless of its annotation.
+		return false
 	}
 	// A Scalar only exists after the declaration loop, and markComponentDefaultSource
 	// runs before it. Key the dispatch off the schema itself so both callers agree.
@@ -214,8 +221,8 @@ func (a *analyzer) componentDefaultNode(c *component) (*nestedDefaultNode, *diag
 // whose field default role exists. Native enum, temporal, bytes, caller-native,
 // bigint and value-class components keep their own contracts.
 func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
-	kind, nullable, err := schemaType(c.Schema, c.Pointer)
-	if err != nil || nullable {
+	kind, _, err := schemaType(c.Schema, c.Pointer)
+	if err != nil {
 		return false
 	}
 	if has(c.Schema, "x-native-type") || has(c.Schema, "x-kotlin-value-class") ||
@@ -258,9 +265,10 @@ func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
 func (a *analyzer) collectionComponentDefaultCandidate(c *component) bool {
 	// A component root is a *single* container layer over a leaf element. Nested
 	// containers, allOf-wrapped containers and union variants keep exactly the
-	// exclusions the field role already enforces.
-	kind, nullable, err := schemaType(c.Schema, c.Pointer)
-	if err != nil || nullable {
+	// exclusions the field role already enforces. A nullable root is reached only
+	// with a non-null annotation, so the container itself is still ordinary.
+	kind, _, err := schemaType(c.Schema, c.Pointer)
+	if err != nil {
 		return false
 	}
 	edge := ""

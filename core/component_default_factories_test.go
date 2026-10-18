@@ -349,10 +349,25 @@ func TestComponentDefaultFactoryNullableObject(t *testing.T) {
 			}
 		}
 	}
-	// A nullable root whose annotation is not null keeps its existing rejection.
+	// A nullable ordinary object root may also carry a non-null annotation: the
+	// declaration keeps its nullable public type and the factory returns an
+	// ordinary instance. Only the null literal skips the decode helper.
+	for _, checked := range []bool{false, true} {
+		r := request(schemas(`{"MaybeRec":{"type":"object","nullable":true,"required":["z"],"properties":{"z":{"type":"string"}},"default":{"z":"1"}}}`), "Dto")
+		r.Options.Validation = checked
+		got, err := core.GenerateWithDiagnostics(r)
+		if err != nil {
+			t.Fatal(checked, err)
+		}
+		text := source(t, got, "MaybeRecDto")
+		if !strings.Contains(text, "public fun default(): MaybeRecDto? =") || !strings.Contains(text, `("{\"z\":\"1\"}")`) {
+			t.Fatal(checked, "nullable object non-null factory", text)
+		}
+	}
+	// Whole-object counts keep the separate nullable-component-counts role.
 	for _, tc := range []struct{ name, schemas string }{
-		{"non-null annotation on nullable root", `{"S":{"type":"object","nullable":true,"required":["z"],"properties":{"z":{"type":"string"}},"default":{"z":"1"}}}`},
 		{"nullable root with counts", `{"S":{"type":"object","nullable":true,"minProperties":0,"properties":{"z":{"type":"string"}},"default":null}}`},
+		{"nullable root with counts non-null", `{"S":{"type":"object","nullable":true,"minProperties":0,"properties":{"z":{"type":"string"}},"default":{"z":"1"}}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := request(schemas(tc.schemas), "Dto")

@@ -1,0 +1,88 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "nullable-component-defaults",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/x": {
+      "post": {
+        "operationId": "x",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Name": {
+        "type": ["string", "null"],
+        "default": "fallback"
+      },
+      "Day": {
+        "type": ["string", "null"],
+        "format": "date",
+        "default": "2024-02-29"
+      },
+      "Names": {
+        "type": ["array", "null"],
+        "items": {
+          "type": "string"
+        },
+        "default": ["a", "b"]
+      },
+      "Counts": {
+        "type": ["object", "null"],
+        "additionalProperties": {
+          "type": "integer"
+        },
+        "default": {
+          "k": 1
+        }
+      },
+      "Label": {
+        "type": "object",
+        "nullable": true,
+        "required": ["z"],
+        "properties": {
+          "z": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "z": "label"
+        }
+      },
+      "Mode": {
+        "type": ["string", "null"],
+        "enum": ["a", "b"],
+        "default": "a"
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "names": {
+            "$ref": "#/components/schemas/Names"
+          },
+          "inline": {
+            "type": ["string", "null"],
+            "default": "inline"
+          }
+        }
+      }
+    }
+  }
+}

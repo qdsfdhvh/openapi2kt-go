@@ -105,7 +105,6 @@ func TestComponentDefaultFactoryScalarExclusions(t *testing.T) {
 	for _, tc := range []struct{ name, schemas string }{
 		{"bytes", `{"S":{"type":"string","format":"byte","default":"x"}}`},
 		{"caller native", `{"S":{"type":"string","x-native-type":"org.example.Money","default":"x"}}`},
-		{"nullable scalar", `{"S":{"type":"string","nullable":true,"default":"x"}}`},
 		{"const", `{"S":{"type":"string","const":"x","default":"x"}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -113,6 +112,21 @@ func TestComponentDefaultFactoryScalarExclusions(t *testing.T) {
 				t.Fatal("excluded scalar root admitted")
 			}
 		})
+	}
+	// A nullable scalar root keeps the null-literal-only rule for `default: null`,
+	// while a non-null annotation is an ordinary value of the nullable alias.
+	for _, checked := range []bool{false, true} {
+		plan, _, err := Analyze(loadComponentDocument(t, `{"S":{"type":"string","nullable":true,"default":"x"}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: checked})
+		if err != nil {
+			t.Fatal(checked, err)
+		}
+		alias, ok := componentDeclaration(plan.Models, "SDto").(*ValueAlias)
+		if !ok || alias.ComponentDefault != `"x"` {
+			t.Fatalf("nullable scalar factory lost its value: %+v", componentDeclaration(plan.Models, "SDto"))
+		}
+		if _, _, err := Analyze(loadComponentDocument(t, `{"S":{"type":"string","nullable":true,"default":null}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: checked}); err == nil {
+			t.Fatal("nullable scalar null annotation admitted")
+		}
 	}
 }
 
@@ -271,15 +285,49 @@ func TestComponentDefaultFactoryNullableObjectAuthority(t *testing.T) {
 	if model == nil || model.ComponentDefault != "null" {
 		t.Fatalf("lost nullable component default: %+v", model)
 	}
-	// The nullable-component-counts role and a non-null annotation stay excluded.
+	// The nullable-component-counts role stays excluded. A non-null annotation is
+	// an ordinary value of the nullable object's declared type.
+	for _, checked := range []bool{false, true} {
+		nonNull, _, err := Analyze(loadComponentDocument(t, `{"S":{"type":"object","nullable":true,"required":["z"],"properties":{"z":{"type":"string"}},"default":{"z":"1"}}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: checked})
+		if err != nil {
+			t.Fatal(checked, err)
+		}
+		if model := componentModel(nonNull.Models, "SDto"); model == nil || model.ComponentDefault != `{"z":"1"}` || !model.Nullable {
+			t.Fatalf("nullable object non-null factory lost: %+v", model)
+		}
+	}
 	for _, tc := range []struct{ name, schemas string }{
 		{"counts", `{"S":{"type":"object","nullable":true,"minProperties":0,"properties":{"z":{"type":"string"}},"default":null}}`},
-		{"non-null annotation", `{"S":{"type":"object","nullable":true,"required":["z"],"properties":{"z":{"type":"string"}},"default":{"z":"1"}}}`},
+		{"counts non-null", `{"S":{"type":"object","nullable":true,"minProperties":0,"properties":{"z":{"type":"string"}},"default":{"z":"1"}}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if _, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true}); err == nil {
 				t.Fatal("excluded nullable role admitted")
 			}
 		})
+	}
+}
+
+// A nullable component root accepts a non-null annotation without changing its
+// declared nullable type or its original source node.
+func TestNullableComponentDefaultSourceAuthority(t *testing.T) {
+	root := loadComponentDocument(t, `{"N":{"type":["string","null"],"default":"x"}}`)
+	original, _ := get(get(get(root, "components"), "schemas"), "N").MarshalJSON()
+	for _, checked := range []bool{false, true} {
+		plan, _, err := Analyze(root, Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: checked})
+		if err != nil {
+			t.Fatal(checked, err)
+		}
+		declaration, ok := componentDeclaration(plan.Models, "NDto").(*ValueAlias)
+		if !ok || declaration.ComponentDefault != `"x"` {
+			t.Fatalf("nullable factory lost its canonical value: %+v", declaration)
+		}
+		if declaration.Type.Kind != Nullable {
+			t.Fatalf("nullable declaration lost its public type: %+v", declaration.Type)
+		}
+		after, _ := get(get(get(root, "components"), "schemas"), "N").MarshalJSON()
+		if string(original) != string(after) {
+			t.Fatal("nullable planning rewrote the original schema node")
+		}
 	}
 }
