@@ -322,6 +322,16 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	a.borrowedDTOAliasEdges = map[*component]*borrowedDTOAliasEdge{}
 	a.deferredNominals = map[*document.Value]*deferredNominal{}
 	a.indexInternalModels(nil)
+	// Inline hierarchy branches are registered as synthetic components before the
+	// first consumer walks a.components by name.
+	if err := a.hierarchyInlineLeaves(used); err != nil {
+		return nil, err
+	}
+	// Synthetic inline leaves are appended so the declaration loop below consumes
+	// them through the same path as a named component.
+	for _, leaf := range a.hierarchyInlineOrder {
+		ordered = append(ordered, document.Member{Name: leaf.Wire, Value: leaf.Schema})
+	}
 	if err := a.discoverHierarchySources(); err != nil {
 		return nil, err
 	}

@@ -255,7 +255,13 @@ type analyzer struct {
 	componentDefaultSchemas map[*document.Value]bool
 	// componentSchemas keeps the original /components/schemas object so the
 	// reference-wrapper dispatch can read a target before a.components exists.
-	componentSchemas          *document.Value
+	componentSchemas *document.Value
+	// hierarchyInlineBranches maps a synthetic inline leaf node back to the
+	// discriminator value it derived, so dispatch never re-reads the branch.
+	hierarchyInlineBranches map[*document.Value]*syntheticHierarchyLeaf
+	// hierarchyInlineOrder keeps creation order so synthesized declarations stay
+	// deterministic regardless of map iteration.
+	hierarchyInlineOrder      []*syntheticHierarchyLeaf
 	objectDefaultWork         *int            // Shared only by one source validation walk.
 	objectDefaultAllOfElement *document.Value // One consuming inline collection's original leaf.
 

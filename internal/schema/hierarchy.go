@@ -251,6 +251,34 @@ func (p *hierarchyPlanner) visit(key string, depth int, stack []string, pointer 
 			nullBranches++
 			continue
 		}
+		// An inline branch carries no reference. Its synthetic component was
+		// registered from the discriminator constant before this walk, so it is
+		// handled here instead of through the reference key set.
+		if !has(branch, "$ref") {
+			leaf := p.a.hierarchyInlineBranches[branch]
+			if leaf == nil {
+				// An inline branch without a discriminator constant has no name
+				// source, so it keeps the original rejection location.
+				return unsupported(naming.Pointer(location, "type"))
+			}
+			if _, owned := p.parents[leaf.Wire]; owned {
+				return unsupported(location)
+			}
+			if err := p.visit(leaf.Wire, depth+1, stack, location); err != nil {
+				return err
+			}
+			p.parents[leaf.Wire] = key
+			value := leaf.Value
+			for _, mapping := range mappings {
+				if mapping.Key == leaf.Wire || mapping.Key == leaf.Class {
+					value = mapping.Value
+					break
+				}
+			}
+			node.Edges = append(node.Edges, hierarchyEdge{leaf.Wire, value, location})
+			height = max(height, 1+p.heights[leaf.Wire])
+			continue
+		}
 		if err := checkKeys(branch, []string{"$ref", "nullable"}, location); err != nil {
 			return err
 		}
@@ -794,6 +822,12 @@ func (a *analyzer) discoverHierarchySources() *diagnostic.Diagnostic {
 				if target, err := a.resolveDeclared(reference, c.Pointer); err == nil {
 					pending = append(pending, target.Wire)
 				}
+				continue
+			}
+			// An inline branch has no reference; its synthetic component was
+			// registered before this discovery pass.
+			if leaf := a.hierarchyInlineBranches[branch]; leaf != nil {
+				pending = append(pending, leaf.Wire)
 			}
 		}
 	}
@@ -823,4 +857,146 @@ func (a *analyzer) planHierarchy(used map[string]bool) (map[string]*Hierarchy, *
 		}
 	}
 	return out, nil
+}
+
+// syntheticHierarchyLeaf records an inline oneOf/anyOf branch that carries its
+// own discriminator constant. Option B: the branch has no component name, so the
+// constant supplies both the class name and the dispatch value. A branch without
+// a single-valued string constant has no name source and keeps its rejection.
+type syntheticHierarchyLeaf struct {
+	Wire, Class string
+	Schema      *document.Value
+	Pointer     string
+	Value       string
+}
+
+// hierarchyInlineLeaves registers synthetic components for eligible inline
+// branches so the existing name-keyed planner can walk them unchanged. It runs
+// before discoverHierarchySources, which is the first consumer of a.components.
+func (a *analyzer) hierarchyInlineLeaves(used map[string]bool) *diagnostic.Diagnostic {
+	a.hierarchyInlineBranches = map[*document.Value]*syntheticHierarchyLeaf{}
+	a.hierarchyInlineOrder = nil
+	for _, key := range sortedComponentNames(a.components) {
+		c := a.components[key]
+		if c == nil || (!has(c.Schema, "oneOf") && !has(c.Schema, "anyOf")) || !has(c.Schema, "discriminator") {
+			continue
+		}
+		branchPointer := naming.Pointer(c.Pointer, "oneOf")
+		branches := get(c.Schema, "oneOf")
+		if !has(c.Schema, "oneOf") {
+			branchPointer = naming.Pointer(c.Pointer, "anyOf")
+			branches = get(c.Schema, "anyOf")
+		}
+		if branches == nil || branches.Kind() != document.Array {
+			continue
+		}
+		wire, ok := get(c.Schema, "discriminator").Get("propertyName")
+		if !ok {
+			continue
+		}
+		field, isText := wire.Text()
+		if !isText || field == "" {
+			continue
+		}
+		for index, branch := range branches.Items() {
+			location := naming.Pointer(branchPointer, strconv.Itoa(index))
+			if has(branch, "$ref") || text(get(branch, "type")) == "null" {
+				continue
+			}
+			leaf, err := a.hierarchyInlineLeaf(c, branch, location, field, index)
+			if err != nil {
+				return err
+			}
+			if leaf == nil {
+				continue
+			}
+			if _, exists := a.components[leaf.Wire]; exists {
+				return diagnostic.At("E_NAME_COLLISION", "Inline hierarchy branch resolves to an existing component name.", location)
+			}
+			a.components[leaf.Wire] = &component{
+				Wire: leaf.Wire, Name: leaf.Class, Pointer: location, Schema: leaf.Schema,
+			}
+			a.hierarchyInlineBranches[leaf.Schema] = leaf
+			a.hierarchyInlineOrder = append(a.hierarchyInlineOrder, leaf)
+		}
+	}
+	return nil
+}
+
+// hierarchyInlineLeaf decides whether an inline branch may become a synthetic
+// leaf and derives its class name from the discriminator constant.
+func (a *analyzer) hierarchyInlineLeaf(parent *component, branch *document.Value, location, field string, index int) (*syntheticHierarchyLeaf, *diagnostic.Diagnostic) {
+	if err := object(branch, location); err != nil {
+		return nil, err
+	}
+	kind, nullable, err := schemaType(branch, location)
+	if err != nil {
+		return nil, err
+	}
+	// Only an ordinary object leaf is admitted here; primitives, arrays and
+	// nullable branches keep their existing separate contracts.
+	if kind != "object" || nullable || dictionarySchema(branch) ||
+		has(branch, "allOf") || has(branch, "oneOf") || has(branch, "anyOf") || has(branch, "const") {
+		return nil, nil
+	}
+	value, err := a.hierarchyInlineTagValue(branch, location, field)
+	if err != nil {
+		return nil, err
+	}
+	if value == "" {
+		// No single constant means no name source; the branch keeps its rejection
+		// at the same place as before this contract.
+		return nil, nil
+	}
+	className, err := naming.ClassName(value, location)
+	if err != nil {
+		return nil, err
+	}
+	className += a.options.Suffix
+	wire := parent.Wire + "#" + strconv.Itoa(index) + value
+	return &syntheticHierarchyLeaf{Wire: wire, Class: className, Schema: branch, Pointer: location, Value: value}, nil
+}
+
+// hierarchyInlineTagValue returns the single discriminator value declared by the
+// branch itself: a String const, or a one-member String enum. Anything else has
+// no unambiguous name and is left to its existing rejection.
+func (a *analyzer) hierarchyInlineTagValue(branch *document.Value, location, field string) (string, *diagnostic.Diagnostic) {
+	properties, ok := branch.Get("properties")
+	if !ok || properties.Kind() != document.Object {
+		return "", nil
+	}
+	tag, ok := properties.Get(field)
+	if !ok || tag == nil {
+		return "", nil
+	}
+	tagPointer := naming.Pointer(naming.Pointer(location, "properties"), field)
+	kind, _, err := schemaType(tag, tagPointer)
+	if err != nil {
+		return "", err
+	}
+	if kind != "" && kind != "string" {
+		return "", nil
+	}
+	if has(tag, "const") {
+		if has(tag, "enum") || has(tag, "format") {
+			return "", nil
+		}
+		constant, ok := get(tag, "const").Text()
+		if !ok {
+			return "", nil
+		}
+		return constant, nil
+	}
+	if has(tag, "enum") {
+		members := get(tag, "enum").Items()
+		if len(members) != 1 {
+			return "", nil
+		}
+		value, ok := members[0].Text()
+		if !ok {
+			return "", nil
+		}
+		return value, nil
+	}
+	return "", nil
 }
