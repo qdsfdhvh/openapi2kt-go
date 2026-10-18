@@ -72,7 +72,6 @@ func TestComponentDefaultFactoryGuards(t *testing.T) {
 	// Roles outside this contract keep their existing rejection location.
 	for _, tc := range []struct{ name, input, pointer string }{
 		{"empty raw object", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"object","default":{}}}}}`, "/components/schemas/S/default"},
-		{"reference wrapper", `{"openapi":"3.1.0","components":{"schemas":{"T":{"type":"object","properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}}}`, "/components/schemas/S/default"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := request([]byte(tc.input), "Dto")
@@ -175,14 +174,21 @@ func TestComponentDefaultFactoryAllOf(t *testing.T) {
 			}
 		}
 	}
-	// The wrapper component keeps its rejection.
+	// A `$ref` wrapper now owns its own factory on the alias, while the target
+	// gains nothing. Graduated from the previous rejection of the whole shape.
 	wrapper := []byte(`{"openapi":"3.1.0","components":{"schemas":{"T":{"type":"object","required":["z"],"properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}}}`)
 	r2 := request(wrapper, "Dto")
 	r2.Options.Validation = true
-	report, err2 := core.GenerateWithDiagnostics(r2)
-	ds, ok := err2.(core.Diagnostics)
-	if !ok || len(ds) == 0 || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/S/default" || !reflect.DeepEqual(report, core.GenerationReport{}) {
-		t.Fatalf("$ref wrapper admitted: %v", err2)
+	report2, err2 := core.GenerateWithDiagnostics(r2)
+	if err2 != nil {
+		t.Fatalf("$ref wrapper lost its factory: %v", err2)
+	}
+	wrapperSource := source(t, report2, "SDto")
+	if !strings.Contains(wrapperSource, "public fun `SDto default`(): SDto =") {
+		t.Fatalf("wrapper factory missing:\n%s", wrapperSource)
+	}
+	if strings.Contains(source(t, report2, "TDto"), "`TDto default`") {
+		t.Fatalf("wrapper default leaked onto the target")
 	}
 }
 

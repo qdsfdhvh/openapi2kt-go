@@ -46,7 +46,6 @@ func TestComponentDefaultFactoryAuthority(t *testing.T) {
 func TestComponentDefaultFactoryExclusions(t *testing.T) {
 	for _, tc := range []struct{ name, schemas string }{
 		{"empty raw object", `{"S":{"type":"object","default":{}}}`},
-		{"reference wrapper", `{"T":{"type":"object","properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}`},
 		{"inline union", `{"S":{"oneOf":[{"type":"string"},{"type":"integer"}],"default":"x"}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -118,7 +117,7 @@ func TestComponentDefaultFactoryScalarExclusions(t *testing.T) {
 }
 
 // An allOf component attaches the canonical annotation to its Model without
-// touching the merged shape; a `$ref` wrapper component stays excluded.
+// touching the merged shape; a `$ref` wrapper attaches it to its own alias.
 func TestComponentDefaultFactoryAllOfAuthority(t *testing.T) {
 	plan, _, err := Analyze(loadComponentDocument(t, `{"S":{"allOf":[{"properties":{"a":{"type":"string"}},"required":["a"]},{"properties":{"b":{"type":"integer"}}}],"default":{"a":"x"}}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto"})
 	if err != nil {
@@ -131,8 +130,17 @@ func TestComponentDefaultFactoryAllOfAuthority(t *testing.T) {
 	if len(model.Properties) != 2 {
 		t.Fatalf("allOf component default changed the property list: %+v", model.Properties)
 	}
-	if _, _, err := Analyze(loadComponentDocument(t, `{"T":{"type":"object","required":["z"],"properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto"}); err == nil {
-		t.Fatal("$ref wrapper component admitted")
+	// The wrapper owns the factory on its own alias; the target stays plain.
+	wrapperPlan, _, err := Analyze(loadComponentDocument(t, `{"T":{"type":"object","required":["z"],"properties":{"z":{"type":"string"}}},"S":{"$ref":"#/components/schemas/T","default":{"z":"1"}}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto"})
+	if err != nil {
+		t.Fatalf("$ref wrapper lost its factory: %v", err)
+	}
+	alias, ok := componentDeclaration(wrapperPlan.Models, "SDto").(*ValueAlias)
+	if !ok || alias.ComponentDefault != `{"z":"1"}` {
+		t.Fatalf("wrapper did not own the annotation: %+v", componentDeclaration(wrapperPlan.Models, "SDto"))
+	}
+	if target, ok := componentDeclaration(wrapperPlan.Models, "TDto").(*Model); ok && target.ComponentDefault != "" {
+		t.Fatalf("wrapper default leaked onto the target: %+v", target.ComponentDefault)
 	}
 }
 

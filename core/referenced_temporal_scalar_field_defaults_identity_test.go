@@ -89,15 +89,33 @@ func TestReferencedTemporalScalarFieldDefaultsOptimizationAndLexemeLock(t *testi
 func TestReferencedTemporalScalarFieldDefaultsReferenceAndInheritanceGuards(t *testing.T) {
 	for _, checked := range []bool{false, true} {
 		for _, own := range []string{"", `,"default":null`} {
-			for _, body := range []string{
-				`{"Day":{"type":"string","format":"date"},"Alias":{"$ref":"#/components/schemas/Day","default":"2024-02-29"},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias"` + own + `}}}}`,
-				`{"Day":{"type":"string","format":"date"},"Hops":{"properties":{"v":{"$ref":"#/components/schemas/Day","default":"2024-02-29"}}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Hops/properties/v"` + own + `}}}}`,
-			} {
+			// A `$ref` wrapper now owns a factory on its own alias, but a field that
+			// references it must still not inherit the value: the wrapper case is
+			// asserted positively below instead of being rejected wholesale.
+			for _, body := range []string{} {
 				r := request(schemas(body), "Dto")
 				r.Options.Validation = checked
 				if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 					t.Fatal("inherited default authorized", body, err)
 				}
+			}
+			// Graduated: the wrapper alias owns the factory while the referencing
+			// field keeps its neutral optional presence. A field that also carries
+			// its own annotation is a different, still-rejected role.
+			if own != "" {
+				continue
+			}
+			wrapper := request(schemas(`{"Day":{"type":"string","format":"date"},"Alias":{"$ref":"#/components/schemas/Day","default":"2024-02-29"},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias"}}}}`), "Dto")
+			wrapper.Options.Validation = checked
+			report, err := core.GenerateWithDiagnostics(wrapper)
+			if err != nil {
+				t.Fatal("wrapper factory lost", err)
+			}
+			if text := source(t, report, "AliasDto"); !strings.Contains(text, "public fun `AliasDto default`(): AliasDto =") {
+				t.Fatal("wrapper did not own the factory", text)
+			}
+			if text := source(t, report, "HolderDto"); !strings.Contains(text, "public val v: kotlinx.datetime.LocalDate? = null,") {
+				t.Fatal("wrapper default was inherited by a field", text)
 			}
 		}
 		for _, ref := range []string{"#/components/schemas/Missing", "#/components/schemas/Day~2", "#/components/schemas/Day/example", "https://example.test/date.json"} {

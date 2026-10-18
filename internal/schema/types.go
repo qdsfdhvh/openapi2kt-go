@@ -252,7 +252,10 @@ type analyzer struct {
 	objectDefaultSchemas map[*document.Value]bool
 	// componentDefaultSchemas marks original component roots whose own `default`
 	// the factory planner validates instead of the shared type plan.
-	componentDefaultSchemas   map[*document.Value]bool
+	componentDefaultSchemas map[*document.Value]bool
+	// componentSchemas keeps the original /components/schemas object so the
+	// reference-wrapper dispatch can read a target before a.components exists.
+	componentSchemas          *document.Value
 	objectDefaultWork         *int            // Shared only by one source validation walk.
 	objectDefaultAllOfElement *document.Value // One consuming inline collection's original leaf.
 

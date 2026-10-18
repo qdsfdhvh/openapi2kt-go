@@ -106,6 +106,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	ordered := slices.Clone(schemas.Members())
 	sort.Slice(ordered, func(i, j int) bool { return ordered[i].Name < ordered[j].Name })
 	used := map[string]bool{}
+	a.componentSchemas = schemas
 	// A component's own root `default` emits an opt-in factory and never an
 	// initializer. Only plain ordinary object components qualify; every other
 	// role keeps its existing rejection at the original `.../default` Pointer.
@@ -176,7 +177,13 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 		var validation *PrimitiveValidation
 		reference := ""
 		if kind == "scalar_ref" {
-			if err := checkKeys(v, []string{"$ref", "nullable"}, pointer); err != nil {
+			// A marked reference wrapper owns its root default; an unmarked one keeps
+			// the original rejection here.
+			refKeys := []string{"$ref", "nullable"}
+			if a.componentDefaultSchemas[v] {
+				refKeys = append(refKeys, "default")
+			}
+			if err := checkKeys(v, refKeys, pointer); err != nil {
 				return nil, err
 			}
 			var ok bool
