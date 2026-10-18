@@ -1,9 +1,11 @@
 package schema
 
 import (
+	"math"
 	"math/big"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -36,7 +38,7 @@ func scalarSchemaDefault(v *document.Value, pointer string) (string, *diagnostic
 	if err != nil {
 		return "", err
 	}
-	if !slices.Contains([]string{"kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double", "kotlin.time.Instant", "kotlinx.datetime.LocalDate", "kotlinx.serialization.json.JsonNull"}, scalar) {
+	if !slices.Contains([]string{"kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double", "kotlin.time.Instant", "kotlinx.datetime.LocalDate", "kotlin.ByteArray", "kotlinx.serialization.json.JsonNull"}, scalar) {
 		return "", unsupported(at)
 	}
 	if kind == "null" {
@@ -51,8 +53,10 @@ func scalarSchemaDefault(v *document.Value, pointer string) (string, *diagnostic
 		}
 		return "null", nil
 	}
-	literal, err := scalarLiteral(scalar, value, at)
-	if err != nil && err.Code == "E_SCHEMA_INVALID" {
+	literal, err := scalarDefaultLiteral(scalar, value, at)
+	// bytesDefaultLiteral already names the offending element and keeps its
+	// pointer; rewrapping would coarsen it back to the whole default.
+	if err != nil && err.Code == "E_SCHEMA_INVALID" && scalar != "kotlin.ByteArray" {
 		return "", invalid("Default must be representable by its mapped Kotlin scalar type.", at)
 	}
 	return literal, err
@@ -373,7 +377,7 @@ func (a *analyzer) modelDefault(f field, ty TypeRef, required bool) (string, *di
 	if target.Kind != Scalar {
 		return "", unsupported(pointer)
 	}
-	literal, err := scalarLiteral(target.Name, value, pointer)
+	literal, err := scalarDefaultLiteral(target.Name, value, pointer)
 	if err != nil {
 		return "", err
 	}
@@ -398,4 +402,38 @@ func scalarDefaultInitializer(scalar, literal string) string {
 		literal = strings.Replace(literal, "kotlinx.datetime.LocalDate.parse(", "`openapi-kt default date`(", 1)
 	}
 	return literal
+}
+
+// scalarDefaultLiteral keeps type planning and initializer planning on one
+// grammar, so a shape admitted during planning cannot fail during emission.
+func scalarDefaultLiteral(scalar string, value *document.Value, pointer string) (string, *diagnostic.Diagnostic) {
+	if scalar == "kotlin.ByteArray" {
+		return bytesDefaultLiteral(value, pointer)
+	}
+	return scalarLiteral(scalar, value, pointer)
+}
+
+// bytesDefaultLiteral renders a bytes default as the JSON integer-array form the
+// existing ByteArray wire contract already uses. Base64 text is deliberately not
+// accepted: the generated serializer reads a JSON array, so a base64 default
+// could not round-trip.
+func bytesDefaultLiteral(value *document.Value, pointer string) (string, *diagnostic.Diagnostic) {
+	const rule = "A bytes default must be a JSON array of integers in [-128, 127]."
+	if value.Kind() != document.Array {
+		return "", invalid(rule, pointer)
+	}
+	items := value.Items()
+	parts := make([]string, 0, len(items))
+	for i, item := range items {
+		at := naming.Pointer(pointer, strconv.Itoa(i))
+		if item.Kind() != document.Number {
+			return "", invalid(rule, at)
+		}
+		n, ok := integerLiteral(item)
+		if !ok || n < math.MinInt8 || n > math.MaxInt8 {
+			return "", invalid(rule, at)
+		}
+		parts = append(parts, strconv.FormatInt(n, 10))
+	}
+	return "byteArrayOf(" + strings.Join(parts, ", ") + ")", nil
 }

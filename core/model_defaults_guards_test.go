@@ -33,6 +33,15 @@ func TestModelDefaultsValidateOriginalLiteralsAndRejectedRoles(t *testing.T) {
 			}
 			continue
 		}
+		if field == `{"type":["string","null"],"format":"byte","default":null}` {
+			// Graduated with the bytes field default contract: the type array makes
+			// the field nullable, so a null default is meaningful and the required
+			// policy keeps it validated but unemitted.
+			if err != nil || !strings.Contains(source(t, got, "RecordDto"), "val value: kotlin.ByteArray?,") {
+				t.Fatal("Original nullable bytes default input lost admission", got, err)
+			}
+			continue
+		}
 		if err == nil || len(got.Artifacts.Files) != 0 {
 			t.Fatal("invalid/unsupported original default was dropped", field, got, err)
 		}
