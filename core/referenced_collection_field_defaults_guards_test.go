@@ -60,7 +60,6 @@ func TestReferencedCollectionFieldDefaultsSourceRolesAndNoDrop(t *testing.T) {
 		}
 	}
 	for _, body := range []string{
-		`{"Rows":{"type":"array","items":{"type":"string"}},"Root":{"$ref":"#/components/schemas/Rows","default":[]}}`,
 		`{"Rows":{"type":"array","items":{"type":"string"}},"Holder":{"properties":{"value":{"allOf":[{"$ref":"#/components/schemas/Rows"}],"default":[]}}}}`,
 		`{"Rows":{"type":"array","items":{"type":"string"}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Rows","default":[]}}}}}`,
 		`{"Holder":{"properties":{"target":{"type":"array","items":{"type":"string"},"default":[]},"value":{"$ref":"#/components/schemas/Holder/properties/target","default":[]}}}}`,

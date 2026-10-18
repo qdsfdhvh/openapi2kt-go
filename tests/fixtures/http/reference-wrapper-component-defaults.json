@@ -1,0 +1,115 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "reference-wrapper-component-defaults",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/x": {
+      "post": {
+        "operationId": "x",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Target": {
+        "type": "object",
+        "required": [
+          "z"
+        ],
+        "properties": {
+          "z": {
+            "type": "string"
+          }
+        }
+      },
+      "WrappedObject": {
+        "$ref": "#/components/schemas/Target",
+        "default": {
+          "z": "1"
+        }
+      },
+      "Rows": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "WrappedRows": {
+        "$ref": "#/components/schemas/Rows",
+        "default": [
+          "x"
+        ]
+      },
+      "Mode": {
+        "type": "string",
+        "enum": [
+          "a",
+          "b"
+        ]
+      },
+      "WrappedMode": {
+        "$ref": "#/components/schemas/Mode",
+        "default": "a"
+      },
+      "Day": {
+        "type": "string",
+        "format": "date"
+      },
+      "WrappedDay": {
+        "$ref": "#/components/schemas/Day",
+        "default": "2024-02-29"
+      },
+      "Blob": {
+        "type": "string",
+        "format": "byte"
+      },
+      "WrappedBlob": {
+        "$ref": "#/components/schemas/Blob",
+        "default": [
+          -128,
+          127
+        ]
+      },
+      "PlainAlias": {
+        "$ref": "#/components/schemas/Target"
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "$ref": "#/components/schemas/WrappedObject"
+          },
+          "rows": {
+            "$ref": "#/components/schemas/WrappedRows"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/WrappedMode"
+          },
+          "day": {
+            "$ref": "#/components/schemas/WrappedDay"
+          },
+          "blob": {
+            "$ref": "#/components/schemas/WrappedBlob"
+          },
+          "plain": {
+            "$ref": "#/components/schemas/PlainAlias"
+          }
+        }
+      }
+    }
+  }
+}

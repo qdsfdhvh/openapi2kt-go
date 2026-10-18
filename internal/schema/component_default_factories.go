@@ -3,6 +3,7 @@ package schema
 import (
 	"encoding/json"
 	"slices"
+	"strings"
 
 	"openapi-kt/internal/diagnostic"
 	"openapi-kt/internal/document"
@@ -29,9 +30,22 @@ func (a *analyzer) componentDefaultCandidate(c *component) bool {
 	if c == nil || !has(c.Schema, "default") {
 		return false
 	}
+	return a.componentDefaultShape(c)
+}
+
+// componentDefaultShape reports whether this root shape owns a default role.
+// A reference wrapper asks this of its resolved target, because the target need
+// not carry a default itself - only be a shape whose role already exists.
+func (a *analyzer) componentDefaultShape(c *component) bool {
+	if c == nil {
+		return false
+	}
 	kind, nullable, err := schemaType(c.Schema, c.Pointer)
 	if err != nil {
 		return false
+	}
+	if has(c.Schema, "$ref") {
+		return a.referenceWrapperDefaultCandidate(c)
 	}
 	// A nullable root is admitted only when the annotation is the null literal,
 	// matching the field rule that optional presence never authorizes null.
@@ -71,7 +85,7 @@ func (a *analyzer) markComponentDefaultSource(v *document.Value, pointer string)
 	if err := object(v, pointer); err != nil {
 		return err
 	}
-	if has(v, "$ref") || has(v, "oneOf") || has(v, "anyOf") || has(v, "const") {
+	if has(v, "oneOf") || has(v, "anyOf") || has(v, "const") {
 		return nil
 	}
 	c := &component{Wire: pointer, Name: pointer, Pointer: pointer, Schema: v}
@@ -135,6 +149,10 @@ func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Di
 		validation.objectDefaultSchemas = map[*document.Value]bool{}
 	}
 	validation.objectDefaultSchemas[c.Schema] = true
+
+	if has(c.Schema, "$ref") {
+		return a.referenceWrapperDefaultEncoded(c, &validation)
+	}
 
 	kind, _, _ := schemaType(c.Schema, c.Pointer)
 	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind) {
@@ -452,4 +470,188 @@ func isBytesScalarRoot(v *document.Value, kind string) bool {
 		return true
 	}
 	return false
+}
+
+// referenceWrapperDefaultCandidate admits a `$ref`-only component when the
+// reference names a finite local target whose own root default role exists and
+// whose alias role is itself admitted. The wrapper keeps its alias identity and
+// its own Pointer; the target gains nothing.
+//
+// This runs during markComponentDefaultSource, before a.components exists, so the
+// target is read from the source document instead of the catalog.
+func (a *analyzer) referenceWrapperDefaultCandidate(c *component) bool {
+	if c == nil || has(c.Schema, "nullable") ||
+		has(c.Schema, "oneOf") || has(c.Schema, "anyOf") || has(c.Schema, "const") {
+		return false
+	}
+	reference, ok := get(c.Schema, "$ref").Text()
+	if !ok || reference == "" {
+		return false
+	}
+	targetPointer, targetSchema, ok := a.componentSchemaAtReference(reference)
+	if !ok || targetSchema == nil || targetSchema == c.Schema {
+		return false
+	}
+	// A wrapper of a wrapper is a chained alias and stays out of this contract.
+	if has(targetSchema, "$ref") {
+		return false
+	}
+	targetKind, _, kindErr := schemaType(targetSchema, targetPointer)
+	if kindErr != nil {
+		return false
+	}
+	// A `$ref` to a plain scalar is itself a validation-opt-in alias, so a wrapper
+	// must not widen that role; leaving it out keeps the original rejection.
+	if !a.options.Validation && isPlainScalarRoot(targetSchema, targetKind) {
+		return false
+	}
+	return a.componentDefaultShape(&component{Wire: targetPointer, Name: targetPointer, Pointer: targetPointer, Schema: targetSchema})
+}
+
+// componentSchemaAtReference returns the original schema node a local component
+// reference names, without requiring catalog state.
+func (a *analyzer) componentSchemaAtReference(reference string) (string, *document.Value, bool) {
+	const prefix = "#/components/schemas/"
+	if a.componentSchemas == nil || !strings.HasPrefix(reference, prefix) {
+		return "", nil, false
+	}
+	encoded := strings.TrimPrefix(reference, prefix)
+	if encoded == "" || strings.ContainsAny(encoded, "/%") {
+		return "", nil, false
+	}
+	wire, err := naming.DecodePointerSegment(encoded, "")
+	if err != nil {
+		return "", nil, false
+	}
+	schema, ok := a.componentSchemas.Get(wire)
+	return naming.Pointer("/components/schemas", wire), schema, ok
+}
+
+// wrapperValidationView builds a throwaway node carrying the target's shape plus
+// the wrapper's annotation. The shared default planners read the annotation from
+// the schema node, so this lets them validate the wrapper's value without writing
+// a key into the target's original node.
+func (a *analyzer) wrapperValidationView(target, value *document.Value, at string) (*document.Value, *diagnostic.Diagnostic) {
+	targetJSON, err := target.MarshalJSON()
+	if err != nil {
+		return nil, unsupported(at)
+	}
+	valueJSON, err := value.MarshalJSON()
+	if err != nil {
+		return nil, diagnostic.At("E_JSON_INVALID", "Component default must encode to valid JSON.", at)
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(targetJSON, &fields); err != nil || fields == nil {
+		return nil, unsupported(at)
+	}
+	// Two defaults for one value is ambiguous, so a target that already owns an
+	// annotation stays rejected.
+	if _, exists := fields["default"]; exists {
+		return nil, unsupported(at)
+	}
+	fields["default"] = valueJSON
+	combined, err := json.Marshal(fields)
+	if err != nil {
+		return nil, unsupported(at)
+	}
+	view, parseErr := document.ParseObject(combined, document.MaxDocumentBytes)
+	if parseErr != nil {
+		return nil, parseErr
+	}
+	return view, nil
+}
+
+// referenceWrapperDefaultEncoded validates a wrapper's annotation against the
+// resolved target's own default role and returns canonical JSON. Every diagnostic
+// is reported at the wrapper's original `.../default` Pointer.
+func (a *analyzer) referenceWrapperDefaultEncoded(c *component, validation *analyzer) (string, *diagnostic.Diagnostic) {
+	at := naming.Pointer(c.Pointer, "default")
+	value := get(c.Schema, "default")
+	work, bytes := 0, 0
+	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
+		return "", err
+	}
+	reference, _ := get(c.Schema, "$ref").Text()
+	targetPointer, targetSchema, ok := a.componentSchemaAtReference(reference)
+	if !ok || targetSchema == nil {
+		return "", unsupported(at)
+	}
+	view, err := a.wrapperValidationView(targetSchema, value, at)
+	if err != nil {
+		return "", err
+	}
+	shadow := &component{Wire: targetPointer, Name: targetPointer, Pointer: c.Pointer, Schema: view}
+	validation.objectDefaultSchemas[view] = true
+	validation.componentDefaultSchemas[view] = true
+	// A scalar, enum, temporal or bytes target owns its own leaf grammar; the
+	// nested collection walk would misclassify the value for those shapes.
+	if validation.scalarLeafTarget(view) {
+		encoded, scalarErr := validation.scalarTargetEncoded(view, value, c.Pointer, at)
+		if scalarErr != nil {
+			return "", scalarErr
+		}
+		a.warnings = mergeWarnings(a.warnings, validation.warnings)
+		return encoded, nil
+	}
+	node, nodeErr := validation.componentDefaultNode(shadow)
+	if nodeErr != nil {
+		return "", nodeErr
+	}
+	encoded, valErr := node.value(value, at)
+	if valErr != nil {
+		return "", valErr
+	}
+	a.warnings = mergeWarnings(a.warnings, validation.warnings)
+	if value.Kind() == document.Null {
+		return "null", nil
+	}
+	if len(encoded) > maxNestedDefaultBytes {
+		return "", diagnostic.At("E_MODEL_LIMIT", "Canonical component default exceeds the supported 32 KiB JSON byte limit.", at)
+	}
+	if !json.Valid([]byte(encoded)) {
+		return "", diagnostic.At("E_JSON_INVALID", "Component default must encode to valid JSON.", at)
+	}
+	return encoded, nil
+}
+
+// scalarLeafTarget reports a target whose default role is a single leaf value
+// rather than a container or object tree.
+func (a *analyzer) scalarLeafTarget(view *document.Value) bool {
+	kind, _, err := schemaType(view, "")
+	if err != nil {
+		return false
+	}
+	return has(view, "enum") || isPlainScalarRoot(view, kind) ||
+		isTemporalScalarRoot(view, kind) || isBytesScalarRoot(view, kind)
+}
+
+// scalarTargetEncoded validates a leaf target's value with that role's own
+// grammar and returns the canonical JSON of the annotation. root is the schema
+// location the leaf planners append "default" to; at is the full value Pointer.
+func (a *analyzer) scalarTargetEncoded(view, value *document.Value, root, at string) (string, *diagnostic.Diagnostic) {
+	if has(view, "enum") {
+		field := field{Pointer: root, Schema: view, Depth: 0}
+		if err := a.enumDefaultValue(view, root); err != nil {
+			return "", err
+		}
+		kind, _, kindErr := schemaType(view, root)
+		if kindErr != nil {
+			return "", kindErr
+		}
+		if kind == "integer" || kind == "number" || kind == "boolean" {
+			if _, _, err := a.nativeEnumFieldType(field, true); err != nil {
+				return "", err
+			}
+		}
+	} else if err := a.scalarComponentValue(view, value, root, at); err != nil {
+		return "", err
+	}
+	encoded, marshalErr := value.MarshalJSON()
+	if marshalErr != nil {
+		return "", diagnostic.At("E_JSON_INVALID", "Component default must encode to valid JSON.", at)
+	}
+	if len(encoded) > maxNestedDefaultBytes {
+		return "", diagnostic.At("E_MODEL_LIMIT", "Canonical component default exceeds the supported 32 KiB JSON byte limit.", at)
+	}
+	return string(encoded), nil
 }
