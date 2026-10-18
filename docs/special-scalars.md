@@ -29,6 +29,8 @@ A scalar component alias, simple HTTP root, or bigint directly inside a list/map
 
 [Finite internal chains to named byte/binary scalars](bytes-reference-chains.md) independently preserve original format/source identity and actual transparent declaration through typed internal/named paths/root bridges. ByteArray JSON signed arrays and raw Ktor roots (including null ASCII) remain separate; caller-native ByteArray and borrowed special leaves stay distinct.
 
+[Bytes field defaults](bytes-field-defaults.md) let a direct `format: byte`/`binary` field carry its own `default` in that same signed integer array form. Base64 text stays rejected because the serializer could not round-trip it; component roots and collection/object-default leaves keep their own roles.
+
 [Finite internal chains to named caller-native scalars](caller-native-reference-chains.md) preserve original native-string/source and actual generator alias identity through typed internal/named paths/root bridges. The real provider owns class/API/codecs; caller Long remains numeric, String/ByteArray roots raw, JSON/Instant nullable/provider codecs unchanged. Borrowed/structured native and raw/true/cover roles remain separate.
 
 ## HTTP delegation
