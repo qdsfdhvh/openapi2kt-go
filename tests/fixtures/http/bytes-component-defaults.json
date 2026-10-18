@@ -1,0 +1,71 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "bytes-component-defaults",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/x": {
+      "post": {
+        "operationId": "x",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SortKey": {
+        "type": "string",
+        "format": "byte",
+        "default": [
+          -128,
+          -1,
+          0,
+          127
+        ]
+      },
+      "Blob": {
+        "type": "string",
+        "format": "binary",
+        "default": [
+          4
+        ]
+      },
+      "EmptyBytes": {
+        "type": "string",
+        "format": "byte",
+        "default": []
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/SortKey"
+          },
+          "blob": {
+            "$ref": "#/components/schemas/Blob"
+          },
+          "inline": {
+            "type": "string",
+            "format": "byte",
+            "default": [
+              1,
+              2
+            ]
+          }
+        }
+      }
+    }
+  }
+}

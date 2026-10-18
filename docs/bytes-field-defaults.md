@@ -47,13 +47,13 @@ A `null` bytes default is comparable, so it keeps the ordinary optional-null pol
 
 Admitted: a direct ordinary DTO field. Not admitted, each keeping its own diagnostic at its own pointer:
 
-- a **component root** bytes default (the [component default factory contract](component-default-factories.md) has its own grammar);
+- a **component root** bytes default — that role is a separate contract on the same grammar, see [Bytes component defaults](bytes-component-defaults.md);
 - bytes leaves inside collection, object-default, or nested-default trees;
 - `$ref` wrappers, aliases, `allOf`, unions, `const`, caller-native types, value classes;
 - Base64 text and any non-integer-element array.
 
 ## Verification
 
-- [Fixture](../tests/fixtures/http/bytes-field-defaults.json), [core mappings](../core/bytes_field_defaults_test.go) (wire identity, per-element rejection, ordering, component rejection), [native process](../internal/cli/bytes_field_defaults_process_test.go) (read-only `--check`, per-element pointers, preserved outputs), and the [consumer contract](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/BytesFieldDefaultsContracts.kt).
+- [Fixture](../tests/fixtures/http/bytes-field-defaults.json), [core mappings](../core/bytes_field_defaults_test.go) (wire identity, per-element rejection, ordering, component factory), [native process](../internal/cli/bytes_field_defaults_process_test.go) (read-only `--check`, per-element pointers, preserved outputs), and the [consumer contract](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/BytesFieldDefaultsContracts.kt).
 - `bash scripts/test.sh feature bytes-field-defaults` runs fresh Data/Plain × validation-off/on projects and four `Json { encodeDefaults, explicitNulls }` configurations.
 - The [existing bytes reference chain contract](bytes-reference-chains.md) keeps its raw-Ktor-root and null-ASCII behavior unchanged; no Base64 or custom byte codec is introduced anywhere.

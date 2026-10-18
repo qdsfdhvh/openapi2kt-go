@@ -100,17 +100,61 @@ func TestBytesFieldDefaultsKeepSignedIntegerIdentity(t *testing.T) {
 	}
 }
 
-// The same annotation on a component root is still rejected: this change
-// admits the field role only, and the component factory family keeps its own
-// grammar.
-func TestBytesComponentDefaultsStayRejected(t *testing.T) {
-	input := schemas(`{"S":{"type":"string","format":"byte","default":[1,2]}}`)
-	got, err := core.GenerateWithDiagnostics(request(input, "Dto"))
-	var ds core.Diagnostics
-	if !errors.As(err, &ds) || len(ds) == 0 || ds[0].Code != "E_SCHEMA_UNSUPPORTED" {
-		t.Fatalf("Expected the component bytes default to stay unsupported, got %v", err)
+// A component root is a separate role with its own factory: it must not inherit
+// the field initializer, and it keeps the same signed-array grammar.
+func TestBytesComponentDefaultsEmitTopLevelFactory(t *testing.T) {
+	for _, validation := range []bool{false, true} {
+		r := request(schemas(`{"S":{"type":"string","format":"byte","default":[-128,0,127]}}`), "Dto")
+		r.Options.Validation = validation
+		got, err := core.GenerateWithDiagnostics(r)
+		if err != nil {
+			t.Fatal(validation, err)
+		}
+		text := source(t, got, "SDto")
+		// A typealias cannot own members, so the factory is top level and decodes
+		// through the component's own serializer.
+		if !strings.Contains(text, "public typealias SDto = kotlin.ByteArray") {
+			t.Fatalf("Bytes component lost its alias shape:\n%s", text)
+		}
+		if !strings.Contains(text, "public fun `SDto default`(): SDto =") {
+			t.Fatalf("Bytes component lost its factory:\n%s", text)
+		}
+		if !strings.Contains(text, `"[-128,0,127]"`) {
+			t.Fatalf("Bytes component default did not keep its canonical JSON:\n%s", text)
+		}
+		if !strings.Contains(text, "serializer<SDto>()") {
+			t.Fatalf("Bytes component factory did not decode through its serializer:\n%s", text)
+		}
+		again, err := core.GenerateWithDiagnostics(r)
+		if err != nil || !reflect.DeepEqual(got, again) {
+			t.Fatal("Bytes component default generation drifted", err)
+		}
 	}
-	if len(got.Artifacts.Files) != 0 {
-		t.Fatal("Rejected component bytes default emitted files")
+}
+
+// Role boundaries: only the component root gains the factory. A bytes element
+// inside a collection and a nullable bytes root keep their own diagnostics.
+func TestBytesComponentDefaultsKeepRoleBoundaries(t *testing.T) {
+	for _, c := range []struct{ name, doc, pointer string }{
+		{"bytesElement", `{"S":{"type":"array","items":{"type":"string","format":"byte"},"default":[[1]]}}`, "/components/schemas/S/default"},
+		{"nullableRoot", `{"S":{"type":"string","format":"byte","nullable":true,"default":null}}`, "/components/schemas/S/default"},
+		{"badElement", `{"S":{"type":"string","format":"byte","default":[128]}}`, "/components/schemas/S/default/0"},
+		{"base64", `{"S":{"type":"string","format":"byte","default":"AAEC"}}`, "/components/schemas/S/default"},
+	} {
+		for _, validation := range []bool{false, true} {
+			r := request(schemas(c.doc), "Dto")
+			r.Options.Validation = validation
+			got, err := core.GenerateWithDiagnostics(r)
+			var ds core.Diagnostics
+			if !errors.As(err, &ds) || len(ds) == 0 {
+				t.Fatalf("%s: expected a diagnostic, got %v", c.name, err)
+			}
+			if ds[0].Pointer == nil || *ds[0].Pointer != c.pointer {
+				t.Fatalf("%s: expected pointer %s, got %v", c.name, c.pointer, ds[0].Pointer)
+			}
+			if len(got.Artifacts.Files) != 0 {
+				t.Fatalf("%s: rejected input emitted files", c.name)
+			}
+		}
 	}
 }
