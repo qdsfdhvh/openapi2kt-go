@@ -86,7 +86,7 @@ func emitObjectDefaultHelpers(declaration schema.Declaration, owner string, out 
 	visit = func(d schema.Declaration, scope string) {
 		switch d := d.(type) {
 		case *schema.Model:
-			if d.ComponentDefault != "" {
+			if d.ComponentDefault != "" && d.ComponentDefault != "null" {
 				name := componentDefaultHelperName(scope, d.ClassName)
 				if !seen[name] {
 					seen[name] = true
@@ -184,6 +184,13 @@ func emitComponentDefaultFactory(model *schema.Model, indent int, owner string, 
 	}
 	fmt.Fprintf(out, "\n%spublic companion object {\n", pad)
 	fmt.Fprintf(out, "%s    // The OpenAPI component default for this schema.\n", pad)
+	if model.ComponentDefault == "null" {
+		// A null literal needs no decode helper and must not go through the
+		// non-null component serializer.
+		fmt.Fprintf(out, "%s    public fun default(): %s = null\n", pad, returnType)
+		fmt.Fprintf(out, "%s}\n", pad)
+		return
+	}
 	fmt.Fprintf(out, "%s    public fun default(): %s =\n", pad, returnType)
 	fmt.Fprintf(out, "%s        %s(%s)\n", pad, componentDefaultHelperName(owner, model.ClassName), naming.Literal(model.ComponentDefault))
 	fmt.Fprintf(out, "%s}\n", pad)

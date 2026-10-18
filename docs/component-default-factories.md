@@ -81,6 +81,7 @@ Admission reuses the existing default planner for property defaults; this contra
 - disjoint ordinary `allOf` constructor roots;
 - plain scalar roots (`string`, `integer`, `number`, `boolean`), standard temporal roots (`format: date` / `date-time`), plain unformatted String-enum roots, and numeric/Boolean native enum roots (`int32`/`int64`/`float`/`double` numeric vocabularies and Boolean vocabularies);
 - a single-layer List or typed Map root whose element/value is a leaf the nested collection default walk already supports (builtin scalar, temporal, String enum, native enum);
+- a nullable ordinary object root whose annotation is the `null` literal;
 - disjoint ordinary `allOf` constructor;
 - named/internal `$ref` collection trees already admitted by the referenced collection default roles;
 - scalar, temporal, String enum, numeric/Boolean native enum, `bigint`, and primitive union leaves;
@@ -100,7 +101,15 @@ Admission reuses the existing default planner for property defaults; this contra
 
 ## Nullability and presence
 
-`default: null` is admitted only when the component root is explicitly nullable, matching the existing rule that optional presence alone never authorizes annotation null. The factory then returns the nullable type and the decoded value is `null`.
+`default: null` is admitted only when the component root is explicitly nullable, matching the existing rule that optional presence alone never authorizes annotation null. The factory then returns the nullable type directly and needs no decode helper, because the non-null component serializer cannot decode `null`:
+
+```kotlin
+public companion object {
+    public fun default(): MaybeRecDto? = null
+}
+```
+
+A nullable root that also declares whole-object counts keeps its separate nullable-component-counts role, and a non-null annotation on a nullable root keeps its existing rejection.
 
 A nullable component still emits its normal nullable public type; the factory signature follows the component's own generated type, not the annotation.
 

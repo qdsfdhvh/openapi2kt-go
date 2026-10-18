@@ -308,3 +308,39 @@ func TestComponentDefaultFactoryNativeEnum(t *testing.T) {
 		})
 	}
 }
+
+// A nullable ordinary object component may own a null root default. The factory
+// returns the nullable type directly and needs no decode helper.
+func TestComponentDefaultFactoryNullableObject(t *testing.T) {
+	for _, checked := range []bool{false, true} {
+		for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+			r := request([]byte(`{"openapi":"3.1.0","components":{"schemas":{"MaybeRec":{"type":"object","nullable":true,"required":["z"],"properties":{"z":{"type":"string"}},"default":null}}}}`), "Dto")
+			r.Options.Validation, r.Options.ModelStyle = checked, style
+			got, err := core.GenerateWithDiagnostics(r)
+			if err != nil {
+				t.Fatal(checked, style, err)
+			}
+			text := source(t, got, "MaybeRecDto")
+			if !strings.Contains(text, "public fun default(): MaybeRecDto? = null") {
+				t.Fatal("nullable factory", text)
+			}
+			// A null literal must not go through the non-null component serializer.
+			if strings.Contains(text, "openapi-kt component default") {
+				t.Fatal("null default kept a decode helper", text)
+			}
+		}
+	}
+	// A nullable root whose annotation is not null keeps its existing rejection.
+	for _, tc := range []struct{ name, schemas string }{
+		{"non-null annotation on nullable root", `{"S":{"type":"object","nullable":true,"required":["z"],"properties":{"z":{"type":"string"}},"default":{"z":"1"}}}`},
+		{"nullable root with counts", `{"S":{"type":"object","nullable":true,"minProperties":0,"properties":{"z":{"type":"string"}},"default":null}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := request(schemas(tc.schemas), "Dto")
+			r.Options.Validation = true
+			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
+				t.Fatalf("excluded nullable role admitted: %v", err)
+			}
+		})
+	}
+}

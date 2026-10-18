@@ -251,3 +251,27 @@ func TestComponentDefaultFactoryNativeEnumExclusions(t *testing.T) {
 		})
 	}
 }
+
+// A nullable ordinary object component attaches a null annotation and emits the
+// factory without a decode helper.
+func TestComponentDefaultFactoryNullableObjectAuthority(t *testing.T) {
+	plan, _, err := Analyze(loadComponentDocument(t, `{"S":{"type":"object","nullable":true,"required":["z"],"properties":{"z":{"type":"string"}},"default":null}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	model := componentModel(plan.Models, "SDto")
+	if model == nil || model.ComponentDefault != "null" {
+		t.Fatalf("lost nullable component default: %+v", model)
+	}
+	// The nullable-component-counts role and a non-null annotation stay excluded.
+	for _, tc := range []struct{ name, schemas string }{
+		{"counts", `{"S":{"type":"object","nullable":true,"minProperties":0,"properties":{"z":{"type":"string"}},"default":null}}`},
+		{"non-null annotation", `{"S":{"type":"object","nullable":true,"required":["z"],"properties":{"z":{"type":"string"}},"default":{"z":"1"}}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if _, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true}); err == nil {
+				t.Fatal("excluded nullable role admitted")
+			}
+		})
+	}
+}

@@ -30,8 +30,19 @@ func (a *analyzer) componentDefaultCandidate(c *component) bool {
 		return false
 	}
 	kind, nullable, err := schemaType(c.Schema, c.Pointer)
-	if err != nil || nullable {
+	if err != nil {
 		return false
+	}
+	// A nullable root is admitted only when the annotation is the null literal,
+	// matching the field rule that optional presence never authorizes null.
+	if nullable {
+		// Keep the nullable-component-counts role out of this contract: a root
+		// that also declares whole-object counts retains its own diagnostic.
+		if hasObjectCounts(c.Schema) {
+			return false
+		}
+		return kind == "object" && get(c.Schema, "default").Kind() == document.Null &&
+			objectDefaultCandidateSchema(c.Schema) && !has(c.Schema, "oneOf") && !has(c.Schema, "anyOf") && !has(c.Schema, "$ref") && !has(c.Schema, "allOf")
 	}
 	// A Scalar only exists after the declaration loop, and markComponentDefaultSource
 	// runs before it. Key the dispatch off the schema itself so both callers agree.
