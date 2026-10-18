@@ -46,7 +46,7 @@ func (a *analyzer) componentDefaultCandidate(c *component) bool {
 	}
 	// A Scalar only exists after the declaration loop, and markComponentDefaultSource
 	// runs before it. Key the dispatch off the schema itself so both callers agree.
-	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) {
+	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind) {
 		return a.scalarComponentDefaultCandidate(c)
 	}
 	switch {
@@ -137,7 +137,7 @@ func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Di
 	validation.objectDefaultSchemas[c.Schema] = true
 
 	kind, _, _ := schemaType(c.Schema, c.Pointer)
-	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) {
+	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind) {
 		// The enum/scalar roles own their own validation above; the canonical
 		// value is the literal JSON of the annotation itself.
 		if _, err := validation.scalarComponentNode(c); err != nil {
@@ -183,7 +183,7 @@ func (a *analyzer) componentDefaultNode(c *component) (*nestedDefaultNode, *diag
 	if err != nil {
 		return nil, err
 	}
-	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) {
+	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind) {
 		return a.scalarComponentNode(c)
 	}
 	if kind == "array" || dictionarySchema(c.Schema) {
@@ -224,13 +224,13 @@ func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
 		}
 		return kind == "integer" || kind == "number"
 	}
-	// A non-enum `format` is admitted only for the standard temporal scalars,
-	// whose field default role already exists. Bytes and other formats stay
-	// excluded.
-	if has(c.Schema, "format") && !isTemporalScalarRoot(c.Schema, kind) {
+	// A non-enum `format` is admitted only for the formats whose field default
+	// role already exists: the standard temporal scalars and byte/binary. Other
+	// formats stay excluded.
+	if has(c.Schema, "format") && !isTemporalScalarRoot(c.Schema, kind) && !isBytesScalarRoot(c.Schema, kind) {
 		return false
 	}
-	return isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind)
+	return isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind)
 }
 
 // collectionComponentDefaultCandidate admits a List/typed Map root when the
@@ -348,22 +348,35 @@ func (a *analyzer) scalarComponentNode(c *component) (*nestedDefaultNode, *diagn
 		}
 		return &nestedDefaultNode{schema: c.Schema, pointer: c.Pointer, ty: TypeRef{Kind: JSON}}, nil
 	}
-	if err := a.scalarComponentValue(c.Schema, value, at); err != nil {
+	if err := a.scalarComponentValue(c.Schema, value, c.Pointer, at); err != nil {
 		return nil, err
+	}
+	rootKind, _, rootErr := schemaType(c.Schema, c.Pointer)
+	if rootErr != nil {
+		return nil, rootErr
+	}
+	if isBytesScalarRoot(c.Schema, rootKind) {
+		// The shared nested walk deliberately excludes ByteArray, so that
+		// collection elements and object-default leaves stay out of the bytes
+		// role. Build the root node directly instead of widening that walk.
+		return &nestedDefaultNode{schema: c.Schema, pointer: c.Pointer, ty: TypeRef{Kind: Scalar, Name: "kotlin.ByteArray"}}, nil
 	}
 	return a.nestedDefaultSchema(c.Schema, c.Name, c.Pointer, nil, nil, 0, true)
 }
 
 // scalarComponentValue validates a plain scalar component default against its
 // declared kind, mirroring the field scalar default rules.
-func (a *analyzer) scalarComponentValue(schema, value *document.Value, at string) *diagnostic.Diagnostic {
+func (a *analyzer) scalarComponentValue(schema, value *document.Value, rootPointer, at string) *diagnostic.Diagnostic {
 	kind, _, err := schemaType(schema, "")
 	if err != nil {
 		return err
 	}
-	if isTemporalScalarRoot(schema, kind) {
-		// The temporal role owns its own lexeme validation and canonical form.
-		_, err := scalarSchemaDefault(schema, "")
+	if isTemporalScalarRoot(schema, kind) || isBytesScalarRoot(schema, kind) {
+		// The temporal and bytes roles own their own lexeme validation and
+		// canonical form; reuse the field grammar so both stay identical. The
+		// schema pointer must be the component's own root, otherwise the reported
+		// location collapses to a bare `/default`.
+		_, err := scalarSchemaDefault(schema, rootPointer)
 		return err
 	}
 	switch kind {
@@ -425,4 +438,18 @@ func mergeWarnings(existing, extra []diagnostic.Diagnostic) []diagnostic.Diagnos
 		existing = append(existing, w)
 	}
 	return existing
+}
+
+// isBytesScalarRoot reports a byte/binary string root, the shape whose field
+// default role the bytes contract already defines. Only the root is admitted:
+// collection elements and object-default leaves keep their own exclusions.
+func isBytesScalarRoot(v *document.Value, kind string) bool {
+	if kind != "string" {
+		return false
+	}
+	switch text(get(v, "format")) {
+	case "byte", "binary":
+		return true
+	}
+	return false
 }

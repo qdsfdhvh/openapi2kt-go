@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"errors"
 	"reflect"
 	"strings"
 	"testing"
@@ -135,16 +136,23 @@ func TestComponentDefaultFactoryScalarGuards(t *testing.T) {
 			}
 		})
 	}
-	// Native markers, temporal, bytes and value-class roots keep their roles.
-	for _, tc := range []struct{ name, schemas string }{
-		{"bytes", `{"S":{"type":"string","format":"byte","default":"x"}}`},
-		{"caller native", `{"S":{"type":"string","x-native-type":"org.example.Money","default":"x"}}`},
+	// Native markers and value-class roots keep their roles. A bytes root is now
+	// admitted, so a non-array bytes value fails as an invalid annotation value
+	// rather than as an unsupported shape.
+	for _, tc := range []struct{ name, schemas, code string }{
+		{"bytes wrong value", `{"S":{"type":"string","format":"byte","default":"x"}}`, "E_SCHEMA_INVALID"},
+		{"caller native", `{"S":{"type":"string","x-native-type":"org.example.Money","default":"x"}}`, "E_SCHEMA_UNSUPPORTED"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := request(schemas(tc.schemas), "Dto")
 			r.Options.Validation = true
-			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
+			got, err := core.GenerateWithDiagnostics(r)
+			var ds core.Diagnostics
+			if !errors.As(err, &ds) || len(ds) == 0 || len(got.Artifacts.Files) != 0 {
 				t.Fatalf("excluded scalar root admitted: %v", err)
+			}
+			if string(ds[0].Code) != tc.code {
+				t.Fatalf("want %s, got %s", tc.code, ds[0].Code)
 			}
 		})
 	}
@@ -243,17 +251,22 @@ func TestComponentDefaultFactoryTemporal(t *testing.T) {
 			}
 		}
 	}
-	// A bad lexeme and a non-temporal format keep their existing rejection.
+	// A bad lexeme keeps its rejection and must report the component's own root
+	// pointer, not a bare `/default`.
 	for _, tc := range []struct{ name, schemas string }{
 		{"bad date lexeme", `{"S":{"type":"string","format":"date","default":"2023-02-29"}}`},
 		{"bad instant lexeme", `{"S":{"type":"string","format":"date-time","default":"nope"}}`},
-		{"bytes format", `{"S":{"type":"string","format":"byte","default":"AAEC"}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := request(schemas(tc.schemas), "Dto")
 			r.Options.Validation = true
-			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
+			got, err := core.GenerateWithDiagnostics(r)
+			var ds core.Diagnostics
+			if !errors.As(err, &ds) || len(ds) == 0 || len(got.Artifacts.Files) != 0 {
 				t.Fatalf("excluded temporal root admitted: %v", err)
+			}
+			if ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/S/default" {
+				t.Fatalf("bad temporal default reported %v, want the component root", ds[0].Pointer)
 			}
 		})
 	}
