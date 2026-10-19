@@ -1788,6 +1788,18 @@ done
   --output "$workspace/project/build/generated-limits/direct-nullable-component-counts" --package-name org.example.directcounts --api-client-name DirectCounts --model-name-suffix Dto --validation
 "$workspace/openapi-kt" generate --input tests/fixtures/http/direct-nullable-component-counts.json \
   --output "$workspace/project/build/generated-limits/direct-nullable-component-counts" --package-name org.example.directcounts --api-client-name DirectCounts --model-name-suffix Dto --validation --check
+for contract in bytes-field-defaults bytes-component-defaults reference-wrapper-component-defaults hierarchy-inline-members; do
+  case "$contract" in
+    bytes-field-defaults) pkg=org.example.bytesfielddefaults; client=BytesFieldDefaults ;;
+    bytes-component-defaults) pkg=org.example.bytescomponentdefaults; client=BytesComponentDefaults ;;
+    reference-wrapper-component-defaults) pkg=org.example.refwrapper; client=RefWrapper ;;
+    hierarchy-inline-members) pkg=org.example.inlinehier; client=InlineHier ;;
+  esac
+  "$workspace/openapi-kt" generate --input "tests/fixtures/http/$contract.json" \
+    --output "$workspace/project/build/generated-limits/$contract" --package-name "$pkg" --api-client-name "$client" --model-name-suffix Dto
+  "$workspace/openapi-kt" generate --input "tests/fixtures/http/$contract.json" \
+    --output "$workspace/project/build/generated-limits/$contract" --package-name "$pkg" --api-client-name "$client" --model-name-suffix Dto --check
+done
 "$workspace/openapi-kt" generate --input tests/fixtures/http/nested-object-defaults.json \
   --output "$workspace/project/build/generated-limits/nested-object-defaults" --package-name org.example.nestedobject --api-client-name NestedObject --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/nested-object-defaults.json \
