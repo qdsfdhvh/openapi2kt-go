@@ -87,6 +87,7 @@ class CIWorkflowTests(unittest.TestCase):
         for target, host in (('darwin-arm64', 'macos-latest'),
                              ('darwin-amd64', 'macos-13'),
                              ('linux-amd64', 'ubuntu-latest'),
+                             ('linux-arm64', 'ubuntu-24.04-arm'),
                              ('windows-amd64', 'windows-latest')):
             self.assertIn('target: ' + target, body)
             self.assertIn('os: ' + host, body)
