@@ -1,0 +1,12 @@
+name: Probe arm runner
+on:
+  push:
+    branches: ['ci/linux-arm64-verify']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - run: uname -srm
+      - run: python3 -c "import platform;print(platform.system(), platform.machine())"
