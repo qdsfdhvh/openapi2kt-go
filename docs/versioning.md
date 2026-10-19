@@ -17,7 +17,7 @@ For example:
 
 All six targets use the same version and source revision. A release tag must equal `v` plus the declared CLI version. Update version assertions and version-dependent documentation together; rebuild and reverify packages when the version changes.
 
-The source CLI declares `0.2.0-alpha.1`, following the [next-alpha scope and migration](releases/next-alpha.md). This identifies the local candidate; it does not create a tag or publish a release. The historical first preview `v0.1.0-alpha.1` retains its [scope and limitations](releases/v0.1.0-alpha.1.md). Neither version claims that the complete roadmap is finished.
+The source CLI declares `0.2.0-alpha.1`, following the [next-alpha scope and migration](releases/next-alpha.md). Tag `v0.2.0-alpha.1` was published as a prerelease from that source, producing the six CLI archives and `SHA256SUMS` listed in the [installation guide](installation.md). Later changes merged into `main` are not part of that tag, so the CLI version alone does not identify which sources a checkout contains; use the commit or tag. The historical first preview `v0.1.0-alpha.1` retains its [scope and limitations](releases/v0.1.0-alpha.1.md). Neither version claims that the complete roadmap is finished.
 
 ## What compatibility means
 

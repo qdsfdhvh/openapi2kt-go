@@ -4,7 +4,20 @@
 
 ## Choose a version
 
-The current source CLI identifies the **`0.2.0-alpha.1` candidate**, which has not been published. The [README](../README.md) describes this source checkout. See [scope and migration](releases/next-alpha.md) and the [candidate acceptance checklist](json-release-checklist.md) for its release boundaries.
+The current release is **`v0.2.0-alpha.1`**, a published prerelease with CLI archives for six targets:
+
+| Target | Archive |
+|---|---|
+| macOS Apple Silicon | `openapi-kt-v0.2.0-alpha.1-darwin-arm64.tar.gz` |
+| macOS Intel | `openapi-kt-v0.2.0-alpha.1-darwin-amd64.tar.gz` |
+| Linux x86-64 | `openapi-kt-v0.2.0-alpha.1-linux-amd64.tar.gz` |
+| Linux ARM64 | `openapi-kt-v0.2.0-alpha.1-linux-arm64.tar.gz` |
+| Windows x86-64 | `openapi-kt-v0.2.0-alpha.1-windows-amd64.zip` |
+| Windows ARM64 | `openapi-kt-v0.2.0-alpha.1-windows-arm64.zip` |
+
+Download these from the release page together with `SHA256SUMS` and verify before use. Only `darwin-arm64`, `linux-arm64` and `linux-amd64` have been executed through the isolated install check; the remaining targets are byte-verified only. Linux `amd64` was exercised under emulation on an ARM64 host, so it proves the binary runs and behaves, not that the hardware is native.
+
+The source checkout is ahead of that tag: later changes merged into `main` are not part of the published archives. Build from source if you need them. See [scope and migration](releases/next-alpha.md) and the [candidate acceptance checklist](json-release-checklist.md) for the release boundaries.
 
 The historical **`v0.1.0-alpha.1`** is a Draft Prerelease in a private repository, visible only to collaborators with write access. Its archives are unchanged and do not include later model/reference support or the new file/stdin input boundary. They may still include the former downloader; current source removes it. See the [first preview scope](releases/v0.1.0-alpha.1.md) and [input migration guide](local-input.md#configuration-and-migration).
 
