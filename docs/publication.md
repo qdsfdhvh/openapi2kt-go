@@ -37,7 +37,42 @@ Before publishing a Go module or binary, additionally verify:
 - package names, metadata, license and declared dependency versions;
 - the exact packaged file list, not just the working tree;
 - building, testing and installing from the package without external checkout dependencies;
-- supported host-platform checks and dependency license/security review;
+- supported host-platform checks and dependency license/security review (procedure below);
 - documentation that clearly separates implemented behavior from planned features.
 
 No release has been published. MIT licensing does not authorize changing repository visibility, pushing a release tag or publishing assets; those require an explicit operator decision. Follow the [versioning policy](versioning.md) as well as the package checks; these checks do not publish anything.
+
+## Dependency and vendoring audit
+
+The offline scan above cannot establish that vendored code matches its declared
+modules, nor whether those modules carry known vulnerabilities. Run these
+separately; each result is bound to one commit, so repeat them on the exact
+candidate rather than on a working tree.
+
+```bash
+# 1. Module cache matches go.sum.
+go mod verify
+
+# 2. vendor/ is exactly what go.mod/go.sum produce. Copy the committed tree out
+#    first, because `go mod vendor` rewrites it in place.
+git archive HEAD | tar -x -C /tmp/audit && cp -R vendor /tmp/audit/vendor-orig
+(cd /tmp/audit && go mod vendor && diff -rq vendor-orig vendor)
+
+# 3. Known vulnerabilities in reachable code.
+go install golang.org/x/vuln/cmd/govulncheck@latest
+govulncheck ./...
+```
+
+Steps 1 and 2 need the module cache; step 3 needs the vulnerability database.
+Neither is available offline, so they are a release-time audit rather than part
+of `bash scripts/test.sh all`. Record the commit and the tool version with the
+result.
+
+Attribution has an offline guard: `scripts/tests/test_release_docs.py` fails when
+a `go.mod` requirement is missing from the third-party notices, when
+`vendor/modules.txt` drifts from `go.mod`, or when the documented archive member
+list stops matching what the packager emits. It cannot check licence text
+correctness, so confirm that each entry still reproduces the upstream licence.
+
+A clean scan, audit and notice set still do not constitute a complete security
+audit; they bound the questions that were asked, not the ones that were not.
