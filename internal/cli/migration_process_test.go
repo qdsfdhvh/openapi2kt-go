@@ -73,7 +73,7 @@ func TestLegacyGoldenOwnedOutputsNeedNoManifestReset(t *testing.T) {
 			}
 		})
 	}
-	if count != 47 {
+	if count != 48 {
 		t.Fatal("legacy golden inventory drift", count)
 	}
 }

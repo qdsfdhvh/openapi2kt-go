@@ -318,7 +318,15 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 		if has(f.Schema, "default") && shape.Required[f.Wire] {
 			defaultNull = false
 		}
-		if a.usage != SharedUsage {
+		if a.usage == RequestObjectUsage && readOnlySchema(f.Schema) {
+			// A read-only field is produced by the server, so a request must not
+			// send it unless the caller explicitly asks to. Patch.Absent keeps that
+			// decision at the call site instead of silently including the field.
+			// The response model is untouched: it keeps the declared requiredness.
+			element := ty.WithoutRootNull()
+			ty = TypeRef{Kind: PatchValue, Name: a.patchPackage() + ".Patch", Element: &element}
+			defaultNull = false
+		} else if a.usage != SharedUsage {
 			if shape.Required[f.Wire] {
 				defaultNull = false
 			} else if explicitNullable && a.usage == RequestObjectUsage {
