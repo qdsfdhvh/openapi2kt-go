@@ -1,0 +1,29 @@
+name: Probe arm verify
+on:
+  push:
+    branches: ['ci/linux-arm64-verify']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04-arm
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: v0.2.0-alpha.1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Download the published archive
+        run: |
+          mkdir -p build/release
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "openapi-kt-${RELEASE_TAG}-linux-arm64.tar.gz" --dir build/release
+      - name: Verify on the native arm64 host
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${RELEASE_TAG#v}"
+          archive="build/release/openapi-kt-${RELEASE_TAG}-linux-arm64.tar.gz"
+          sha=$(python3 -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" "$archive")
+          python3 scripts/release/verify.py "$archive" --sha256 "$sha" --version "$version" --work-dir build/package-check
