@@ -12,9 +12,9 @@ func TestBorrowedCollectionBytesLeavesNativePreservation(t *testing.T) {
 	result(t, p.generate(t, "--model-name-suffix=Dto"), 0)
 	before := snapshot(t, p.Output)
 	p.change(t, func(d map[string]any) {
-		schemas(d)["MaybeText"].(map[string]any)["default"] = "unsupported"
+		schemas(d)["MaybeText"].(map[string]any)["default"] = 5
 	})
-	fails(t, p.generate(t, "--model-name-suffix=Dto"), 1, "E_SCHEMA_UNSUPPORTED")
+	fails(t, p.generate(t, "--model-name-suffix=Dto"), 1, "E_SCHEMA_INVALID")
 	if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
 		t.Fatal("invalid original nominal source changed old output")
 	}

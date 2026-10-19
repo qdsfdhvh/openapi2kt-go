@@ -38,6 +38,7 @@ Every profile in this section is **additive**: a schema whose annotation used to
 | bytes root (`format: byte`/`binary`) with a signed integer array | top-level factory function named `default` |
 | `$ref`-only wrapper over an admitted target | top-level factory function named `default` on the alias |
 | nullable ordinary object with `default: null` | companion member `default()` returning the nullable type, with no decode helper |
+| explicitly nullable root with a non-null annotation | the shape's own form above, on the nullable public type ([contract](../nullable-component-defaults.md)) |
 
 Still rejected: chained aliases, `nullable` wrappers, `x-native-type`, value classes, `const`, `oneOf`/`anyOf`, empty/raw roots, nested container elements, union elements, and an unformatted numeric enum root. See the [component default factory contract](../component-default-factories.md) for the exact grammar, the retained native-enum approximation warning and the diagnostics that keep their original Pointers.
 
