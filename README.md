@@ -4,7 +4,7 @@ Generate Kotlin **kotlinx.serialization models** and a **Ktor HTTP/SSE client** 
 
 Generation runs offline from a local file or stdin. The generated Kotlin sources belong in your application; running the generator itself requires no JVM or Gradle.
 
-> **Alpha:** the current source candidate is `0.2.0-alpha.1` and has not been published. It supports a documented subset of OpenAPI 3.0/3.1. The older `v0.1.0-alpha.1` Draft Prerelease has a different feature set; see [versions and installation](docs/installation.md) and [migration notes](docs/releases/next-alpha.md).
+> **Alpha:** `v0.2.0-alpha.1` is published as a prerelease with CLI archives for macOS, Linux and Windows. It supports a documented subset of OpenAPI 3.0/3.1. The older `v0.1.0-alpha.1` has a different feature set; see [versions and installation](docs/installation.md) and [migration notes](docs/releases/next-alpha.md).
 
 ## Installation
 

@@ -14,7 +14,7 @@
 
 | 维度 | 本候选约定 |
 |---|---|
-| 成熟度 | **有界 `0.2.0-alpha.1` 本地源码候选**。CLI 与版本断言已同步；冻结验收范围不自动晋级 beta、rc 或完整首版。尚未创建新 tag 或发布资产，历史 `0.1.0-alpha.1` 包不变 |
+| 成熟度 | **有界 `0.2.0-alpha.1` 已发布 prerelease**（tag `v0.2.0-alpha.1`，源自 `e898e46`）。冻结验收范围不自动晋级 beta、rc 或完整首版。发布资产为六个 CLI 归档与 `SHA256SUMS`；历史 `0.1.0-alpha.1` 包不变。后续合并到 `main` 的改动不在该 tag 内 |
 | 输入与功能 | 本地 JSON OpenAPI 3.0/3.1 的全部已有受支持 profile，含 file/stdin、本地多 spec、现有模型/引用/nullable/组合/校验、HTTP/SSE、输出事务、命名锁、warning policy 与 metrics；以 J01–J09 链接的合同和现有正例/拒绝测试为准，不撤销已有支持 |
 | 默认与选项 | 保留 `data_class` 默认与 validation/优化默认关闭。执行 models、HTTP 与当前测试入口全部 feature routes 中现有的 data/plain、validation off/on、单项及已声明组合；锁与共享 runtime 的 core/native/Kotlin 合同保留。完整选项笛卡尔组合不在承诺内 |
 | CLI 宿主 | **macOS ARM64** 原生编译并运行。Linux、Windows、macOS x86_64 及其他架构留在后续平台验收；旧 alpha CI 与交叉构建不作为本候选证据 |
@@ -87,9 +87,9 @@ Android/KMP 或更广引用图是否后置属于候选范围决定，不在此�
 - [x] **R03 Kotlin 完整 profile**：fresh 默认 models、HTTP/SSE、全部受支持 feature suites 通过；四 Json/Call-site/wire/stream closure/canonical identity 断言仍在；声明的单项/pairwise/全开交互矩阵有可重复证据。脚本 `all` 不是所有选项笛卡尔组合的自动证明。
 - [x] **R04 安全与确定性**：旧产物/手写文件/mtime、partial/reconcile、共享文件、check 无写入、busy locks、正常回滚及遗留事务拒绝守卫通过；同输入/选项/状态的文件集/bytes 不漂移。有意 API/wire 差异逐条测试与迁移说明。
 - [x] **R05 平台与工具链组合**：当前候选的 Kotlin/JVM、受控 Ktor 引擎与上表固定依赖组合真实编译并运行相应断言；额外 catalog 平台探针的 data/plain JVM/JS/macOS Native 运行及 metadata/Android AAR 编译结果见[探针范围](../samples/kotlin-platform-smoke/README.md)，不扩大为跨平台完整 profile 或 Android 真机支持。声明最低版本时再补最低组合验证，不将固定组合外推为版本区间。host CLI、交叉构建和 Kotlin runtime 三类证据分开。
-- [ ] **R06 精确发布候选审查**：[candidate scan](publication.md)在要发布的候选上无未解决 findings；跟踪删除/候选集合差异要解释，不能将工作区 live-file 检查冒充 exact tree/history/package 检查。保 license/第三方 attribution、依赖安全审查与只含公开产品内容；扫描不等于完整安全审计。
-- [ ] **R07 版本与包安装**：[版本分类](versioning.md)和 [next-alpha migration](releases/next-alpha.md) 审查完成；最终 CLI/tag/README/RELEASE.json/archives 一致；准确包成员/checksum、支持宿主上的从包安装→help/file/stdin/validate/generate/check 验证齐全。对包中没有的 fixture 不依赖外部 checkout；历史 tag/assets 不覆盖。旧版本标识的本地源码预检包只能证明打包/安装流程，不能充作新版本发布资产。
-- [ ] **R08 发布授权**：操作者明确授权对应 Git 写入、tag/push/upload/发布/可见性操作；CI、draft assets、notes 与 unsigned-package 限制审查完成。测试全绿不等于已获这些权限。
+- [x] **R06 精确发布候选审查**：[candidate scan](publication.md)在要发布的候选上无未解决 findings；跟踪删除/候选集合差异要解释，不能将工作区 live-file 检查冒充 exact tree/history/package 检查。保 license/第三方 attribution、依赖安全审查与只含公开产品内容；扫描不等于完整安全审计。 **已执行**（tag `v0.2.0-alpha.1`，`e898e46`）：candidate scan 0 findings；`go mod verify` 通过；`go mod vendor` 零差异复现 `vendor/`；`govulncheck` 无已知漏洞；随包许可与第三方归属与源文件逐字节一致。
+- [x] **R07 版本与包安装**：[版本分类](versioning.md)和 [next-alpha migration](releases/next-alpha.md) 审查完成；最终 CLI/tag/README/RELEASE.json/archives 一致；准确包成员/checksum、支持宿主上的从包安装→help/file/stdin/validate/generate/check 验证齐全。对包中没有的 fixture 不依赖外部 checkout；历史 tag/assets 不覆盖。旧版本标识的本地源码预检包只能证明打包/安装流程，不能充作新版本发布资产。 **已执行**：版本面一致（CLI 常量、`--version`、`RELEASE.json`、归档名前缀、tag）；六个归档各 10 成员；`darwin-arm64`、`linux-arm64`、`linux-amd64` 通过隔离安装十项检查；Windows 两个归档仅字节级验证，未在 Windows 宿主执行。
+- [x] **R08 发布授权**：操作者明确授权对应 Git 写入、tag/push/upload/发布/可见性操作；CI、draft assets、notes 与 unsigned-package 限制审查完成。测试全绿不等于已获这些权限。 **已授权并执行**：操作者在会话中明确要求发版；tag、push、归档上传与 prerelease 发布均已完成，资产为六个归档与 `SHA256SUMS`。
 
 ### 本地门禁入口
 
