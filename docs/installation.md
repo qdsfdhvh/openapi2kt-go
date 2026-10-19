@@ -15,7 +15,22 @@ The current release is **`v0.2.0-alpha.1`**, a published prerelease with CLI arc
 | Windows x86-64 | `openapi-kt-v0.2.0-alpha.1-windows-amd64.zip` |
 | Windows ARM64 | `openapi-kt-v0.2.0-alpha.1-windows-arm64.zip` |
 
-Download these from the release page together with `SHA256SUMS` and verify before use. Only `darwin-arm64`, `linux-arm64` and `linux-amd64` have been executed through the isolated install check; the remaining targets are byte-verified only. Linux `amd64` was exercised under emulation on an ARM64 host, so it proves the binary runs and behaves, not that the hardware is native.
+Download these from the release page together with `SHA256SUMS` and verify before use.
+
+Execution evidence differs per archive, and the distinction matters:
+
+| Archive | Executed by |
+|---|---|
+| `darwin-arm64` | CI at the tagged commit on a native Apple Silicon runner, and the published bytes on that host |
+| `linux-amd64` | CI at the tagged commit on a native x86-64 Linux runner, the published bytes in an x86-64 container, and the published bytes emulated on ARM64 |
+| `linux-arm64` | the published bytes on a native arm64 Linux container |
+| `windows-amd64` | CI at the tagged commit on a native Windows runner |
+| `darwin-amd64` | **not executed**; members, metadata and executable only |
+| `windows-arm64` | **not executed**; members, metadata and executable only |
+
+CI builds and install-checks an archive for each runner's own target on every commit, so `windows-amd64` and `linux-amd64` behaviour is proven for source identical to this tag. The release pipeline now also re-runs that check on the published archives themselves; this tag predates it.
+
+Emulated execution proves the binary runs and behaves, not that the hardware was native.
 
 The source checkout is ahead of that tag: later changes merged into `main` are not part of the published archives. Build from source if you need them. See [scope and migration](releases/next-alpha.md) and the [candidate acceptance checklist](json-release-checklist.md) for the release boundaries.
 

@@ -52,8 +52,49 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  draft:
+  verify-native:
     needs: package
+    if: github.ref_type == 'tag'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: darwin-arm64
+            os: macos-latest
+          - target: darwin-amd64
+            os: macos-13
+          - target: linux-amd64
+            os: ubuntu-latest
+          - target: windows-amd64
+            os: windows-latest
+    env:
+      RELEASE_TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (Node.js 24)
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: package-${{ matrix.target }}
+          path: build/release
+      - name: Verify the published archive on its own host
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${RELEASE_TAG#v}"
+          case '${{ matrix.target }}' in
+            windows-*) archive="build/release/openapi-kt-${RELEASE_TAG}-${{ matrix.target }}.zip" ;;
+            *) archive="build/release/openapi-kt-${RELEASE_TAG}-${{ matrix.target }}.tar.gz" ;;
+          esac
+          py=python3
+          if [ "${RUNNER_OS:-}" = "Windows" ]; then py=python; fi
+          sha=$("$py" -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" "$archive")
+          "$py" scripts/release/verify.py "$archive" --sha256 "$sha" --version "$version" --work-dir build/package-check
+
+  draft:
+    needs: [package, verify-native]
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     timeout-minutes: 5
