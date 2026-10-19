@@ -76,12 +76,51 @@ func (a *analyzer) componentDefaultShape(c *component) bool {
 		return !has(c.Schema, "oneOf") && !has(c.Schema, "anyOf") && !has(c.Schema, "$ref")
 	case kind == "array" || dictionarySchema(c.Schema):
 		// A List/typed Map root reuses the nested collection default walk, which
-		// already scopes the element/value leaves it supports.
+		// already scopes the element/value leaves it supports. An *open* dictionary
+		// is a raw JsonObject carrier instead, and reuses the field role's raw JSON
+		// grammar below.
+		if rawJSONComponentRoot(c.Schema) {
+			return true
+		}
 		return a.collectionComponentDefaultCandidate(c)
 	case kind == "object":
+		// An unconstrained/empty object is a raw JsonElement carrier, matching the
+		// field role's raw JSON grammar rather than a DTO projection.
+		if rawJSONComponentRoot(c.Schema) {
+			return true
+		}
 		return objectDefaultCandidateSchema(c.Schema)
 	}
 	return false
+}
+
+// rawJSONComponentRoot reports the two raw JSON carrier roots whose field default
+// role already exists: an *open* dictionary (`additionalProperties: true`) and an
+// unconstrained/empty object. The grammar is borrowed from the field role; this
+// adds a component entry point, not a new shape.
+func rawJSONComponentRoot(v *document.Value) bool {
+	if v == nil {
+		return false
+	}
+	for _, key := range []string{"$ref", "allOf", "oneOf", "anyOf", "enum", "const", "format", "items", "x-native-type", "x-kotlin-value-class"} {
+		if has(v, key) {
+			return false
+		}
+	}
+	if dictionarySchema(v) {
+		flag, ok := get(v, "additionalProperties").Bool()
+		return ok && flag
+	}
+	if properties, ok := v.Get("properties"); ok {
+		if properties.Kind() != document.Object || len(properties.Members()) != 0 {
+			return false
+		}
+	}
+	kind, _, err := schemaType(v, "")
+	if err != nil {
+		return false
+	}
+	return kind == "" || kind == "object"
 }
 
 // markComponentDefaultSource registers only the components whose root `default`
@@ -177,6 +216,11 @@ func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Di
 		}
 		a.warnings = mergeWarnings(a.warnings, validation.warnings)
 		return string(encoded), nil
+	}
+	// A raw JSON carrier root validates like the field role: a JsonObject default
+	// must be a JSON object and a JsonElement default accepts any JSON value.
+	if rawJSONComponentRoot(c.Schema) {
+		return a.rawJSONComponentEncoded(c, at, value)
 	}
 	node, err := validation.componentDefaultNode(c)
 	if err != nil {
@@ -660,6 +704,39 @@ func (a *analyzer) scalarTargetEncoded(view, value *document.Value, root, at str
 	}
 	if len(encoded) > maxNestedDefaultBytes {
 		return "", diagnostic.At("E_MODEL_LIMIT", "Canonical component default exceeds the supported 32 KiB JSON byte limit.", at)
+	}
+	return string(encoded), nil
+}
+
+// rawJSONComponentEncoded validates a raw JSON carrier component root. The
+// grammar is the field role's: an open dictionary maps to JsonObject and needs a
+// JSON object annotation, while an unconstrained/empty object maps to JsonElement
+// and accepts any JSON value. The canonical JSON is the annotation itself.
+func (a *analyzer) rawJSONComponentEncoded(c *component, at string, value *document.Value) (string, *diagnostic.Diagnostic) {
+	work, bytes := 0, 0
+	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
+		return "", err
+	}
+	// The field role keeps its approximation warning for these carriers; the
+	// shared type plan already emitted it once for this node.
+	open := dictionarySchema(c.Schema)
+	if value.Kind() == document.Null {
+		// These roots are not nullable roles in this contract; a null annotation
+		// needs the separate nullable-root contract.
+		return "", unsupported(at)
+	}
+	if open && value.Kind() != document.Object {
+		return "", invalid("A raw object default must be a JSON object.", at)
+	}
+	encoded, err := value.MarshalJSON()
+	if err != nil {
+		return "", invalid("A raw JSON default must be valid JSON.", at)
+	}
+	if len(encoded) > maxNestedDefaultBytes {
+		return "", diagnostic.At("E_MODEL_LIMIT", "Canonical component default exceeds the supported 32 KiB JSON byte limit.", at)
+	}
+	if !json.Valid(encoded) {
+		return "", diagnostic.At("E_JSON_INVALID", "Component default must encode to valid JSON.", at)
 	}
 	return string(encoded), nil
 }

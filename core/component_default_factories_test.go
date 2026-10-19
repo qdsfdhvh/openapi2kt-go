@@ -71,7 +71,7 @@ func TestComponentDefaultFactoryGuards(t *testing.T) {
 	}
 	// Roles outside this contract keep their existing rejection location.
 	for _, tc := range []struct{ name, input, pointer string }{
-		{"empty raw object", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"object","default":{}}}}}`, "/components/schemas/S/default"},
+		{"raw carrier with counts", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"object","minProperties":1,"default":{}}}}}`, "/components/schemas/S/minProperties"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := request([]byte(tc.input), "Dto")

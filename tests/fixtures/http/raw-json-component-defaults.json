@@ -1,0 +1,72 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "raw-json-component-defaults",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/x": {
+      "post": {
+        "operationId": "x",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Open": {
+        "type": "object",
+        "additionalProperties": true,
+        "default": {
+          "a": 1,
+          "b": "x"
+        }
+      },
+      "Free": {
+        "type": "object",
+        "default": {
+          "nested": {
+            "list": [1, true, null]
+          }
+        }
+      },
+      "FreeArray": {
+        "type": "object",
+        "default": [1, "two", false]
+      },
+      "FreeScalar": {
+        "type": "object",
+        "default": "raw"
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "open": {
+            "$ref": "#/components/schemas/Open"
+          },
+          "free": {
+            "$ref": "#/components/schemas/Free"
+          },
+          "inline": {
+            "type": "object",
+            "additionalProperties": true,
+            "default": {
+              "k": 2
+            }
+          }
+        }
+      }
+    }
+  }
+}
