@@ -23,7 +23,7 @@ Execution evidence differs per archive, and the distinction matters:
 |---|---|
 | `darwin-arm64` | CI at the tagged commit on a native Apple Silicon runner, and the published bytes on that host |
 | `linux-amd64` | CI at the tagged commit on a native x86-64 Linux runner, the published bytes in an x86-64 container, and the published bytes emulated on ARM64 |
-| `linux-arm64` | the published bytes on a native arm64 Linux container |
+| `linux-arm64` | CI at the tag on a native arm64 Linux container, and the published bytes on a native `ubuntu-24.04-arm` runner |
 | `windows-amd64` | CI at the tagged commit on a native Windows runner |
 | `darwin-amd64` | **not executed**; members, metadata and executable only |
 | `windows-arm64` | **not executed**; members, metadata and executable only |
