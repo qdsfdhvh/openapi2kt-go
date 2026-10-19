@@ -75,6 +75,24 @@ class CIWorkflowTests(unittest.TestCase):
         self.assertIn('uses: ./.github/workflows/ci.yml', job_body(release, 'verify'))
         self.assertRegex(job_body(release, 'package'), r'(?m)^    needs: verify$')
 
+    def test_release_verifies_published_archives_on_their_own_hosts(self):
+        # The published assets are cross-built on one runner, so the packaged
+        # binary is only exercised if a later job runs it natively.
+        release = (ROOT / '.github/workflows/release.yml').read_text()
+        body = job_body(release, 'verify-native')
+        self.assertRegex(body, r'(?m)^    needs: package$')
+        self.assertIn('package-${{ matrix.target }}', body)
+        self.assertIn('scripts/release/verify.py', body)
+        self.assertNotIn('continue-on-error:', body)
+        for target, host in (('darwin-arm64', 'macos-latest'),
+                             ('darwin-amd64', 'macos-13'),
+                             ('linux-amd64', 'ubuntu-latest'),
+                             ('windows-amd64', 'windows-latest')):
+            self.assertIn('target: ' + target, body)
+            self.assertIn('os: ' + host, body)
+        # A draft must not be created before the native checks pass.
+        self.assertIn('needs: [package, verify-native]', job_body(release, 'draft'))
+
 
 if __name__ == '__main__':
     unittest.main()
