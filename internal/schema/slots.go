@@ -9,7 +9,10 @@ import (
 	"openapi-kt/internal/naming"
 )
 
-var metadata = []string{"title", "description", "example", "examples", "externalDocs", "$comment", "deprecated"}
+// metadata keys are accepted wherever a schema appears. They carry
+// documentation or consumer hints, never a shape. readOnly is the exception:
+// it selects request presence, so request planning reads it explicitly.
+var metadata = []string{"title", "description", "example", "examples", "externalDocs", "$comment", "deprecated", "readOnly"}
 
 func object(value *document.Value, pointer string) *diagnostic.Diagnostic {
 	if value.Kind() != document.Object {
@@ -39,8 +42,10 @@ func checkKeys(v *document.Value, allowed []string, pointer string) *diagnostic.
 			return invalid("Schema text metadata must be a string.", naming.Pointer(pointer, key))
 		}
 	}
-	if value, ok := v.Get("deprecated"); ok && value.Kind() != document.Boolean {
-		return invalid("deprecated must be a boolean.", naming.Pointer(pointer, "deprecated"))
+	for _, key := range []string{"deprecated", "readOnly"} {
+		if value, ok := v.Get(key); ok && value.Kind() != document.Boolean {
+			return invalid(key+" must be a boolean.", naming.Pointer(pointer, key))
+		}
 	}
 	for _, member := range v.Members() {
 		if !slices.Contains(metadata, member.Name) && !slices.Contains(allowed, member.Name) {
@@ -197,4 +202,16 @@ func (a *analyzer) resolveDeclared(reference, pointer string) (*component, *diag
 		return nil, diagnostic.At("E_REF_MISSING", "Referenced component does not exist.", pointer)
 	}
 	return component, nil
+}
+
+// readOnlySchema reports an explicit `readOnly: true` on a field schema. Only the
+// literal true selects request presence; false and an absent key are identical,
+// matching the effect-free no-op rule used elsewhere for boolean annotations.
+func readOnlySchema(v *document.Value) bool {
+	value, ok := v.Get("readOnly")
+	if !ok {
+		return false
+	}
+	flag, ok := value.Bool()
+	return ok && flag
 }

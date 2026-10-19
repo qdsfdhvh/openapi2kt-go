@@ -1440,18 +1440,19 @@
       }
     },
     {
-      "id": "unsupported-readonly",
-      "group": "deferred",
-      "description": "Reject readOnly rather than flattening or discarding its semantics.",
-      "input": "invalid/unsupported-readonly.json",
-      "package_name": "org.example.fixtures.unsupported_readonly",
+      "id": "readonly-annotation",
+      "group": "metadata",
+      "description": "readOnly selects request presence. A dedicated request model projects it as Patch.Absent; a component model shared with responses keeps its declared requiredness, so the keyword is accepted and inert there.",
+      "input": "valid/readonly-annotation.json",
+      "package_name": "org.example.fixtures.readonly_annotation",
       "model_name_suffix": "",
       "input_format": "json",
       "validate": true,
       "expect": {
-        "kind": "error",
-        "code": "E_SCHEMA_UNSUPPORTED",
-        "pointer": "/components/schemas/Record/properties/value/readOnly"
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/readonly_annotation/models/Record.kt": "snapshots/readonly-annotation/Record.kt"
+        }
       }
     },
     {
