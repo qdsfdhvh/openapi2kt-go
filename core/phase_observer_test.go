@@ -36,7 +36,9 @@ func TestGenerationPhaseObserverReportsEnteredBoundariesAndIdenticalArtifacts(t 
 		{"options", func(r *core.GenerationRequest) { r.Options.PackageName = "" }, core.PhaseOptions},
 		{"parse", func(r *core.GenerationRequest) { r.Document = []byte(`{"openapi":`) }, core.PhaseParse},
 		{"analyze", func(r *core.GenerationRequest) {
-			r.Document = []byte(`{"openapi":"3.1.0","components":{"schemas":{"Bad":{"type":"object","default":{}}}}}`)
+			// A raw carrier root now admits that annotation, so the failing analyze
+			// input moves to a schema role this contract still rejects.
+			r.Document = []byte(`{"openapi":"3.1.0","components":{"schemas":{"Bad":{"type":"object","minProperties":1}}}}`)
 		}, core.PhaseAnalyze},
 		{"lock_parse", func(r *core.GenerationRequest) {
 			r.Options.HoistSharedShapes = true

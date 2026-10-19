@@ -45,7 +45,6 @@ func TestComponentDefaultFactoryAuthority(t *testing.T) {
 // Pointer; the factory contract adds no new shape grammar.
 func TestComponentDefaultFactoryExclusions(t *testing.T) {
 	for _, tc := range []struct{ name, schemas string }{
-		{"empty raw object", `{"S":{"type":"object","default":{}}}`},
 		{"inline union", `{"S":{"oneOf":[{"type":"string"},{"type":"integer"}],"default":"x"}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

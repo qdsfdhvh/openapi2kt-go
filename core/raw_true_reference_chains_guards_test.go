@@ -75,7 +75,6 @@ func TestRawTrueReferenceChainsCompleteGrammarAndSeparateRoles(t *testing.T) {
 		for _, tc := range []struct{ terminal, pointer string }{
 			{`{"type":"object","minProperties":1}`, "/components/schemas/Value/minProperties"},
 			{`{"type":"object","maxProperties":1}`, "/components/schemas/Value/maxProperties"},
-			{`{"type":"object","default":{}}`, "/components/schemas/Value/default"},
 			{`{"type":"object","required":["missing"]}`, "/components/schemas/Value"},
 			{`{"allOf":[{"type":"object","minProperties":1}]}`, "/components/schemas/Value/allOf/0/minProperties"},
 		} {

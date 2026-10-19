@@ -99,6 +99,13 @@ func emitDeclaration(declaration schema.Declaration, indent int, owner string, h
 				raw = raw.Null()
 			}
 			fmt.Fprintf(out, "public typealias %s = %s\n", d.ClassName, RenderType(raw))
+			// A raw carrier projection is a typealias, so a component default it
+			// might own must use the top-level form; emitting it as a companion would
+			// silently drop the annotation.
+			if d.ComponentDefault != "" {
+				fmt.Fprintf(out, "\n// The OpenAPI component default for this schema.\npublic fun `%s default`(): %s = `openapi-kt component default %s`(%s)\n",
+					d.ClassName, d.ClassName, strings.ReplaceAll(owner+"."+d.ClassName, ".", " "), naming.Literal(d.ComponentDefault))
+			}
 		} else {
 			emitModel(d, indent, owner, hints, out)
 		}
