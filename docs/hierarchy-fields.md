@@ -24,7 +24,7 @@ Wire results depend on the selected serializer. An inner serializer can encode a
 
 ## Boundaries and compatibility
 
-This is an additive profile for previously rejected input. Existing accepted hierarchy declarations and wire rules remain unchanged. Several varying implicit fields and reused discriminator fields have a separate [compound dispatch contract](hierarchy-dispatch.md). Default-polymorphic fixed singleton contexts, multiple parents, inline/primitive/nullable hierarchy members and general internal nominal ownership still require separate contracts. Object-only union/allOf composition uses its [own contract](union-allof.md).
+This is an additive profile for previously rejected input. Existing accepted hierarchy declarations and wire rules remain unchanged. Several varying implicit fields and reused discriminator fields have a separate [compound dispatch contract](hierarchy-dispatch.md). Inline members named by their discriminator constant are covered by [their own contract](hierarchy-inline-members.md). Default-polymorphic fixed singleton contexts, multiple parents, primitive/nullable graph members and general internal nominal ownership still require separate contracts. Object-only union/allOf composition uses its [own contract](union-allof.md).
 
 The source remains the original schema graph. Generated tag bodies are IR values derived from declared edges; generation does not fabricate expanded JSON schemas. Existing source depth 48, graph work 16,384, branch/enum count 240 and serialized slot 240 limits apply independently.
 
