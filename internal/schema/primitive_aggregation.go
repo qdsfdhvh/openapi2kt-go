@@ -41,7 +41,13 @@ func (a *analyzer) ordinaryPrimitiveAggregates(v *document.Value, s *shape, ordi
 		checks := make([]*PrimitiveValidation, len(fields))
 		actualDiscarded := false
 		for i, f := range fields {
-			_, check, err := a.boundedPrimitiveType(f.Schema, f.Pointer, f.Depth)
+			var check *PrimitiveValidation
+			var err *diagnostic.Diagnostic
+			if has(f.Schema, "default") {
+				_, check, err = a.modelDefaultType(f, true, "Validation", nil, nil)
+			} else {
+				_, check, err = a.boundedPrimitiveType(f.Schema, f.Pointer, f.Depth)
+			}
 			if err != nil {
 				return nil, nil, err
 			}
@@ -54,6 +60,22 @@ func (a *analyzer) ordinaryPrimitiveAggregates(v *document.Value, s *shape, ordi
 		plan, err := a.mergePrimitiveChecks(fields, checks, scalar)
 		if err != nil {
 			return nil, nil, err
+		}
+		if value, exists := winner.Schema.Get("default"); exists {
+			if scalar == "kotlin.String" {
+				// Length and the admitted single pattern need one value scan.
+				if err := validateDefaultChecksAt(value, winner.Schema, plan, scalar, winner.Pointer, winner.Pointer+"/default"); err != nil {
+					return nil, nil, err
+				}
+			} else {
+				// Keep original numeric nodes for exactness and provenance;
+				// only the winning annotation becomes an initializer.
+				for i, f := range fields {
+					if err := validateDefaultChecksAt(value, f.Schema, checks[i], scalar, f.Pointer, winner.Pointer+"/default"); err != nil {
+						return nil, nil, err
+					}
+				}
+			}
 		}
 		plans[winner.Wire] = plan
 		a.emissionHints[plan] = true
@@ -80,7 +102,7 @@ func aggregateSignature(fields []field) (string, bool) {
 			return "", false
 		}
 		for _, m := range f.Schema.Members() {
-			if !slices.Contains(metadata, m.Name) && !slices.Contains(primitiveBoundKeys, m.Name) && !slices.Contains([]string{"type", "format", "nullable"}, m.Name) {
+			if !slices.Contains(metadata, m.Name) && !slices.Contains(primitiveBoundKeys, m.Name) && !slices.Contains([]string{"type", "format", "nullable", "default"}, m.Name) {
 				return "", false
 			}
 		}

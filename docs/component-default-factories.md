@@ -80,7 +80,7 @@ Admission reuses the existing default planner for property defaults; this contra
 - plain inline ordinary object (explicit or inferred `type: "object"` with declared properties);
 - disjoint ordinary `allOf` constructor roots;
 - plain scalar roots (`string`, `integer`, `number`, `boolean`), standard temporal roots (`format: date` / `date-time`), plain unformatted String-enum roots, and numeric/Boolean native enum roots (`int32`/`int64`/`float`/`double` numeric vocabularies and Boolean vocabularies);
-- a single-layer List or typed Map root whose element/value is a leaf the nested collection default walk already supports (builtin scalar, temporal, String enum, native enum);
+- a single-layer List or typed Map root whose element/value is a leaf the nested collection default walk already supports (builtin scalar, temporal, String enum, native enum, or [signed bytes](bytes-default-trees.md));
 - a nullable ordinary object root whose annotation is the `null` literal;
 - disjoint ordinary `allOf` constructor;
 - named/internal `$ref` collection trees already admitted by the referenced collection default roles;

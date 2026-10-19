@@ -45,10 +45,10 @@ A `null` bytes default is comparable, so it keeps the ordinary optional-null pol
 
 ## Scope
 
-Admitted: a direct ordinary DTO field. Not admitted, each keeping its own diagnostic at its own pointer:
+Admitted here: a direct ordinary DTO field. Other roles keep their linked contracts and original diagnostics:
 
 - a **component root** bytes default — that role is a separate contract on the same grammar, see [Bytes component defaults](bytes-component-defaults.md);
-- bytes leaves inside collection, object-default, or nested-default trees;
+- bytes leaves inside collection, object-default, or nested-default trees now use the separate [signed-byte tree contract](bytes-default-trees.md);
 - `$ref` wrappers, aliases, `allOf`, unions, `const`, caller-native types, value classes;
 - Base64 text and any non-integer-element array.
 

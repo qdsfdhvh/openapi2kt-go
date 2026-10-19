@@ -25,17 +25,17 @@ public val inline: kotlin.ByteArray? = byteArrayOf(1, 2),  // inline field role
 
 ## Scope
 
-Admitted: a `byte`/`binary` component **root**. Rejected at the original Pointer, each keeping its own role:
+Admitted here: a `byte`/`binary` component **root**. Related roles and their outcomes:
 
 | Input | Result |
 |---|---|
 | `default: "AAEC"` (base64 text) | `E_SCHEMA_INVALID @ …/default` |
 | `default: [128]` / `[-129]` | `E_SCHEMA_INVALID @ …/default/0` |
-| bytes element inside a `List`/`Map` root | `E_SCHEMA_UNSUPPORTED @ …/default` |
+| bytes element inside a `List`/`Map` root | Eligible single-layer factories use the [tree contract](bytes-default-trees.md) |
 | nullable bytes root with `default: null` | `E_SCHEMA_UNSUPPORTED @ …/default` |
 | `$ref` wrapper, `allOf`, union, `const`, caller-native, value class | its own role |
 
-The shared nested collection default walk deliberately excludes `ByteArray`, so that bytes stays out of the collection-element and object-default-leaf roles. The component root builds its node directly instead of widening that walk.
+The root builds its node directly. Signed-byte collection/object-default leaves separately reuse the [bounded tree walk](bytes-default-trees.md), with per-byte diagnostics and whole-annotation limits.
 
 ## Diagnostics point at the component root
 

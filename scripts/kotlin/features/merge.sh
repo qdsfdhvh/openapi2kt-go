@@ -21,7 +21,9 @@ from pathlib import Path
 import sys
 p=Path(sys.argv[1]);plain=sys.argv[2]=='plain_class'
 extra='' if plain else '''check(org.example.merge.models.AlphaDto("before").copy(value="after")==org.example.merge.models.ZetaDto("after"))
-    check(runCatching { org.example.merge.models.ChildZDto(1).copy(n=0) }.isFailure)'''
+    check(runCatching { org.example.merge.models.ChildZDto(1).copy(n=0) }.isFailure)
+    check(runCatching { org.example.merge.models.CheckedRecursiveZDto().copy(value=1) }.isFailure)
+    check(org.example.merge.models.RecursiveZDto().copy(next=org.example.merge.models.RecursiveADto()).next != null)'''
 (p/'src/main/kotlin/org/example/contracts/Main.kt').write_text('''package org.example.contracts
 import kotlinx.coroutines.runBlocking
 fun main() = runBlocking {

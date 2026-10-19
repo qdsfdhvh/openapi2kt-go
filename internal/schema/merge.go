@@ -22,7 +22,8 @@ type mergeRoot struct {
 }
 
 // MergeIdenticalModels compares validated owned IR, never expanded source trees.
-// Cyclic/over-height dependency graphs conservatively retain nominal identity.
+// Mutual cycles and over-height dependency graphs retain nominal identity;
+// direct owned self edges normalize inside the bounded declaration view.
 func MergeIdenticalModels(plan *Plan, pkg string, components map[Declaration]bool, excluded func(string) bool) {
 	roots := []*mergeRoot{}
 	index := map[string]*mergeRoot{}
@@ -93,12 +94,10 @@ func MergeIdenticalModels(plan *Plan, pkg string, components map[Declaration]boo
 		names := map[string]string{}
 		dedupOwnedNames(r.d, r.d.Name(), "$root", r.pkg, names)
 		mergeTypes(r.d, func(t TypeRef) TypeRef {
-			if t.Kind == Named {
-				if normal := names[t.Name]; normal != "" {
-					if normal == "$root" {
-						r.deps[r] = true
-					}
-				} else if child, _ := resolve(t.Name); child != nil {
+			// Owned root/self and nested classifiers normalize to $root in
+			// dedupView; hashing never expands their recursive edges.
+			if t.Kind == Named && names[t.Name] == "" {
+				if child, _ := resolve(t.Name); child != nil {
 					r.deps[child] = true
 				}
 			}

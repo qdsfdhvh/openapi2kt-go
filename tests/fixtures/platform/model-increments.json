@@ -1,0 +1,31 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Portable model increments", "version": "1.0.0"},
+  "components": {
+    "schemas": {
+      "Lower": {"properties": {"value": {"type": "string", "minLength": 2, "default": "longer"}}},
+      "Bounds": {"allOf": [
+        {"$ref": "#/components/schemas/Lower"},
+        {"type": "object", "allOf": [{"properties": {"value": {"type": "string", "maxLength": 3, "default": "abc"}}}]}
+      ]},
+      "ByteTrees": {
+        "properties": {
+          "rows": {"type": "array", "items": {"type": "string", "format": "byte"}, "default": [[-128, 0, 127], []]},
+          "bag": {"type": "object", "additionalProperties": {"type": "string", "format": "binary"}, "default": {"z": [-1], "a": []}},
+          "payload": {"properties": {"blob": {"type": "string", "format": "byte"}}, "required": ["blob"], "default": {"blob": [-128, 127]}}
+        }
+      },
+      "FactoryRows": {"type": "array", "items": {"type": "string", "format": "byte"}, "default": [[9]]},
+      "NodeA": {"properties": {
+        "value": {"type": "string", "minLength": 2, "default": "ab"},
+        "next": {"$ref": "#/components/schemas/NodeA"},
+        "children": {"type": "array", "items": {"$ref": "#/components/schemas/NodeA"}}
+      }},
+      "NodeZ": {"properties": {
+        "value": {"type": "string", "minLength": 2, "default": "ab"},
+        "next": {"$ref": "#/components/schemas/NodeZ"},
+        "children": {"type": "array", "items": {"$ref": "#/components/schemas/NodeZ"}}
+      }}
+    }
+  }
+}

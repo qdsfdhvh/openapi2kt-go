@@ -59,21 +59,37 @@ func TestOwnerRenameIdentityDoesNotBypassGuardsOrOccurrencePreservation(t *testi
 	}
 }
 
-func TestOwnerRenameOriginalInventoryRejectsSwapAndOrderedChain(t *testing.T) {
+func TestOwnerRenameOriginalInventorySwapAndOrderedChainGraduation(t *testing.T) {
 	root, a, u := renameFixture(t, true)
 	u.Renames = map[string]string{"peer": "old", "old": "peer"}
 	u.Generated = map[string]core.GenerationArtifacts{"old": a, "peer": a}
-	_, e := WriteOwnerRenamesBatch(map[string]OwnerRenameUpdate{root: u}, false)
-	errorCode(t, e, "E_OWNER_RENAME_INVALID")
-	// If earlier a<-old modifies a working map, a subsequent old<-peer must still
-	// reject old as occupied in the original inventory rather than accept a chain.
+	before := snapshot(t, root)
+	// Preserve the exact original swap input. These two owners have identical
+	// Kotlin and raw state, so the admitted permutation is a validated no-op.
+	for _, check := range []bool{true, false} {
+		if changed, e := WriteOwnerRenamesBatch(map[string]OwnerRenameUpdate{root: u}, check); e != nil || changed {
+			t.Fatal("Original identical swap should be a no-op", changed, e)
+		}
+		if !reflect.DeepEqual(before, snapshot(t, root)) {
+			t.Fatal("Identical owner swap rewrote output")
+		}
+	}
+	// The exact former ordered-chain input now reads both source memberships
+	// from the original inventory, even though one target is another source.
 	u.Renames = map[string]string{"a": "old", "old": "peer"}
 	u.Generated = map[string]core.GenerationArtifacts{"a": a, "old": a}
-	before := snapshot(t, root)
-	_, e = WriteOwnerRenamesBatch(map[string]OwnerRenameUpdate{root: u}, false)
-	errorCode(t, e, "E_OWNER_RENAME_INVALID")
+	if changed, e := WriteOwnerRenamesBatch(map[string]OwnerRenameUpdate{root: u}, true); e != nil || !changed {
+		t.Fatal(changed, e)
+	}
 	if !reflect.DeepEqual(before, snapshot(t, root)) {
-		t.Fatal("chain changed original inventory")
+		t.Fatal("Chain check changed original inventory")
+	}
+	if changed, e := WriteOwnerRenamesBatch(map[string]OwnerRenameUpdate{root: u}, false); e != nil || !changed {
+		t.Fatal(changed, e)
+	}
+	after, e := ReadOwnerRenameState(root)
+	if e != nil || !reflect.DeepEqual(after.Owners["a"], u.Previous.Owners["old"]) || !reflect.DeepEqual(after.Owners["old"], u.Previous.Owners["peer"]) || len(after.Owners) != 2 {
+		t.Fatal("Chain did not preserve original memberships", after, e)
 	}
 }
 

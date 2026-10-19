@@ -134,7 +134,7 @@ func TestHTTPMalformedDocumentsAndLimits(t *testing.T) {
 
 func TestHTTPUnsupportedSemanticsFailClosed(t *testing.T) {
 	for _, tc := range []struct{ op, code, tail string }{
-		{`{"responses":{"200":{"content":{"text/plain":{"schema":{"type":"string"}}}}}}`, "E_OPERATIONS_UNSUPPORTED", "/responses/200/content"},
+		{`{"responses":{"200":{"content":{"text/html":{"schema":{"type":"string"}}}}}}`, "E_OPERATIONS_UNSUPPORTED", "/responses/200/content"},
 		{`{"requestBody":{"content":{"application/json":{"schema":{"type":"object","properties":{"payload":{"anyOf":[{"type":"string","pattern":"x"},{"type":"boolean"}]}}}}}},"responses":{"204":{}}}`, "E_SCHEMA_UNSUPPORTED", "/requestBody/content/application~1json/schema/properties/payload/anyOf/0/pattern"},
 		{`{"parameters":[{"name":"token","in":"cookie","schema":{"type":"string"}}],"responses":{"204":{}}}`, "E_OPERATIONS_UNSUPPORTED", "/parameters/0/in"},
 		{`{"parameters":[{"name":"v","in":"query","schema":{"type":"array","items":{"type":"array"}}}],"responses":{"204":{}}}`, "E_SCHEMA_INVALID", "/parameters/0/schema/items"},

@@ -24,7 +24,7 @@
 
 [Own-nullable caller-native aliases](model-semantics.md#root-nullable-caller-native-aliases) inherit provider-owned root intent through direct/wrapper/alias fields: shared nullable fields default null, required nullable request fields have no default, optional nullable fields use Patch. Explicit false narrows the provided classifier. Provider codecs remain authoritative; raw String/ByteArray HTTP responses containing `null` are text/bytes, not Kotlin null.
 
-Plain inline JSON request objects use a request-only model context. This includes inline objects nested through properties, list items and dictionary values. A referenced component keeps its existing shared-model behavior; response models are unchanged.
+Plain inline JSON request objects use a request-only model context. This includes inline objects nested through properties, list items and dictionary values. Referenced components keep shared-model behavior unless an ordinary HTTP body needs the [directional DTO profile](directional-models.md): readOnly selects an operation-owned Request view, and writeOnly is omitted from its separate response view. Canonical components retain their original constructors and serializers.
 
 | Request property | Generated shape |
 |---|---|

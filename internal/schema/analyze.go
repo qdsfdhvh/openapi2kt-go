@@ -37,6 +37,9 @@ func Analyze(root *document.Value, options Options) (*Plan, []diagnostic.Diagnos
 	if err := a.planReferencedFieldDefaults(); err != nil {
 		return nil, nil, err
 	}
+	if err := a.directionalModels(plan); err != nil {
+		return nil, nil, err
+	}
 	if err := a.requestRuntime(plan); err != nil {
 		return nil, nil, err
 	}

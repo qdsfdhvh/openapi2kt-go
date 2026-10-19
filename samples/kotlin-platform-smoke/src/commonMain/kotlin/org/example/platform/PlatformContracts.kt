@@ -15,6 +15,7 @@ fun main() {
     for (defaults in listOf(false, true)) {
         for (nulls in listOf(false, true)) {
             val json = Json { encodeDefaults = defaults; explicitNulls = nulls }
+            modelIncrementContracts(json)
             val value = json.decodeFromString<Item>(input)
             check(value.id == 42L)
             check(value.tags == listOf("one", null))
@@ -27,5 +28,5 @@ fun main() {
             check(json.decodeFromString<Item>(encoded).tags == value.tags)
         }
     }
-    println("Generated platform contracts passed (four Json configurations)")
+    println("Generated platform contracts passed (four Json configurations; catalog, allOf defaults, byte trees and owned self merge)")
 }

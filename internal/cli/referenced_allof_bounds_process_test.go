@@ -17,6 +17,17 @@ func TestReferencedNestedAllOfBoundsNativeCheckAndFailurePreservation(t *testing
 	if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
 		t.Fatal("Check changed owned output")
 	}
+	// A winning initializer cannot bypass a bound from another source.
+	defaultsAt := bytes.Index(original, []byte(`"Defaults": {`))
+	if defaultsAt < 0 {
+		t.Fatal("Missing default-bearing aggregate")
+	}
+	invalidDefault := append(bytes.Clone(original[:defaultsAt]), bytes.Replace(original[defaultsAt:], []byte(`"default": "abc"`), []byte(`"default": "a"`), 1)...)
+	put(t, p.Input, invalidDefault)
+	defaultFailure := fails(t, p.generate(t, "--validation"), 1, "E_SCHEMA_INVALID")
+	if defaultFailure.Diagnostics[0].Pointer == nil || *defaultFailure.Diagnostics[0].Pointer != "/components/schemas/Defaults/allOf/1/allOf/0/properties/value/default" || !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+		t.Fatal("Borrowed-bound default failure changed old output", defaultFailure)
+	}
 	// Retain exact unrelated Long extrema; generic map decoding would round
 	// JSON numbers before re-encoding and fail at an unrelated source.
 	at := bytes.Index(original, []byte(`"RecordUpper": {`))

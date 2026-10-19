@@ -121,6 +121,8 @@ type Model struct {
 	Constants  []Constant
 	Nested     []Declaration
 	Nullable   bool
+	// Directional preserves an intentionally empty operation DTO as a class.
+	Directional bool `json:",omitempty"`
 	// JSON wire counts belong to the nominal ordinary DTO, not its constructor.
 	PropertyCount *CollectionValidation
 	// ComponentDefault holds the canonical JSON of this component's own root

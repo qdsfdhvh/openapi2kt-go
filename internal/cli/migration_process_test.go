@@ -21,9 +21,9 @@ func TestLegacyGoldenOwnedOutputsNeedNoManifestReset(t *testing.T) {
 		if c.Expect.Kind != "success" {
 			continue
 		}
-		// Dictionary and YAML acceptances added after the language cutover
+		// New schema and YAML acceptances added after the language cutover
 		// cannot serve as evidence of unchanged legacy output compatibility.
-		if c.ID == "dictionary-typed" || c.ID == "dictionary-open" || c.ID == "closed-object" || c.ID == "explicit-yaml" || c.ID == "auto-yaml-extension" {
+		if c.ID == "writeonly-annotation" || c.ID == "dictionary-typed" || c.ID == "dictionary-open" || c.ID == "closed-object" || c.ID == "explicit-yaml" || c.ID == "auto-yaml-extension" {
 			continue
 		}
 		t.Run(c.ID, func(t *testing.T) {

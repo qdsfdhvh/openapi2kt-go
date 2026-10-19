@@ -93,7 +93,7 @@ func emitDeclaration(declaration schema.Declaration, indent int, owner string, h
 				d.ClassName, d.ClassName, strings.ReplaceAll(owner+"."+d.ClassName, ".", " "), naming.Literal(d.ComponentDefault))
 		}
 	case *schema.Model:
-		if len(d.Properties) == 0 && len(d.Constants) == 0 {
+		if len(d.Properties) == 0 && len(d.Constants) == 0 && !d.Directional {
 			raw := schema.TypeRef{Kind: schema.JSON}
 			if d.Nullable {
 				raw = raw.Null()

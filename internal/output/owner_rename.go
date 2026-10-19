@@ -104,7 +104,7 @@ func WriteOwnerRenamesBatch(updates map[string]OwnerRenameUpdate, check bool) (b
 
 func makeOwnerRenamePlan(root string, u OwnerRenameUpdate) (*plan, *diagnostic.Diagnostic) {
 	invalid := func() (*plan, *diagnostic.Diagnostic) {
-		return nil, fail("E_OWNER_RENAME_INVALID", "Map every selected new owner to one distinct existing old owner; targets must be unoccupied.")
+		return nil, fail("E_OWNER_RENAME_INVALID", "Map every selected new owner to one distinct existing old owner; occupied targets must also be selected sources in the same root.")
 	}
 	if len(u.Renames) == 0 || len(u.Generated) != len(u.Renames) {
 		return invalid()
@@ -138,7 +138,7 @@ func makeOwnerRenamePlan(root string, u OwnerRenameUpdate) (*plan, *diagnostic.D
 		if !exists {
 			return invalid()
 		}
-		if _, occupied := s.Owners[next]; occupied && old != next {
+		if _, occupied := s.Owners[next]; occupied && old != next && !sources[next] {
 			return invalid()
 		}
 		a := u.Generated[next]
@@ -175,20 +175,64 @@ func makeOwnerRenamePlan(root string, u OwnerRenameUpdate) (*plan, *diagnostic.D
 		if old == next {
 			continue
 		}
-		// Reject any unowned destination, including identical bytes. Only this known
-		// destination is inspected; similar filenames are neither scanned nor removed.
-		if _, e := readNamedState(root, next, nil); e != nil {
-			return nil, e
+		// An occupied destination is already captured and must be another
+		// selected source. All other dedicated paths remain unowned collisions.
+		if _, targetLocked := s.NameLocks[next]; !targetLocked {
+			if _, e := readNamedState(root, next, nil); e != nil {
+				return nil, e
+			}
 		}
-		(*m.Owners)[next] = (*m.Owners)[old]
-		delete(*m.Owners, old)
 		if locked {
-			(*m.NameLocks)[next] = (*m.NameLocks)[old]
-			delete(*m.NameLocks, old)
 			p.Writes[ownerNameLockFile(next)] = prior
 			p.Removals = append(p.Removals, ownerNameLockFile(old))
 		}
 		p.Changed = true
+	}
+	if p.Changed {
+		// Build from the original inventory in two passes. Incremental edits
+		// could overwrite a source before a later swap/chain reads it.
+		owners := map[string][]string{}
+		locks := map[string]string{}
+		for owner, paths := range *m.Owners {
+			owners[owner] = paths
+		}
+		if m.NameLocks != nil {
+			for owner, hash := range *m.NameLocks {
+				locks[owner] = hash
+			}
+		}
+		for old := range sources {
+			delete(owners, old)
+			delete(locks, old)
+		}
+		for next, old := range u.Renames {
+			owners[next] = (*m.Owners)[old]
+			if m.NameLocks != nil {
+				if hash, locked := (*m.NameLocks)[old]; locked {
+					locks[next] = hash
+				}
+			}
+		}
+		p.Manifest.Owners = &owners
+		if m.NameLocks != nil {
+			p.Manifest.NameLocks = &locks
+		}
+		kept := p.Removals[:0]
+		for _, path := range p.Removals {
+			if _, overwritten := p.Writes[path]; !overwritten {
+				kept = append(kept, path)
+			}
+		}
+		p.Removals = kept
+		// A preserved target payload needs no write. Filter removals first:
+		// an identical incoming payload must still keep that destination alive.
+		for owner, prior := range s.NameLocks {
+			path := ownerNameLockFile(owner)
+			if next, written := p.Writes[path]; written && bytes.Equal(prior, next) {
+				delete(p.Writes, path)
+			}
+		}
+		p.Changed = !reflect.DeepEqual(p.Manifest, *m) || len(p.Writes) != 0 || len(p.Removals) != 0
 	}
 	sort.Strings(p.Removals)
 	return p, nil

@@ -50,7 +50,6 @@ func TestTemporalArrayDefaultsKeepInvalidMembersAndUnsupportedRoles(t *testing.T
 		{`{"type":"array","items":{"type":"string","format":"date","minLength":1},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/items/minLength"},
 		{`{"type":"array","items":{"type":"string","format":"date"},"default":[],"uniqueItems":true}`, "E_SCHEMA_UNSUPPORTED", "/uniqueItems"},
 		{`{"type":"array","items":{"type":"string","x-native-type":"date"},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/items/x-native-type"},
-		{`{"type":"array","items":{"type":"string","format":"byte"},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/items"},
 		{`{"type":"array","items":{"type":"string","format":"date","enum":["2024-02-29"]},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/items/enum"},
 	} {
 		for _, validation := range []bool{false, true} {

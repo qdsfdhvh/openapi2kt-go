@@ -94,6 +94,9 @@ func (a *analyzer) sseSchema(v *document.Value, owner, pointer string) (*SSEEven
 			return err
 		}
 		for _, field := range properties.Members() {
+			if writeOnlySchema(field.Value) {
+				return unsupported(naming.Pointer(naming.Pointer(p+"/properties", field.Name), "writeOnly"))
+			}
 			if field.Name != "event" && field.Name != "data" && field.Name != "id" {
 				return operationUnsupported(naming.Pointer(p+"/properties", field.Name))
 			}

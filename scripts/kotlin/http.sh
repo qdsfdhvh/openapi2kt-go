@@ -5,6 +5,20 @@ mkdir -p build
 workspace="$(mktemp -d "$root/build/http-smoke-XXXXXX")"
 cp -R samples/kotlin-http-smoke "$workspace/project"
 openapi_kt_build_cli "$workspace/openapi-kt"
+"$workspace/openapi-kt" generate --input tests/fixtures/http/raw-response-media.json \
+  --output "$workspace/project/build/generated-limits/raw-response-media" --package-name org.example.rawmedia --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/raw-response-media.json \
+  --output "$workspace/project/build/generated-limits/raw-response-media" --package-name org.example.rawmedia --model-name-suffix Dto --check
+for profile in directional directionaloptions; do
+  options=()
+  if [[ "$profile" == directionaloptions ]]; then
+    options=(--deduplicate-models --hoist-shared-shapes --merge-identical-models --lock-hoisted-names)
+  fi
+  "$workspace/openapi-kt" generate --input tests/fixtures/http/directional-models.json \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "org.example.$profile" --model-name-suffix Dto "${options[@]}"
+  "$workspace/openapi-kt" generate --input tests/fixtures/http/directional-models.json \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "org.example.$profile" --model-name-suffix Dto "${options[@]}" --check
+done
 "$workspace/openapi-kt" generate --input tests/fixtures/http/schema-collection-owned-dtos.json \
   --output "$workspace/project/build/generated-limits/collection-owned-dtos" --package-name org.example.collectiondtos --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/schema-internal-dtos.json \

@@ -18,7 +18,6 @@ func TestPrimitiveMapDefaultsOriginalValuesAndGrammar(t *testing.T) {
 		{`{"type":"object","additionalProperties":{"type":"number","format":"float"},"default":{"a":1e300}}`, "E_SCHEMA_INVALID", "/default/a"},
 		{`{"type":"object","additionalProperties":{"type":"boolean"},"default":{"a":"true"}}`, "E_SCHEMA_INVALID", "/default/a"},
 		{`{"type":"object","additionalProperties":{"type":"string","default":"x"},"default":{}}`, "E_SCHEMA_UNSUPPORTED", "/additionalProperties/default"},
-		{`{"type":"object","additionalProperties":{"type":"string","format":"byte"},"default":{}}`, "E_SCHEMA_UNSUPPORTED", "/additionalProperties"},
 		{`{"type":"object","additionalProperties":{"type":"string"},"default":{},"nullable":"bad"}`, "E_SCHEMA_INVALID", "/nullable"},
 		{`{"type":"object","additionalProperties":{"type":"string"},"required":["x"],"default":{}}`, "E_SCHEMA_INVALID", "/required"},
 	} {

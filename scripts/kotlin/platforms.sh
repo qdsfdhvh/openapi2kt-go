@@ -31,5 +31,11 @@ fi
   --output "$workspace/project/generated" --package-name org.example.platform --model-style "$model_style"
 "$workspace/openapi-kt" generate --input tests/fixtures/catalog.json \
   --output "$workspace/project/generated" --package-name org.example.platform --model-style "$model_style" --check
+"$workspace/openapi-kt" generate --input tests/fixtures/platform/model-increments.json \
+  --output "$workspace/project/generated-increments" --package-name org.example.platformincrements \
+  --model-style "$model_style" --validation --merge-identical-models
+"$workspace/openapi-kt" generate --input tests/fixtures/platform/model-increments.json \
+  --output "$workspace/project/generated-increments" --package-name org.example.platformincrements \
+  --model-style "$model_style" --validation --merge-identical-models --check
 "${GRADLE:-gradle}" --offline --no-daemon --no-build-cache --rerun-tasks \
   -p "$workspace/project" -PplatformTarget="$platform_target" "$task"

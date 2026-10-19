@@ -165,7 +165,9 @@ bash scripts/test.sh all                        # all of the above; intentionall
 bash scripts/test.sh --list
 ```
 
-Hosted CI first runs a Go-only format/vet/test/race gate. Only after all Go jobs pass does it run native Kotlin generation/check and Python tooling checks. The local `unit` command still runs both Go and Python checks; its coverage is unchanged. Hosted generation/check does not replace the `models`/`http` Kotlin compilation/runtime suites.
+Hosted CI first runs the three-host Go format/vet/test/race gate. After it passes, native generation/package checks and separate Ubuntu Kotlin/JVM jobs run. The Kotlin matrix executes fresh `models`, full `http`, and the selected Data/Plain × validation profiles (`directional-models` and `raw-response-media`). It pins JDK 21 and Gradle 9.3.1 and prepares declared Kotlin dependencies explicitly before the existing offline test commands. CI configuration is not evidence that a particular remote run passed; historical generation-only runs do not acquire Kotlin evidence retroactively.
+
+`bash scripts/kotlin/prepare-dependencies.sh` is an explicit online development/CI preparation command. It copies the declared HTTP consumer build into an ignored scratch project and compiles/runs a small serialization/datetime/Ktor MockEngine probe, warming compiler and runtime dependencies. It does not read an OpenAPI document or perform a real HTTP request. `--offline` verifies preparation against an existing cache; missing dependencies fail. Generation and `scripts/test.sh` never invoke preparation automatically. Platform consumers use the separate `bash scripts/kotlin/prepare-platform-dependencies.sh TARGET [--offline]` for their declared target dependencies; `scripts/kotlin/platforms.sh` remains an offline fresh two-input probe. Android SDK installation stays separate. The local `unit` command still runs both Go and Python checks.
 
 Go commands are offline. Kotlin suites additionally need Python 3, Gradle/JDK and cached Kotlin/Ktor dependencies. `GO`, `GOFMT`, `PYTHON` and `GRADLE` select existing tools; model verification also accepts `OPENAPI_KT_BINARY`.
 

@@ -58,6 +58,57 @@ jobs:
         shell: bash
         run: env -u GOROOT go test -race ./...
 
+  kotlin:
+    name: Kotlin/JVM compile and runtime (${{ matrix.suite }})
+    needs: go
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [models, http, profiles]
+    env:
+      GOTOOLCHAIN: local
+      GOPROXY: "off"
+      GOSUMDB: "off"
+      KOTLIN_SUITE: ${{ matrix.suite }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Prepare declared Go modules
+        shell: bash
+        run: env -u GOROOT GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org go mod download
+      - name: Verify offline Go modules
+        shell: bash
+        run: env -u GOROOT go mod verify
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@4c125117fe7c5aed11272ec4213f602f012f89f2 # v5
+        with:
+          gradle-version: "9.3.1"
+          cache-disabled: true
+      - name: Explicit Kotlin dependency preparation
+        shell: bash
+        run: bash scripts/kotlin/prepare-dependencies.sh
+      - name: Offline fresh Kotlin compilation and runtime contracts
+        shell: bash
+        run: |
+          case "$KOTLIN_SUITE" in
+            models|http) bash scripts/test.sh "$KOTLIN_SUITE" ;;
+            profiles)
+              bash scripts/test.sh feature directional-models
+              bash scripts/test.sh feature raw-response-media
+              ;;
+            *) printf 'Unknown Kotlin suite\n' >&2; exit 2 ;;
+          esac
+
   gen_kt:
     name: Kotlin generation/check (${{ matrix.os }})
     needs: go

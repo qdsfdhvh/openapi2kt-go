@@ -5,6 +5,35 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/trees": {
+      "post": {
+        "operationId": "trees",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Trees"}}}},
+        "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Trees"}}}}}
+      }
+    },
+    "/tree-events": {
+      "get": {
+        "operationId": "watchTrees",
+        "responses": {"200": {"content": {"text/event-stream": {"schema": {
+          "properties": {"event": {"type": "string", "const": "trees"}, "data": {"$ref": "#/components/schemas/Trees"}},
+          "required": ["data"]
+        }}}}}
+      }
+    },
+    "/tree-patch": {
+      "patch": {
+        "operationId": "treePatch",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {
+          "properties": {
+            "rows": {"type": ["array", "null"], "items": {"type": "string", "format": "byte"}, "default": [[1]]},
+            "requiredRows": {"type": ["array", "null"], "items": {"type": "string", "format": "byte"}, "default": [[2]]}
+          },
+          "required": ["requiredRows"]
+        }}}},
+        "responses": {"204": {}}
+      }
+    },
     "/holder": {
       "post": {
         "operationId": "holder",
@@ -92,7 +121,26 @@
         "required": [
           "requiredBytes"
         ]
-      }
+      },
+      "Trees": {
+        "properties": {
+          "rows": {"type": "array", "items": {"type": "string", "format": "byte"}, "default": [[-128, 0, 127], []]},
+          "nullableRows": {"type": "array", "items": {"type": ["string", "null"], "format": "binary"}, "default": [[1], null]},
+          "bag": {"type": "object", "additionalProperties": {"type": "string", "format": "byte"}, "default": {"z": [-1], "a": []}},
+          "nested": {"type": "array", "items": {"type": "object", "additionalProperties": {"type": "string", "format": "binary"}}, "default": [{"bytes": [1, 2]}]},
+          "emptyRows": {"type": "array", "items": {"type": "string", "format": "byte"}, "default": []},
+          "nullRows": {"type": ["array", "null"], "items": {"type": "string", "format": "byte"}, "default": null},
+          "requiredRows": {"type": "array", "items": {"type": "string", "format": "byte"}, "default": [[9]]},
+          "payload": {
+            "properties": {"blob": {"type": "string", "format": "byte"}, "namedBlob": {"$ref": "#/components/schemas/ByteValue"}},
+            "required": ["blob", "namedBlob"],
+            "default": {"blob": [-128, 127], "namedBlob": [4]}
+          }
+        },
+        "required": ["requiredRows"]
+      },
+      "ByteValue": {"type": "string", "format": "binary"},
+      "FactoryRows": {"type": "array", "items": {"type": "string", "format": "byte"}, "default": [[1]]}
     }
   }
 }

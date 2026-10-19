@@ -2,6 +2,32 @@
   "openapi": "3.1.0",
   "components": {
     "schemas": {
+      "DefaultsLower": {
+        "properties": {
+          "value": {"type": "string", "minLength": 2, "default": "longer"},
+          "count": {"type": "integer", "minimum": 2, "multipleOf": 2, "default": 2},
+          "requiredValue": {"type": "string", "minLength": 2, "default": "ab"},
+          "nullable": {"type": ["string", "null"], "minLength": 2, "default": "ab"},
+          "absent": {"type": "string", "minLength": 2, "default": "ab"},
+          "long": {"type": "integer", "format": "int64", "minimum": -9223372036854775808, "default": -9223372036854775808},
+          "floatTie": {"type": "number", "format": "float", "exclusiveMinimum": 0.300000001, "default": 0.4}
+        },
+        "required": ["requiredValue"]
+      },
+      "Defaults": {
+        "allOf": [
+          {"$ref": "#/components/schemas/DefaultsLower"},
+          {"type": "object", "allOf": [{"properties": {
+            "value": {"type": "string", "maxLength": 3, "default": "abc"},
+            "count": {"type": "integer", "maximum": 4, "default": 4},
+            "requiredValue": {"type": "string", "maxLength": 3, "default": "abc"},
+            "nullable": {"type": ["string", "null"], "maxLength": 3, "default": null},
+            "absent": {"type": "string", "maxLength": 3},
+            "long": {"type": "integer", "format": "int64", "maximum": -9223372036854775806, "default": -9223372036854775808},
+            "floatTie": {"type": "number", "format": "float", "maximum": 2, "default": 1}
+          }}]}
+        ]
+      },
       "Record": {
         "allOf": [
           {
@@ -182,6 +208,22 @@
     }
   },
   "paths": {
+    "/defaults": {
+      "post": {
+        "tags": ["Bounds"], "operationId": "sendDefaults",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Defaults"}}}},
+        "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Defaults"}}}}}
+      }
+    },
+    "/default-events": {
+      "get": {
+        "tags": ["Bounds"], "operationId": "watchDefaults",
+        "responses": {"200": {"content": {"text/event-stream": {"schema": {
+          "properties": {"event": {"type": "string", "const": "defaults"}, "data": {"$ref": "#/components/schemas/Defaults"}},
+          "required": ["data"]
+        }}}}}
+      }
+    },
     "/records": {
       "post": {
         "tags": [
@@ -266,14 +308,16 @@
                                   "string",
                                   "null"
                                 ],
-                                "maxLength": 3
+                                "maxLength": 3,
+                                "default": "abc"
                               },
                               "requiredNull": {
                                 "type": [
                                   "string",
                                   "null"
                                 ],
-                                "maxLength": 3
+                                "maxLength": 3,
+                                "default": "abc"
                               }
                             }
                           }

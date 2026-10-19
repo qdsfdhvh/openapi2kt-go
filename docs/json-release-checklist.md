@@ -103,7 +103,7 @@ bash scripts/test.sh all
 
 [脚本入口](../scripts/test.sh)的 `all` 实际为 unit（format/vet/Go/race/Python）→ fresh models → fresh HTTP/SSE → 所有列出的 feature routes。生成/Go 使用离线开关，Kotlin 使用缓存依赖与 `--offline`；缺工具或失败不能绕过，保持既有 heap/caps。它不执行跨宿主验证、Android/KMP、打包安装、history 审查或发布授权。
 
-[CI 工作流](../.github/workflows/ci.yml)目前提供三宿主 Go、源码安装/生成/check、原生包打包与隔离安装/file/stdin 检查，以及 tooling/candidate 检查；**不编译或运行 Kotlin**。工作流存在不是已经执行成功的证据。发布门禁另见 [release contract](releases.md)。
+[CI 工作流](../.github/workflows/ci.yml)提供三宿主 Go、源码安装/生成/check、原生包与隔离安装/file/stdin、tooling/candidate 检查，并已配置独立的 Ubuntu Kotlin/JVM models、HTTP/SSE 与选定 profile 编译/运行 job。Kotlin 依赖由显式 preparation 步骤获取，生成与验收保持离线。新增工作流配置和本地验证不等于对应 GitHub run 已通过；历史 generation-only CI 不自动获得 Kotlin 运行证据。发布门禁另见 [release contract](releases.md)。
 
 ## 5. 停止条件
 

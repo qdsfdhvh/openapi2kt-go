@@ -41,14 +41,14 @@ func TestMergeResolvedRootsAndOpaqueOwners(t *testing.T) {
 	if !reflect.DeepEqual(before.Warnings, got.Warnings) {
 		t.Fatal("warning drift")
 	}
-	for name, target := range map[string]string{"ZetaDto": "AlphaDto", "ChildZDto": "ChildADto", "ParentZDto": "ParentADto"} {
+	for name, target := range map[string]string{"ZetaDto": "AlphaDto", "ChildZDto": "ChildADto", "ParentZDto": "ParentADto", "RecursiveZDto": "RecursiveADto"} {
 		if code := source(t, got, "models/"+name); !strings.Contains(code, "public typealias "+name+" = org.example.merge.models."+target) {
 			t.Fatal(name, code)
 		}
 	}
-	for _, name := range []string{"NestedADto", "NestedZDto", "DifferentDto", "RecursiveADto", "RecursiveZDto"} {
+	for _, name := range []string{"NestedADto", "NestedZDto", "DifferentDto", "RecursiveADto"} {
 		if code := source(t, got, "models/"+name); !strings.Contains(code, "public data class "+name) {
-			t.Fatal("protected/distinct/cyclic", name, code)
+			t.Fatal("protected/distinct/canonical", name, code)
 		}
 	}
 	if code := source(t, got, "models/ParentADto"); !strings.Contains(code, "org.example.merge.models.ChildADto") {
