@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -10,6 +11,7 @@ import (
 // checked by both the core corpus and native CLI corpus.
 func CurrentUUIDSnapshot(t testing.TB, c Case, path string, legacy []byte) []byte {
 	t.Helper()
+	path = filepath.ToSlash(path)
 	property := ""
 	if c.ID == "scalars-30" && strings.HasSuffix(path, "/Record.kt") {
 		property = "uuid"
