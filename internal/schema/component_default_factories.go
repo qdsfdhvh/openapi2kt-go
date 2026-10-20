@@ -47,11 +47,11 @@ func (a *analyzer) componentDefaultShape(c *component) bool {
 	if has(c.Schema, "$ref") {
 		return a.referenceWrapperDefaultCandidate(c)
 	}
-	// Null uses the same direct scalar/enum/collection source roles as a
-	// non-null annotation. Keep nullable composition and raw carriers separate;
-	// their null factories do not acquire a role from this dispatch.
+	// Null uses the same direct source roles as a non-null annotation, including
+	// ordinary allOf constructors validated by the shared object walk below.
+	// Other nullable compositions keep their separate roles.
 	if nullable && get(c.Schema, "default").Kind() == document.Null &&
-		(has(c.Schema, "oneOf") || has(c.Schema, "anyOf") || has(c.Schema, "allOf") || rawJSONComponentRoot(c.Schema)) {
+		(has(c.Schema, "oneOf") || has(c.Schema, "anyOf")) {
 		return false
 	}
 	if nullable && hasObjectCounts(c.Schema) {
@@ -295,43 +295,11 @@ func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
 	return isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind)
 }
 
-// collectionComponentDefaultCandidate admits a List/typed Map root when the
-// nested collection default walk accepts the whole tree. Nested containers,
-// allOf-wrapped containers, union variants, reference elements, counts and
-// uniqueItems keep exactly the boundaries that walk already enforces.
+// collectionComponentDefaultCandidate admits finite inline List/typed Map
+// trees through the shared nested default walk. That walk validates every
+// source node, including for empty/null annotations, and retains its leaf,
+// child-default, composition, reference and resource boundaries.
 func (a *analyzer) collectionComponentDefaultCandidate(c *component) bool {
-	// A component root is a *single* container layer over a leaf element. Nested
-	// containers, allOf-wrapped containers and union variants keep exactly the
-	// exclusions the field role already enforces. Null annotations validate the
-	// whole source tree too; they never grant a new element/default role.
-	kind, _, err := schemaType(c.Schema, c.Pointer)
-	if err != nil {
-		return false
-	}
-	edge := ""
-	switch {
-	case kind == "array":
-		edge = "items"
-	case dictionarySchema(c.Schema):
-		edge = "additionalProperties"
-	default:
-		return false
-	}
-	if has(c.Schema, "oneOf") || has(c.Schema, "anyOf") || has(c.Schema, "allOf") {
-		return false
-	}
-	element := get(c.Schema, edge)
-	if element == nil {
-		return false
-	}
-	elementKind, elementNullable, err := schemaType(element, naming.Pointer(c.Pointer, edge))
-	if err != nil || elementNullable {
-		return false
-	}
-	if elementKind == "array" || dictionarySchema(element) ||
-		has(element, "oneOf") || has(element, "anyOf") || has(element, "allOf") || has(element, "$ref") {
-		return false
-	}
 	probe := *a
 	probe.warnings = nil
 	probe.objectDefaultWork = nil
@@ -535,16 +503,8 @@ func (a *analyzer) referenceWrapperDefaultCandidate(c *component) bool {
 		has(c.Schema, "oneOf") || has(c.Schema, "anyOf") || has(c.Schema, "const") {
 		return false
 	}
-	reference, ok := get(c.Schema, "$ref").Text()
-	if !ok || reference == "" {
-		return false
-	}
-	targetPointer, targetSchema, ok := a.componentSchemaAtReference(reference)
-	if !ok || targetSchema == nil || targetSchema == c.Schema {
-		return false
-	}
-	// A wrapper of a wrapper is a chained alias and stays out of this contract.
-	if has(targetSchema, "$ref") {
+	targetPointer, targetSchema, ok := a.referenceWrapperDefaultTarget(c)
+	if !ok {
 		return false
 	}
 	targetKind, _, kindErr := schemaType(targetSchema, targetPointer)
@@ -557,6 +517,38 @@ func (a *analyzer) referenceWrapperDefaultCandidate(c *component) bool {
 		return false
 	}
 	return a.componentDefaultShape(&component{Wire: targetPointer, Name: targetPointer, Pointer: targetPointer, Schema: targetSchema})
+}
+
+// referenceWrapperDefaultTarget follows only annotation-free, pure component
+// aliases. Both source admission and value validation use this same terminal;
+// no intermediate default or nullable override can disappear during traversal.
+func (a *analyzer) referenceWrapperDefaultTarget(c *component) (string, *document.Value, bool) {
+	if c == nil {
+		return "", nil, false
+	}
+	reference, ok := get(c.Schema, "$ref").Text()
+	if !ok {
+		return "", nil, false
+	}
+	seen := map[*document.Value]bool{c.Schema: true}
+	for steps := 1; steps <= MaxSchemaDepth; steps++ {
+		pointer, target, ok := a.componentSchemaAtReference(reference)
+		if !ok || seen[target] || has(target, "default") {
+			return "", nil, false
+		}
+		seen[target] = true
+		if !has(target, "$ref") {
+			return pointer, target, true
+		}
+		if has(target, "nullable") || checkKeys(target, []string{"$ref"}, pointer) != nil {
+			return "", nil, false
+		}
+		reference, ok = get(target, "$ref").Text()
+		if !ok {
+			return "", nil, false
+		}
+	}
+	return "", nil, false
 }
 
 // componentSchemaAtReference returns the original schema node a local component
@@ -622,9 +614,8 @@ func (a *analyzer) referenceWrapperDefaultEncoded(c *component, validation *anal
 	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
 		return "", err
 	}
-	reference, _ := get(c.Schema, "$ref").Text()
-	targetPointer, targetSchema, ok := a.componentSchemaAtReference(reference)
-	if !ok || targetSchema == nil {
+	targetPointer, targetSchema, ok := a.referenceWrapperDefaultTarget(c)
+	if !ok {
 		return "", unsupported(at)
 	}
 	view, err := a.wrapperValidationView(targetSchema, value, at)
@@ -634,6 +625,11 @@ func (a *analyzer) referenceWrapperDefaultEncoded(c *component, validation *anal
 	shadow := &component{Wire: targetPointer, Name: targetPointer, Pointer: c.Pointer, Schema: view}
 	validation.objectDefaultSchemas[view] = true
 	validation.componentDefaultSchemas[view] = true
+	// Raw carrier targets retain their own value/null grammar. The ordinary
+	// object walk cannot validate JsonElement/JsonObject alias projections.
+	if rawJSONComponentRoot(view) {
+		return validation.rawJSONComponentEncoded(shadow, at, value)
+	}
 	// A scalar, enum, temporal or bytes target owns its own leaf grammar; the
 	// nested collection walk would misclassify the value for those shapes.
 	if validation.scalarLeafTarget(view) {
@@ -720,8 +716,11 @@ func (a *analyzer) rawJSONComponentEncoded(c *component, at string, value *docum
 	// shared type plan already emitted it once for this node.
 	open := dictionarySchema(c.Schema)
 	if value.Kind() == document.Null {
-		// These roots are not nullable roles in this contract; a null annotation
-		// needs the separate nullable-root contract.
+		// Only the component's explicit nullable source authorizes Kotlin null;
+		// optional consuming properties and raw JSON's JsonNull value do not.
+		if _, nullable, err := schemaType(c.Schema, c.Pointer); err == nil && nullable {
+			return "null", nil
+		}
 		return "", unsupported(at)
 	}
 	if open && value.Kind() != document.Object {

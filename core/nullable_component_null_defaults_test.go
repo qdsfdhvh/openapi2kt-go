@@ -72,12 +72,7 @@ func TestNullableComponentNullFactories(t *testing.T) {
 func TestNullableComponentNullFactorySchemaIsNotSkipped(t *testing.T) {
 	for _, checked := range []bool{false, true} {
 		for _, body := range []string{
-			`{"N":{"type":"array","nullable":true,"items":{"type":"array","items":{"type":"string"}},"default":null}}`,
-			`{"N":{"type":"array","nullable":true,"items":{"type":"string","nullable":true},"default":null}}`,
 			`{"T":{"type":"string"},"N":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/T"},"default":null}}`,
-			`{"N":{"allOf":[{"properties":{"a":{"type":"string"}}}],"nullable":true,"default":null}}`,
-			`{"N":{"type":"object","nullable":true,"additionalProperties":true,"default":null}}`,
-			`{"N":{"type":"object","nullable":true,"default":null}}`,
 			`{"N":{"type":"string","nullable":true,"x-native-type":"org.example.Money","default":null}}`,
 			`{"N":{"type":"string","nullable":true,"x-kotlin-value-class":true,"default":null}}`,
 			`{"N":{"type":"string","nullable":true,"const":"a","default":null}}`,

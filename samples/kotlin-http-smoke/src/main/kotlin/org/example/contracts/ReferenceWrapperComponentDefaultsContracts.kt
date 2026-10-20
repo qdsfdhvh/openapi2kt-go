@@ -3,8 +3,11 @@ package org.example.contracts
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.serializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.encodeToJsonElement
 import org.example.refwrapper.models.HolderDto
 import org.example.refwrapper.models.WrappedBlobDto
@@ -18,6 +21,16 @@ import org.example.refwrapper.models.`WrappedRowsDto default`
 import org.example.refwrapper.models.`WrappedModeDto default`
 import org.example.refwrapper.models.`WrappedDayDto default`
 import org.example.refwrapper.models.`WrappedBlobDto default`
+
+import org.example.refwrapper.models.RequiredHolderDto
+import org.example.refwrapper.models.WrappedNestedDto
+import org.example.refwrapper.models.WrappedRawDto
+import org.example.refwrapper.models.WrappedNilRawDto
+import org.example.refwrapper.models.WrappedNilObjectDto
+import org.example.refwrapper.models.`WrappedNestedDto default`
+import org.example.refwrapper.models.`WrappedRawDto default`
+import org.example.refwrapper.models.`WrappedNilRawDto default`
+import org.example.refwrapper.models.`WrappedNilObjectDto default`
 
 // A `$ref` wrapper is a canonical alias, so the alias owns the factory while a
 // referencing field keeps its neutral presence. Both halves are asserted.
@@ -37,6 +50,8 @@ suspend fun referenceWrapperComponentDefaultsContracts() {
 
     for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }
+
+        chainedWrapperDefaults(codec)
 
         // A field that references a defaulted wrapper must NOT inherit the value.
         val holder = codec.decodeFromString<HolderDto>("{}")
@@ -71,4 +86,47 @@ suspend fun referenceWrapperComponentDefaultsContracts() {
 
         println("ReferenceWrapperComponentDefaults Json defaults=$defaults nulls=$nulls alias-factory-no-inheritance passed")
     }
+}
+
+private fun chainedWrapperDefaults(codec: Json) {
+    val nested: WrappedNestedDto = `WrappedNestedDto default`()
+    check(nested == listOf(mapOf("a" to 2, "b" to null), emptyMap()))
+    val again = `WrappedNestedDto default`()
+    check(nested !== again && nested[0] !== again[0])
+    val blob = `WrappedBlobDto default`()
+    blob[0] = 0
+    check(`WrappedBlobDto default`()[0] == (-128).toByte())
+    check(`WrappedObjectDto default`() !== `WrappedObjectDto default`())
+
+    val raw: WrappedRawDto = `WrappedRawDto default`()
+    check(raw == codec.parseToJsonElement("""{"${'$'}ref":"data","nil":null}"""))
+    check(raw !== `WrappedRawDto default`())
+    val nilRaw: WrappedNilRawDto = `WrappedNilRawDto default`()
+    val nilObject: WrappedNilObjectDto = `WrappedNilObjectDto default`()
+    check(nilRaw == null && nilObject == null)
+    check(serializer<WrappedNilRawDto>().descriptor.isNullable)
+    check(serializer<WrappedNilObjectDto>().descriptor.isNullable)
+    check(codec.decodeFromString<WrappedNilRawDto>("null") == null)
+    check(codec.decodeFromString<WrappedNilObjectDto>("null") == null)
+    check(codec.decodeFromString<WrappedRawDto>("null") === JsonNull)
+    check(codec.encodeToJsonElement(nilRaw) === JsonNull)
+    check(codec.decodeFromString<WrappedNestedDto>(codec.encodeToString(nested)) == nested)
+    check(codec.decodeFromString<WrappedRawDto>(codec.encodeToString(raw)) == raw)
+
+    val missing = codec.decodeFromString<HolderDto>("{}")
+    check(missing.nested == null && missing.raw == null && missing.nilRaw == null && missing.nilObject == null)
+    val explicit = codec.decodeFromString<HolderDto>("""{"nested":null,"raw":null,"nilRaw":null,"nilObject":null}""")
+    check(explicit.nested == null && explicit.raw == null && explicit.nilRaw == null && explicit.nilObject == null)
+    val supplied = codec.decodeFromString<HolderDto>("""{"nested":[{"x":3}],"raw":"given","nilRaw":{"kept":null},"nilObject":{"z":"given"}}""")
+    check(supplied.nested == listOf(mapOf("x" to 3)))
+    check(supplied.raw == JsonPrimitive("given"))
+    check(supplied.nilRaw?.get("kept") === JsonNull && supplied.nilObject?.z == "given")
+    val adopted = HolderDto(nested = nested, raw = raw)
+    val wire = codec.encodeToJsonElement(HolderDto.serializer(), adopted) as JsonObject
+    check(wire["raw"] == raw && wire["nested"] == codec.parseToJsonElement("""[{"a":2,"b":null},{}]"""))
+    check(runCatching { codec.decodeFromString<RequiredHolderDto>("{}") }.isFailure)
+    check(runCatching { codec.decodeFromString<RequiredHolderDto>("""{"object":null,"raw":1,"nilRaw":null}""") }.isFailure)
+    val required = RequiredHolderDto(`object` = `WrappedObjectDto default`(), raw = raw, nilRaw = nilRaw)
+    val decoded = codec.decodeFromString<RequiredHolderDto>(codec.encodeToString(required))
+    check(decoded.`object`.z == "1" && decoded.raw == raw && decoded.nilRaw == null)
 }

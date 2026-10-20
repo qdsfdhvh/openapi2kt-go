@@ -1,5 +1,7 @@
 # 直接嵌套 temporal 集合字段默认值
 
+Component root annotations use the separate [finite nested component factory contract](nested-component-defaults.md); these factories do not become field initializers.
+
 [直接嵌套 native enum 字段默认值](nested-native-enum-collection-defaults.md)另有 ordinary outer-own 角色，terminal 为既有 Int/Long/Float/Double/Boolean enum，保 native scalar wire、原词表与 checked membership/bounds；不改变本页 temporal grammar、lexeme 身份或 bounds/uniqueness 排除。
 
 [Referenced temporal collection 字段默认值](referenced-temporal-collection-field-defaults.md)另有独立 ordinary direct `$ref` 字段自身注解角色，经原已接受的 named/internal finite List/typed Map 路径绑定 actual LocalDate/Instant；本页 direct-inline 语法与叶引用排除不变。

@@ -44,10 +44,33 @@ func TestNullableComponentDefaultsNativeParity(t *testing.T) {
 					t.Fatal("nullable enum null factory missing", nullEnum)
 				}
 
+				nullAllOf := string(read(t, p.Output+"/org/example/catalog/models/NilAllOfDto.kt"))
+				if !strings.Contains(nullAllOf, "public fun default(): NilAllOfDto? = null") || strings.Contains(nullAllOf, "openapi-kt component default") {
+					t.Fatal("allOf null factory missing or gained a helper", nullAllOf)
+				}
+
 				before := snapshot(t, p.Output)
+				result(t, invoke(t, p.Root, args...), 0)
 				result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
 				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
-					t.Fatal("readonly check changed bytes or mtimes")
+					t.Fatal("no-op generation or readonly check changed bytes or mtimes")
+				}
+				for _, tc := range []struct{ original, invalid, pointer string }{
+					{`"default": [null, "a"]`, `"default": [null, 1]`, "/components/schemas/LeafNames/default/1"},
+					{`"default": [[1], []]`, `"default": [[1.0], []]`, "/components/schemas/TreeLists/default/0/0"},
+					{`"default": {"z": {"z": "last", "a": "first"}`, `"default": {"z": {"z": false, "a": "first"}`, "/components/schemas/TreeWrapped/default/z/z"},
+				} {
+					badLeaf := bytes.Replace(document, []byte(tc.original), []byte(tc.invalid), 1)
+					if bytes.Equal(badLeaf, document) {
+						t.Fatal("collection annotation missing", tc.original)
+					}
+					put(t, p.Input, badLeaf)
+					for _, command := range [][]string{args, append(append([]string{}, args...), "--check")} {
+						failure := fails(t, invoke(t, p.Root, command...), 1, "E_SCHEMA_INVALID")
+						if failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != tc.pointer || !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+							t.Fatal("invalid collection annotation did not preserve output", failure)
+						}
+					}
 				}
 
 				// A bad annotation reports inside the component and leaves the
@@ -74,6 +97,19 @@ func TestNullableComponentDefaultsNativeParity(t *testing.T) {
 					failure := fails(t, invoke(t, p.Root, command...), 1, "E_SCHEMA_INVALID")
 					if failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != "/components/schemas/NilName/default" || !reflect.DeepEqual(before, snapshot(t, p.Output)) {
 						t.Fatal("nonnullable null factory did not preserve output", failure)
+					}
+				}
+				badAllOf := bytes.Replace(document, []byte(`"nullable": true,
+        "default": null`), []byte(`"nullable": false,
+        "default": null`), 1)
+				if bytes.Equal(badAllOf, document) {
+					t.Fatal("allOf null-factory fixture missing")
+				}
+				put(t, p.Input, badAllOf)
+				for _, command := range [][]string{args, append(append([]string{}, args...), "--check")} {
+					failure := fails(t, invoke(t, p.Root, command...), 1, "E_SCHEMA_INVALID")
+					if failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != "/components/schemas/NilAllOf/default" || !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("nonnullable allOf null default did not preserve output", failure)
 					}
 				}
 			})

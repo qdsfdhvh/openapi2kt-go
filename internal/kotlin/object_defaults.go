@@ -86,7 +86,9 @@ func emitObjectDefaultHelpers(declaration schema.Declaration, owner string, out 
 	visit = func(d schema.Declaration, scope string) {
 		switch d := d.(type) {
 		case *schema.Model:
-			if d.ComponentDefault != "" && d.ComponentDefault != "null" {
+			// Empty models project to raw aliases whose top-level factory decodes
+			// through the alias. Ordinary model null factories return the literal.
+			if d.ComponentDefault != "" && (d.ComponentDefault != "null" || modelUsesRawAlias(d)) {
 				name := componentDefaultHelperName(scope, d.ClassName)
 				if !seen[name] {
 					seen[name] = true

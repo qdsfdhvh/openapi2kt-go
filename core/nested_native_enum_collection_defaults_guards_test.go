@@ -164,14 +164,11 @@ func TestNestedNativeEnumCollectionDefaultsExcludedRolesAndNoDrop(t *testing.T) 
 	field := nestedDefaultChain(2, `{"type":"integer","enum":[1,2]}`, `[[1]]`)
 	pure := strings.Replace(field, `,"default":[[1]]`, "", 1)
 	for name, input := range map[string]string{
-		"root":         `{"Root":` + field + `}`,
 		"child":        `{"Holder":{"properties":{"value":{"type":"array","items":` + field + `}}}}`,
 		"mapChild":     `{"Holder":{"properties":{"value":{"additionalProperties":` + field + `}}}}`,
 		"wrapper":      `{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,
 		"namedLeaf":    `{"Code":{"type":"integer","enum":[1,2]},"Holder":{"properties":{"value":` + nestedDefaultChain(2, `{"$ref":"#/components/schemas/Code"}`, `[]`) + `}}}`,
 		"internalLeaf": `{"Catalog":{"properties":{"code":{"type":"integer","enum":[1,2]}}},"Holder":{"properties":{"value":` + nestedDefaultChain(2, `{"$ref":"#/components/schemas/Catalog/properties/code"}`, `[]`) + `}}}`,
-		"target":       `{"Tree":` + field + `,"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Tree"}}}}`,
-		"chain":        `{"Tree":` + pure + `,"Bridge":{"$ref":"#/components/schemas/Tree","default":[[1]]},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Bridge"}}}}`,
 		"refWrapper":   `{"Tree":` + pure + `,"Holder":{"properties":{"value":{"allOf":[{"$ref":"#/components/schemas/Tree"}],"default":[[1]]}}}}`,
 		"union":        `{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"value":` + field + `}},{"properties":{"tag":{"const":"two"}}}]}}`,
 		"hierarchy":    `{"Base":{"discriminator":{"propertyName":"kind"},"properties":{"kind":{"type":"string"},"value":` + field + `},"required":["kind"]},"Child":{"allOf":[{"$ref":"#/components/schemas/Base"},{"properties":{"x":{"type":"string"}}}]}}`,

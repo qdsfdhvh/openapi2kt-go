@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.serializer
 import org.example.nulldefaults.models.HolderDto
+import org.example.nulldefaults.models.NilAllOfDto
 import org.example.nulldefaults.models.NilBagsDto
 import org.example.nulldefaults.models.NilBinaryDto
 import org.example.nulldefaults.models.NilByteRowsDto
@@ -54,6 +55,23 @@ internal fun componentNullDefaultsContracts(codec: Json) {
     componentNullRoundTrip<NilByteRowsDto>(codec, `NilByteRowsDto default`())
     componentNullRoundTrip<NilModeDto?>(codec, `NilModeDto default`())
     componentNullRoundTrip<NilObjectDto?>(codec, NilObjectDto.default())
+    componentNullRoundTrip<NilAllOfDto?>(codec, NilAllOfDto.default())
+
+    // Null factories preserve the required constructor, own field defaults and
+    // non-null serializer of the ordinary allOf model.
+    check(!NilAllOfDto.serializer().descriptor.isNullable)
+    val allOf = NilAllOfDto(a = "given")
+    check(allOf.a == "given" && allOf.b == 7)
+    val allOfWire = codec.encodeToJsonElement(NilAllOfDto.serializer(), allOf) as JsonObject
+    check(allOfWire["a"] == JsonPrimitive("given"))
+    check(allOfWire.containsKey("b") == codec.configuration.encodeDefaults)
+    check(codec.decodeFromJsonElement(NilAllOfDto.serializer(), allOfWire).a == "given")
+    check(runCatching { codec.decodeFromString(NilAllOfDto.serializer(), "{}") }.isFailure)
+    check(runCatching { codec.decodeFromJsonElement(NilAllOfDto.serializer(), JsonNull) }.isFailure)
+    val allOfHolder = HolderDto(nilAllOf = allOf)
+    val allOfHolderWire = codec.encodeToJsonElement(HolderDto.serializer(), allOfHolder) as JsonObject
+    check(allOfHolderWire["nilAllOf"] == allOfWire)
+    check(codec.decodeFromJsonElement(HolderDto.serializer(), allOfHolderWire).nilAllOf?.a == "given")
 
     // The physical enum classifier, vocabulary and open unknown codec remain.
     check(!serializer<NilModeDto>().descriptor.isNullable)
@@ -66,12 +84,14 @@ internal fun componentNullDefaultsContracts(codec: Json) {
 
     val holder = HolderDto(nilName = `NilNameDto default`(), nilMode = `NilModeDto default`(), nilBytes = `NilBytesDto default`(), nilNames = `NilNamesDto default`())
     val wire = codec.encodeToJsonElement(HolderDto.serializer(), holder) as JsonObject
-    for (key in listOf("nilName", "nilMode", "nilBytes", "nilNames")) {
+    for (key in listOf("nilName", "nilMode", "nilBytes", "nilNames", "nilAllOf")) {
         check(wire.containsKey(key) == (codec.configuration.encodeDefaults && codec.configuration.explicitNulls))
         if (wire.containsKey(key)) check(wire[key] === JsonNull)
     }
     val missing = codec.decodeFromString(HolderDto.serializer(), "{}")
     check(missing.nilName == null && missing.nilMode == null && missing.nilBytes == null && missing.nilNames == null)
+    check(missing.nilAllOf == null)
+    check(codec.decodeFromString(HolderDto.serializer(), """{"nilAllOf":null}""").nilAllOf == null)
     val supplied = codec.decodeFromString(HolderDto.serializer(), """{"nilName":"given","nilMode":"future","nilBytes":[-128,127],"nilNames":["one"]}""")
     check(supplied.nilName == "given" && supplied.nilMode is NilModeDto.Unrecognized)
     check(supplied.nilBytes.contentEquals(byteArrayOf(-128,127)) && supplied.nilNames == listOf("one"))

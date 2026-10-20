@@ -1,5 +1,7 @@
 # 直接嵌套 native enum 集合字段默认值
 
+Component root annotations use the separate [finite nested component factory contract](nested-component-defaults.md); these factories do not become field initializers.
+
 普通 DTO 字段可以在原已接受的 finite direct inline List / typed `Map<String, T>` 树外层声明自己的 `default`，terminal 叶仅为既有 integer/number/Boolean enum，映射为 Int、Long、Float、Double 或 Boolean。List/List、List/Map、Map/List、Map/Map 和更长有限混合路径使用同一规则。default 不授权原本不支持的 schema，也不创建 enum wrapper 或新 codec。
 
 ```json

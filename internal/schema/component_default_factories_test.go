@@ -193,7 +193,6 @@ func TestComponentDefaultFactoryCollectionAuthority(t *testing.T) {
 // Collection roles the field walk already excludes stay excluded at the root.
 func TestComponentDefaultFactoryCollectionExclusionAuthority(t *testing.T) {
 	for _, tc := range []struct{ name, schemas string }{
-		{"nested container", `{"S":{"type":"array","items":{"type":"array","items":{"type":"string"}},"default":[["a"]]}}`},
 		{"allOf wrapped", `{"S":{"allOf":[{"type":"array","items":{"type":"string"}}],"default":["a"]}}`},
 		{"ref element", `{"T":{"type":"string"},"S":{"type":"array","items":{"$ref":"#/components/schemas/T"},"default":["a"]}}`},
 		{"bad element", `{"S":{"type":"array","items":{"type":"integer"},"default":["a"]}}`},

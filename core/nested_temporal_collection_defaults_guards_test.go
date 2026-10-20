@@ -34,7 +34,6 @@ func TestNestedTemporalCollectionDefaultsKeepExcludedRolesAndNoDrop(t *testing.T
 	}
 	field := `{"type":"array","items":{"type":"array","items":{"type":"string","format":"date"}},"default":[]}`
 	for _, input := range []string{
-		`{"Root":` + field + `}`,
 		`{"Root":{"type":"array","items":` + field + `}}`,
 		`{"Root":{"additionalProperties":` + field + `}}`,
 		`{"Day":{"type":"string","format":"date"},"Holder":{"properties":{"value":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Day"}},"default":[]}}}}`,
