@@ -14,7 +14,18 @@ bash scripts/kotlin/platforms.sh android
 bash scripts/kotlin/platforms.sh jvm plain_class
 ```
 
-Each invocation builds the local CLI, generates into a fresh ignored workspace, verifies `--check`, and runs Gradle offline without the build cache. The input is `tests/fixtures/catalog.json`; dependencies are Kotlin/serialization plugin 2.4.10 and kotlinx.serialization 1.11.0. JVM bytecode targets Java 17. Prepare dependencies explicitly before invoking the offline check; missing caches are failures, not skipped tests. `GRADLE_USER_HOME` can select an isolated cache. The JS probe uses already installed Node and Yarn executables, disables their downloads, and passes `--offline --ignore-scripts` to dependency installation. `YARN_CACHE_FOLDER` can select a prepared cache; missing npm packages fail before Node execution.
+Each invocation builds the local CLI, generates into a fresh ignored workspace, verifies `--check`, and runs Gradle offline without the build cache. It retains the original `tests/fixtures/catalog.json` with default options and separately generates [model-increments.json](../../tests/fixtures/platform/model-increments.json) with validation and model merging enabled. The second input checks allOf winning defaults, signed-byte default trees/factories and owned self-recursive aliases. Both outputs compile as common sources. Dependencies are Kotlin/serialization plugin 2.4.10 and kotlinx.serialization 1.11.0. JVM bytecode targets Java 17. Prepare dependencies explicitly before invoking the offline check; missing caches are failures, not skipped tests. `GRADLE_USER_HOME` can select an isolated cache. The JS probe uses already installed Node and Yarn executables, disables their downloads, and passes `--offline --ignore-scripts` to dependency installation. `YARN_CACHE_FOLDER` can select a prepared cache; missing npm packages fail before Node execution.
+
+Explicit preparation is separate from verification:
+
+```bash
+bash scripts/kotlin/prepare-platform-dependencies.sh js
+bash scripts/kotlin/prepare-platform-dependencies.sh native
+# Existing-cache preparation can itself be checked offline.
+bash scripts/kotlin/prepare-platform-dependencies.sh jvm --offline
+```
+
+The preparation command accepts the same target names, compiles a small synthetic serialization probe and can acquire declared Gradle/npm dependencies. It consumes no OpenAPI document. Online JS preparation retains `--ignore-scripts` and uses installed Node/Yarn; the actual platform runner always retains offline package installation. Android SDK installation is separate and automatic SDK download is disabled. An incomplete cache or inaccessible repository is a failed prerequisite, with no runtime acceptance implied. Verification never invokes preparation automatically.
 
 | Target | Evidence when the command passes |
 |---|---|
@@ -24,6 +35,6 @@ Each invocation builds the local CLI, generates into a fresh ignored workspace, 
 | `native` | Actual macOS ARM64 executable and the same four JSON cases; requires that host and the matching Kotlin/Native toolchain |
 | `android` | Android library compilation/assembly with AGP 8.13.2, compile SDK 36 and min SDK 23; requires the Android SDK. No device/runtime assertion is implied |
 
-The fixed Kotlin 2.4.10 / serialization 1.11.0 / Gradle 9.3.1 combination has passed this catalog probe in both `data_class` and `plain_class`: JVM on JDK 21, JS/Node and macOS ARM64 Native execution, common metadata compilation, and Android AAR assembly with AGP 8.13.2 / SDK 36. These results establish this consumer profile only; Android device execution, other Native hosts, full platform feature matrices and minimum-version combinations remain unverified.
+The earlier catalog-only probe passed the fixed Kotlin 2.4.10 / serialization 1.11.0 / Gradle 9.3.1 combination in both `data_class` and `plain_class`: JVM on JDK 21, JS/Node and macOS ARM64 Native execution, common metadata compilation, and Android AAR assembly with AGP 8.13.2 / SDK 36. These results establish this consumer profile only; Android device execution, other Native hosts, full platform feature matrices and minimum-version combinations remain unverified.
 
-The runtime assertions exercise required scalar fields, nullable collection elements, recursive nullable model references, nested objects and raw JSON retention. They do not establish HTTP engines, SSE cancellation, all supported model roles, Android device behavior or other Native targets. Android runtime acceptance requires a separately executed real-device consumer. Full JVM feature acceptance remains `bash scripts/test.sh all`.
+The expanded two-input probe requires its own execution evidence and does not inherit those historical results. The runtime assertions exercise required scalar fields, nullable collection elements, recursive nullable model references, nested objects and raw JSON retention, plus winning allOf defaults/retained validation, byte-tree wire/fresh instances/factories, and canonical self-alias assignment/serde/descriptors. They do not establish HTTP engines, SSE cancellation, directional operation DTOs, all supported model roles, Android device behavior or other Native targets. Android runtime acceptance requires a separately executed real-device consumer. Full JVM feature acceptance remains `bash scripts/test.sh all`.

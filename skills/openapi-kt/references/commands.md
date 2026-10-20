@@ -156,8 +156,12 @@ neither `--adopt-legacy`, `--adopt-locked-owner`, `--move-output-from`, `--recon
 
 With `--spec NEW`, provide exactly one mapping targeting that current spec.
 Without `--spec`, map every current configured spec; use `events:events` for an
-unchanged owner. Identity is a no-op after full validation. Unknown old owners,
-occupied new owners and swap/chain mappings fail closed. The command reads only
+unchanged owner. An occupied new owner must also be an old source in the
+complete selected mapping for that same root; this permits simultaneous swaps
+and chains while retaining every source's exact Kotlin/lock identity. Keep each
+new spec's input/options consistent with its mapped old owner. Identity and a
+permutation producing identical memberships/raw payloads are validated no-ops.
+Unknown sources and unselected occupied targets fail closed. The command reads only
 selected config roots, with no former-root discovery, root move, version1
 adoption or direct version3-to-named-version4 transition. Partial selection
 leaves unselected inputs and other roots unread.
@@ -188,27 +192,31 @@ unlocked mode and locked profile/allocations/occurrences. Rename reads and
 validates the manifest and all owned state/files in each selected root,
 including peers absent from current config; missing, edited or malformed
 metadata or Kotlin is rejected. Unowned new metadata destinations collide even
-if identical. All peer owners, metadata and shared memberships remain retained;
-full rename also performs no reconciliation.
+if identical. Unselected peer owners and their metadata remain intact; shared
+memberships follow their explicitly mapped owner names. Full rename performs
+no reconciliation.
 
 Preflight and apply under the complete sorted cooperative root lock set compare
 exact manifest and every owned lock's bytes. Stale bytes are rejected without
 automatic regeneration/retry. Apply stages metadata only, with each manifest
 last; a locked owner's exact old payload moves to the filename derived from
-SHA256 of `NEW`. Kotlin is never written or removed. Normal failures roll back
+SHA256 of `NEW`. Overwritten destinations are staged once, and old filenames
+are removed only when they have no incoming locked owner. Kotlin is never written or removed. Normal failures roll back
 metadata across roots; failed rollback retains journals/backups and returns
 `E_RECOVERY_REQUIRED`. Busy apply returns `E_OUTPUT_BUSY`; recovery evidence
 refuses read/check/validate/apply. No crash atomicity or automatic recover is
 provided.
 
 Rename check/validate perform read-only preflight without locks, directories or
-stages: check exits 3 for a safe change, 0 for a validated identity; safe
+stages: check exits 3 for a safe change, 0 for a validated no-op; safe
 validation exits 0. Read-only commands do not exclude busy writers. Core profile
 errors remain exit1; parser/flag errors are exit2; storage/rename refusals are
 exit4 (`E_OWNER_RENAME_INVALID`, `E_OWNER_RENAME_CHANGED`,
 `E_OWNER_RENAME_STALE` or existing safety diagnostics). Preserve state on
 refusal. After success, drop the one-shot old mapping and keep the new name for
-ordinary generation; replaying the absent old owner fails.
+ordinary generation. An old mapping is a new request against current ownership,
+so missing owners or mismatched current candidates fail rather than replaying
+the previous transaction.
 
 ## Move an output root
 

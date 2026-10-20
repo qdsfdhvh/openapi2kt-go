@@ -20,7 +20,7 @@ class CIWorkflowTests(unittest.TestCase):
         self.assertEqual(minimum.group(1), '1.27.2')
         ci = (ROOT / '.github/workflows/ci.yml').read_text()
         release = (ROOT / '.github/workflows/release.yml').read_text()
-        for body in (job_body(ci, 'go'), job_body(ci, 'gen_kt'), job_body(release, 'package')):
+        for body in (job_body(ci, 'go'), job_body(ci, 'gen_kt'), job_body(ci, 'kotlin'), job_body(release, 'package')):
             self.assertIn('go-version-file: go.mod', body)
             self.assertNotRegex(body, r'(?m)^\s+go-version:')
 
@@ -39,14 +39,30 @@ class CIWorkflowTests(unittest.TestCase):
         release = (ROOT / '.github/workflows/release.yml').read_text()
         for body, first_check in ((job_body(ci, 'go'), 'Go format'),
                                   (job_body(ci, 'gen_kt'), 'Source installation'),
+                                  (job_body(ci, 'kotlin'), 'Explicit Kotlin dependency preparation'),
                                   (job_body(release, 'package'), 'Build allowlisted')):
             self.assertIn('GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org go mod download', body)
             self.assertIn('go mod verify', body)
             self.assertLess(body.index('go mod download'), body.index('go mod verify'))
             self.assertLess(body.index('go mod verify'), body.index(first_check))
-        for body in (job_body(ci, 'go'), job_body(ci, 'gen_kt')):
+        for body in (job_body(ci, 'go'), job_body(ci, 'gen_kt'), job_body(ci, 'kotlin')):
             self.assertIn('GOPROXY: "off"', body)
             self.assertIn('GOSUMDB: "off"', body)
+
+    def test_kotlin_runtime_gate_waits_for_go_and_prepares_dependencies_explicitly(self):
+        text = (ROOT / '.github/workflows/ci.yml').read_text()
+        body = job_body(text, 'kotlin')
+        self.assertRegex(body, r'(?m)^    needs: go$')
+        self.assertIn('suite: [models, http, profiles]', body)
+        self.assertIn('java-version: "21"', body)
+        self.assertIn('gradle-version: "9.3.1"', body)
+        preparation = 'bash scripts/kotlin/prepare-dependencies.sh'
+        execution = 'bash scripts/test.sh "$KOTLIN_SUITE"'
+        self.assertLess(body.index(preparation), body.index(execution))
+        self.assertIn('feature directional-models', body)
+        self.assertIn('feature raw-response-media', body)
+        self.assertNotIn('continue-on-error:', body)
+        self.assertNotIn('always()', body)
 
     def test_native_package_gate_checks_current_version_and_installation(self):
         text = (ROOT / '.github/workflows/ci.yml').read_text()
@@ -85,7 +101,7 @@ class CIWorkflowTests(unittest.TestCase):
         self.assertIn('scripts/release/verify.py', body)
         self.assertNotIn('continue-on-error:', body)
         for target, host in (('darwin-arm64', 'macos-latest'),
-                             ('darwin-amd64', 'macos-13'),
+                             ('darwin-amd64', 'macos-15-intel'),
                              ('linux-amd64', 'ubuntu-latest'),
                              ('linux-arm64', 'ubuntu-24.04-arm'),
                              ('windows-amd64', 'windows-latest')):

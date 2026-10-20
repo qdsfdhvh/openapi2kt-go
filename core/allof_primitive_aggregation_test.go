@@ -97,13 +97,19 @@ func TestAllOfPrimitiveAggregationEligibilityNoDrop(t *testing.T) {
 	early := `{"type":"string","minLength":1}`
 	for _, later := range []string{
 		`{"type":"integer"}`, `{"type":"string","format":""}`, `{"type":"string","nullable":true}`,
-		`{"type":"string","enum":["a"]}`, `{"type":"string","const":"a"}`, `{"type":"string","default":"a"}`,
+		`{"type":"string","enum":["a"]}`, `{"type":"string","const":"a"}`,
 		`{"type":"string","x-kotlin-value-class":true}`, `{"type":"string","x-native-type":"custom.Type"}`,
 		`{"type":"string","format":"date"}`, `{"type":"string","format":"byte"}`,
 		`{"type":"array","items":{"type":"string"}}`, `{"oneOf":[{"type":"string"},{"type":"null"}]}`,
 		`{"$ref":"#/components/schemas/Other"}`, `{"allOf":[{"$ref":"#/components/schemas/Other"}]}`,
 	} {
 		aliasFailure(t, aggregationDoc(early, later), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Record/allOf/0/properties/value/minLength")
+	}
+	// The exact former default-bearing rejection is now an executable positive;
+	// required presence still suppresses its constructor initializer.
+	graduated := source(t, aggregationReport(t, aggregationDoc(early, `{"type":"string","default":"a"}`)), "Record")
+	if !strings.Contains(graduated, "val value: kotlin.String,") || !strings.Contains(graduated, "length >= 1") {
+		t.Fatal("Original default-bearing allOf input lost required/check semantics", graduated)
 	}
 	// Preserve the original valid referenced/nested inputs as explicitly
 	// graduated ordinary groups; default-off remains unsupported.

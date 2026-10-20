@@ -15,9 +15,11 @@ for style in data_class plain_class; do
   python3 - "$project" <<'PYMAIN'
 from pathlib import Path
 import sys
-p=Path(sys.argv[1]);(p/'src/main/kotlin/org/example/contracts/Main.kt').write_text('''package org.example.contracts
+p=Path(sys.argv[1])
+copy_probe = '''check(runCatching { org.example.referencedbounds.models.DefaultsDto(requiredValue = "abc").copy(value = "a") }.isFailure)''' if p.name == 'data_class' else ''
+(p/'src/main/kotlin/org/example/contracts/Main.kt').write_text('''package org.example.contracts
 import kotlinx.coroutines.runBlocking
-fun main() = runBlocking { referencedAllOfBoundsContracts() }
+fun main() = runBlocking { referencedAllOfBoundsContracts(); '''+copy_probe+''' }
 ''')
 b=p/'build.gradle.kts';b.write_text(b.read_text()+'''
 tasks.register<JavaExec>("runReferencedAllOfBoundsContracts") {

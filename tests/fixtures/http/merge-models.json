@@ -143,6 +143,24 @@
           "n"
         ]
       },
+      "CheckedRecursiveA": {
+        "properties": {
+          "value": {"type": "integer", "minimum": 2, "default": 2},
+          "next": {"$ref": "#/components/schemas/CheckedRecursiveA"},
+          "children": {"type": "array", "items": {"$ref": "#/components/schemas/CheckedRecursiveA"}},
+          "byName": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/CheckedRecursiveA", "nullable": true}},
+          "meta": {"properties": {"parent": {"$ref": "#/components/schemas/CheckedRecursiveA"}}}
+        }
+      },
+      "CheckedRecursiveZ": {
+        "properties": {
+          "value": {"type": "integer", "minimum": 2, "default": 2},
+          "next": {"$ref": "#/components/schemas/CheckedRecursiveZ"},
+          "children": {"type": "array", "items": {"$ref": "#/components/schemas/CheckedRecursiveZ"}},
+          "byName": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/CheckedRecursiveZ", "nullable": true}},
+          "meta": {"properties": {"parent": {"$ref": "#/components/schemas/CheckedRecursiveZ"}}}
+        }
+      },
       "RecursiveA": {
         "type": "object",
         "properties": {
@@ -164,6 +182,22 @@
     }
   },
   "paths": {
+    "/recursive": {
+      "post": {
+        "operationId": "recursive",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CheckedRecursiveZ"}}}},
+        "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/CheckedRecursiveA"}}}}}
+      }
+    },
+    "/recursive-events": {
+      "get": {
+        "operationId": "watchRecursive",
+        "responses": {"200": {"content": {"text/event-stream": {"schema": {
+          "properties": {"event": {"type": "string", "const": "recursive"}, "data": {"$ref": "#/components/schemas/CheckedRecursiveZ"}},
+          "required": ["data"]
+        }}}}}
+      }
+    },
     "/one": {
       "get": {
         "operationId": "one",

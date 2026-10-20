@@ -36,6 +36,8 @@ import kotlinx.serialization.json.JsonPrimitive
 import org.example.referencedbounds.ReferencedBounds
 import org.example.referencedbounds.api.models.PatchInputDto
 import org.example.referencedbounds.api.models.WatchEventDto
+import org.example.referencedbounds.api.models.WatchDefaultsEventDto
+import org.example.referencedbounds.models.DefaultsDto
 import org.example.referencedbounds.models.Patch
 import org.example.referencedbounds.models.RecordDto
 import org.example.referencedbounds.models.ZNullableDto
@@ -114,12 +116,37 @@ suspend fun referencedAllOfBoundsContracts() {
         referencedBoundsReject("finite") { ZNumbersDto("shadow", 0, 2, Double.NaN, 0.4f, 0.4) }
         referencedBoundsReject("exclusiveMinimum") { ZNumbersDto("shadow", 0, 2, 0.5, 0.3f, 0.4) }
         referencedBoundsReject("multipleOf") { ZNumbersDto("shadow", 0, 2, 0.5, 0.4f, 0.4, 0.3) }
+        referencedDefaults(codec)
         referencedBoundsHttp(codec, record, payloads.map { PatchInputDto(it) })
         println("ReferencedAllOfBounds Json defaults=$defaults nulls=$nulls original-source-conjunction-null-Patch-numeric-HTTP-liveSSE passed")
     }
 }
 
+private fun referencedDefaults(codec: Json) {
+    val value = DefaultsDto(requiredValue = "abc")
+    check(value.value == "abc" && value.count == 4 && value.long == Long.MIN_VALUE && value.floatTie == 1.0f)
+    check(value.nullable == null && value.absent == null)
+    check(codec.decodeFromString<DefaultsDto>("{\"requiredValue\":\"abc\"}") == value)
+    val encoded = codec.encodeToJsonElement(DefaultsDto.serializer(), value) as JsonObject
+    check(encoded["requiredValue"] == JsonPrimitive("abc"))
+    check(encoded.containsKey("value") == codec.configuration.encodeDefaults)
+    check(encoded.containsKey("nullable") == (codec.configuration.encodeDefaults && codec.configuration.explicitNulls))
+    check(codec.decodeFromString<DefaultsDto>("{\"requiredValue\":\"ab\",\"value\":null}").value == null)
+    check(runCatching { codec.decodeFromString<DefaultsDto>("{}") }.isFailure)
+    referencedBoundsReject("minLength") { DefaultsDto(requiredValue = "abc", value = "a") }
+    referencedBoundsReject("maxLength") { DefaultsDto(requiredValue = "abc", value = "abcd") }
+    referencedBoundsReject("minLength") { codec.decodeFromString<DefaultsDto>("{\"requiredValue\":\"abc\",\"value\":\"a\"}") }
+    check(runCatching { DefaultsDto(requiredValue = "abc", count = 3) }.isFailure)
+    check(runCatching { DefaultsDto(requiredValue = "abc", floatTie = 0.3f) }.isFailure)
+    check(runCatching { DefaultsDto(requiredValue = "abc", long = Long.MIN_VALUE + 3) }.isFailure)
+    check(runCatching { DefaultsDto(requiredValue = "abc", nullable = "a") }.isFailure)
+    val descriptor = DefaultsDto.serializer().descriptor
+    check(!descriptor.isElementOptional(descriptor.getElementIndex("requiredValue")))
+    check(descriptor.isElementOptional(descriptor.getElementIndex("value")))
+}
+
 private suspend fun referencedBoundsHttp(codec: Json, record: RecordDto, patches: List<PatchInputDto>) {
+    val defaults = DefaultsDto(requiredValue = "abc")
     var calls = 0
     var badResponse = false
     var badSSE = false
@@ -134,14 +161,23 @@ private suspend fun referencedBoundsHttp(codec: Json, record: RecordDto, patches
                     check(referencedBoundsBody(request.body) == codec.encodeToString(RecordDto.serializer(), record))
                     respond(if (badResponse) "{\"value\":\"a\"}" else "{\"value\":\"ab\"}", HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
                 }
+                "/defaults" -> {
+                    check(referencedBoundsBody(request.body) == codec.encodeToString(DefaultsDto.serializer(), defaults))
+                    respond(if (badResponse) "{\"requiredValue\":\"abc\",\"value\":\"a\"}" else "{\"requiredValue\":\"abc\"}", HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+                }
                 "/patch" -> { check(referencedBoundsBody(request.body) == expectedPatch); respond("", HttpStatusCode.NoContent) }
-                "/events" -> {
+                "/events", "/default-events" -> {
+                    val defaultsEvent = request.url.encodedPath == "/default-events"
                     val channel = ByteChannel(autoFlush = true)
                     channels += channel
                     val bad = badSSE
                     producers.launch {
                         try {
-                            val frame = "event: record\r\nid: referenced-id\r\ndata: {\"value\":\"${if (bad) "a" else "ab"}\"}\r\n\r\n"
+                            val frame = if (defaultsEvent) {
+                                "event: defaults\r\ndata: {\"requiredValue\":\"abc\"${if (bad) ",\"value\":\"a\"" else ""}}\r\n\r\n"
+                            } else {
+                                "event: record\r\nid: referenced-id\r\ndata: {\"value\":\"${if (bad) "a" else "ab"}\"}\r\n\r\n"
+                            }
                             for (byte in frame.encodeToByteArray()) channel.writeFully(byteArrayOf(byte))
                             if (bad) awaitCancellation()
                         } finally { channel.close() }
@@ -156,6 +192,17 @@ private suspend fun referencedBoundsHttp(codec: Json, record: RecordDto, patches
     try {
         val api = ReferencedBounds(http, "http://example.test/", codec).bounds
         check(api.send(record) == record)
+        check(api.sendDefaults(defaults) == defaults)
+        badResponse = true
+        referencedBoundsWireReject("minLength") { api.sendDefaults(defaults) }
+        badResponse = false
+        val defaultEvent = withTimeout(10_000) { api.watchDefaults().toList().single() as WatchDefaultsEventDto.Defaults }
+        check(defaultEvent.data == defaults)
+        badSSE = true
+        referencedBoundsWireReject("minLength") { withTimeout(10_000) { api.watchDefaults().toList() } }
+        check(channels.last().isClosedForRead)
+        badSSE = false
+        check(withTimeout(10_000) { api.watchDefaults().toList().single() as WatchDefaultsEventDto.Defaults }.data == defaults)
         for (patch in patches) { expectedPatch = codec.encodeToString(PatchInputDto.serializer(), patch); api.patchPatch(patch) }
         val beforeBad = calls
         var callback = false

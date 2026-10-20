@@ -41,6 +41,9 @@ func (a *analyzer) operationStructuralType(v *document.Value, name, pointer stri
 			}
 		}
 	} else {
+		if err := a.rejectWriteOnlyProjection(v, pointer); err != nil {
+			return TypeRef{}, err
+		}
 		if err := a.rejectValidationProjection(v, pointer); err != nil {
 			return TypeRef{}, err
 		}

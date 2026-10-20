@@ -51,7 +51,10 @@ func nestedCollectionDefaultSchema(v *document.Value) bool {
 	if dictionarySchema(v) {
 		item = get(v, "additionalProperties")
 	}
-	return bareArrayDefaultSchema(item) || dictionarySchema(item)
+	leafKind, _, _ := schemaType(item, "")
+	format := text(get(item, "format"))
+	return bareArrayDefaultSchema(item) || dictionarySchema(item) ||
+		leafKind == "string" && (format == "byte" || format == "binary")
 }
 
 func (a *analyzer) nestedCollectionDefault(v *document.Value, pointer string, depth int) (TypeRef, string, *diagnostic.Diagnostic) {
@@ -185,7 +188,7 @@ func (a *analyzer) nestedDefaultSchema(v *document.Value, name, pointer string, 
 		if err != nil {
 			return nil, err
 		}
-		if !slices.Contains([]string{"kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double", "kotlin.time.Instant", "kotlinx.datetime.LocalDate"}, scalar) {
+		if !slices.Contains([]string{"kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double", "kotlin.time.Instant", "kotlinx.datetime.LocalDate", "kotlin.ByteArray"}, scalar) {
 			return nil, unsupported(pointer)
 		}
 		checks, err := a.primitiveValidation(v, scalar, pointer)
@@ -290,6 +293,15 @@ func (node *nestedDefaultNode) value(v *document.Value, pointer string) (string,
 		return "", invalid("Default must be a member of the declared enum vocabulary.", pointer)
 	}
 	if ty.Kind == Scalar {
+		if ty.Name == "kotlin.ByteArray" {
+			// The existing bytes codec uses a signed-integer JSON array. Keep
+			// each byte's original Pointer rather than coarsening leaf errors.
+			if _, err := bytesDefaultLiteral(v, pointer); err != nil {
+				return "", err
+			}
+			encoded, _ := v.MarshalJSON()
+			return string(encoded), nil
+		}
 		if _, err := scalarLiteral(ty.Name, v, pointer); err != nil {
 			return "", invalid("Default member must fit its mapped Kotlin scalar type.", pointer)
 		}

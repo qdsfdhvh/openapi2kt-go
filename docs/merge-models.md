@@ -1,6 +1,6 @@
 # Resolved ordinary model merging
 
-`--merge-identical-models` (core `MergeIdenticalModels`, configuration `merge_identical_models`) is opt-in and defaults to false. It compares already validated ordinary DTO and plain String-enum owned root trees across components, shared hoisted models and operation models. Unlike operation-only [deduplication](deduplicate-models.md), eligible acyclic model references are compared by their resolved typed shape, not just their classifier spelling.
+`--merge-identical-models` (core `MergeIdenticalModels`, configuration `merge_identical_models`) is opt-in and defaults to false. It compares already validated ordinary DTO and plain String-enum owned root trees across components, shared hoisted models and operation models. Unlike operation-only [deduplication](deduplicate-models.md), eligible acyclic references and [owned self references](#owned-self-references) are compared by their resolved typed shape, not just their classifier spelling.
 
 ```sh
 openapi-kt generate --input api.json --output build/generated \
@@ -16,7 +16,17 @@ Comparison preserves property/wire order, required/default-null state, nullabili
 
 Canonical preference is component root, then shared hoisted root, then operation root; within each priority it uses fully qualified lexical order. Losing root files remain top-level Kotlin `typealias` declarations. Typed references to absorbed owned classifiers are rebound to the canonical owner, retaining original source/check/slot accounting. Private validation emission hints are combined across equivalent positions. Opaque provider classifiers, serializer expressions and constant expressions protect their referenced owners; those strings are not rewritten.
 
-The initial subset uses bottom-up typed dependency fingerprints without expanding schema trees. Cyclic/unresolved root dependencies and resolved comparison graphs taller than 48 conservatively remain unmerged. That is an optimizer skip, not a new input rejection or replacement for the existing schema budget. Union/hierarchy/value-class/collection alias roots, nested-only shape extraction and arbitrary recursive structural equivalence are outside this subset.
+The initial subset uses bottom-up typed dependency fingerprints without expanding schema trees. Direct references to a root's own owned classifier normalize inside its finite declaration view. Mutual/external root cycles, unresolved dependencies and resolved comparison graphs taller than 48 conservatively remain unmerged. That is an optimizer skip, not a new input rejection or replacement for the existing schema budget. Union/hierarchy/value-class/collection alias roots, nested-only shape extraction and arbitrary recursive structural equivalence are outside this subset.
+
+## Owned self references
+
+Equivalent ordinary DTO roots may now merge when their typed fields refer to their own declared root, directly or through existing List/Map/nullable paths and nested owned declarations. For example, `A.next: A?` and `Z.next: Z?` can share canonical `A`, with `Z` emitted as a typealias. The original self-only pair in the fixture remains an executable acceptance case. This compares finite validated IR; it does not unfold recursive schemas or calculate general graph equivalence.
+
+Every existing identity dimension still participates: field order, required/default/Patch/nullability, typed codecs, effective bounds, owned nested names and component factories. A recursive root referring to another owner does not gain self identity. Mutual root cycles remain skipped. Excluded or opaque-protected owners neither absorb nor are absorbed, and external dependency height limits remain unchanged. Option-off generation is unchanged.
+
+This expands the explicit merge option's classifier/descriptor/equality migration to the newly eligible roots. Use the canonical owner for nested classifier access. Self-recursive shapes with different defaults/checks remain separate. Analysis diagnostics and resource checks still run before optimization; no source budget or name-lock format changes.
+
+[Core self-reference guards](../core/merge_self_recursive_test.go), native lifecycle checks and the existing fresh `merge` profiles cover the extension. The consumer exercises canonical type assignment, finite recursive serde, nullable/List/Map/nested fields, defaults, constructor/copy checks, typed HTTP and live fragmented SSE rejection/closure and caller-client reuse across Data/Plain and short/qualified lock profiles. These checks make no performance or general recursive-equivalence claim.
 
 ## Kotlin migration
 

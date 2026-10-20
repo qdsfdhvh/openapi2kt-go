@@ -12,7 +12,7 @@ import (
 // metadata keys are accepted wherever a schema appears. They carry
 // documentation or consumer hints, never a shape. readOnly is the exception:
 // it selects request presence, so request planning reads it explicitly.
-var metadata = []string{"title", "description", "example", "examples", "externalDocs", "$comment", "deprecated", "readOnly"}
+var metadata = []string{"title", "description", "example", "examples", "externalDocs", "$comment", "deprecated", "readOnly", "writeOnly"}
 
 func object(value *document.Value, pointer string) *diagnostic.Diagnostic {
 	if value.Kind() != document.Object {
@@ -42,10 +42,13 @@ func checkKeys(v *document.Value, allowed []string, pointer string) *diagnostic.
 			return invalid("Schema text metadata must be a string.", naming.Pointer(pointer, key))
 		}
 	}
-	for _, key := range []string{"deprecated", "readOnly"} {
+	for _, key := range []string{"deprecated", "readOnly", "writeOnly"} {
 		if value, ok := v.Get(key); ok && value.Kind() != document.Boolean {
 			return invalid(key+" must be a boolean.", naming.Pointer(pointer, key))
 		}
+	}
+	if readOnlySchema(v) && writeOnlySchema(v) {
+		return invalid("readOnly and writeOnly cannot both be true.", naming.Pointer(pointer, "writeOnly"))
 	}
 	for _, member := range v.Members() {
 		if !slices.Contains(metadata, member.Name) && !slices.Contains(allowed, member.Name) {

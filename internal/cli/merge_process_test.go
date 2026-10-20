@@ -31,6 +31,12 @@ func TestMergeNativeLifecycle(t *testing.T) {
 	if !strings.Contains(string(alias), "typealias ZetaDto = org.example.merge.models.AlphaDto") {
 		t.Fatal(string(alias))
 	}
+	for _, pair := range [][2]string{{"RecursiveZDto", "RecursiveADto"}, {"CheckedRecursiveZDto", "CheckedRecursiveADto"}} {
+		code := string(read(t, filepath.Join(p.Output, "org/example/merge/models", pair[0]+".kt")))
+		if !strings.Contains(code, "typealias "+pair[0]+" = org.example.merge.models."+pair[1]) {
+			t.Fatal("Native owned-self alias missing", pair, code)
+		}
+	}
 	before := snapshot(t, p.Output)
 	for _, extra := range [][]string{{"--check"}, nil} {
 		result(t, mergeGenerate(t, p, append([]string{"--merge-identical-models"}, extra...)...), 0)
@@ -55,8 +61,8 @@ func TestMergeNativeArguments(t *testing.T) {
 	for _, flag := range []string{"--merge-identical-models", "--exclude-merge-model=org.example.X"} {
 		fails(t, invoke(t, "", "download", flag, "--diagnostic-format=json"), 2, "E_USAGE")
 	}
-	result(t, mergeGenerate(t, p, "--merge-identical-models", "--exclude-merge-model=org.example.merge.models.AlphaDto", "--exclude-merge-model=org.example.merge.models.ChildZDto"), 0)
-	for _, name := range []string{"AlphaDto", "ChildZDto"} {
+	result(t, mergeGenerate(t, p, "--merge-identical-models", "--exclude-merge-model=org.example.merge.models.AlphaDto", "--exclude-merge-model=org.example.merge.models.ChildZDto", "--exclude-merge-model=org.example.merge.models.RecursiveZDto"), 0)
+	for _, name := range []string{"AlphaDto", "ChildZDto", "RecursiveZDto"} {
 		if !strings.Contains(string(read(t, filepath.Join(p.Output, "org/example/merge/models", name+".kt"))), "data class "+name) {
 			t.Fatal("excluded root changed")
 		}

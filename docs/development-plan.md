@@ -130,7 +130,7 @@ IR 必须区分：字段是否 required、值是否 nullable、是否有 default
 - 只在 schema/parameter/response 等合法位置解释 `$ref`，不改写 examples/default 中同名的用户数据。
 - 本地 Pointer 解码 `~0`/`~1`，引用缺失明确报错；外部引用明确不支持。
 - 区分 `UsageContext = RequestBody | ResponseBody | Parameter | SharedComponent | SsePayload`。
-- 共享 component 的请求/响应引用保留普通 nullable 模型，不自动拆分 request/response 类型。Patch 上下文仅用于 inline 对象请求及其递归 inline 子树；根 union 请求、response 和 deepObject 不开启。
+- 共享 component 的 canonical 构造器、nullable 默认值与 serializer 保持；普通 HTTP DTO 的 readOnly/writeOnly 字段另按[定向模型合同](directional-models.md)生成 operation-owned Request/PublicResponse 视图，包含受影响的引用、集合和名义递归。无定向需求的引用仍共享模型。一般 Patch 上下文仍用于 inline 对象请求及其递归 inline 子树；定向 Request clone 使用相同 presence 表，根 union 请求、response 和 deepObject 不开启 Patch。
 - 规范化保留有损变换诊断。生成器支持某种“近似表示”不等于验证了 JSON Schema 全部约束。
 
 ### 3.5 Kotlin IR 与 emitter
@@ -299,7 +299,7 @@ P1 普通 DTO 以 Go 单测和生成快照为主，模板首次落地或实质�
 
 ### 8.2 CI 分层
 
-- PR：gofmt、go vet、Go unit/process/race tests、fixture 快照、JVM 编译/运行、公开材料扫描。
+- PR：gofmt、go vet、Go unit/process/race tests、fixture 快照、JVM 编译/运行、公开材料扫描。当前工作流已配置 Go 后置的独立 Kotlin/JVM models、HTTP/SSE 与选定 profile job，显式准备依赖后运行离线门禁；具体提交的 CI 通过状态仍需对应 run 证明。
 - 主分支：本地 CLI 消费集成、Android 编译、KMP metadata + JVM + JS、macOS 上 Native smoke；以真正通过的 target 声明支持。
 - 发布：Linux/macOS/Windows CLI smoke，归档 checksum，依赖许可/漏洞检查，包内容与安装验证。
 

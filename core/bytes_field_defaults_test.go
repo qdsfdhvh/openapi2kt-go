@@ -132,11 +132,10 @@ func TestBytesComponentDefaultsEmitTopLevelFactory(t *testing.T) {
 	}
 }
 
-// Role boundaries: only the component root gains the factory. A bytes element
-// inside a collection and a nullable bytes root keep their own diagnostics.
+// Nullable root null defaults keep their separate role. Bad byte values retain
+// their original dedicated diagnostics, including per-element Pointers.
 func TestBytesComponentDefaultsKeepRoleBoundaries(t *testing.T) {
 	for _, c := range []struct{ name, doc, pointer string }{
-		{"bytesElement", `{"S":{"type":"array","items":{"type":"string","format":"byte"},"default":[[1]]}}`, "/components/schemas/S/default"},
 		{"nullableRoot", `{"S":{"type":"string","format":"byte","nullable":true,"default":null}}`, "/components/schemas/S/default"},
 		{"badElement", `{"S":{"type":"string","format":"byte","default":[128]}}`, "/components/schemas/S/default/0"},
 		{"base64", `{"S":{"type":"string","format":"byte","default":"AAEC"}}`, "/components/schemas/S/default"},

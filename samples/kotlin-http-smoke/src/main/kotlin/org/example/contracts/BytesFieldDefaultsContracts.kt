@@ -21,7 +21,7 @@ private fun bytesDefaultsReject(block: () -> Unit) {
 
 // The bytes default wire is the existing signed-integer array form, so a
 // defaulted value must survive a Json round-trip by content.
-suspend fun bytesFieldDefaultsContracts() {
+suspend fun bytesFieldDefaultsContracts(checked: Boolean = false) {
     val provider = HolderDto.Provider(required = byteArrayOf(9))
     val value = HolderDto(requiredBytes = byteArrayOf(-128, -1, 0, 127), provider = provider)
 
@@ -93,6 +93,7 @@ suspend fun bytesFieldDefaultsContracts() {
         val nested = codec.decodeFromString<HolderDto>("""{"requiredBytes":[1],"provider":{"required":[3]}}""")
         check(nested.provider!!.required.contentEquals(byteArrayOf(3)))
 
+        bytesDefaultTreeContracts(codec, checked)
         println("BytesFieldDefaults Json defaults=$defaults nulls=$nulls signed-array-wire-fresh-instance-required-no-initializer passed")
     }
 }

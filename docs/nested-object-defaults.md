@@ -1,5 +1,7 @@
 # Direct inline ordinary DTO object field defaults
 
+[Signed-byte properties](bytes-default-trees.md) now participate in the existing object-default walk using the actual ByteArray signed-array serializer, original element Pointers and whole-tree budgets.
+
 [Finite nested builtin collection defaults](nested-builtin-collection-defaults.md), [temporal leaves](nested-temporal-collection-defaults.md), [plain String enum terminals](nested-string-enum-collection-defaults.md) and [native enum terminals](nested-native-enum-collection-defaults.md) own the finite inline collection/leaf roles. The profile below adds a plain inline **ordinary DTO object** leaf to an ordinary field's own `default`. The field type and all nested declarations still come from the shared ordinary object planner, so public call sites are independent of the annotation.
 
 ```json

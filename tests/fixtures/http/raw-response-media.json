@@ -1,0 +1,181 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Text": {
+        "type": "string"
+      },
+      "Payload": {
+        "type": "string",
+        "format": "binary"
+      }
+    }
+  },
+  "paths": {
+    "/text": {
+      "get": {
+        "operationId": "readText",
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Text"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/charset": {
+      "get": {
+        "operationId": "readCharset",
+        "responses": {
+          "200": {
+            "content": {
+              "TEXT/PLAIN; charset=ISO-8859-1": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/empty": {
+      "get": {
+        "operationId": "readEmpty",
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nullable-text": {
+      "get": {
+        "operationId": "readNullableText",
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "nullable": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bytes": {
+      "get": {
+        "operationId": "readBytes",
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nullable-bytes": {
+      "get": {
+        "operationId": "readNullableBytes",
+        "responses": {
+          "200": {
+            "content": {
+              "Application/Octet-Stream; x-example=1": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary",
+                  "nullable": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/priority": {
+      "get": {
+        "operationId": "readPriority",
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/raw-priority": {
+      "get": {
+        "operationId": "readRawPriority",
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "operationId": "readStatus",
+        "responses": {
+          "200": {},
+          "201": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

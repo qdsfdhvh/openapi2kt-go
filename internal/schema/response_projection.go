@@ -103,6 +103,9 @@ func (a *analyzer) responseProjection(v *document.Value, pointer string) (*TypeR
 			return nil, nil, nil
 		}
 	}
+	if err := a.rejectWriteOnlyProjection(v, pointer); err != nil {
+		return nil, nil, err
+	}
 	// A raw result must still validate all non-empty borrowed branches. Empty
 	// branches were checked above; do not validate a projected not:{} as a model.
 	for _, branch := range real {

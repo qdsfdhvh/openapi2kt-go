@@ -69,9 +69,33 @@ files, changing source bytes, growing allocations or moving occurrences is a
 separate generation/lifecycle change and is rejected during rename. Existing
 core profile/shape compatibility checks also continue to apply.
 
-An unknown old owner or an already occupied new owner fails. Identity is the
-only occupied-target exception. Swap and chain mappings are rejected even when
-another mapping would appear to vacate the target. Rename does not reconcile:
+An unknown old owner fails. An occupied new owner is accepted only when it is
+also a source in the complete selected mapping for the **same output root**.
+This admits simultaneous chains and cycles, such as `alpha:beta, beta:alpha`.
+Every selected new spec keeps its old source's input, package/options and lock
+mode; all exact-candidate checks use the original inventory. An unselected
+occupied target still fails, including under partial `--spec` selection.
+
+For an existing alpha/beta pair whose current spec names have been exchanged:
+
+```sh
+openapi-kt generate --config openapi-kt.toml \
+  --rename-owner alpha:beta --rename-owner beta:alpha --check
+openapi-kt generate --config openapi-kt.toml \
+  --rename-owner alpha:beta --rename-owner beta:alpha
+# Use the current names and inputs after applying the one-shot mapping.
+openapi-kt generate --config openapi-kt.toml --check
+```
+
+The complete mapping is applied simultaneously. Kotlin paths and shared
+memberships follow the original source owner; dedicated raw lock payloads move
+to the final target filename. An overwritten destination is staged once and
+never also removed. Identical final memberships and raw payloads form a validated
+no-op, preserving existing metadata bytes and modification times. Reusing an old
+mapping is a new request against the current inventory, rather than an automatic
+retry; distinct candidates refuse if the old source identity no longer matches.
+
+Rename does not reconcile:
 all other owners, their metadata and shared memberships remain, including
 owners absent from the current configuration. Only the old identifier in a
 selected membership is replaced by its new identifier; shared Kotlin files stay
@@ -111,8 +135,8 @@ Apply holds every participating root lock through application or rollback and
 stages all changed roots before applying any. The journal contains only metadata
 operations, with each manifest last. For a locked owner, its exact old payload
 bytes are installed at
-`.openapi-kt-names-<sha256(exact NEW identifier)>.json`, the old owned payload is
-removed, and version4's `owners`/`name_locks` keys are updated. Unlocked rename
+`.openapi-kt-names-<sha256(exact NEW identifier)>.json`; old filenames without
+incoming locked ownership are removed, and version4's `owners`/`name_locks` keys are updated. Unlocked rename
 changes only the manifest owner key. Kotlin files are never written or removed;
 their bytes, modes and modification times remain unchanged. Identity does not
 rewrite metadata. The persistent `.openapi-kt.lock` remains a cooperative writer
@@ -168,6 +192,8 @@ contracts](../internal/output/owner_rename_test.go), [Unix complete-lock-set and
 CAS contracts](../internal/output/owner_rename_unix_test.go), [bounded state
 fuzzing](../internal/output/owner_rename_fuzz_test.go), [native CLI selection,
 reports and source parity](../internal/cli/owner_rename_process_test.go),
+[simultaneous permutation and overwrite rollback contracts](../internal/output/owner_permutation_test.go),
+[native permutation reports/replay](../internal/cli/owner_permutation_process_test.go),
 [full TOML and namespace consumer source parity](../internal/cli/owner_rename_namespace_process_test.go),
 and [native Unix busy/CAS contracts](../internal/cli/owner_rename_unix_process_test.go).
 Test entry points do not establish candidate-wide or cross-platform runtime

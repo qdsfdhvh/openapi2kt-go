@@ -36,6 +36,11 @@ import org.example.merge.api.models.ApplyInputDto
 import org.example.merge.api.models.OneResponseDto
 import org.example.merge.api.models.TwoResponseDto
 import org.example.merge.api.models.WatchEventDto
+import org.example.merge.api.models.WatchRecursiveEventDto
+import org.example.merge.models.CheckedRecursiveADto
+import org.example.merge.models.CheckedRecursiveZDto
+import org.example.merge.models.RecursiveADto
+import org.example.merge.models.RecursiveZDto
 import org.example.merge.models.AlphaDto
 import org.example.merge.models.ZetaDto
 import org.example.merge.models.ChildADto
@@ -85,6 +90,13 @@ suspend fun mergeModelContracts(plain: Boolean = false) = withTimeout(15000) {
     check(runCatching { ChildZDto(0) }.isFailure)
     val nested: LooseZDto = LooseADto(LooseADto.Status.fromSerialName("fast"), LooseADto.Meta(true))
     val status: StatusZDto = StatusADto.fromSerialName("future")
+    val simple: RecursiveZDto = RecursiveADto(RecursiveZDto())
+    val leaf = CheckedRecursiveZDto()
+    val recursive: CheckedRecursiveZDto = CheckedRecursiveADto(next = leaf, children = listOf(leaf), byName = mapOf("leaf" to leaf, "null" to null), meta = CheckedRecursiveADto.Meta(parent = leaf))
+    check(serializer<RecursiveZDto>().descriptor.serialName == serializer<RecursiveADto>().descriptor.serialName)
+    check(serializer<CheckedRecursiveZDto>().descriptor.serialName == serializer<CheckedRecursiveADto>().descriptor.serialName)
+    if (plain) check(leaf.toString() == "CheckedRecursiveADto")
+    check(runCatching { CheckedRecursiveZDto(value = 1) }.isFailure)
     for (defaults in listOf(false,true)) for (nulls in listOf(false,true)) {
         val codec=Json { encodeDefaults=defaults;explicitNulls=nulls }
         check(codec.decodeFromString<ZetaDto>(codec.encodeToString(old))==old)
@@ -96,14 +108,33 @@ suspend fun mergeModelContracts(plain: Boolean = false) = withTimeout(15000) {
         check(codec.encodeToString(CountADto(1))=="{\"n\":1}")
         check(runCatching { codec.encodeToString(CountZDto(1)) }.isFailure)
         check(runCatching { codec.decodeFromString<ChildZDto>("{\"n\":0}") }.isFailure)
+        check(codec.decodeFromString<RecursiveZDto>(codec.encodeToString(simple)) == simple)
+        check(codec.decodeFromString<CheckedRecursiveZDto>(codec.encodeToString(recursive)) == recursive)
+        check(codec.decodeFromString<CheckedRecursiveZDto>("{}") == leaf)
+        check(runCatching { codec.decodeFromString<CheckedRecursiveZDto>("{\"next\":{\"value\":1}}") }.isFailure)
         val scope=CoroutineScope(SupervisorJob()+Dispatchers.Default)
         val channels=CopyOnWriteArrayList<ByteChannel>()
         val writers=CopyOnWriteArrayList<Job>()
         var bad=false
+        var calls=0
         val probePaths=mutableListOf<String>()
         val engine=MergeStreamingEngine(MockEngineConfig().apply {
             addHandler { req ->
+                calls++
                 when(req.url.encodedPath) {
+                    "/recursive" -> {
+                        check(mergeBody(req.body) == codec.encodeToString(recursive))
+                        respond(if (bad) "{\"value\":1}" else codec.encodeToString(recursive), HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+                    }
+                    "/recursive-events" -> {
+                        val channel=ByteChannel(autoFlush=true);channels.add(channel)
+                        val data=if(bad) "{\"value\":1}" else codec.encodeToString(recursive)
+                        writers.add(scope.launch {
+                            try { for(byte in "event: recursive\r\ndata: $data\r\n\r\n".encodeToByteArray()) channel.writeFully(byteArrayOf(byte)); awaitCancellation() }
+                            finally { channel.close() }
+                        })
+                        respond(channel,HttpStatusCode.OK,headersOf("Content-Type","text/event-stream"))
+                    }
                     "/watch" -> {
                         val channel=ByteChannel(autoFlush=true);channels.add(channel)
                         val frame="event: update\r\ndata: {\"child\":{\"n\":"+(if(bad)"0" else "1")+"}}\r\n\r\n"
@@ -140,6 +171,22 @@ suspend fun mergeModelContracts(plain: Boolean = false) = withTimeout(15000) {
             check(channels.last().isClosedForRead)
             bad=true;check(runCatching { flow.take(1).toList() }.isFailure);check(channels.last().isClosedForRead)
             bad=false;check(flow.take(1).toList().size==1 && api.one()==old)
+            check(api.recursive(recursive) == recursive)
+            val beforeInvalid = calls
+            var callback = false
+            check(runCatching { api.recursive(CheckedRecursiveZDto(value = 1)) { callback = true } }.isFailure)
+            check(calls == beforeInvalid && !callback)
+            bad = true
+            check(runCatching { api.recursive(recursive) }.isFailure)
+            bad = false
+            val selfFlow = api.watchRecursive()
+            check((selfFlow.take(1).toList().single() as WatchRecursiveEventDto.Recursive).data == recursive)
+            check(channels.last().isClosedForRead)
+            bad = true
+            check(runCatching { selfFlow.take(1).toList() }.isFailure)
+            check(channels.last().isClosedForRead)
+            bad = false
+            check(selfFlow.take(1).toList().size == 1 && api.recursive(recursive) == recursive)
             println("MergeModels Json defaults=$defaults nulls=$nulls plain=$plain resolvedaliases-codecs-bounds-Patch-HTTP-liveSSEclose-reuse-cold passed")
         } finally { http.close();scope.cancel();writers.forEach { it.cancel() };channels.forEach { it.cancel(null) } }
     }

@@ -56,6 +56,16 @@ func executeOwnerRename(args arguments, cfg config.Config, settings map[string]a
 			return 4, failed("E_OWNER_RENAME_INVALID", "Rename mappings must name selected configured specs.")
 		}
 	}
+	sourcesByRoot := map[string]map[string]bool{}
+	for _, s := range cfg.Specs {
+		if selected[s.Name] {
+			root := settings[s.Name].output
+			if sourcesByRoot[root] == nil {
+				sourcesByRoot[root] = map[string]bool{}
+			}
+			sourcesByRoot[root][args.ownerRenames[s.Name]] = true
+		}
+	}
 	all := report{Status: "ok", Files: []string{}, Diagnostics: core.Diagnostics{}, Specs: []specReport{}}
 	updates := map[string]output.OwnerRenameUpdate{}
 	counts := map[string]output.OwnerUpdate{}
@@ -82,8 +92,8 @@ func executeOwnerRename(args arguments, cfg config.Config, settings map[string]a
 		if !exists {
 			return 4, failed("E_OWNER_RENAME_INVALID", "The old owner must exist in the selected spec's output root.")
 		}
-		if _, occupied := u.Previous.Owners[s.Name]; occupied && old != s.Name {
-			return 4, failed("E_OWNER_RENAME_INVALID", "The new owner already exists in the selected output root.")
+		if _, occupied := u.Previous.Owners[s.Name]; occupied && old != s.Name && !sourcesByRoot[a.output][s.Name] {
+			return 4, failed("E_OWNER_RENAME_INVALID", "An occupied new owner must also be a selected source in the same output root.")
 		}
 		prior, locked := u.Previous.NameLocks[old]
 		if locked != a.lockHoistedNames {
@@ -93,7 +103,7 @@ func executeOwnerRename(args arguments, cfg config.Config, settings map[string]a
 		if code != 0 {
 			return code, report{Status: "error", Files: []string{}, Diagnostics: diagnostics, Spec: s.Name}
 		}
-		migration := ownerRenameReport{OldOwner: old, NewOwner: s.Name, Version: u.Previous.Version, Files: []ownerRenameFile{}, Impact: "Only named ownership and its dedicated metadata filename change. Kotlin membership, source bytes and public names are preserved; peer owners and shared runtime references are retained. Keep the new spec name for subsequent generation. This report is a point-in-time comparison, not an approval token or crash recovery guarantee."}
+		migration := ownerRenameReport{OldOwner: old, NewOwner: s.Name, Version: u.Previous.Version, Files: []ownerRenameFile{}, Impact: "Only named ownership and its dedicated metadata filename change. Kotlin membership, source bytes and public names are preserved; unselected peer owners and shared runtime references are retained. Keep the new spec name for subsequent generation. This report is a point-in-time comparison, not an approval token or crash recovery guarantee."}
 		hashes := fileHashes(files)
 		for _, file := range files {
 			migration.Files = append(migration.Files, ownerRenameFile{file.Path, hashes[file.Path]})

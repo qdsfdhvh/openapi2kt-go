@@ -1,44 +1,36 @@
 # readOnly request presence
 
-`readOnly: true` on a property means the server owns that value. A request must therefore not send it unless the caller explicitly asks to.
+`readOnly: true` on an ordinary property identifies a value produced by the server. An inline request DTO uses `Patch<T> = Patch.Absent`, even if the schema marks the field required, so callers omit it by default and can explicitly override it.
 
 ```json
-"/r": {"post": {
-  "requestBody": {"content": {"application/json": {"schema": {
-    "type": "object", "required": ["id", "name"],
-    "properties": {"id": {"type": "string", "readOnly": true}, "name": {"type": "string"}}
-  }}}},
-  "responses": {"204": {}}
-}}
+{
+  "type": "object",
+  "required": ["id", "name"],
+  "properties": {
+    "id": {"type": "string", "readOnly": true},
+    "name": {"type": "string"}
+  }
+}
 ```
+
 ```kotlin
 public data class SubmitInputDto(
-    public val id: demo.models.Patch<kotlin.String> = demo.models.Patch.Absent,
+    public val id: org.example.models.Patch<kotlin.String> = org.example.models.Patch.Absent,
     public val name: kotlin.String,
 )
 ```
 
-`Patch.Absent` is the point: the field is **omitted** by default instead of silently included, while staying overridable when a caller really must send it. `id` keeps that default even though the schema marks it `required`, because `required` describes the response, not the request.
-
-## Where it applies, and where it cannot
-
-The projection needs a **dedicated request model**. That exists for an inline request body, which the generator emits as its own `…InputDto`.
-
-A request body that is a `$ref` reuses the **component model**, which is shared with responses. There is no separate request type to project into, so `readOnly` is accepted and **inert**: the field keeps its declared requiredness.
+Canonical shared components retain their original constructor, requiredness and serializers. HTTP bodies referencing ordinary DTOs with read-only fields now obtain a separate [directional request DTO](directional-models.md), including affected nested/collection references and nominal recursion. The original shared type remains available; callers of affected HTTP methods migrate to the operation-specific Request type. Unannotated references remain shared.
 
 | Shape | Result |
 |---|---|
-| inline request body | `Patch<T> = Patch.Absent` |
-| `$ref` request body / response component | accepted, inert; requiredness unchanged |
-| `readOnly: false` | no-op, identical to omission |
-| non-boolean `readOnly` | `E_SCHEMA_INVALID` at `…/readOnly` |
+| Inline ordinary request field | Existing Input DTO uses Patch.Absent |
+| Referenced ordinary request DTO needing projection | Separate Request DTO uses Patch.Absent |
+| Canonical shared component / read-only response field | Original field and requiredness |
+| `readOnly: false` | Equivalent to omission |
+| Non-boolean `readOnly` | `E_SCHEMA_INVALID` at `…/readOnly` |
+| Both `readOnly` and `writeOnly` true | `E_SCHEMA_INVALID` at `…/writeOnly` |
 
-The inert row is a real limitation, not a hidden one: projecting it would require splitting every `$ref`-referenced request body into its own request model, which is a separate change.
+`writeOnly` is supported under the separate [directional DTO contract](directional-models.md): requests retain the field, while dedicated response DTOs omit it. Composition, whole-object counts, projected reference defaults and raw HTTP representations have explicit rejection boundaries in that contract.
 
-`writeOnly` stays **rejected**. Honouring it needs the mirror projection — dropping the field from a *response* model — and responses currently reuse the same component model, so there is nowhere to apply it.
-
-## Verification
-
-- [Core contract](../core/read_only_request_presence_test.go): request projection across Data/Plain × validation, inertness on shared components, `false` as a no-op, non-boolean rejection.
-- [Corpus fixture](../tests/fixtures/p1/valid/readonly-annotation.json) with a reviewed snapshot records the inert shared-component case, replacing the former `unsupported-readonly` guard.
-- `writeOnly` keeps its rejection fixture, so the boundary between the two is executable rather than prose only.
+[Core read-only contracts](../core/read_only_request_presence_test.go) retain the original inline and canonical-component behavior. [Directional core/native/Kotlin contracts](directional-models.md#verification) cover the added HTTP reference projection. The reviewed `readonly-annotation` and `writeonly-annotation` corpus snapshots record canonical shared-model output.

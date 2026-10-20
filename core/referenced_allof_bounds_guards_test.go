@@ -34,7 +34,6 @@ func TestReferencedNestedAllOfBoundsKeepSourceDiagnosticsAndNoDropEligibility(t 
 		{`{"type":"string","pattern":"a"}`, `{"type":"string","pattern":"b"}`, "E_SCHEMA_UNSUPPORTED", "Record/allOf/1/properties/value/pattern"},
 		{`{"type":"string","minLength":-1}`, `{"type":"string","minLength":1}`, "E_SCHEMA_INVALID", "Lower/properties/value/minLength"},
 		{`{"type":"string","minLength":1}`, `{"type":["string","null"],"maxLength":4}`, "E_SCHEMA_UNSUPPORTED", "Lower/properties/value/minLength"},
-		{`{"type":"integer","minimum":2}`, `{"type":"integer","default":2}`, "E_SCHEMA_UNSUPPORTED", "Lower/properties/value/minimum"},
 		{`{"type":"integer","minimum":2}`, `{"type":"integer","enum":[2,3]}`, "E_SCHEMA_UNSUPPORTED", "Lower/properties/value/minimum"},
 		{`{"type":"array","minItems":1,"items":{"type":"string"}}`, `{"type":"array","items":{"type":"string"}}`, "E_SCHEMA_UNSUPPORTED", "Lower/properties/value/minItems"},
 	} {

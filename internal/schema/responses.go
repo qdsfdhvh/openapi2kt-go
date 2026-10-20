@@ -130,6 +130,9 @@ func (a *analyzer) responseType(responses *document.Value, pointer, owner string
 		if media == "" {
 			media = sseMedia(content)
 		}
+		if !isError && media == "" {
+			media = rawResponseMedia(content)
+		}
 		if !isError && (media == "" || successRank(status) == 7) {
 			return TypeRef{}, operationUnsupported(p + "/content")
 		}
@@ -199,6 +202,9 @@ func (a *analyzer) responseType(responses *document.Value, pointer, owner string
 				return TypeRef{}, err
 			}
 			if entry.Name == media {
+				if !rawResponseType(entry.Name, ty) {
+					return TypeRef{}, operationUnsupported(mp + "/schema")
+				}
 				types[status] = ty
 				planned[status] = declarations
 				bodies[status] = true

@@ -25,6 +25,7 @@ func TestBytesFieldDefaultsNativeReadOnlyAndOriginalMemberFailurePreservation(t 
 		// Every rejected member reports its own element pointer and leaves the
 		// previously generated outputs untouched.
 		for _, tc := range []struct{ old, bad, pointer string }{
+			{`"default": [[-128, 0, 127], []]`, `"default": [[-128, 0, 128], []]`, "/components/schemas/Trees/properties/rows/default/0/2"},
 			{"127", "128", "/components/schemas/Holder/properties/requiredBytes/default/3"},
 			{"-128", "-129", "/components/schemas/Holder/properties/requiredBytes/default/0"},
 			{"\"binary\",\n            \"default\": [\n              4\n            ]", "\"binary\",\n            \"default\": \"AAEC\"", "/components/schemas/Holder/properties/optionalBytes/default"},

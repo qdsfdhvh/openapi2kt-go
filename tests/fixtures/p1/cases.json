@@ -1456,18 +1456,19 @@
       }
     },
     {
-      "id": "unsupported-writeonly",
-      "group": "deferred",
-      "description": "Reject writeOnly rather than flattening or discarding its semantics.",
-      "input": "invalid/unsupported-writeonly.json",
-      "package_name": "org.example.fixtures.unsupported_writeonly",
+      "id": "writeonly-annotation",
+      "group": "metadata",
+      "description": "Shared DTOs retain writeOnly fields; HTTP response DTOs use a separate directional projection.",
+      "input": "valid/writeonly-annotation.json",
+      "package_name": "org.example.fixtures.writeonly_annotation",
       "model_name_suffix": "",
       "input_format": "json",
       "validate": true,
       "expect": {
-        "kind": "error",
-        "code": "E_SCHEMA_UNSUPPORTED",
-        "pointer": "/components/schemas/Record/properties/value/writeOnly"
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/writeonly_annotation/models/Record.kt": "snapshots/writeonly-annotation/Record.kt"
+        }
       }
     },
     {
