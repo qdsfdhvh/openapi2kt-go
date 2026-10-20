@@ -105,6 +105,8 @@ jobs:
             profiles)
               bash scripts/test.sh feature directional-models
               bash scripts/test.sh feature raw-response-media
+              bash scripts/test.sh feature referenced-bytes-field-defaults
+              bash scripts/test.sh feature nullable-component-defaults
               ;;
             *) printf 'Unknown Kotlin suite\n' >&2; exit 2 ;;
           esac

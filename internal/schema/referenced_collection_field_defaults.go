@@ -292,6 +292,13 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 	}
 	switch scalar {
 	case "kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double":
+	case "kotlin.ByteArray":
+		// Own defaults use only the already-linked byte/binary backing. The
+		// source role is independent of coincident native/provider type names.
+		format := text(get(v, "format"))
+		if role != referencedScalarOwnDefault && role != referencedCollectionOwnDefault || kind != "string" || format != "byte" && format != "binary" {
+			return nil, unsupported(pointer)
+		}
 	case "kotlin.time.Instant", "kotlinx.datetime.LocalDate":
 		// Source role matters independently of coincident provider/type names.
 		// Native markers, enums/consts and folds remain outside the keys above.
@@ -367,9 +374,10 @@ func (a *analyzer) planReferencedFieldDefaults() *diagnostic.Diagnostic {
 			property.Default = "`openapi-kt default model`(" + naming.Literal(encoded) + ")"
 			continue
 		}
-		if kind == Scalar {
+		if kind == Scalar && node.ty.WithoutRootNull().Name != "kotlin.ByteArray" {
 			// Source admission/checks and both annotation budgets have already
-			// run. Use the actual scalar literal path, without a JSON helper.
+			// run. Other scalars use their existing literal path; bytes use the
+			// typed JSON helper below to bound initializer bytecode size.
 			scalar := node.ty.WithoutRootNull().Name
 			literal, err := scalarLiteral(scalar, value, at)
 			if err != nil {

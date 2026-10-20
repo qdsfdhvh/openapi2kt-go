@@ -25,6 +25,19 @@
   },
   "components": {
     "schemas": {
+      "NilName": {"type": ["string", "null"], "default": null},
+      "NilFlag": {"type": "boolean", "nullable": true, "default": null},
+      "NilCount": {"type": "integer", "nullable": true, "default": null},
+      "NilRatio": {"type": "number", "nullable": true, "default": null},
+      "NilDay": {"type": ["string", "null"], "format": "date", "default": null},
+      "NilStamp": {"type": "string", "format": "date-time", "nullable": true, "default": null},
+      "NilBytes": {"type": "string", "format": "byte", "nullable": true, "default": null},
+      "NilBinary": {"type": ["string", "null"], "format": "binary", "default": null},
+      "NilNames": {"type": ["array", "null"], "items": {"type": "string"}, "default": null},
+      "NilBags": {"type": ["object", "null"], "additionalProperties": {"type": "integer"}, "default": null},
+      "NilByteRows": {"type": "array", "nullable": true, "items": {"type": "string", "format": "byte"}, "default": null},
+      "NilMode": {"type": ["string", "null"], "enum": ["a", "b"], "default": null},
+      "NilObject": {"type": "object", "nullable": true, "properties": {"value": {"type": "string"}}, "default": null},
       "Name": {
         "type": ["string", "null"],
         "default": "fallback"
@@ -71,6 +84,10 @@
       "Holder": {
         "type": "object",
         "properties": {
+          "nilName": {"$ref": "#/components/schemas/NilName"},
+          "nilMode": {"$ref": "#/components/schemas/NilMode"},
+          "nilBytes": {"$ref": "#/components/schemas/NilBytes"},
+          "nilNames": {"$ref": "#/components/schemas/NilNames"},
           "name": {
             "$ref": "#/components/schemas/Name"
           },

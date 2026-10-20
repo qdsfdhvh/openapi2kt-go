@@ -112,8 +112,7 @@ func TestComponentDefaultFactoryScalarExclusions(t *testing.T) {
 			}
 		})
 	}
-	// A nullable scalar root keeps the null-literal-only rule for `default: null`,
-	// while a non-null annotation is an ordinary value of the nullable alias.
+	// A nullable scalar root supports both ordinary and null annotations.
 	for _, checked := range []bool{false, true} {
 		plan, _, err := Analyze(loadComponentDocument(t, `{"S":{"type":"string","nullable":true,"default":"x"}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: checked})
 		if err != nil {
@@ -123,8 +122,12 @@ func TestComponentDefaultFactoryScalarExclusions(t *testing.T) {
 		if !ok || alias.ComponentDefault != `"x"` {
 			t.Fatalf("nullable scalar factory lost its value: %+v", componentDeclaration(plan.Models, "SDto"))
 		}
-		if _, _, err := Analyze(loadComponentDocument(t, `{"S":{"type":"string","nullable":true,"default":null}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: checked}); err == nil {
-			t.Fatal("nullable scalar null annotation admitted")
+		nullPlan, _, err := Analyze(loadComponentDocument(t, `{"S":{"type":"string","nullable":true,"default":null}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: checked})
+		if err != nil {
+			t.Fatal(checked, err)
+		}
+		if alias, ok := componentDeclaration(nullPlan.Models, "SDto").(*ValueAlias); !ok || alias.Type.Kind != Nullable || alias.ComponentDefault != "null" {
+			t.Fatal("original nullable scalar null case lost", alias)
 		}
 	}
 }
@@ -177,6 +180,14 @@ func TestComponentDefaultFactoryCollectionAuthority(t *testing.T) {
 	if !ok || bag.ComponentDefault != `{"k":1}` {
 		t.Fatalf("lost Map alias or factory: %+v", bags)
 	}
+	// The exact original nullable-root refusal now owns a null factory.
+	nullPlan, _, err := Analyze(loadComponentDocument(t, `{"S":{"type":"array","nullable":true,"items":{"type":"string"},"default":null}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if alias, ok := componentDeclaration(nullPlan.Models, "SDto").(*ValueAlias); !ok || alias.Type.Kind != Nullable || alias.ComponentDefault != "null" {
+		t.Fatal("original nullable List null case lost", alias)
+	}
 }
 
 // Collection roles the field walk already excludes stay excluded at the root.
@@ -185,7 +196,6 @@ func TestComponentDefaultFactoryCollectionExclusionAuthority(t *testing.T) {
 		{"nested container", `{"S":{"type":"array","items":{"type":"array","items":{"type":"string"}},"default":[["a"]]}}`},
 		{"allOf wrapped", `{"S":{"allOf":[{"type":"array","items":{"type":"string"}}],"default":["a"]}}`},
 		{"ref element", `{"T":{"type":"string"},"S":{"type":"array","items":{"$ref":"#/components/schemas/T"},"default":["a"]}}`},
-		{"nullable root", `{"S":{"type":"array","nullable":true,"items":{"type":"string"},"default":null}}`},
 		{"bad element", `{"S":{"type":"array","items":{"type":"integer"},"default":["a"]}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -213,6 +223,14 @@ func TestComponentDefaultFactoryTemporalAuthority(t *testing.T) {
 	if !ok || dayAlias.ComponentDefault != `"2024-02-29"` || dayAlias.Scalar != "kotlinx.datetime.LocalDate" {
 		t.Fatalf("lost LocalDate alias or factory: %+v", day)
 	}
+	// Preserve the original nullable temporal refusal as a positive case.
+	nullPlan, _, err := Analyze(loadComponentDocument(t, `{"S":{"type":"string","nullable":true,"format":"date","default":null}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if alias, ok := componentDeclaration(nullPlan.Models, "SDto").(*ValueAlias); !ok || alias.Type.Kind != Nullable || alias.ComponentDefault != "null" {
+		t.Fatal("original nullable date null case lost", alias)
+	}
 }
 
 // A bad lexeme and a non-temporal format keep their existing rejection.
@@ -221,7 +239,6 @@ func TestComponentDefaultFactoryTemporalExclusions(t *testing.T) {
 		{"bad date lexeme", `{"S":{"type":"string","format":"date","default":"2023-02-29"}}`},
 		{"bad instant lexeme", `{"S":{"type":"string","format":"date-time","default":"nope"}}`},
 		{"bytes format", `{"S":{"type":"string","format":"byte","default":"AAEC"}}`},
-		{"nullable temporal", `{"S":{"type":"string","nullable":true,"format":"date","default":null}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if _, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true}); err == nil {

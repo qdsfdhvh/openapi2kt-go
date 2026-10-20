@@ -133,7 +133,11 @@ func emitObjectDefaultHelpers(declaration schema.Declaration, owner string, out 
 				}
 			}
 		case *schema.StringEnum:
-			if d.ComponentDefault != "" {
+			if d.ComponentDefault == "null" {
+				// The physical enum classifier stays non-null; only this opt-in
+				// factory returns the nullable root value from its source schema.
+				fmt.Fprintf(out, "\n// The OpenAPI component default for this schema.\npublic fun `%s default`(): %s? = null\n", d.ClassName, d.ClassName)
+			} else if d.ComponentDefault != "" {
 				name := componentDefaultHelperName(scope, d.ClassName)
 				if !seen[name] {
 					seen[name] = true

@@ -24,6 +24,7 @@ import org.example.nulldefaults.models.`NamesDto default`
 suspend fun nullableComponentDefaultsContracts() {
     for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }
+        componentNullDefaultsContracts(codec)
 
         // Every admitted shape decodes its own annotation through the alias.
         check(`NameDto default`() == "fallback")

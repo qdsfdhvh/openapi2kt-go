@@ -215,14 +215,26 @@ func TestComponentDefaultFactoryCollections(t *testing.T) {
 	}
 }
 
-// Nested containers, allOf-wrapped containers, reference elements, nullable
-// roots and bad elements keep the exclusions the field role already enforces.
+// Preserve the exact original nullable collection refusal as a positive case.
+func TestComponentDefaultFactoryNullableCollectionNullGraduation(t *testing.T) {
+	r := request([]byte(`{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","nullable":true,"items":{"type":"string"},"default":null}}}}`), "Dto")
+	r.Options.Validation = true
+	got, err := core.GenerateWithDiagnostics(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if text := source(t, got, "SDto"); !strings.Contains(text, "public fun `SDto default`(): SDto =") || !strings.Contains(text, `("null")`) {
+		t.Fatal(text)
+	}
+}
+
+// Nested containers, allOf-wrapped containers, reference elements and bad
+// elements keep the exclusions the field role already enforces.
 func TestComponentDefaultFactoryCollectionExclusions(t *testing.T) {
 	for _, tc := range []struct{ name, input string }{
 		{"nested container", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","items":{"type":"array","items":{"type":"string"}},"default":[["a"]]}}}}`},
 		{"allOf wrapped", `{"openapi":"3.1.0","components":{"schemas":{"S":{"allOf":[{"type":"array","items":{"type":"string"}}],"default":["a"]}}}}`},
 		{"ref element", `{"openapi":"3.1.0","components":{"schemas":{"T":{"type":"string"},"S":{"type":"array","items":{"$ref":"#/components/schemas/T"},"default":["a"]}}}}`},
-		{"nullable root", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","nullable":true,"items":{"type":"string"},"default":null}}}}`},
 		{"bad element", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","items":{"type":"integer"},"default":["a"]}}}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

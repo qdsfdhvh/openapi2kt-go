@@ -47,19 +47,12 @@ func (a *analyzer) componentDefaultShape(c *component) bool {
 	if has(c.Schema, "$ref") {
 		return a.referenceWrapperDefaultCandidate(c)
 	}
-	// A nullable root keeps the field rule that optional presence never
-	// authorizes a null annotation, so `default: null` stays limited to ordinary
-	// object roots. A **non-null** annotation is an ordinary value of the same
-	// admitted shapes: the declaration keeps its nullable public type and the
-	// factory simply returns a non-null instance of it.
-	if nullable && get(c.Schema, "default").Kind() == document.Null {
-		// Keep the nullable-component-counts role out of this contract: a root
-		// that also declares whole-object counts retains its own diagnostic.
-		if hasObjectCounts(c.Schema) {
-			return false
-		}
-		return kind == "object" && objectDefaultCandidateSchema(c.Schema) &&
-			!has(c.Schema, "oneOf") && !has(c.Schema, "anyOf") && !has(c.Schema, "allOf")
+	// Null uses the same direct scalar/enum/collection source roles as a
+	// non-null annotation. Keep nullable composition and raw carriers separate;
+	// their null factories do not acquire a role from this dispatch.
+	if nullable && get(c.Schema, "default").Kind() == document.Null &&
+		(has(c.Schema, "oneOf") || has(c.Schema, "anyOf") || has(c.Schema, "allOf") || rawJSONComponentRoot(c.Schema)) {
+		return false
 	}
 	if nullable && hasObjectCounts(c.Schema) {
 		// A counted nullable root is a separate role regardless of its annotation.
@@ -309,8 +302,8 @@ func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
 func (a *analyzer) collectionComponentDefaultCandidate(c *component) bool {
 	// A component root is a *single* container layer over a leaf element. Nested
 	// containers, allOf-wrapped containers and union variants keep exactly the
-	// exclusions the field role already enforces. A nullable root is reached only
-	// with a non-null annotation, so the container itself is still ordinary.
+	// exclusions the field role already enforces. Null annotations validate the
+	// whole source tree too; they never grant a new element/default role.
 	kind, _, err := schemaType(c.Schema, c.Pointer)
 	if err != nil {
 		return false
@@ -418,7 +411,13 @@ func (a *analyzer) scalarComponentNode(c *component) (*nestedDefaultNode, *diagn
 		}
 		return &nestedDefaultNode{schema: c.Schema, pointer: c.Pointer, ty: TypeRef{Kind: JSON}}, nil
 	}
-	if err := a.scalarComponentValue(c.Schema, value, c.Pointer, at); err != nil {
+	if value.Kind() == document.Null {
+		// Only the direct component role gains null. Reuse explicit schema
+		// nullability without widening scalarTargetEncoded's wrapper role.
+		if _, err := scalarSchemaDefault(c.Schema, c.Pointer); err != nil {
+			return nil, err
+		}
+	} else if err := a.scalarComponentValue(c.Schema, value, c.Pointer, at); err != nil {
 		return nil, err
 	}
 	rootKind, _, rootErr := schemaType(c.Schema, c.Pointer)

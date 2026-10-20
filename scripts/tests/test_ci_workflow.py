@@ -61,8 +61,19 @@ class CIWorkflowTests(unittest.TestCase):
         self.assertLess(body.index(preparation), body.index(execution))
         self.assertIn('feature directional-models', body)
         self.assertIn('feature raw-response-media', body)
+        self.assertIn('feature referenced-bytes-field-defaults', body)
+        self.assertIn('feature nullable-component-defaults', body)
         self.assertNotIn('continue-on-error:', body)
         self.assertNotIn('always()', body)
+
+    def test_nullable_component_consumers_run_in_the_http_registry(self):
+        contracts = ROOT / 'samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts'
+        registry = (contracts / 'HttpContracts.kt').read_text()
+        consumer = (contracts / 'NullableComponentDefaultsContracts.kt').read_text()
+        self.assertRegex(registry, r'(?m)^\s+nullableComponentDefaultsContracts\(\)\s*$')
+        self.assertRegex(consumer, r'(?m)^\s+componentNullDefaultsContracts\(codec\)\s*$')
+        # Compilation alone must not substitute for runtime registration.
+        self.assertTrue((contracts / 'ComponentNullDefaultsContracts.kt').is_file())
 
     def test_native_package_gate_checks_current_version_and_installation(self):
         text = (ROOT / '.github/workflows/ci.yml').read_text()

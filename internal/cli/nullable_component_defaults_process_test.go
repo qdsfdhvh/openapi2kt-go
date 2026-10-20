@@ -39,6 +39,11 @@ func TestNullableComponentDefaultsNativeParity(t *testing.T) {
 					t.Fatal("nullable factory missing from native output", string(alias))
 				}
 
+				nullEnum := string(read(t, p.Output+"/org/example/catalog/models/NilModeDto.kt"))
+				if !strings.Contains(nullEnum, "public fun `NilModeDto default`(): NilModeDto? = null") {
+					t.Fatal("nullable enum null factory missing", nullEnum)
+				}
+
 				before := snapshot(t, p.Output)
 				result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
 				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
@@ -59,6 +64,17 @@ func TestNullableComponentDefaultsNativeParity(t *testing.T) {
 				}
 				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
 					t.Fatal("bad nullable default changed owned outputs")
+				}
+				badNull := bytes.Replace(document, []byte(`"type": ["string", "null"], "default": null`), []byte(`"type": "string", "default": null`), 1)
+				if bytes.Equal(badNull, document) {
+					t.Fatal("null-factory fixture annotation missing")
+				}
+				put(t, p.Input, badNull)
+				for _, command := range [][]string{args, append(append([]string{}, args...), "--check")} {
+					failure := fails(t, invoke(t, p.Root, command...), 1, "E_SCHEMA_INVALID")
+					if failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != "/components/schemas/NilName/default" || !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("nonnullable null factory did not preserve output", failure)
+					}
 				}
 			})
 		}

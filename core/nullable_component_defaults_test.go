@@ -10,7 +10,7 @@ import (
 
 // An explicitly nullable component root accepts a **non-null** annotation: the
 // declaration keeps its nullable public type and the factory returns an ordinary
-// instance of it. The null literal keeps the separate nullable-object rule.
+// instance of it. Explicit null factories have their own positive controls.
 func TestNullableComponentDefaults(t *testing.T) {
 	for _, checked := range []bool{false, true} {
 		for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
@@ -70,15 +70,10 @@ func TestNullableComponentDefaults(t *testing.T) {
 	}
 }
 
-// Null stays admitted only for ordinary nullable object roots; every other
-// nullable shape keeps its rejection, and whole-object counts keep their role.
+// Source roles outside the nullable factory contract keep their rejections.
 func TestNullableComponentDefaultGuards(t *testing.T) {
 	for _, checked := range []bool{false, true} {
 		for _, tc := range []struct{ name, schemas, code, pointer string }{
-			{"null scalar", `{"N":{"type":["string","null"],"default":null}}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/N/default"},
-			{"null list", `{"N":{"type":["array","null"],"items":{"type":"string"},"default":null}}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/N/default"},
-			{"null map", `{"N":{"type":["object","null"],"additionalProperties":{"type":"string"},"default":null}}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/N/default"},
-			{"null enum", `{"N":{"type":["string","null"],"enum":["a"],"default":null}}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/N/default"},
 			{"wrong kind", `{"N":{"type":["string","null"],"default":5}}`, "E_SCHEMA_INVALID", "/components/schemas/N/default"},
 			{"enum non-member", `{"N":{"type":["string","null"],"enum":["a"],"default":"z"}}`, "E_SCHEMA_INVALID", "/components/schemas/N/default"},
 			{"list element", `{"N":{"type":["array","null"],"items":{"type":"integer"},"default":["a"]}}`, "E_SCHEMA_INVALID", "/components/schemas/N/default/0"},
@@ -93,6 +88,25 @@ func TestNullableComponentDefaultGuards(t *testing.T) {
 					t.Fatalf("%s: want %s at %s, got %v", tc.name, tc.code, tc.pointer, err)
 				}
 			})
+		}
+	}
+}
+
+// Keep the exact original rejected inputs as explicit positive regressions.
+func TestNullableComponentNullOriginalRejectionsNowAccepted(t *testing.T) {
+	for _, input := range []string{
+		`{"N":{"type":["string","null"],"default":null}}`,
+		`{"N":{"type":["array","null"],"items":{"type":"string"},"default":null}}`,
+		`{"N":{"type":["object","null"],"additionalProperties":{"type":"string"},"default":null}}`,
+		`{"N":{"type":["string","null"],"enum":["a"],"default":null}}`,
+	} {
+		for _, checked := range []bool{false, true} {
+			r := request(schemas(input), "Dto")
+			r.Options.Validation = checked
+			got, err := core.GenerateWithDiagnostics(r)
+			if err != nil || !strings.Contains(source(t, got, "NDto"), "public fun `NDto default`()") {
+				t.Fatal(input, checked, err)
+			}
 		}
 	}
 }

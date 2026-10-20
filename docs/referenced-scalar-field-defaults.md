@@ -1,5 +1,7 @@
 # Referenced scalar field defaults
 
+[Referenced byte field own defaults](referenced-bytes-field-defaults.md) separately admit scalar byte/binary annotations on existing paths, using signed-array JSON and bounded typed helpers with the same required/Patch/source budgets.
+
 [Referenced String enum scalar field defaults](referenced-string-enum-scalar-defaults.md) separately extend the own-default role to plain String/typeless enum references, retaining actual lexical classifiers, strict annotation vocabulary and open runtime Strings.
 
 [Referenced native enum scalar field defaults](referenced-native-enum-scalar-defaults.md) separately extend the ordinary field own-default role to already admitted numeric/Boolean enum references, preserving strict generation-time vocabulary checks and existing validation admission.
