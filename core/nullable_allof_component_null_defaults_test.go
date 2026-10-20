@@ -62,7 +62,7 @@ func TestNullableAllOfComponentNullFactoryGuards(t *testing.T) {
 			{"invalid omitted child default", `{"N":{"allOf":[{"properties":{"a":{"type":"integer","default":"bad"}}}],"nullable":true,"default":null}}`},
 			{"invalid discarded child", `{"N":{"allOf":[{"properties":{"a":{"type":"invalid"}}},{"properties":{"a":{"type":"string"}}}],"nullable":true,"default":null}}`},
 			{"union product", `{"N":{"allOf":[{"oneOf":[{"properties":{"a":{"type":"string"}}},{"properties":{"b":{"type":"integer"}}}]}],"nullable":true,"default":null}}`},
-			{"nullable wrapper", `{"T":{"allOf":[{"properties":{"a":{"type":"string"}}}]},"N":{"$ref":"#/components/schemas/T","nullable":true,"default":null}}`},
+			{"explicit false wrapper", `{"T":{"allOf":[{"properties":{"a":{"type":"string"}}}]},"N":{"$ref":"#/components/schemas/T","nullable":false,"default":null}}`},
 		} {
 			t.Run(fmt.Sprintf("%s/checked=%t", tc.name, checked), func(t *testing.T) {
 				r := request(schemas(tc.body), "Dto")

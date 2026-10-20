@@ -65,16 +65,19 @@ func TestRawJSONWrapperDefaultGuards(t *testing.T) {
 			{`"type":"object","additionalProperties":true`, `"default":null`, "E_SCHEMA_UNSUPPORTED"},
 			{`"type":"object"`, `"default":null`, "E_SCHEMA_UNSUPPORTED"},
 			{`"type":"object","nullable":false`, `"default":null`, "E_SCHEMA_UNSUPPORTED"},
-			{`"type":"object","nullable":true`, `"nullable":true,"default":null`, "E_SCHEMA_UNSUPPORTED"},
-			{`"type":"object","nullable":true`, `"nullable":false,"default":{}`, "E_SCHEMA_UNSUPPORTED"},
-			{`"type":"object","default":{"a":1}`, `"default":{}`, "E_SCHEMA_UNSUPPORTED"},
+			{`"type":"object","nullable":true`, `"nullable":false,"default":null`, "E_SCHEMA_UNSUPPORTED"},
+			{`"type":"object","additionalProperties":true,"default":false`, `"default":{}`, "E_SCHEMA_INVALID"},
 			{`"type":"object","format":"raw"`, `"default":{}`, "E_SCHEMA_UNSUPPORTED"},
 		} {
 			r := request(schemas(`{"T":{`+tc.target+`},"N":{"$ref":"#/components/schemas/T",`+tc.wrapper+`}}`), "Dto")
 			r.Options.Validation = checked
 			report, err := core.GenerateWithDiagnostics(r)
 			ds, ok := err.(core.Diagnostics)
-			if !ok || len(ds) == 0 || ds[0].Code != tc.code || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/N/default" || !reflect.DeepEqual(report, core.GenerationReport{}) {
+			pointer := "/components/schemas/N/default"
+			if strings.Contains(tc.target, `"default":false`) {
+				pointer = "/components/schemas/T/default"
+			}
+			if !ok || len(ds) == 0 || ds[0].Code != tc.code || ds[0].Pointer == nil || *ds[0].Pointer != pointer || !reflect.DeepEqual(report, core.GenerationReport{}) {
 				t.Fatal("raw wrapper grammar or Pointer changed", tc, checked, err)
 			}
 		}
@@ -92,10 +95,10 @@ func TestRawJSONWrapperDefaultGuards(t *testing.T) {
 				t.Fatal("null raw wrapper bypassed original target validation", target, checked, err)
 			}
 		}
-		r := request(schemas(`{"T":{"type":"object"},"M":{"$ref":"#/components/schemas/T","nullable":false},"N":{"$ref":"#/components/schemas/M","default":{}}}`), "Dto")
+		r := request(schemas(`{"T":{"type":"object"},"M":{"$ref":"#/components/schemas/T","nullable":false,"default":null},"N":{"$ref":"#/components/schemas/M","default":{}}}`), "Dto")
 		r.Options.Validation = checked
 		if _, err := core.GenerateWithDiagnostics(r); err == nil {
-			t.Fatal("chain nullable override acquired a factory role")
+			t.Fatal("chain ignored an invalid intermediate default")
 		}
 	}
 }

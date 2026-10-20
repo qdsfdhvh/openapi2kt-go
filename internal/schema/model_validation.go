@@ -30,7 +30,13 @@ func (a *analyzer) boundedPrimitiveType(v *document.Value, pointer string, depth
 	if err := object(v, pointer); err != nil {
 		return TypeRef{}, nil, err
 	}
-	if err := checkKeys(v, append([]string{"type", "nullable", "format"}, primitiveBoundKeys...), pointer); err != nil {
+	keys := append([]string{"type", "nullable", "format"}, primitiveBoundKeys...)
+	// Only an original component node admitted by the factory planner owns a
+	// root annotation here. Arbitrary bounded typed uses keep their grammar.
+	if a.componentDefaultSchemas[v] {
+		keys = append(keys, "default")
+	}
+	if err := checkKeys(v, keys, pointer); err != nil {
 		return TypeRef{}, nil, err
 	}
 	kind, nullable, err := schemaType(v, pointer)

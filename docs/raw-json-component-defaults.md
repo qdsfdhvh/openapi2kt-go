@@ -64,8 +64,7 @@ the [reference wrapper contract](reference-wrapper-component-defaults.md#raw-jso
 The wrapper owns the annotation and uses the target's actual alias/null intent;
 the target and consuming fields never inherit it. Finite pure component alias
 chains are admitted under the [chain rules](reference-wrapper-component-defaults.md#finite-pure-component-alias-chains).
-Explicit nullable wrappers/intermediate aliases and intermediate/target defaults
-retain their restrictions.
+Outer and intermediate nullable booleans follow the [nearest-intent wrapper profile](reference-wrapper-component-defaults.md#nullable-intent-across-component-aliases). Admitted target/intermediate defaults are [independently owned](reference-wrapper-component-defaults.md#independent-defaults-on-target-and-intermediate-components); a referencing alias or field never inherits them.
 A completely untyped `{}` component does not acquire a root factory role here.
 
 ## Diagnostics and resources

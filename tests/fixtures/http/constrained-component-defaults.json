@@ -1,0 +1,123 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Constrained scalar component defaults",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "Text": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 6,
+        "pattern": "^[a-z]+$",
+        "default": "given"
+      },
+      "Count": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 10,
+        "multipleOf": 2,
+        "default": 4
+      },
+      "Ratio": {
+        "type": "number",
+        "exclusiveMinimum": 0,
+        "exclusiveMaximum": 2,
+        "default": 1.5
+      },
+      "NullText": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "minLength": 2,
+        "maxLength": 6,
+        "default": null
+      },
+      "NullCount": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "minimum": 0,
+        "maximum": 10,
+        "multipleOf": 2,
+        "default": null
+      },
+      "NullRatio": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "exclusiveMinimum": 0,
+        "maximum": 2,
+        "default": null
+      },
+      "Middle": {
+        "$ref": "#/components/schemas/Text",
+        "nullable": true,
+        "default": null
+      },
+      "Outer": {
+        "$ref": "#/components/schemas/Middle",
+        "nullable": false,
+        "default": "outer"
+      },
+      "CountAlias": {
+        "$ref": "#/components/schemas/Count",
+        "default": 6
+      },
+      "Plain": {
+        "$ref": "#/components/schemas/Outer"
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "$ref": "#/components/schemas/Text"
+          },
+          "count": {
+            "$ref": "#/components/schemas/Count"
+          },
+          "ratio": {
+            "$ref": "#/components/schemas/Ratio"
+          },
+          "nullText": {
+            "$ref": "#/components/schemas/NullText"
+          },
+          "nullCount": {
+            "$ref": "#/components/schemas/NullCount"
+          },
+          "nullRatio": {
+            "$ref": "#/components/schemas/NullRatio"
+          },
+          "middle": {
+            "$ref": "#/components/schemas/Middle"
+          },
+          "outer": {
+            "$ref": "#/components/schemas/Outer"
+          },
+          "plain": {
+            "$ref": "#/components/schemas/Plain"
+          }
+        }
+      },
+      "Required": {
+        "type": "object",
+        "required": [
+          "text",
+          "count"
+        ],
+        "properties": {
+          "text": {
+            "$ref": "#/components/schemas/Text"
+          },
+          "count": {
+            "$ref": "#/components/schemas/Count"
+          }
+        }
+      }
+    }
+  }
+}

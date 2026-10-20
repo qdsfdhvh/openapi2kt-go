@@ -1,0 +1,485 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Independent component defaults",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "TargetObject": {
+        "type": "object",
+        "required": [
+          "z"
+        ],
+        "properties": {
+          "z": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "z": "target"
+        }
+      },
+      "BridgeObject": {
+        "$ref": "#/components/schemas/TargetObject"
+      },
+      "MiddleObject": {
+        "$ref": "#/components/schemas/BridgeObject",
+        "nullable": true,
+        "default": {
+          "z": "middle"
+        }
+      },
+      "OuterObject": {
+        "$ref": "#/components/schemas/MiddleObject",
+        "nullable": false,
+        "default": {
+          "z": "outer"
+        }
+      },
+      "NullObject": {
+        "$ref": "#/components/schemas/OuterObject",
+        "nullable": true,
+        "default": null
+      },
+      "PlainObject": {
+        "$ref": "#/components/schemas/MiddleObject"
+      },
+      "TargetCombined": {
+        "allOf": [
+          {
+            "properties": {
+              "z": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "z"
+            ]
+          }
+        ],
+        "default": {
+          "z": "target"
+        }
+      },
+      "BridgeCombined": {
+        "$ref": "#/components/schemas/TargetCombined"
+      },
+      "MiddleCombined": {
+        "$ref": "#/components/schemas/BridgeCombined",
+        "nullable": true,
+        "default": {
+          "z": "middle"
+        }
+      },
+      "OuterCombined": {
+        "$ref": "#/components/schemas/MiddleCombined",
+        "nullable": false,
+        "default": {
+          "z": "outer"
+        }
+      },
+      "NullCombined": {
+        "$ref": "#/components/schemas/OuterCombined",
+        "nullable": true,
+        "default": null
+      },
+      "PlainCombined": {
+        "$ref": "#/components/schemas/MiddleCombined"
+      },
+      "TargetRows": {
+        "type": "array",
+        "items": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "default": [
+          "target"
+        ]
+      },
+      "BridgeRows": {
+        "$ref": "#/components/schemas/TargetRows"
+      },
+      "MiddleRows": {
+        "$ref": "#/components/schemas/BridgeRows",
+        "nullable": true,
+        "default": [
+          "middle",
+          null
+        ]
+      },
+      "OuterRows": {
+        "$ref": "#/components/schemas/MiddleRows",
+        "nullable": false,
+        "default": [
+          "outer"
+        ]
+      },
+      "NullRows": {
+        "$ref": "#/components/schemas/OuterRows",
+        "nullable": true,
+        "default": null
+      },
+      "PlainRows": {
+        "$ref": "#/components/schemas/MiddleRows"
+      },
+      "TargetMap": {
+        "additionalProperties": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "default": {
+          "z": 1
+        }
+      },
+      "BridgeMap": {
+        "$ref": "#/components/schemas/TargetMap"
+      },
+      "MiddleMap": {
+        "$ref": "#/components/schemas/BridgeMap",
+        "nullable": true,
+        "default": {
+          "z": 2,
+          "nil": null
+        }
+      },
+      "OuterMap": {
+        "$ref": "#/components/schemas/MiddleMap",
+        "nullable": false,
+        "default": {
+          "z": 3
+        }
+      },
+      "NullMap": {
+        "$ref": "#/components/schemas/OuterMap",
+        "nullable": true,
+        "default": null
+      },
+      "PlainMap": {
+        "$ref": "#/components/schemas/MiddleMap"
+      },
+      "TargetMode": {
+        "type": "string",
+        "enum": [
+          "a",
+          "b",
+          "c"
+        ],
+        "default": "a"
+      },
+      "BridgeMode": {
+        "$ref": "#/components/schemas/TargetMode"
+      },
+      "MiddleMode": {
+        "$ref": "#/components/schemas/BridgeMode",
+        "nullable": true,
+        "default": "b"
+      },
+      "OuterMode": {
+        "$ref": "#/components/schemas/MiddleMode",
+        "nullable": false,
+        "default": "c"
+      },
+      "NullMode": {
+        "$ref": "#/components/schemas/OuterMode",
+        "nullable": true,
+        "default": null
+      },
+      "PlainMode": {
+        "$ref": "#/components/schemas/MiddleMode"
+      },
+      "TargetDay": {
+        "type": "string",
+        "format": "date",
+        "default": "2024-01-01"
+      },
+      "BridgeDay": {
+        "$ref": "#/components/schemas/TargetDay"
+      },
+      "MiddleDay": {
+        "$ref": "#/components/schemas/BridgeDay",
+        "nullable": true,
+        "default": "2024-02-29"
+      },
+      "OuterDay": {
+        "$ref": "#/components/schemas/MiddleDay",
+        "nullable": false,
+        "default": "2024-12-31"
+      },
+      "NullDay": {
+        "$ref": "#/components/schemas/OuterDay",
+        "nullable": true,
+        "default": null
+      },
+      "PlainDay": {
+        "$ref": "#/components/schemas/MiddleDay"
+      },
+      "TargetBlob": {
+        "type": "string",
+        "format": "byte",
+        "default": [
+          -128
+        ]
+      },
+      "BridgeBlob": {
+        "$ref": "#/components/schemas/TargetBlob"
+      },
+      "MiddleBlob": {
+        "$ref": "#/components/schemas/BridgeBlob",
+        "nullable": true,
+        "default": [
+          0
+        ]
+      },
+      "OuterBlob": {
+        "$ref": "#/components/schemas/MiddleBlob",
+        "nullable": false,
+        "default": [
+          127
+        ]
+      },
+      "NullBlob": {
+        "$ref": "#/components/schemas/OuterBlob",
+        "nullable": true,
+        "default": null
+      },
+      "PlainBlob": {
+        "$ref": "#/components/schemas/MiddleBlob"
+      },
+      "TargetRaw": {
+        "type": "object",
+        "default": {
+          "nil": null
+        }
+      },
+      "BridgeRaw": {
+        "$ref": "#/components/schemas/TargetRaw"
+      },
+      "MiddleRaw": {
+        "$ref": "#/components/schemas/BridgeRaw",
+        "nullable": true,
+        "default": [
+          1,
+          null
+        ]
+      },
+      "OuterRaw": {
+        "$ref": "#/components/schemas/MiddleRaw",
+        "nullable": false,
+        "default": "outer"
+      },
+      "NullRaw": {
+        "$ref": "#/components/schemas/OuterRaw",
+        "nullable": true,
+        "default": null
+      },
+      "PlainRaw": {
+        "$ref": "#/components/schemas/MiddleRaw"
+      },
+      "TargetOpen": {
+        "additionalProperties": true,
+        "default": {
+          "z": 1
+        }
+      },
+      "BridgeOpen": {
+        "$ref": "#/components/schemas/TargetOpen"
+      },
+      "MiddleOpen": {
+        "$ref": "#/components/schemas/BridgeOpen",
+        "nullable": true,
+        "default": {
+          "z": 2,
+          "nil": null
+        }
+      },
+      "OuterOpen": {
+        "$ref": "#/components/schemas/MiddleOpen",
+        "nullable": false,
+        "default": {
+          "z": 3
+        }
+      },
+      "NullOpen": {
+        "$ref": "#/components/schemas/OuterOpen",
+        "nullable": true,
+        "default": null
+      },
+      "PlainOpen": {
+        "$ref": "#/components/schemas/MiddleOpen"
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "targetObject": {
+            "$ref": "#/components/schemas/TargetObject"
+          },
+          "middleObject": {
+            "$ref": "#/components/schemas/MiddleObject"
+          },
+          "outerObject": {
+            "$ref": "#/components/schemas/OuterObject"
+          },
+          "nullObject": {
+            "$ref": "#/components/schemas/NullObject"
+          },
+          "plainObject": {
+            "$ref": "#/components/schemas/PlainObject"
+          },
+          "targetCombined": {
+            "$ref": "#/components/schemas/TargetCombined"
+          },
+          "middleCombined": {
+            "$ref": "#/components/schemas/MiddleCombined"
+          },
+          "outerCombined": {
+            "$ref": "#/components/schemas/OuterCombined"
+          },
+          "nullCombined": {
+            "$ref": "#/components/schemas/NullCombined"
+          },
+          "plainCombined": {
+            "$ref": "#/components/schemas/PlainCombined"
+          },
+          "targetRows": {
+            "$ref": "#/components/schemas/TargetRows"
+          },
+          "middleRows": {
+            "$ref": "#/components/schemas/MiddleRows"
+          },
+          "outerRows": {
+            "$ref": "#/components/schemas/OuterRows"
+          },
+          "nullRows": {
+            "$ref": "#/components/schemas/NullRows"
+          },
+          "plainRows": {
+            "$ref": "#/components/schemas/PlainRows"
+          },
+          "targetMap": {
+            "$ref": "#/components/schemas/TargetMap"
+          },
+          "middleMap": {
+            "$ref": "#/components/schemas/MiddleMap"
+          },
+          "outerMap": {
+            "$ref": "#/components/schemas/OuterMap"
+          },
+          "nullMap": {
+            "$ref": "#/components/schemas/NullMap"
+          },
+          "plainMap": {
+            "$ref": "#/components/schemas/PlainMap"
+          },
+          "targetMode": {
+            "$ref": "#/components/schemas/TargetMode"
+          },
+          "middleMode": {
+            "$ref": "#/components/schemas/MiddleMode"
+          },
+          "outerMode": {
+            "$ref": "#/components/schemas/OuterMode"
+          },
+          "nullMode": {
+            "$ref": "#/components/schemas/NullMode"
+          },
+          "plainMode": {
+            "$ref": "#/components/schemas/PlainMode"
+          },
+          "targetDay": {
+            "$ref": "#/components/schemas/TargetDay"
+          },
+          "middleDay": {
+            "$ref": "#/components/schemas/MiddleDay"
+          },
+          "outerDay": {
+            "$ref": "#/components/schemas/OuterDay"
+          },
+          "nullDay": {
+            "$ref": "#/components/schemas/NullDay"
+          },
+          "plainDay": {
+            "$ref": "#/components/schemas/PlainDay"
+          },
+          "targetBlob": {
+            "$ref": "#/components/schemas/TargetBlob"
+          },
+          "middleBlob": {
+            "$ref": "#/components/schemas/MiddleBlob"
+          },
+          "outerBlob": {
+            "$ref": "#/components/schemas/OuterBlob"
+          },
+          "nullBlob": {
+            "$ref": "#/components/schemas/NullBlob"
+          },
+          "plainBlob": {
+            "$ref": "#/components/schemas/PlainBlob"
+          },
+          "targetRaw": {
+            "$ref": "#/components/schemas/TargetRaw"
+          },
+          "middleRaw": {
+            "$ref": "#/components/schemas/MiddleRaw"
+          },
+          "outerRaw": {
+            "$ref": "#/components/schemas/OuterRaw"
+          },
+          "nullRaw": {
+            "$ref": "#/components/schemas/NullRaw"
+          },
+          "plainRaw": {
+            "$ref": "#/components/schemas/PlainRaw"
+          },
+          "targetOpen": {
+            "$ref": "#/components/schemas/TargetOpen"
+          },
+          "middleOpen": {
+            "$ref": "#/components/schemas/MiddleOpen"
+          },
+          "outerOpen": {
+            "$ref": "#/components/schemas/OuterOpen"
+          },
+          "nullOpen": {
+            "$ref": "#/components/schemas/NullOpen"
+          },
+          "plainOpen": {
+            "$ref": "#/components/schemas/PlainOpen"
+          }
+        }
+      },
+      "Required": {
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/OuterObject"
+          }
+        }
+      },
+      "NullTarget": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": "string"
+        },
+        "default": null
+      },
+      "NonNullOverNull": {
+        "$ref": "#/components/schemas/NullTarget",
+        "nullable": false,
+        "default": [
+          "outer"
+        ]
+      }
+    }
+  }
+}

@@ -197,8 +197,14 @@ func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Di
 	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind) {
 		// The enum/scalar roles own their own validation above; the canonical
 		// value is the literal JSON of the annotation itself.
-		if _, err := validation.scalarComponentNode(c); err != nil {
+		node, err := validation.scalarComponentNode(c)
+		if err != nil {
 			return "", err
+		}
+		if value.Kind() != document.Null && isPlainScalarRoot(c.Schema, kind) && hasPrimitiveBounds(c.Schema) {
+			if _, err := node.value(value, at); err != nil {
+				return "", err
+			}
 		}
 		encoded, marshalErr := value.MarshalJSON()
 		if marshalErr != nil {
@@ -499,56 +505,72 @@ func isBytesScalarRoot(v *document.Value, kind string) bool {
 // This runs during markComponentDefaultSource, before a.components exists, so the
 // target is read from the source document instead of the catalog.
 func (a *analyzer) referenceWrapperDefaultCandidate(c *component) bool {
-	if c == nil || has(c.Schema, "nullable") ||
+	if c == nil ||
 		has(c.Schema, "oneOf") || has(c.Schema, "anyOf") || has(c.Schema, "const") {
 		return false
 	}
-	targetPointer, targetSchema, ok := a.referenceWrapperDefaultTarget(c)
-	if !ok {
+	target := a.referenceWrapperDefaultTarget(c)
+	if target == nil {
 		return false
 	}
-	targetKind, _, kindErr := schemaType(targetSchema, targetPointer)
+	targetKind, _, kindErr := schemaType(target.Schema, target.Pointer)
 	if kindErr != nil {
 		return false
 	}
 	// A `$ref` to a plain scalar is itself a validation-opt-in alias, so a wrapper
 	// must not widen that role; leaving it out keeps the original rejection.
-	if !a.options.Validation && isPlainScalarRoot(targetSchema, targetKind) {
+	if !a.options.Validation && isPlainScalarRoot(target.Schema, targetKind) {
 		return false
 	}
-	return a.componentDefaultShape(&component{Wire: targetPointer, Name: targetPointer, Pointer: targetPointer, Schema: targetSchema})
+	return a.componentDefaultShape(&component{Wire: target.Pointer, Name: target.Pointer, Pointer: target.Pointer, Schema: target.Schema})
 }
 
-// referenceWrapperDefaultTarget follows only annotation-free, pure component
-// aliases. Both source admission and value validation use this same terminal;
-// no intermediate default or nullable override can disappear during traversal.
-func (a *analyzer) referenceWrapperDefaultTarget(c *component) (string, *document.Value, bool) {
+// wrapperDefaultSource retains the original terminal and the nearest explicit
+// alias intent separately. A nil Nullable keeps the terminal's existing grammar.
+type wrapperDefaultSource struct {
+	Pointer  string
+	Schema   *document.Value
+	Nullable *bool
+}
+
+// referenceWrapperDefaultTarget follows finite component aliases without copying
+// or expanding sources. The nearest explicit nullable wins, just as in the shared
+// alias resolver. Defaults are validated independently on their original owners;
+// walking through an annotation neither inherits it nor grants its owner a role.
+func (a *analyzer) referenceWrapperDefaultTarget(c *component) *wrapperDefaultSource {
 	if c == nil {
-		return "", nil, false
+		return nil
 	}
 	reference, ok := get(c.Schema, "$ref").Text()
 	if !ok {
-		return "", nil, false
+		return nil
 	}
+	intent := nullableOverride(c.Schema)
 	seen := map[*document.Value]bool{c.Schema: true}
 	for steps := 1; steps <= MaxSchemaDepth; steps++ {
 		pointer, target, ok := a.componentSchemaAtReference(reference)
-		if !ok || seen[target] || has(target, "default") {
-			return "", nil, false
+		if !ok || seen[target] {
+			return nil
 		}
 		seen[target] = true
 		if !has(target, "$ref") {
-			return pointer, target, true
+			return &wrapperDefaultSource{Pointer: pointer, Schema: target, Nullable: intent}
 		}
-		if has(target, "nullable") || checkKeys(target, []string{"$ref"}, pointer) != nil {
-			return "", nil, false
+		if checkKeys(target, []string{"$ref", "nullable", "default"}, pointer) != nil {
+			return nil
+		}
+		if _, _, err := schemaType(target, pointer); err != nil {
+			return nil
+		}
+		if intent == nil {
+			intent = nullableOverride(target)
 		}
 		reference, ok = get(target, "$ref").Text()
 		if !ok {
-			return "", nil, false
+			return nil
 		}
 	}
-	return "", nil, false
+	return nil
 }
 
 // componentSchemaAtReference returns the original schema node a local component
@@ -574,12 +596,12 @@ func (a *analyzer) componentSchemaAtReference(reference string) (string, *docume
 // the wrapper's annotation. The shared default planners read the annotation from
 // the schema node, so this lets them validate the wrapper's value without writing
 // a key into the target's original node.
-func (a *analyzer) wrapperValidationView(target, value *document.Value, at string) (*document.Value, *diagnostic.Diagnostic) {
-	targetJSON, err := target.MarshalJSON()
+func (a *analyzer) wrapperValidationView(target *wrapperDefaultSource, wrapper *document.Value, at string) (*document.Value, *diagnostic.Diagnostic) {
+	targetJSON, err := target.Schema.MarshalJSON()
 	if err != nil {
 		return nil, unsupported(at)
 	}
-	valueJSON, err := value.MarshalJSON()
+	valueJSON, err := get(wrapper, "default").MarshalJSON()
 	if err != nil {
 		return nil, diagnostic.At("E_JSON_INVALID", "Component default must encode to valid JSON.", at)
 	}
@@ -587,12 +609,26 @@ func (a *analyzer) wrapperValidationView(target, value *document.Value, at strin
 	if err := json.Unmarshal(targetJSON, &fields); err != nil || fields == nil {
 		return nil, unsupported(at)
 	}
-	// Two defaults for one value is ambiguous, so a target that already owns an
-	// annotation stays rejected.
-	if _, exists := fields["default"]; exists {
-		return nil, unsupported(at)
-	}
+	// Each component owns its annotation. Replace only the temporary view's
+	// root default, leaving the target's independent factory and validation on
+	// its original source node. Child annotations keep their existing grammar.
 	fields["default"] = valueJSON
+	// Override only this temporary root view. For OpenAPI 3.1 the type array's
+	// null member must also be removed on narrowing; nullable:false alone cannot
+	// override schemaType's union of both source forms. Child nullability stays.
+	if target.Nullable != nil {
+		fields["nullable"], _ = json.Marshal(*target.Nullable)
+		if !*target.Nullable {
+			var kinds []string
+			if json.Unmarshal(fields["type"], &kinds) == nil && len(kinds) > 0 {
+				kinds = slices.DeleteFunc(kinds, func(kind string) bool { return kind == "null" })
+				if len(kinds) != 1 {
+					return nil, unsupported(at)
+				}
+				fields["type"], _ = json.Marshal(kinds[0])
+			}
+		}
+	}
 	combined, err := json.Marshal(fields)
 	if err != nil {
 		return nil, unsupported(at)
@@ -614,15 +650,15 @@ func (a *analyzer) referenceWrapperDefaultEncoded(c *component, validation *anal
 	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
 		return "", err
 	}
-	targetPointer, targetSchema, ok := a.referenceWrapperDefaultTarget(c)
-	if !ok {
+	target := a.referenceWrapperDefaultTarget(c)
+	if target == nil {
 		return "", unsupported(at)
 	}
-	view, err := a.wrapperValidationView(targetSchema, value, at)
+	view, err := a.wrapperValidationView(target, c.Schema, at)
 	if err != nil {
 		return "", err
 	}
-	shadow := &component{Wire: targetPointer, Name: targetPointer, Pointer: c.Pointer, Schema: view}
+	shadow := &component{Wire: target.Pointer, Name: target.Pointer, Pointer: c.Pointer, Schema: view}
 	validation.objectDefaultSchemas[view] = true
 	validation.componentDefaultSchemas[view] = true
 	// Raw carrier targets retain their own value/null grammar. The ordinary
@@ -633,6 +669,32 @@ func (a *analyzer) referenceWrapperDefaultEncoded(c *component, validation *anal
 	// A scalar, enum, temporal or bytes target owns its own leaf grammar; the
 	// nested collection walk would misclassify the value for those shapes.
 	if validation.scalarLeafTarget(view) {
+		kind, _, _ := schemaType(view, c.Pointer)
+		if target.Nullable != nil || isPlainScalarRoot(view, kind) && hasPrimitiveBounds(view) {
+			// Explicit alias intent and bounded plain scalars use the component
+			// leaf role, including source validation for null and annotation checks.
+			// Other chains retain their existing scalarTargetEncoded policy.
+			node, err := validation.scalarComponentNode(shadow)
+			if err != nil {
+				return "", err
+			}
+			if value.Kind() != document.Null && isPlainScalarRoot(view, kind) {
+				// Planning retains primitive checks; visiting the annotation is
+				// what enforces them. Keep the original JSON token for emission.
+				if _, err := node.value(value, at); err != nil {
+					return "", err
+				}
+			}
+			encoded, marshalErr := value.MarshalJSON()
+			if marshalErr != nil {
+				return "", invalid("A component default must encode to valid JSON.", at)
+			}
+			if len(encoded) > maxNestedDefaultBytes {
+				return "", diagnostic.At("E_MODEL_LIMIT", "Canonical component default exceeds the supported 32 KiB JSON byte limit.", at)
+			}
+			a.warnings = mergeWarnings(a.warnings, validation.warnings)
+			return string(encoded), nil
+		}
 		encoded, scalarErr := validation.scalarTargetEncoded(view, value, c.Pointer, at)
 		if scalarErr != nil {
 			return "", scalarErr
@@ -643,6 +705,12 @@ func (a *analyzer) referenceWrapperDefaultEncoded(c *component, validation *anal
 	node, nodeErr := validation.componentDefaultNode(shadow)
 	if nodeErr != nil {
 		return "", nodeErr
+	}
+	if target.Nullable != nil {
+		node.ty = node.ty.WithoutRootNull()
+		if *target.Nullable {
+			node.ty = node.ty.Null()
+		}
 	}
 	encoded, valErr := node.value(value, at)
 	if valErr != nil {

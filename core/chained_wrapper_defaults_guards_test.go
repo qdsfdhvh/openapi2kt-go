@@ -27,15 +27,13 @@ func TestChainedWrapperDefaultValuePointersAndExclusions(t *testing.T) {
 			}
 		}
 		for _, middle := range []string{
-			`"$ref":"#/components/schemas/T","nullable":true`,
-			`"$ref":"#/components/schemas/T","nullable":false`,
-			`"$ref":"#/components/schemas/T","default":{"z":"middle"}`,
+			`"$ref":"#/components/schemas/T","default":{"z":1}`,
 		} {
 			r := request(schemas(`{"T":{"properties":{"z":{"type":"string"}}},"M":{`+middle+`},"N":{"$ref":"#/components/schemas/M","default":{"z":"outer"}}}`), "Dto")
 			r.Options.Validation = checked
 			report, err := core.GenerateWithDiagnostics(r)
 			ds, ok := err.(core.Diagnostics)
-			if !ok || len(ds) == 0 || ds[0].Code != "E_SCHEMA_UNSUPPORTED" || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/N/default" || !reflect.DeepEqual(report, core.GenerationReport{}) {
+			if !ok || len(ds) == 0 || ds[0].Code != "E_SCHEMA_INVALID" || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/M/default/z" || !reflect.DeepEqual(report, core.GenerationReport{}) {
 				t.Fatal("chain discarded an intermediate annotation", middle, checked, err)
 			}
 		}
@@ -45,7 +43,7 @@ func TestChainedWrapperDefaultValuePointersAndExclusions(t *testing.T) {
 			`{"N":{"$ref":"#/components/schemas/M","default":{}},"M":{"$ref":"#/components/schemas/Missing"}}`,
 			`{"N":{"$ref":"#/components/schemas/M","default":{}},"M":{"$ref":false}}`,
 			`{"N":{"$ref":"#/components/schemas/M","default":{}},"M":{"$ref":"#/components/schemas/T","minLength":0},"T":{"type":"object"}}`,
-			`{"N":{"$ref":"#/components/schemas/M","default":{}},"M":{"$ref":"#/components/schemas/T"},"T":{"type":"object","default":{}}}`,
+			`{"N":{"$ref":"#/components/schemas/M","default":{}},"M":{"$ref":"#/components/schemas/T"},"T":{"type":"object","additionalProperties":true,"default":false}}`,
 			`{"N":{"$ref":"#/components/schemas/M","default":null},"M":{"$ref":"#/components/schemas/T"},"T":{"type":"object"}}`,
 		} {
 			r := request(schemas(body), "Dto")

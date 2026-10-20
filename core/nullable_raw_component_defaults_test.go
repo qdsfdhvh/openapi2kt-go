@@ -62,7 +62,7 @@ func TestNullableRawComponentNullFactoryGuards(t *testing.T) {
 			`{"R":{"type":"object","nullable":true,"additionalProperties":true,"properties":{"a":{"type":"string"}},"default":null}}`,
 			`{"R":{"type":"object","nullable":true,"oneOf":[{"type":"string"},{"type":"integer"}],"default":null}}`,
 			`{"R":{"type":"object","nullable":true,"format":"raw","default":null}}`,
-			`{"T":{"type":"object","nullable":true},"R":{"$ref":"#/components/schemas/T","nullable":true,"default":null}}`,
+			`{"T":{"type":"object","nullable":true},"R":{"$ref":"#/components/schemas/T","nullable":false,"default":null}}`,
 		} {
 			r := request(schemas(body), "Dto")
 			r.Options.Validation = checked

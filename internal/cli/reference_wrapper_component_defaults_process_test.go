@@ -28,7 +28,7 @@ func TestReferenceWrapperComponentDefaultsNativeParity(t *testing.T) {
 						t.Fatal("native/core chain factory mismatch", file.Path)
 					}
 				}
-				for _, name := range []string{"WrappedObject", "WrappedNested", "WrappedRaw", "WrappedNilRaw", "WrappedNilObject"} {
+				for _, name := range []string{"WrappedObject", "WrappedNested", "WrappedRaw", "WrappedNilRaw", "WrappedNilObject", "NullableObject", "NullObject", "NullableCombined", "NullCombined", "NullableNested", "NullNested", "NullableMode", "NullMode", "NullableDay", "NullDay", "NullableBlob", "NullBlob", "NullableRaw", "NullRaw", "NullableOpen", "NullOpen"} {
 					content := string(read(t, filepath.Join(p.Output, "org/example/catalog/models/"+name+"Dto.kt")))
 					if !strings.Contains(content, "public fun `"+name+"Dto default`()") {
 						t.Fatal("native chain factory missing", name)
@@ -44,9 +44,12 @@ func TestReferenceWrapperComponentDefaultsNativeParity(t *testing.T) {
 					name, component, key, code, pointer string
 					value                               any
 				}{
+					{"nullable deep value", "NullableNested", "default", "E_SCHEMA_INVALID", "/components/schemas/NullableNested/default/0/a~1~0", []any{map[string]any{"a/~": false}}},
+					{"nullable enum value", "NullableMode", "default", "E_SCHEMA_INVALID", "/components/schemas/NullableMode/default", "future"},
+					{"narrowed wrapper", "NullObject", "nullable", "E_SCHEMA_INVALID", "/components/schemas/NullObject/default", false},
 					{"deep value", "WrappedNested", "default", "E_SCHEMA_INVALID", "/components/schemas/WrappedNested/default/0/a~1~0", []any{map[string]any{"a/~": false}}},
-					{"middle default", "ObjectBridge", "default", "E_SCHEMA_UNSUPPORTED", "/components/schemas/WrappedObject/default", map[string]any{"z": "middle"}},
-					{"middle nullable", "ObjectBridge", "nullable", "E_SCHEMA_UNSUPPORTED", "/components/schemas/WrappedObject/default", false},
+					{"invalid middle default", "ObjectBridge", "default", "E_SCHEMA_INVALID", "/components/schemas/ObjectBridge/default", map[string]any{}},
+					{"middle constraint", "ObjectBridge", "minLength", "E_SCHEMA_UNSUPPORTED", "/components/schemas/NullObject/default", 0},
 				} {
 					t.Run(tc.name, func(t *testing.T) {
 						var bad map[string]any
@@ -63,7 +66,8 @@ func TestReferenceWrapperComponentDefaultsNativeParity(t *testing.T) {
 						for _, command := range [][]string{args, append(append([]string{}, args...), "--check")} {
 							failure := fails(t, invoke(t, p.Root, command...), 1, tc.code)
 							if failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != tc.pointer || !reflect.DeepEqual(before, snapshot(t, p.Output)) {
-								t.Fatal("invalid chain did not retain original Pointer/output", failure)
+								details, _ := json.Marshal(failure.Diagnostics)
+								t.Fatalf("invalid chain did not retain original Pointer/output: got=%s want=%s", details, tc.pointer)
 							}
 						}
 					})
