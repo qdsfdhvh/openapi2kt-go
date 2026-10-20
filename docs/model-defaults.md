@@ -1,5 +1,9 @@
 # Scalar defaults on DTO fields
 
+[Nullable component factories](nullable-component-defaults.md) accept null on eligible explicitly nullable direct scalar/temporal/bytes/enum/single-layer collection roots, retaining actual types, complete source checks and opt-in adoption without field inheritance.
+
+[Referenced byte fields](referenced-bytes-field-defaults.md) accept their own annotations through existing scalar and finite List/typed Map byte/binary paths. Signed-array wire, actual source/alias authority, required/Patch and whole-annotation budgets remain; typed helpers keep large scalar initializers bounded.
+
 [Signed-byte leaves](bytes-default-trees.md) extend existing finite collection/object default trees using the current ByteArray signed-array codec, original per-byte Pointers, fresh arrays, required/Patch and whole-tree budgets.
 
 [Referenced String enum scalar fields](referenced-string-enum-scalar-defaults.md) accept their own annotations on already admitted plain enum paths, preserving the actual lexical classifier, strict original vocabulary and open runtime Strings.

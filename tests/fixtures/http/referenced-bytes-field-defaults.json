@@ -1,0 +1,75 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Referenced byte field own defaults", "version": "1"},
+  "components": {"schemas": {
+    "Bytes": {"type": "string", "format": "byte", "nullable": true},
+    "Binary": {"type": "string", "format": "binary"},
+    "Alias": {"$ref": "#/components/schemas/Bytes"},
+    "Hops": {"properties": {
+      "value": {"$ref": "#/components/schemas/Alias", "nullable": false},
+      "again": {"$ref": "#/components/schemas/Hops/properties/value", "nullable": true},
+      "rows": {"$ref": "#/components/schemas/RowsAlias", "nullable": false}
+    }},
+    "Bridge": {"$ref": "#/components/schemas/Hops/properties/again", "nullable": false},
+    "Rows": {"type": "array", "items": {"$ref": "#/components/schemas/Alias"}},
+    "RowsAlias": {"$ref": "#/components/schemas/Rows", "nullable": true},
+    "Bags": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Bytes"}},
+    "Nested": {"type": "array", "items": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Binary"}}},
+    "Capped": {"type": "array", "items": {"type": "string", "format": "binary"}},
+    "Holder": {"properties": {
+      "requiredBlob": {"$ref": "#/components/schemas/Binary", "default": [9]},
+      "blob": {"$ref": "#/components/schemas/Alias", "default": [-128, 0, 127]},
+      "binary": {"$ref": "#/components/schemas/Binary", "default": [1]},
+      "bridge": {"$ref": "#/components/schemas/Bridge", "default": [3]},
+      "internal": {"$ref": "#/components/schemas/Hops/properties/again", "default": [4]},
+      "empty": {"$ref": "#/components/schemas/Binary", "default": []},
+      "nil": {"$ref": "#/components/schemas/Bytes", "default": null},
+      "repeated": {"$ref": "#/components/schemas/Alias", "default": [-128, 0, 127]},
+      "rows": {"$ref": "#/components/schemas/RowsAlias", "default": [[-128, 127], null, []]},
+      "bags": {"$ref": "#/components/schemas/Bags", "default": {"z": [1], "a/~": null, "$ref": [2]}},
+      "nested": {"$ref": "#/components/schemas/Nested", "default": [{"bytes": [3]}]},
+      "internalRows": {"$ref": "#/components/schemas/Hops/properties/rows", "default": [[4]]},
+      "emptyRows": {"$ref": "#/components/schemas/Rows", "default": []},
+      "nilRows": {"$ref": "#/components/schemas/RowsAlias", "default": null},
+      "capped": {"$ref": "#/components/schemas/Capped", "default": [[1]]},
+      "child": {"properties": {"blob": {"$ref": "#/components/schemas/Binary", "default": [5]}}},
+      "kotlin": {"type": "string"},
+      "kotlinx": {"type": "string"}
+    }, "required": ["requiredBlob"]},
+    "RequiredNullable": {"properties": {"blob": {"$ref": "#/components/schemas/Bytes", "default": [1]}}, "required": ["blob"]},
+    "Discarded": {"allOf": [
+      {"properties": {"blob": {"$ref": "#/components/schemas/Bytes", "default": [8]}}},
+      {"properties": {"blob": {"type": "string"}}}
+    ]}
+  }},
+  "paths": {
+    "/records": {"post": {
+      "operationId": "save",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}},
+      "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}
+    }},
+    "/patch": {"patch": {
+      "operationId": "patch",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+        "properties": {
+          "blob": {"$ref": "#/components/schemas/Bytes", "default": [1]},
+          "requiredBlob": {"$ref": "#/components/schemas/Bytes", "default": [2]},
+          "rows": {"$ref": "#/components/schemas/RowsAlias", "default": [[1]]}
+        }, "required": ["requiredBlob"]
+      }}}},
+      "responses": {"204": {}}
+    }},
+    "/events": {"get": {
+      "operationId": "watch",
+      "responses": {"200": {"content": {"text/event-stream": {"schema": {
+        "properties": {"event": {"type": "string", "const": "record"}, "data": {"$ref": "#/components/schemas/Holder"}},
+        "required": ["data"]
+      }}}}}
+    }},
+    "/raw": {"post": {
+      "operationId": "raw",
+      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Bytes"}}}},
+      "responses": {"200": {"content": {"application/octet-stream": {"schema": {"$ref": "#/components/schemas/Binary"}}}}}
+    }}
+  }
+}

@@ -9,6 +9,10 @@ openapi_kt_build_cli "$workspace/openapi-kt"
   --output "$workspace/project/build/generated-limits/raw-response-media" --package-name org.example.rawmedia --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/raw-response-media.json \
   --output "$workspace/project/build/generated-limits/raw-response-media" --package-name org.example.rawmedia --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/referenced-bytes-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/referenced-bytes-field-defaults" --package-name org.example.refbytes --api-client-name ReferencedBytes --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/referenced-bytes-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/referenced-bytes-field-defaults" --package-name org.example.refbytes --api-client-name ReferencedBytes --model-name-suffix Dto --check
 for profile in directional directionaloptions; do
   options=()
   if [[ "$profile" == directionaloptions ]]; then

@@ -1,5 +1,7 @@
 # Signed-byte leaves in default trees
 
+[Referenced byte field own defaults](referenced-bytes-field-defaults.md) separately accept ordinary `$ref` fields' annotations through existing byte/binary scalar and finite List/typed Map paths, retaining actual sources, required/Patch and whole-annotation budgets.
+
 Existing finite collection and ordinary object default trees accept direct `type: string` leaves with `format: byte` or `binary`. They use the same `ByteArray` serializer as [direct bytes fields](bytes-field-defaults.md): the default is a JSON array of signed integers in `[-128,127]`.
 
 ```json

@@ -132,11 +132,23 @@ func TestBytesComponentDefaultsEmitTopLevelFactory(t *testing.T) {
 	}
 }
 
-// Nullable root null defaults keep their separate role. Bad byte values retain
-// their original dedicated diagnostics, including per-element Pointers.
+func TestBytesComponentNullableNullFactoryGraduation(t *testing.T) {
+	for _, checked := range []bool{false, true} {
+		r := request(schemas(`{"S":{"type":"string","format":"byte","nullable":true,"default":null}}`), "Dto")
+		r.Options.Validation = checked
+		got, err := core.GenerateWithDiagnostics(r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if text := source(t, got, "SDto"); !strings.Contains(text, "typealias SDto = kotlin.ByteArray?") || !strings.Contains(text, `("null")`) {
+			t.Fatal("original nullable byte case lost", text)
+		}
+	}
+}
+
+// Bad byte values retain their original dedicated diagnostics and Pointers.
 func TestBytesComponentDefaultsKeepRoleBoundaries(t *testing.T) {
 	for _, c := range []struct{ name, doc, pointer string }{
-		{"nullableRoot", `{"S":{"type":"string","format":"byte","nullable":true,"default":null}}`, "/components/schemas/S/default"},
 		{"badElement", `{"S":{"type":"string","format":"byte","default":[128]}}`, "/components/schemas/S/default/0"},
 		{"base64", `{"S":{"type":"string","format":"byte","default":"AAEC"}}`, "/components/schemas/S/default"},
 	} {

@@ -32,7 +32,7 @@ Admitted here: a `byte`/`binary` component **root**. Related roles and their out
 | `default: "AAEC"` (base64 text) | `E_SCHEMA_INVALID @ …/default` |
 | `default: [128]` / `[-129]` | `E_SCHEMA_INVALID @ …/default/0` |
 | bytes element inside a `List`/`Map` root | Eligible single-layer factories use the [tree contract](bytes-default-trees.md) |
-| nullable bytes root with `default: null` | `E_SCHEMA_UNSUPPORTED @ …/default` |
+| nullable bytes root with `default: null` | nullable alias factory under the [nullable component contract](nullable-component-defaults.md) |
 | `$ref` wrapper, `allOf`, union, `const`, caller-native, value class | its own role |
 
 The root builds its node directly. Signed-byte collection/object-default leaves separately reuse the [bounded tree walk](bytes-default-trees.md), with per-byte diagnostics and whole-annotation limits.

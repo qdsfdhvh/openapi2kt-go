@@ -11,7 +11,9 @@ import (
 // Parse a validated literal inside a private file helper. Passing one JSON
 // string avoids unbounded vararg initializers and keeps package qualifiers out
 // of constructor scopes with legitimate kotlin/kotlinx field names. Maps and
-// lists use distinct helper names even when their primitive leaves match.
+// lists use distinct helper names even when their primitive leaves match. Byte
+// scalar references use this path too, so the largest accepted byte annotation
+// does not expand into a large byteArrayOf initializer.
 func emitArrayDefaultHelpers(declaration schema.Declaration, out *strings.Builder) {
 	types := map[string]string{}
 	var visit func(schema.Declaration)
@@ -23,7 +25,8 @@ func emitArrayDefaultHelpers(declaration schema.Declaration, out *strings.Builde
 					continue
 				}
 				ty := p.Type.WithoutRootNull()
-				if (ty.Kind != schema.List && ty.Kind != schema.Map && ty.Kind != schema.Named) || ty.Element == nil {
+				bytes := ty.Kind == schema.Scalar && ty.Name == "kotlin.ByteArray" && ty.Serializer == ""
+				if !bytes && ((ty.Kind != schema.List && ty.Kind != schema.Map && ty.Kind != schema.Named) || ty.Element == nil) {
 					continue
 				}
 				index := strings.Index(p.Default, "`(")
