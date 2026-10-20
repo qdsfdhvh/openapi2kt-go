@@ -14,7 +14,7 @@ The field remains a `List<ByteArray>` with its existing optional-null view. A pr
 
 - An ordinary direct inline DTO collection field's own outer default can contain byte leaves through its existing finite List/typed Map tree. Root containers and byte leaves have independent explicit nullable intent.
 - Existing ordinary object-default walks can contain byte-valued properties, including a direct reference to an already accepted byte component. Actual DTO/alias serializers and original source nodes remain authoritative.
-- The existing single-layer component List/Map factory role accepts non-null byte leaves. Existing component and reference-wrapper factory admission otherwise stays separate. Consumer fields never inherit a target factory's default.
+- The [finite nested component List/Map factory role](nested-component-defaults.md) accepts byte leaves with independently nullable containers and leaves. Other component and reference-wrapper admission stays separate. Consumer fields never inherit a target factory's default.
 
 Required fields still have no constructor initializer. A default on a request-only nullable collection does not replace `Patch.Absent`; `Patch.Null` and `Patch.Value` retain their wire states. Earlier allOf annotations are still validated before being discarded. A supplied value overrides a default; an explicit null is retained where the public optional-null field permits it. Annotation null requires explicit schema nullability.
 

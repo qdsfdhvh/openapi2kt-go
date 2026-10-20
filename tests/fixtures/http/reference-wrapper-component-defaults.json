@@ -37,7 +37,7 @@
         }
       },
       "WrappedObject": {
-        "$ref": "#/components/schemas/Target",
+        "$ref": "#/components/schemas/ObjectBridge",
         "default": {
           "z": "1"
         }
@@ -49,7 +49,7 @@
         }
       },
       "WrappedRows": {
-        "$ref": "#/components/schemas/Rows",
+        "$ref": "#/components/schemas/RowsBridge",
         "default": [
           "x"
         ]
@@ -62,7 +62,7 @@
         ]
       },
       "WrappedMode": {
-        "$ref": "#/components/schemas/Mode",
+        "$ref": "#/components/schemas/ModeBridge",
         "default": "a"
       },
       "Day": {
@@ -70,7 +70,7 @@
         "format": "date"
       },
       "WrappedDay": {
-        "$ref": "#/components/schemas/Day",
+        "$ref": "#/components/schemas/DayBridge",
         "default": "2024-02-29"
       },
       "Blob": {
@@ -78,7 +78,7 @@
         "format": "byte"
       },
       "WrappedBlob": {
-        "$ref": "#/components/schemas/Blob",
+        "$ref": "#/components/schemas/BlobBridge",
         "default": [
           -128,
           127
@@ -107,6 +107,127 @@
           },
           "plain": {
             "$ref": "#/components/schemas/PlainAlias"
+          },
+          "nested": {
+            "$ref": "#/components/schemas/WrappedNested"
+          },
+          "raw": {
+            "$ref": "#/components/schemas/WrappedRaw"
+          },
+          "nilRaw": {
+            "$ref": "#/components/schemas/WrappedNilRaw"
+          },
+          "nilObject": {
+            "$ref": "#/components/schemas/WrappedNilObject"
+          }
+        }
+      },
+      "TargetBridge": {
+        "$ref": "#/components/schemas/Target"
+      },
+      "RowsBridge": {
+        "$ref": "#/components/schemas/Rows"
+      },
+      "ModeBridge": {
+        "$ref": "#/components/schemas/Mode"
+      },
+      "DayBridge": {
+        "$ref": "#/components/schemas/Day"
+      },
+      "BlobBridge": {
+        "$ref": "#/components/schemas/Blob"
+      },
+      "ObjectBridge": {
+        "$ref": "#/components/schemas/TargetBridge",
+        "description": "Pure component alias"
+      },
+      "Nested": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "NestedBridge": {
+        "$ref": "#/components/schemas/Nested"
+      },
+      "WrappedNested": {
+        "$ref": "#/components/schemas/NestedBridge",
+        "default": [
+          {
+            "a": 2,
+            "b": null
+          },
+          {}
+        ]
+      },
+      "Raw": {
+        "type": "object"
+      },
+      "RawBridge": {
+        "$ref": "#/components/schemas/Raw"
+      },
+      "WrappedRaw": {
+        "$ref": "#/components/schemas/RawBridge",
+        "default": {
+          "$ref": "data",
+          "nil": null
+        }
+      },
+      "MaybeRaw": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": true
+      },
+      "MaybeRawBridge": {
+        "$ref": "#/components/schemas/MaybeRaw"
+      },
+      "WrappedNilRaw": {
+        "$ref": "#/components/schemas/MaybeRawBridge",
+        "default": null
+      },
+      "MaybeObject": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "z": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "z"
+        ]
+      },
+      "MaybeObjectBridge": {
+        "$ref": "#/components/schemas/MaybeObject"
+      },
+      "WrappedNilObject": {
+        "$ref": "#/components/schemas/MaybeObjectBridge",
+        "default": null
+      },
+      "RequiredHolder": {
+        "type": "object",
+        "required": [
+          "object",
+          "raw",
+          "nilRaw"
+        ],
+        "properties": {
+          "object": {
+            "$ref": "#/components/schemas/WrappedObject"
+          },
+          "raw": {
+            "$ref": "#/components/schemas/WrappedRaw"
+          },
+          "nilRaw": {
+            "$ref": "#/components/schemas/WrappedNilRaw"
           }
         }
       }

@@ -29,3 +29,28 @@ func TestComponentNullFactoriesRetainSourceAndBacking(t *testing.T) {
 		t.Fatal("null factory changed original document", err)
 	}
 }
+
+func TestAllOfComponentNullFactoryRetainsSourceAndConstructor(t *testing.T) {
+	root := loadComponentDocument(t, `{"N":{"allOf":[{"properties":{"a":{"type":"string"}},"required":["a"]},{"properties":{"b":{"type":"integer"}}}],"nullable":true,"default":null}}`)
+	before, err := root.MarshalJSON()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, checked := range []bool{false, true} {
+		plan, _, failure := Analyze(root, Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: checked})
+		if failure != nil {
+			t.Fatal(failure)
+		}
+		model := componentModel(plan.Models, "NDto")
+		if model == nil || model.ComponentDefault != "null" || !model.Nullable || len(model.Properties) != 2 {
+			t.Fatal("allOf null factory changed its constructor", model)
+		}
+		if model.Properties[0].WireName != "a" || model.Properties[0].Default != "" || model.Properties[0].Type.Kind == Nullable || model.Properties[1].WireName != "b" {
+			t.Fatal("allOf source order or required presence changed", model.Properties)
+		}
+		after, err := root.MarshalJSON()
+		if err != nil || string(before) != string(after) {
+			t.Fatal("allOf null factory changed original document", err)
+		}
+	}
+}

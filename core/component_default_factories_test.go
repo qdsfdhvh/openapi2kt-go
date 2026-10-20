@@ -228,11 +228,10 @@ func TestComponentDefaultFactoryNullableCollectionNullGraduation(t *testing.T) {
 	}
 }
 
-// Nested containers, allOf-wrapped containers, reference elements and bad
-// elements keep the exclusions the field role already enforces.
+// allOf-wrapped containers, reference elements and bad elements keep
+// the exclusions the field role already enforces.
 func TestComponentDefaultFactoryCollectionExclusions(t *testing.T) {
 	for _, tc := range []struct{ name, input string }{
-		{"nested container", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","items":{"type":"array","items":{"type":"string"}},"default":[["a"]]}}}}`},
 		{"allOf wrapped", `{"openapi":"3.1.0","components":{"schemas":{"S":{"allOf":[{"type":"array","items":{"type":"string"}}],"default":["a"]}}}}`},
 		{"ref element", `{"openapi":"3.1.0","components":{"schemas":{"T":{"type":"string"},"S":{"type":"array","items":{"$ref":"#/components/schemas/T"},"default":["a"]}}}}`},
 		{"bad element", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","items":{"type":"integer"},"default":["a"]}}}}`},

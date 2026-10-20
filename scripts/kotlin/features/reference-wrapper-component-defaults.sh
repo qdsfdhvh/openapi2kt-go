@@ -22,6 +22,10 @@ p=Path(sys.argv[1]);copy='' if sys.argv[2]=='plain_class' else '''
  val value=org.example.refwrapper.models.HolderDto()
  check(value.copy(mode=org.example.refwrapper.models.ModeDto.B).mode==org.example.refwrapper.models.ModeDto.B)
  check(value.copy().rows==null)
+ val adopted=value.copy(nested=org.example.refwrapper.models.`WrappedNestedDto default`(), raw=org.example.refwrapper.models.`WrappedRawDto default`())
+ check(adopted.nested?.get(0)?.get("a")==2)
+ check(adopted.copy(nested=null, raw=null).nested==null)
+ check(adopted.copy(nested=null, raw=null).raw==null)
 '''
 (p/'src/main/kotlin/org/example/contracts/Main.kt').write_text('''package org.example.contracts
 import kotlinx.coroutines.runBlocking

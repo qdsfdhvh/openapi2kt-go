@@ -49,6 +49,8 @@ public typealias NamesDto = kotlin.collections.List<kotlin.String>
 public fun `NamesDto default`(): NamesDto = `openapi-kt component default ... NamesDto`("[\"a\"]")
 ```
 
+Supported leaves may be nullable independently of the outer collection: a non-null `List<String?>` can carry `[null, "a"]`, and a nullable `Map<String, Int?>?` can carry either `{"a": null}` or `null`. A null annotation still validates the whole original schema. Only the outer schema authorizes a null collection; only the leaf schema authorizes null members. The existing scalar, temporal, enum and signed-byte leaf grammar and budgets apply. Finite nested List/typed Map trees also admit root factories under the [nested component contract](nested-component-defaults.md). Reference/composition elements and child defaults retain their exclusions. Eligible `$ref`-only wrapper factories also admit these collection targets under the [wrapper contract](reference-wrapper-component-defaults.md).
+
 A disjoint ordinary `allOf` constructor emits the companion form, mirroring the consuming-field allOf walk:
 
 ```kotlin
@@ -80,8 +82,8 @@ Admission reuses the existing default planner for property defaults; this contra
 - plain inline ordinary object (explicit or inferred `type: "object"` with declared properties);
 - disjoint ordinary `allOf` constructor roots;
 - plain scalar roots (`string`, `integer`, `number`, `boolean`), standard temporal roots (`format: date` / `date-time`), plain unformatted String-enum roots, and numeric/Boolean native enum roots (`int32`/`int64`/`float`/`double` numeric vocabularies and Boolean vocabularies);
-- a single-layer List or typed Map root whose element/value is a leaf the nested collection default walk already supports (builtin scalar, temporal, String enum, native enum, or [signed bytes](bytes-default-trees.md));
-- nullable direct scalar/temporal/bytes/enum/single-layer collection roots with a null annotation under the [nullable component contract](nullable-component-defaults.md);
+- a finite inline List/typed Map tree whose terminal is a nullable or non-nullable leaf the nested collection default walk already supports (builtin scalar, temporal, String enum, native enum, or [signed bytes](bytes-default-trees.md));
+- nullable direct scalar/temporal/bytes/enum/finite inline collection roots with a null annotation under the [nullable component contract](nullable-component-defaults.md);
 - disjoint ordinary `allOf` constructor;
 - named/internal `$ref` collection trees already admitted by the referenced collection default roles;
 - scalar, temporal, String enum, numeric/Boolean native enum, `bigint`, and primitive union leaves;
@@ -94,14 +96,14 @@ Admission reuses the existing default planner for property defaults; this contra
 - Reference wrappers use the separate [wrapper contract](reference-wrapper-component-defaults.md); the direct nullable-root role does not widen their null permission.
 - Scalar roots with a non-temporal `format` (bytes), `x-native-type`, `x-kotlin-value-class`, `const`, `nullable`, `oneOf`/`anyOf` and `$ref` wrappers keep their own roles and their existing rejection at the original `.../default` Pointer.
 - An **unformatted numeric** enum root keeps its existing rejection; a numeric native vocabulary needs the explicit native `format`. The native enum's scalar wire type, exact pre-rounding vocabulary membership and the existing `W_ENUM_NATIVE_APPROXIMATION` warning are retained. A temporal root validates its lexeme through the existing temporal role, so a bad date or instant value is rejected at the annotation.
-- Collection roots keep every exclusion the field role enforces: a nested container element, an `allOf`-wrapped container, a `$ref` element, a composition element and an out-of-vocabulary element all stay rejected. Nullable roots follow the [nullable component contract](nullable-component-defaults.md). Counts and `uniqueItems` retain their existing opt-in behaviour.
+- Collection roots keep every exclusion the field role enforces: an `allOf`-wrapped container, a `$ref` element, a composition element and an out-of-vocabulary element all stay rejected. Nested inline List/typed Map elements follow the [finite tree contract](nested-component-defaults.md). Nullable roots follow the [nullable component contract](nullable-component-defaults.md). Counts and `uniqueItems` retain their existing opt-in behaviour.
 - Empty/raw object projections now have the separate [raw JSON carrier component contract](raw-json-component-defaults.md); const-only projections, hierarchy sources and object-union products keep their separate contracts.
 - A component default is **not inherited**: a property referencing the component does not acquire it, and a consumer's own annotation is unchanged.
 - Request/response inline schemas and operation parameters are unaffected.
 
 ## Nullability and presence
 
-`default: null` requires an explicitly nullable component root and its admitted factory shape, matching the rule that optional presence alone never authorizes annotation null. Ordinary object factories return null directly:
+`default: null` requires an explicitly nullable component root and its admitted factory shape, matching the rule that optional presence alone never authorizes annotation null. Ordinary object and explicitly nullable disjoint ordinary `allOf` factories return null directly:
 
 ```kotlin
 public companion object {
@@ -109,9 +111,9 @@ public companion object {
 }
 ```
 
-Eligible scalar, temporal, bytes and single-layer collection aliases use their actual nullable serializer to decode the null literal. Plain String enums retain the physical classifier and receive a top-level `X default(): X? = null`; their non-null serializers and non-null factories remain unchanged. Native enum roots keep their existing validation-on source role and factory warning.
+Eligible scalar, temporal, bytes and finite inline collection aliases use their actual nullable serializer to decode the null literal. Plain String enums retain the physical classifier and receive a top-level `X default(): X? = null`; their non-null serializers and non-null factories remain unchanged. Native enum roots keep their existing validation-on source role and factory warning.
 
-A nullable root that also declares whole-object counts keeps its separate nullable-component-counts role. Null and non-null annotations follow the precise [nullable component root contract](nullable-component-defaults.md); nullable composition, raw and other excluded roles receive no additional permission.
+A nullable root that also declares whole-object counts keeps its separate nullable-component-counts role. Null and non-null annotations follow the precise [nullable component root contract](nullable-component-defaults.md); other nullable compositions and excluded roles receive no additional permission.
 
 A nullable component still emits its normal nullable public type; the factory signature follows the component's own generated type, not the annotation.
 

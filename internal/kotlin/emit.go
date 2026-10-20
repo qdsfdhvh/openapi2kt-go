@@ -70,6 +70,10 @@ func emitFile(declaration schema.Declaration, pkg, directory string, hints schem
 	return File{Path: directory + "/" + declaration.Name() + ".kt", Content: out.String()}
 }
 
+func modelUsesRawAlias(model *schema.Model) bool {
+	return len(model.Properties) == 0 && len(model.Constants) == 0 && !model.Directional
+}
+
 func emitDeclaration(declaration schema.Declaration, indent int, owner string, hints schema.EmissionHints, out *strings.Builder) {
 	switch d := declaration.(type) {
 	case *schema.PrimitiveValueClass:
@@ -93,7 +97,7 @@ func emitDeclaration(declaration schema.Declaration, indent int, owner string, h
 				d.ClassName, d.ClassName, strings.ReplaceAll(owner+"."+d.ClassName, ".", " "), naming.Literal(d.ComponentDefault))
 		}
 	case *schema.Model:
-		if len(d.Properties) == 0 && len(d.Constants) == 0 && !d.Directional {
+		if modelUsesRawAlias(d) {
 			raw := schema.TypeRef{Kind: schema.JSON}
 			if d.Nullable {
 				raw = raw.Null()

@@ -1,6 +1,7 @@
 package cli_test
 
 import (
+	"bytes"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -36,11 +37,34 @@ func TestRawJSONComponentDefaultsNativeParity(t *testing.T) {
 					!strings.Contains(string(open), "public fun `OpenDto default`()") {
 					t.Fatal("raw carrier factory missing from native output", string(open))
 				}
+				for _, name := range []string{"NullFreeDto", "NullEmptyDto", "NullOpenDto"} {
+					text := string(read(t, p.Output+"/org/example/catalog/models/"+name+".kt"))
+					if !strings.Contains(text, "public fun `"+name+" default`(): "+name+" =") || !strings.Contains(text, `("null")`) || !strings.Contains(text, "private fun `openapi-kt component default ") {
+						t.Fatal("nullable raw factory lost its alias/helper", name, text)
+					}
+				}
 
 				before := snapshot(t, p.Output)
+				result(t, invoke(t, p.Root, args...), 0)
 				result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
 				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
-					t.Fatal("readonly check changed bytes or mtimes")
+					t.Fatal("no-op generation or readonly check changed bytes or mtimes")
+				}
+				for _, tc := range []struct{ original, invalid, code, pointer string }{
+					{`"default": {"kept": null, "z": {"$ref": "data"}}`, `"default": [1]`, "E_SCHEMA_INVALID", "/components/schemas/WrappedOpen/default"},
+					{`"MaybeOpenTarget": {"type": ["object", "null"], "additionalProperties": true}`, `"MaybeOpenTarget": {"type": "object", "additionalProperties": true}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/WrappedNilOpen/default"},
+				} {
+					bad := bytes.Replace(document, []byte(tc.original), []byte(tc.invalid), 1)
+					if bytes.Equal(bad, document) {
+						t.Fatal("raw wrapper fixture case missing", tc.original)
+					}
+					put(t, p.Input, bad)
+					for _, command := range [][]string{args, append(append([]string{}, args...), "--check")} {
+						failure := fails(t, invoke(t, p.Root, command...), 1, tc.code)
+						if failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != tc.pointer || !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+							t.Fatal("invalid raw wrapper default did not preserve output", failure)
+						}
+					}
 				}
 
 				// A wrong-kind annotation reports inside the component and leaves
@@ -53,6 +77,17 @@ func TestRawJSONComponentDefaultsNativeParity(t *testing.T) {
 				}
 				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
 					t.Fatal("bad raw carrier default changed owned outputs")
+				}
+				badNull := bytes.Replace(document, []byte(`"type": "object", "nullable": true, "default": null`), []byte(`"type": "object", "nullable": false, "default": null`), 1)
+				if bytes.Equal(badNull, document) {
+					t.Fatal("nullable raw annotation missing from fixture")
+				}
+				put(t, p.Input, badNull)
+				for _, command := range [][]string{args, append(append([]string{}, args...), "--check")} {
+					failure := fails(t, invoke(t, p.Root, command...), 1, "E_SCHEMA_UNSUPPORTED")
+					if failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != "/components/schemas/NullFree/default" || !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("non-nullable raw null default did not preserve output", failure)
+					}
 				}
 			})
 		}

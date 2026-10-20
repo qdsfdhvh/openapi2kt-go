@@ -89,7 +89,6 @@ func TestNestedStringEnumCollectionDefaultsNullableEmptyLongerAndBeforeSuppressi
 func TestNestedStringEnumCollectionDefaultsIndependentScopeAndCaps(t *testing.T) {
 	field := `{"type":"array","items":{"additionalProperties":{"enum":["one"]}},"default":[]}`
 	for _, input := range []string{
-		`{"Root":` + field + `}`,
 		`{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,
 		`{"Holder":{"properties":{"value":{"type":"array","items":` + field + `}}}}`,
 		`{"Leaf":{"enum":["one"]},"Holder":{"properties":{"value":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Leaf"}},"default":[]}}}}`,

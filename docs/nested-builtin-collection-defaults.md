@@ -1,5 +1,7 @@
 # Finite nested builtin collection defaults
 
+Component root annotations use the separate [finite nested component factory contract](nested-component-defaults.md); these factories do not become field initializers.
+
 [Referenced builtin collection field defaults](referenced-collection-field-defaults.md) extend only the outer ordinary direct `$ref` field role through existing accepted List/Map paths. The direct-inline profile below retains its own grammar; target/chain/child defaults remain rejected.
 
 Direct date/date-time leaves have the separate [nested temporal default contract](nested-temporal-collection-defaults.md), sharing the finite direct-inline grammar and per-layer nullable/count checks. Plain unformatted String enum terminals have the separate [nested String enum default contract](nested-string-enum-collection-defaults.md), preserving actual lexical enums and strict annotation membership with open runtime values; nested enum String bounds/patterns remain rejected. [直接嵌套 native enum 默认值](nested-native-enum-collection-defaults.md)另授予既有 Int/Long/Float/Double/Boolean enum terminal 的 outer-own default，保 native wire、strict source membership 与原 opt-in checks。Other leaf/default roles keep the exclusions below; [signed-byte leaves](bytes-default-trees.md) use their own bounded tree contract.

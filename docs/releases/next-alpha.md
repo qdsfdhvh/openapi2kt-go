@@ -34,14 +34,20 @@ Every profile in this section is **additive**: a schema whose annotation used to
 |---|---|
 | plain ordinary object, disjoint `allOf` constructor | companion member `default()` |
 | plain scalar, String enum, numeric/Boolean native enum, standard temporal (`date`/`date-time`) | top-level factory function named `default` |
-| single-layer List / typed Map with a supported leaf element | top-level factory function named `default` |
+| finite inline List / typed Map tree with supported nullable or non-nullable layers | top-level factory function named `default` |
 | bytes root (`format: byte`/`binary`) with a signed integer array | top-level factory function named `default` |
 | `$ref`-only wrapper over an admitted target | top-level factory function named `default` on the alias |
-| nullable ordinary object with `default: null` | companion member `default()` returning the nullable type, with no decode helper |
+| nullable ordinary object or explicitly nullable disjoint ordinary `allOf` constructor with `default: null` | companion member `default()` returning the nullable type, with no decode helper |
 | explicitly nullable root with a non-null annotation | the shape's own form above, on the nullable public type ([contract](../nullable-component-defaults.md)) |
-| raw JSON carrier (`additionalProperties: true` or unconstrained object) | top-level `default()` on the `JsonObject`/`JsonElement` alias ([contract](../raw-json-component-defaults.md)) |
+| raw JSON carrier (`additionalProperties: true` or an admitted empty-object root), including explicitly nullable `default: null` and eligible pure `$ref` wrappers | top-level `default()` on the actual `JsonObject`/`JsonElement` alias ([contract](../raw-json-component-defaults.md)) |
 
-Still rejected: chained aliases, `nullable` wrappers, `x-native-type`, value classes, `const`, `oneOf`/`anyOf`, empty/raw roots, nested container elements, union elements, and an unformatted numeric enum root. See the [component default factory contract](../component-default-factories.md) for the exact grammar, the retained native-enum approximation warning and the diagnostics that keep their original Pointers.
+Collection factories now accept [finite nested inline List/typed Map trees](../nested-component-defaults.md) and independently nullable containers/leaves, including through an eligible `$ref`-only wrapper. Previously accepted inputs keep their generated API and wire behavior; the new input forms require no migration.
+
+Raw carrier wrappers now validate through the target's own raw grammar and actual alias serializer; target files and referencing fields retain their behavior. Null annotations require the target's explicit nullability. See the [raw wrapper contract](../reference-wrapper-component-defaults.md#raw-json-carrier-targets).
+
+[Finite pure component alias chains](../reference-wrapper-component-defaults.md#finite-pure-component-alias-chains) now let the outer wrapper own a default through annotation-free intermediate aliases. The terminal role, actual alias serializer, original value Pointers, consumer depth and default budgets remain in force. Targets, intermediate aliases and fields do not inherit the annotation; previously accepted inputs require no migration.
+
+Still rejected: intermediate defaults or explicit nullable overrides, `nullable` wrappers, `x-native-type`, value classes, `const`, `oneOf`/`anyOf`, reference/composition elements, inner defaults, union elements, and an unformatted numeric enum root. See the [component default factory contract](../component-default-factories.md) for the exact grammar, the retained native-enum approximation warning and the diagnostics that keep their original Pointers.
 
 ## Acceptance and packaging boundaries
 

@@ -22,10 +22,18 @@ import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking { rawJSONComponentDefaultsContracts() }
 KOTLIN
-    python3 - "$project" <<'PYMAIN'
+    python3 - "$project" "$style" <<'PYMAIN'
 from pathlib import Path
 import sys
 p = Path(sys.argv[1])
+if sys.argv[2] == 'data_class':
+    main = p/'src/main/kotlin/org/example/contracts/Main.kt'
+    main.write_text(main.read_text().replace('rawJSONComponentDefaultsContracts()', '''rawJSONComponentDefaultsContracts()
+ val value = org.example.rawjsondefaults.models.HolderDto()
+ val adopted = value.copy(wrappedOpen = org.example.rawjsondefaults.models.`WrappedOpenDto default`())
+ check(adopted.wrappedOpen?.get("kept") === kotlinx.serialization.json.JsonNull)
+ check(adopted.copy(wrappedOpen = null).wrappedOpen == null)
+'''))
 b = p / 'build.gradle.kts'
 b.write_text(b.read_text() + '''
 tasks.register<JavaExec>("runRawJSONComponentDefaultsContracts") {

@@ -1,5 +1,7 @@
 # 直接嵌套 String enum 集合字段默认值
 
+Component root annotations use the separate [finite nested component factory contract](nested-component-defaults.md); these factories do not become field initializers.
+
 [直接嵌套 native enum 默认值](nested-native-enum-collection-defaults.md)另有普通 direct inline outer-own 角色，terminal 为既有 Int/Long/Float/Double/Boolean enum，保持 native wire、原 exact default membership 与既有 checked membership/bounds；不使用本页 lexical String enum 或 Unrecognized API，也不扩张 String bounds/uniqueness。
 
 普通 DTO 字段可以在原已接受的 finite direct inline List / typed `Map<String, T>` 树的外层声明自己的 `default`，terminal 叶为 plain、无 format 的显式 String 或 typeless String enum。List/List、List/Map、Map/List、Map/Map 和更长有限混合路径使用同一规则。default 不会授权原本不支持的 schema。

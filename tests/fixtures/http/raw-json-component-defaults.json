@@ -25,6 +25,11 @@
   },
   "components": {
     "schemas": {
+      "NullFree": {"type": "object", "nullable": true, "default": null},
+      "NullEmpty": {"type": ["object", "null"], "properties": {}, "default": null},
+      "NullOpen": {"type": ["object", "null"], "additionalProperties": true, "default": null},
+      "MaybeFree": {"type": "object", "nullable": true, "default": {"kept": null}},
+      "MaybeOpen": {"type": ["object", "null"], "additionalProperties": true, "default": {"kept": null}},
       "Open": {
         "type": "object",
         "additionalProperties": true,
@@ -49,9 +54,27 @@
         "type": "object",
         "default": "raw"
       },
+      "RawTarget": {"type": "object"},
+      "OpenTarget": {"type": "object", "additionalProperties": true},
+      "MaybeRawTarget": {"type": "object", "nullable": true},
+      "MaybeOpenTarget": {"type": ["object", "null"], "additionalProperties": true},
+      "WrappedFree": {"$ref": "#/components/schemas/RawTarget", "default": [1, "two", null]},
+      "WrappedText": {"$ref": "#/components/schemas/RawTarget", "default": "null"},
+      "WrappedOpen": {"$ref": "#/components/schemas/OpenTarget", "default": {"kept": null, "z": {"$ref": "data"}}},
+      "WrappedNilFree": {"$ref": "#/components/schemas/MaybeRawTarget", "default": null},
+      "WrappedNilOpen": {"$ref": "#/components/schemas/MaybeOpenTarget", "default": null},
+      "WrappedMaybeFree": {"$ref": "#/components/schemas/MaybeRawTarget", "default": {"kept": null}},
+      "WrappedMaybeOpen": {"$ref": "#/components/schemas/MaybeOpenTarget", "default": {"kept": null}},
+      "RequiredWrapped": {"type": "object", "required": ["free", "open"], "properties": {"free": {"$ref": "#/components/schemas/WrappedFree"}, "open": {"$ref": "#/components/schemas/WrappedOpen"}}},
       "Holder": {
         "type": "object",
         "properties": {
+          "wrappedFree": {"$ref": "#/components/schemas/WrappedFree"},
+          "wrappedOpen": {"$ref": "#/components/schemas/WrappedOpen"},
+          "wrappedNilFree": {"$ref": "#/components/schemas/WrappedNilFree"},
+          "wrappedNilOpen": {"$ref": "#/components/schemas/WrappedNilOpen"},
+          "nullFree": {"$ref": "#/components/schemas/NullFree"},
+          "nullOpen": {"$ref": "#/components/schemas/NullOpen"},
           "open": {
             "$ref": "#/components/schemas/Open"
           },

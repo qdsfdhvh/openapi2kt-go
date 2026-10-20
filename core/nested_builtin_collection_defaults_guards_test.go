@@ -77,7 +77,6 @@ func TestNestedBuiltinCollectionDefaultsChecksBeforeRequiredPatchAndEmpty(t *tes
 func TestNestedBuiltinCollectionDefaultsExcludeIndependentRoles(t *testing.T) {
 	field := `{"type":"array","items":{"additionalProperties":{"type":"string"}},"default":[{"a":"one"}]}`
 	for _, input := range []string{
-		`{"Root":` + field + `}`,
 		`{"Holder":{"properties":{"value":{"type":"array","items":` + field + `}}}}`,
 		`{"Holder":{"properties":{"value":{"additionalProperties":` + field + `}}}}`,
 		`{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,

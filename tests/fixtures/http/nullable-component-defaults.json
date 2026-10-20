@@ -38,6 +38,14 @@
       "NilByteRows": {"type": "array", "nullable": true, "items": {"type": "string", "format": "byte"}, "default": null},
       "NilMode": {"type": ["string", "null"], "enum": ["a", "b"], "default": null},
       "NilObject": {"type": "object", "nullable": true, "properties": {"value": {"type": "string"}}, "default": null},
+      "NilAllOf": {
+        "allOf": [
+          {"properties": {"a": {"type": "string"}}, "required": ["a"]},
+          {"properties": {"b": {"type": "integer", "default": 7}}}
+        ],
+        "nullable": true,
+        "default": null
+      },
       "Name": {
         "type": ["string", "null"],
         "default": "fallback"
@@ -81,13 +89,47 @@
         "enum": ["a", "b"],
         "default": "a"
       },
+      "LeafNames": {"type": "array", "items": {"type": ["string", "null"]}, "default": [null, "a"]},
+      "LeafCounts": {"type": ["object", "null"], "additionalProperties": {"type": "integer", "nullable": true}, "default": {"z": 7, "a": null}},
+      "LeafDays": {"type": "array", "items": {"type": "string", "format": "date", "nullable": true}, "default": [null, "2024-02-29"]},
+      "LeafStamps": {"type": "object", "additionalProperties": {"type": "string", "format": "date-time", "nullable": true}, "default": {"a": null, "z": "2024-02-29T00:00:00Z"}},
+      "LeafBytes": {"type": "array", "items": {"type": "string", "format": "byte", "nullable": true}, "default": [null, [-128, 127]]},
+      "LeafModes": {"type": "array", "items": {"type": "string", "nullable": true, "enum": ["a", "b"]}, "default": [null, "a"]},
+      "LeafCodes": {"type": "object", "additionalProperties": {"type": "integer", "format": "int32", "nullable": true, "enum": [1, 2]}, "default": {"a": null, "z": 2}},
+      "NilLeafNames": {"type": ["array", "null"], "items": {"type": "string", "nullable": true}, "default": null},
+      "NilLeafCounts": {"type": ["object", "null"], "additionalProperties": {"type": "integer", "nullable": true}, "default": null},
+      "LeafTarget": {"type": "array", "items": {"type": "string", "nullable": true}},
+      "LeafWrapped": {"$ref": "#/components/schemas/LeafTarget", "default": [null, "wrapped"]},
+      "LeafRequired": {"type": "object", "required": ["names"], "properties": {"names": {"$ref": "#/components/schemas/LeafNames"}}},
+      "TreeLists": {"type": "array", "items": {"type": "array", "items": {"type": "integer"}}, "default": [[1], []]},
+      "TreeListMaps": {"type": "array", "items": {"additionalProperties": {"type": "string"}}, "default": [{"z": "last", "a": "first"}, {}]},
+      "TreeMapLists": {"type": ["object", "null"], "additionalProperties": {"type": "array", "nullable": true, "items": {"type": ["integer", "null"]}}, "default": {"z": [1, null], "nil": null, "empty": []}},
+      "TreeMaps": {"additionalProperties": {"additionalProperties": {"type": "number", "format": "float"}}, "default": {"z": {"z": 1.5, "a": 2.5}, "a": {}}},
+      "TreeDays": {"type": "array", "items": {"additionalProperties": {"type": "string", "format": "date", "nullable": true}}, "default": [{"a": null, "z": "2024-02-29"}]},
+      "TreeStamps": {"additionalProperties": {"type": "array", "items": {"type": "string", "format": "date-time"}}, "default": {"rows": ["2024-02-29T00:00:00Z"]}},
+      "TreeBytes": {"type": "array", "items": {"type": "array", "items": {"type": "string", "format": "byte", "nullable": true}}, "default": [[null, [-128, 127]]]},
+      "TreeModes": {"type": "array", "items": {"additionalProperties": {"type": "string", "enum": ["a", "b"], "nullable": true}}, "default": [{"a": null, "z": "a"}]},
+      "TreeCodes": {"additionalProperties": {"type": "array", "items": {"type": "integer", "format": "int32", "enum": [1, 2], "nullable": true}}, "default": {"rows": [null, 2]}},
+      "TreeEmpty": {"type": "array", "items": {"type": "array", "items": {"type": "string"}}, "default": []},
+      "TreeNil": {"type": ["array", "null"], "items": {"type": "array", "items": {"type": "string"}}, "default": null},
+      "TreeTarget": {"additionalProperties": {"additionalProperties": {"type": "string"}}},
+      "TreeWrapped": {"$ref": "#/components/schemas/TreeTarget", "default": {"z": {"z": "last", "a": "first"}, "a": {"/~": "key", "$ref": "data"}}},
+      "TreeChecked": {"type": "array", "items": {"type": "array", "items": {"type": "integer", "nullable": true}}, "default": [[1, null]]},
+      "TreeRequired": {"type": "object", "required": ["rows"], "properties": {"rows": {"$ref": "#/components/schemas/TreeLists"}, "checked": {"$ref": "#/components/schemas/TreeChecked"}}},
       "Holder": {
         "type": "object",
         "properties": {
+          "treeLists": {"$ref": "#/components/schemas/TreeLists"},
+          "treeMapLists": {"$ref": "#/components/schemas/TreeMapLists"},
+          "treeWrapped": {"$ref": "#/components/schemas/TreeWrapped"},
+          "leafNames": {"$ref": "#/components/schemas/LeafNames"},
+          "leafCounts": {"$ref": "#/components/schemas/LeafCounts"},
+          "leafWrapped": {"$ref": "#/components/schemas/LeafWrapped"},
           "nilName": {"$ref": "#/components/schemas/NilName"},
           "nilMode": {"$ref": "#/components/schemas/NilMode"},
           "nilBytes": {"$ref": "#/components/schemas/NilBytes"},
           "nilNames": {"$ref": "#/components/schemas/NilNames"},
+          "nilAllOf": {"$ref": "#/components/schemas/NilAllOf"},
           "name": {
             "$ref": "#/components/schemas/Name"
           },

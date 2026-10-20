@@ -15,6 +15,14 @@ for style in data_class plain_class; do
 from pathlib import Path
 import json, sys
 p = Path(sys.argv[1]); checked = sys.argv[2] == 'on'
+if checked:
+    source = json.loads((p/'input.json').read_text())
+    tree = source['components']['schemas']['TreeChecked']
+    tree['minItems'] = 1
+    tree['items']['minItems'] = 1
+    tree['items']['uniqueItems'] = True
+    tree['items']['items']['minimum'] = 1
+    (p/'input.json').write_text(json.dumps(source))
 schemas = {'LargeMode': {'type': ['string', 'null'], 'enum': [f'v{i}' for i in range(240)], 'default': None}}
 if checked:
     for name, kind, fmt, values in [
@@ -37,11 +45,17 @@ fun main() = runBlocking {
  nullableComponentDefaultsContracts()
  check(org.example.nullfactoryresources.models.LargeModeDto.entries.size == 240)
 '''
+body = body.replace('nullableComponentDefaultsContracts()', 'nullableComponentDefaultsContracts(checked = '+str(checked).lower()+')')
 if sys.argv[3] == 'data_class':
     body += ''' val value = org.example.nulldefaults.models.HolderDto()
  check(value.copy(nilName = "copy").nilName == "copy")
  check(value.copy(nilName = null).nilName == null && value.copy().nilMode == null)
+ val allOf = org.example.nulldefaults.models.NilAllOfDto(a = "original")
+ check(allOf.copy(a = "copy").a == "copy" && allOf.copy().b == 7)
+ check(value.copy(nilAllOf = allOf).nilAllOf?.a == "original" && value.copy().nilAllOf == null)
 '''
+    body += ' val nested = org.example.nulldefaults.models.TreeRequiredDto(rows = listOf(listOf(1)), checked = org.example.nulldefaults.models.`TreeCheckedDto default`())\n'
+    body += ' check(runCatching { nested.copy(checked = listOf(listOf(0))) }.isFailure == '+str(checked).lower()+')\n'
 body += ' for (defaults in listOf(false,true)) for (nulls in listOf(false,true)) {\n val codec = Json { encodeDefaults=defaults; explicitNulls=nulls }\n'
 for name in schemas:
     # Only the physical String-enum classifier needs an explicit nullable view.
