@@ -45,6 +45,29 @@ class HTTPCompilationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'fresh HTTP compilation plan'):
                 compilations.partition(root)
 
+    def test_sealed_family_is_not_split_by_acyclic_inheritance(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            sources = {
+                'build/generated/Base.kt': 'package org.example.family\npublic sealed class Base',
+                'build/generated/Child.kt': 'package org.example.family\npublic class Child() : org.example.family.Base()',
+                'src/main/kotlin/org/example/contracts/HttpContracts.kt': 'package org.example.contracts\nfun main() {}',
+            }
+            for name, text in sources.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(text)
+            (root / 'build.gradle.kts').write_text('// declared build\n')
+            previous = compilations.TARGET_BYTES
+            try:
+                compilations.TARGET_BYTES = 1
+                inventory = compilations.partition(root)
+            finally:
+                compilations.TARGET_BYTES = previous
+            libraries = [paths for name, paths in inventory.items() if 'Library' in name]
+            self.assertEqual(len(libraries), 1)
+            self.assertEqual(len(libraries[0]), 2)
+
     def test_recursive_components_keep_their_original_dependency_order(self):
         edges = {'a': {'b'}, 'b': {'a', 'provider'}, 'provider': set(), 'client': {'a'}}
         self.assertEqual(compilations.dependency_components(edges), [['provider'], ['a', 'b'], ['client']])

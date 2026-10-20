@@ -148,6 +148,18 @@ def partition(project):
         for name in set(re.findall(r'\b[A-Za-z_]\w*\b', sources[path])):
             edges[path].update(local_symbols[packages[path]].get(name, []))
         edges[path].discard(path)
+    # Kotlin requires direct subclasses of sealed declarations in the same
+    # compilation module, even when the reference graph itself is acyclic.
+    # A reverse inheritance edge keeps the whole sealed family in one SCC.
+    inheritance = re.compile(r'(?:\)|\b(?:class|interface)[ \t]+\w+)[ \t\r\n]*:[ \t\r\n]*([\w.]+)')
+    for path in libraries:
+        for name in inheritance.findall(sources[path]):
+            qualified = name if name.startswith('org.example.') else packages[path] + '.' + name
+            while qualified and qualified not in symbols:
+                qualified = qualified.rpartition('.')[0]
+            for base in symbols.get(qualified, []):
+                if re.search(r'\bsealed[ \t]+(?:class|interface)\b', sources[base]):
+                    edges[base].add(path)
     library_shards = pack(dependency_components(edges), sizes, ordered=True)
 
     # Keep shared internal test engines/helpers in their consuming compilation.
@@ -195,8 +207,8 @@ def partition(project):
     build = project / 'build.gradle.kts'
     build.write_text(build.read_text() + '''
 // Complete HTTP source inventory, split into independent compiler invocations.
-val httpLibraries = listOf(''' + literal([n for n, k in names if k == 'Library']) + ''')
-val httpContracts = listOf(''' + literal([n for n, k in names if k == 'Contract']) + ''')
+val httpLibraries = listOf<String>(''' + literal([n for n, k in names if k == 'Library']) + ''')
+val httpContracts = listOf<String>(''' + literal([n for n, k in names if k == 'Contract']) + ''')
 val httpCompilations = httpLibraries + httpContracts
 // Keep declared external dependencies independent of main's friend-module
 // inheritance; associateWith adds the consumer configurations back to main.
