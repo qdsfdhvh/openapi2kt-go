@@ -1840,6 +1840,7 @@ done
   --output "$workspace/project/build/generated-limits/raw-json-field-defaults" --package-name org.example.rawjson --api-client-name RawJson --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/raw-json-field-defaults.json \
   --output "$workspace/project/build/generated-limits/raw-json-field-defaults" --package-name org.example.rawjson --api-client-name RawJson --model-name-suffix Dto --check
+python3 scripts/kotlin/http_compilations.py "$workspace/project"
 if [[ "${OPENAPI_KT_PREPARE_ONLY:-0}" == 1 ]]; then
   echo "PREPARED HTTP native generation/check: $workspace/project"
   exit 0
