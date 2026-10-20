@@ -24,7 +24,7 @@ The source grammar is the existing component factory grammar, including its scal
 
 | Root shape | Non-null annotation | Null annotation | Factory form |
 |---|---|---|---|
-| Plain scalar (`string`, `integer`, `number`, `boolean`) | accepted | accepted | top-level function on its nullable alias |
+| Builtin scalar (`string`, `integer`, `number`, `boolean`, including int32/int64/float/double) | accepted | accepted | top-level function on its nullable alias |
 | Standard `date` / `date-time` | accepted | accepted | top-level function on its nullable alias |
 | `byte` / `binary` | accepted | accepted | top-level function on its nullable alias |
 | Finite inline List / typed Map tree | accepted | accepted | top-level function on its nullable alias |
@@ -47,6 +47,8 @@ Native-enum factories retain the existing factory approximation warning exactly 
 Factories do not change component types, constructors, `copy`, required/Patch classification, descriptors or wire behavior. Nullable aliases use their actual nullable serializer. String-enum and object factories may return null while the physical classifiers and their non-null serializers remain unchanged. Explicit values continue to override missing values, and `encodeDefaults` / `explicitNulls` retain their existing property behavior.
 
 A field referencing a defaulted component keeps its neutral presence and never calls the factory automatically. A document without the annotation emits its previous bytes. Existing non-null factories retain their signatures and output. Reference-wrapper factories retain their [own contract](reference-wrapper-component-defaults.md): finite component alias chains may carry outer/intermediate nullable booleans, with the nearest explicit intent determining factory null permission; admitted intermediate/target defaults each retain their independent owner and factory. The direct-root role does not widen a wrapper's null permission or change already admitted wrapper output.
+
+[Numeric builtin formats](component-default-factories.md#numeric-builtin-formats) use the same explicit/effective nullable rules and mapped scalar checks.
 
 [Constrained unformatted scalar root factories](component-default-factories.md#constrained-plain-scalar-roots) are validation-only and retain the same nullable rules. Null annotations still validate the complete constraint source; malformed bounds report at their actual source keyword.
 

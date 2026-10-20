@@ -1,5 +1,7 @@
 # JSON 首期兼容矩阵
 
+[数值格式组件默认工厂](component-default-factories.md#numeric-builtin-formats)：D03/M01/M03/M04/M07/M12，integer int32/int64 与 number float/double 的组件自身 default 复用实际 Int/Long/Float/Double 和 shared value checks；无约束 direct root 两种 validation 模式均可，bounds 与 named alias 保原 opt-in。保整数范围、finite Float/IEEE rounding、原 JSON token、nullable intent／独立归属／不继承／Pointer／预算；UUID、其他 formats/native/valueclass/union、floating multipleOf 与一般 default 仍独立。已有有效 API/wire/锁无迁移。
+
 [受约束 plain scalar 组件工厂](component-default-factories.md#constrained-plain-scalar-roots)：D03/M01/M07/M12，validation-on 下已接受的无 format String 长度／portable pattern、integer bounds／multipleOf 与 number bounds 组件自身 default，复用原节点权限和 shared value checks；保原 token／alias／nullable／typed consumer checks／不继承／预算。无显式 nullable 的 bounded alias 亦校验自身注解；此前误接受非法值现在于原 /default 拒绝，坏约束显示实际 keyword Pointer。新 format、floating multipleOf、valueclass/union 与一般默认值角色仍独立。
 
 [引用链各组件独立 default 工厂](reference-wrapper-component-defaults.md#independent-defaults-on-target-and-intermediate-components)：D03/M03/M04/M07 支持已准入 target／中间别名／外层别名分别持有自身注解，各自走原 grammar／nullable／Pointer／预算并仅发自己的工厂；无注解别名和 consumer 不继承，源节点／声明／warnings／depth／锁格式不变。非法目标角色、内部引用和一般 default 仍独立；已有输入无需迁移。

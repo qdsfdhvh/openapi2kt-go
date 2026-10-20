@@ -1,0 +1,140 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Numeric component defaults",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "Int32": {
+        "type": "integer",
+        "format": "int32",
+        "default": 2147483647
+      },
+      "LongMax": {
+        "type": "integer",
+        "format": "int64",
+        "default": 9223372036854775807
+      },
+      "LongMin": {
+        "type": "integer",
+        "format": "int64",
+        "default": -9223372036854775808
+      },
+      "FloatValue": {
+        "type": "number",
+        "format": "float",
+        "default": 0.300000004
+      },
+      "DoubleValue": {
+        "type": "number",
+        "format": "double",
+        "default": 1.7976931348623157e+308
+      },
+      "NegativeZero": {
+        "type": "number",
+        "format": "float",
+        "default": -0.0
+      },
+      "NullableFloat": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "format": "float",
+        "default": null
+      },
+      "Count": {
+        "type": "integer",
+        "format": "int64",
+        "minimum": 0,
+        "maximum": 10,
+        "multipleOf": 2,
+        "default": 4
+      },
+      "Ratio": {
+        "type": "number",
+        "format": "float",
+        "exclusiveMinimum": 0,
+        "maximum": 1,
+        "default": 0.300000004
+      },
+      "Middle": {
+        "$ref": "#/components/schemas/FloatValue",
+        "nullable": true,
+        "default": null
+      },
+      "Outer": {
+        "$ref": "#/components/schemas/Middle",
+        "nullable": false,
+        "default": 0.5
+      },
+      "Plain": {
+        "$ref": "#/components/schemas/Outer"
+      },
+      "CountAlias": {
+        "$ref": "#/components/schemas/Count",
+        "default": 6
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "int32": {
+            "$ref": "#/components/schemas/Int32"
+          },
+          "longMax": {
+            "$ref": "#/components/schemas/LongMax"
+          },
+          "longMin": {
+            "$ref": "#/components/schemas/LongMin"
+          },
+          "floatValue": {
+            "$ref": "#/components/schemas/FloatValue"
+          },
+          "doubleValue": {
+            "$ref": "#/components/schemas/DoubleValue"
+          },
+          "negativeZero": {
+            "$ref": "#/components/schemas/NegativeZero"
+          },
+          "nullableFloat": {
+            "$ref": "#/components/schemas/NullableFloat"
+          },
+          "count": {
+            "$ref": "#/components/schemas/Count"
+          },
+          "ratio": {
+            "$ref": "#/components/schemas/Ratio"
+          },
+          "middle": {
+            "$ref": "#/components/schemas/Middle"
+          },
+          "outer": {
+            "$ref": "#/components/schemas/Outer"
+          },
+          "plain": {
+            "$ref": "#/components/schemas/Plain"
+          },
+          "countAlias": {
+            "$ref": "#/components/schemas/CountAlias"
+          }
+        }
+      },
+      "Required": {
+        "type": "object",
+        "required": [
+          "int32",
+          "longMax"
+        ],
+        "properties": {
+          "int32": {
+            "$ref": "#/components/schemas/Int32"
+          },
+          "longMax": {
+            "$ref": "#/components/schemas/LongMax"
+          }
+        }
+      }
+    }
+  }
+}

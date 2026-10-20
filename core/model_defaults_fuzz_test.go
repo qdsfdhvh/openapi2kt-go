@@ -17,6 +17,7 @@ func FuzzModelDefaults(f *testing.F) {
 	f.Add(schemas(`{"T":{"type":["array","null"],"items":{"type":["string","null"]}},"M":{"$ref":"#/components/schemas/T","nullable":true},"N":{"$ref":"#/components/schemas/M","nullable":false,"default":[null,"a"]}}`))
 	f.Add(schemas(`{"T":{"type":"array","items":{"type":"string"},"default":["target"]},"M":{"$ref":"#/components/schemas/T","nullable":true,"default":null},"N":{"$ref":"#/components/schemas/M","nullable":false,"default":["outer"]}}`))
 	f.Add(schemas(`{"T":{"type":"integer","minimum":0,"maximum":10,"multipleOf":2,"default":4},"M":{"$ref":"#/components/schemas/T","default":6}}`))
+	f.Add(schemas(`{"T":{"type":"number","format":"float","default":0.300000004},"M":{"$ref":"#/components/schemas/T","nullable":true,"default":null},"N":{"$ref":"#/components/schemas/M","nullable":false,"default":0.5}}`))
 	f.Fuzz(func(t *testing.T, input []byte) {
 		if len(input) > 16384 {
 			return
