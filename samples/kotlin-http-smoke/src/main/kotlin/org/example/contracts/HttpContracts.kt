@@ -227,6 +227,7 @@ fun main() = runBlocking {
     wrapperOwnedDefaultsContracts()
     constrainedComponentDefaultsContracts()
     numericComponentDefaultsContracts()
+    uuidComponentDefaultsContracts()
     nullableScalarWrapperDefaultsContracts()
     enumDefaultsContracts()
     jsonUniqueContracts()

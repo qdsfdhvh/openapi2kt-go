@@ -12,7 +12,7 @@ func nullableBuiltinChain(n int, terminal, consumer string) []byte {
 	return []byte(strings.Replace(string(b), `"A00":{"$ref":"#/components/schemas/Z"}`, `"A00":{"$ref":"#/components/schemas/Z","nullable":true}`, 1))
 }
 func TestRootNullablePrimitiveSourceBudget(t *testing.T) {
-	for _, terminal := range []string{`{"type":"string"}`, `{"type":"integer","format":"int64"}`, `{"type":"number","format":"double"}`} {
+	for _, terminal := range []string{`{"type":"string"}`, `{"type":"string","format":"uuid"}`, `{"type":"integer","format":"int64"}`, `{"type":"number","format":"double"}`} {
 		for _, flag := range []bool{false, true} {
 			for _, typed := range []bool{false, true} {
 				limit := 48

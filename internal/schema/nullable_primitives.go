@@ -15,8 +15,9 @@ func builtinPrimitiveBinding(c *component) bool {
 	return err == nil && nullablePrimitiveCandidate(c.Schema, kind)
 }
 
-// Only ordinary builtin scalar roots gain transparent nullable intent. Existing
-// native/enum/const/value-class profiles remain separately admitted and owned.
+// Only ordinary builtin scalar roots, including String-mapped uuid, gain
+// transparent nullable intent. Native/enum/const/value-class profiles remain
+// separately admitted and owned.
 // Malformed format grammar is still diagnosed by the normal scalar parser.
 func nullablePrimitiveCandidate(v *document.Value, kind string) bool {
 	for _, key := range []string{"enum", "const", "x-native-type", "x-kotlin-value-class"} {
@@ -29,7 +30,9 @@ func nullablePrimitiveCandidate(v *document.Value, kind string) bool {
 		return kind == "string" || kind == "integer" || kind == "number" || kind == "boolean"
 	}
 	switch kind {
-	case "string", "boolean":
+	case "string":
+		return text(format) == "" || text(format) == "uuid"
+	case "boolean":
 		return text(format) == ""
 	case "integer":
 		return text(format) == "" || text(format) == "int32" || text(format) == "int64"

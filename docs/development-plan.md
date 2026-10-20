@@ -1,5 +1,9 @@
 # openapi2kt-go 开发计划
 
+[内部 UUID 标量引用](root-borrowed-builtin.md#uuid-leaves)：D01/F04/F07/M01/M03/M07/M12，支持直接内部 UUID 叶、有限内部链和 root bridge；保原 source／owner／实际导出／nullablefalse／约束与 source48／checked16／slot240 预算。普通字段自身 default、List/Map、Patch、raw String HTTP 与 SSE 沿用 builtin 合同；terminal／hop／root-wrapper default、enum/native/valueclass 与一般引用图仍独立。已有有效 API/wire/锁无需迁移。
+
+[UUID String 根与组件默认工厂](component-default-factories.md#uuid-string-roots)：F04/F07/D03/M01/M03/M07/M12，支持 intrinsic／own-nullable UUID 根与 nearest true/false 别名覆盖；String? codec、typed List/Map、Patch、raw String HTTP 和 SSE 沿用 builtin 合同。组件及 validation-on 纯 named alias chain 可分别持有 default（显式 nullable 可为 null），保长度／portable pattern、原 Pointer／source／预算、不继承与 required；UUID 词法校验和其他未准入角色仍独立，已有有效 API/wire/锁无需迁移。
+
 本计划定义完整路线图；当前已有可用的 JSON 模型生成、限定 HTTP/SSE、本地配置和安全输出，但尚未完成全部阶段及完整版本验收。
 
 先按目的阅读：
@@ -9,7 +13,7 @@
 - **查看精确输入/API/wire 边界**：[兼容矩阵](compatibility-matrix.md)及其中链接的功能合同；有界 profile 不代表整个矩阵 ID 完成。
 - **交付当前 alpha**：[JSON 发布候选清单](json-release-checklist.md)，范围固定为现有 JSON profile、macOS ARM64 CLI 和 Kotlin/JVM。R01 范围冻结不等于 R02–R08 运行和发布门槛通过。
 
-下面架构和完整 DoD 保留为长期设计；具体 CLI/config 示例遵循现有接口。新增功能合同应同步更新剩余工作，不再在本页堆叠重复的增量状态段落。
+下面架构和完整 DoD 保留为长期设计；具体 CLI/config 示例遵循现有接口。新增功能合同应同步更新剩余工作，不再在本页堆叠重复的增量状态段落。D03 的[对象默认值 builtin scalar 别名成员](nested-object-defaults.md#builtin-scalar-alias-members)已有有限链合同，保既有类型准入、nullable 和资源边界；一般默认值图仍开放。
 
 ## 1. 目标与发布边界
 

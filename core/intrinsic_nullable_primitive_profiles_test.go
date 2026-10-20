@@ -7,7 +7,7 @@ import (
 )
 
 func TestIntrinsicNullablePrimitiveBothSpellings(t *testing.T) {
-	for _, p := range []struct{ kind, format, name string }{{"string", "", "String"}, {"boolean", "", "Boolean"}, {"integer", "int32", "Int"}, {"integer", "int64", "Long"}, {"number", "float", "Float"}, {"number", "double", "Double"}} {
+	for _, p := range []struct{ kind, format, name string }{{"string", "", "String"}, {"string", "uuid", "String"}, {"boolean", "", "Boolean"}, {"integer", "int32", "Int"}, {"integer", "int64", "Long"}, {"number", "float", "Float"}, {"number", "double", "Double"}} {
 		for _, array := range []bool{false, true} {
 			for _, flag := range []bool{false, true} {
 				scalar := map[string]any{"type": p.kind}

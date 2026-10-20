@@ -22,6 +22,9 @@ for style in data_class plain_class; do
     "$workspace/openapi-kt" generate --input tests/fixtures/http/wrapper-owned-defaults.json --output "$project/build/generated-limits/wrapper-owned" --package-name org.example.owneddefaults --model-name-suffix Dto --model-style "$style" "${flags[@]}"
     "$workspace/openapi-kt" generate --input tests/fixtures/http/wrapper-owned-defaults.json --output "$project/build/generated-limits/wrapper-owned" --package-name org.example.owneddefaults --model-name-suffix Dto --model-style "$style" "${flags[@]}" --check
     if [[ "$validation" == on ]]; then
+      cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/UUIDComponentDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
+      "$workspace/openapi-kt" generate --input tests/fixtures/http/uuid-component-defaults.json --output "$project/build/generated-checked/uuid" --package-name org.example.uuiddefaults --api-client-name UuidDefaultsApiClient --model-name-suffix Dto --model-style "$style" --validation
+      "$workspace/openapi-kt" generate --input tests/fixtures/http/uuid-component-defaults.json --output "$project/build/generated-checked/uuid" --package-name org.example.uuiddefaults --api-client-name UuidDefaultsApiClient --model-name-suffix Dto --model-style "$style" --validation --check
       cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/NumericComponentDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
       "$workspace/openapi-kt" generate --input tests/fixtures/http/numeric-component-defaults.json --output "$project/build/generated-checked/numeric" --package-name org.example.numericdefaults --model-name-suffix Dto --model-style "$style" --validation
       "$workspace/openapi-kt" generate --input tests/fixtures/http/numeric-component-defaults.json --output "$project/build/generated-checked/numeric" --package-name org.example.numericdefaults --model-name-suffix Dto --model-style "$style" --validation --check
@@ -47,7 +50,7 @@ p=Path(sys.argv[1]);copy='' if sys.argv[2]=='plain_class' else '''
 (p/'src/main/kotlin/org/example/contracts/Main.kt').write_text('''package org.example.contracts
 import kotlinx.coroutines.runBlocking
 fun main() = runBlocking {
-'''+copy+(' nullableScalarWrapperDefaultsContracts()\n constrainedComponentDefaultsContracts()\n numericComponentDefaultsContracts()\n' if sys.argv[3]=='on' else '')+''' wrapperOwnedDefaultsContracts()
+'''+copy+(' nullableScalarWrapperDefaultsContracts()\n constrainedComponentDefaultsContracts()\n numericComponentDefaultsContracts()\n uuidComponentDefaultsContracts()\n' if sys.argv[3]=='on' else '')+''' wrapperOwnedDefaultsContracts()
  wrapperChainNullabilityDefaultsContracts()
  referenceWrapperComponentDefaultsContracts() }
 ''')

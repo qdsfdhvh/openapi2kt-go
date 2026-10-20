@@ -162,7 +162,7 @@ func TestNumericComponentDefaultsKeepRoleGates(t *testing.T) {
 	for _, shape := range []string{
 		`"type":"integer","format":"uint64"`,
 		`"type":"number","format":"int32"`,
-		`"type":"string","format":"uuid"`,
+		`"type":"string","format":"uri"`,
 		`"type":"integer","format":3`,
 		`"type":"integer","format":"int64","x-kotlin-value-class":true`,
 		`"type":"integer","format":"int64","x-native-type":"bigint"`,

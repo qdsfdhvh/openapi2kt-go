@@ -50,9 +50,14 @@ func TestObjectDefaultReferencedPropertiesGuards(t *testing.T) {
 	if !ok || len(ds) == 0 || ds[0].Code != "E_SCHEMA_INVALID" || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/Holder/properties/v/default/leaf" || !reflect.DeepEqual(report, core.GenerationReport{}) {
 		t.Fatalf("missing required referenced property: %v", err)
 	}
-	// A scalar-valued transparent chain keeps its separate leaf role.
+	// An unmarked non-null builtin chain retains its validation opt-in.
 	scalarAlias := schemas(`{"Scalar":{"type":"string"},"ScalarAlias":{"$ref":"#/components/schemas/Scalar"},"Holder":{"properties":{"v":{"type":"object","properties":{"leaf":{"$ref":"#/components/schemas/ScalarAlias"}},"default":{"leaf":"1"}}}}}`)
 	if got, err := core.GenerateWithDiagnostics(request(scalarAlias, "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
-		t.Fatalf("scalar reference chain gained an object member role: %v", err)
+		t.Fatalf("unchecked scalar chain admitted: %v", err)
+	}
+	r = request(scalarAlias, "Dto")
+	r.Options.Validation = true
+	if got, err := core.GenerateWithDiagnostics(r); err != nil || len(got.Artifacts.Files) == 0 {
+		t.Fatalf("checked scalar chain member failed: %v", err)
 	}
 }

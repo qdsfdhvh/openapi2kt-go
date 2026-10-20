@@ -68,8 +68,9 @@ func TestReferencedAllOfObjectDefaultMemberGuards(t *testing.T) {
 	}
 	for _, ref := range []string{"#/components/schemas/Owner/properties/hop"} {
 		input := schemas(`{"Target":` + allOfObjectMember + `,"Scalar":{"type":"string"},"Alias":{"$ref":"#/components/schemas/Target"},"Owner":{"properties":{"n":` + allOfObjectMember + `,"hop":{"$ref":"#/components/schemas/Scalar"}}},"Holder":{"properties":{"v":` + allOfMemberField(`{"$ref":"`+ref+`"}`, `{}`) + `}}}`)
-		if _, err := core.GenerateWithDiagnostics(request(input, "Dto")); err == nil {
-			t.Fatal("excluded reference admitted", ref)
+		// Preserve the original scalar-hop input as a graduated builtin member case.
+		if got, err := core.GenerateWithDiagnostics(request(input, "Dto")); err != nil || len(got.Artifacts.Files) == 0 {
+			t.Fatal("internal scalar-chain member failed", ref, err)
 		}
 	}
 	bounded := strings.Replace(allOfObjectMember, `"type":"integer","default":2`, `"type":"integer","minimum":1,"default":2`, 1)

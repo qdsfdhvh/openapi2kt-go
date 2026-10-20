@@ -6,6 +6,15 @@
   },
   "components": {
     "schemas": {
+      "ScalarMemberSource": {"properties": {
+        "id": {"type": "string", "format": "uuid", "nullable": true},
+        "flag": {"type": "boolean"},
+        "count": {"type": "integer", "format": "int64"}
+      }},
+      "ScalarMemberAlias": {"$ref": "#/components/schemas/ScalarMemberSource/properties/id", "nullable": false},
+      "ScalarMemberOuter": {"$ref": "#/components/schemas/ScalarMemberAlias"},
+      "ScalarFlagAlias": {"$ref": "#/components/schemas/ScalarMemberSource/properties/flag"},
+      "ScalarCountAlias": {"$ref": "#/components/schemas/ScalarMemberSource/properties/count"},
       "Holder": {
         "type": "object",
         "properties": {
@@ -18,6 +27,10 @@
               "name": {
                 "type": "string"
               },
+              "scalarChain": {"$ref": "#/components/schemas/ScalarMemberOuter"},
+              "scalarNull": {"$ref": "#/components/schemas/ScalarMemberOuter", "nullable": true},
+              "scalarFlag": {"$ref": "#/components/schemas/ScalarFlagAlias"},
+              "scalarCount": {"$ref": "#/components/schemas/ScalarCountAlias"},
               "age": {
                 "type": "integer",
                 "default": 7
@@ -182,6 +195,10 @@
             },
             "default": {
               "name": "outer",
+              "scalarChain": "arbitrary UUID text",
+              "scalarNull": null,
+              "scalarFlag": true,
+              "scalarCount": 9223372036854775807,
               "age": 9,
               "status": "on",
               "code": 2,
@@ -572,6 +589,7 @@
                     "type": "object",
                     "nullable": true,
                     "properties": {
+                      "scalarChain": {"$ref": "#/components/schemas/ScalarMemberOuter"},
                       "member": {"$ref": "#/components/schemas/ComposedOuter"},
                       "owned": {"$ref": "#/components/schemas/OwnedCfg/properties/node", "nullable": false},
                       "chained": {"$ref": "#/components/schemas/CfgBridge"},
@@ -585,7 +603,7 @@
                         {"properties": {"count": {"type": "integer", "default": 2}}}
                       ]}}
                     },
-                    "default": {"member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}], "collectionBridgeRows": [{"label": "bridge patch default"}], "collectionInternalRows": [{"label": "internal patch default"}], "collectionEntityRows": [{"label": "entity patch default"}]}
+                    "default": {"scalarChain": "patch scalar default", "member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}], "collectionBridgeRows": [{"label": "bridge patch default"}], "collectionInternalRows": [{"label": "internal patch default"}], "collectionEntityRows": [{"label": "entity patch default"}]}
                   },
                   "allOfCfg": {
                     "allOf": [
