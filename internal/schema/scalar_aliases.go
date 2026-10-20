@@ -79,7 +79,7 @@ func (a *analyzer) resolveScalarAliases(schemas *document.Value) *diagnostic.Dia
 		if ownNullable && !collection && !ordinary && !plainEnum && !canonical.ValueClass && !temporal && !bigint && !bytes && !callerNative && !primitive && !nativeEnum && !structured && !jsonRoot && !hierarchy && !union {
 			return unsupported(c.Pointer)
 		}
-		special := canonical.ValueClass || has(canonical.Schema, "enum") || has(canonical.Schema, "const") || has(canonical.Schema, "x-native-type") || canonical.Scalar != "" && !slices.Contains([]string{"kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double"}, canonical.Scalar)
+		special := canonical.ValueClass || has(canonical.Schema, "enum") || has(canonical.Schema, "const") || has(canonical.Schema, "x-native-type") || canonical.Scalar != "" && !slices.Contains([]string{"kotlin.String", "kotlin.uuid.Uuid", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double"}, canonical.Scalar)
 		if ordinary || collection || special || union || primitive || jsonRoot || hierarchy {
 			c.BindingTarget = canonical
 			if collection || ordinary || plainEnum || canonical.ValueClass || temporal || bigint || bytes || callerNative || primitive || nativeEnum || structured || jsonRoot || hierarchy || union {

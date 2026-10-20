@@ -9,6 +9,7 @@ import (
 )
 
 func FuzzModelDefaults(f *testing.F) {
+	f.Add(schemas(`{"T":{"type":["string","null"],"format":"uuid","default":null},"M":{"$ref":"#/components/schemas/T","nullable":false,"default":"outer"}}`))
 	f.Add(fieldDoc(`{"type":"string","default":"ready"}`))
 	f.Add(fieldDoc(`{"type":"integer","default":2,"multipleOf":2}`))
 	f.Add(fieldDoc(`{"type":"number","format":"float","default":0.300000004,"exclusiveMinimum":0.300000001}`))
@@ -18,6 +19,7 @@ func FuzzModelDefaults(f *testing.F) {
 	f.Add(schemas(`{"T":{"type":"array","items":{"type":"string"},"default":["target"]},"M":{"$ref":"#/components/schemas/T","nullable":true,"default":null},"N":{"$ref":"#/components/schemas/M","nullable":false,"default":["outer"]}}`))
 	f.Add(schemas(`{"T":{"type":"integer","minimum":0,"maximum":10,"multipleOf":2,"default":4},"M":{"$ref":"#/components/schemas/T","default":6}}`))
 	f.Add(schemas(`{"T":{"type":"number","format":"float","default":0.300000004},"M":{"$ref":"#/components/schemas/T","nullable":true,"default":null},"N":{"$ref":"#/components/schemas/M","nullable":false,"default":0.5}}`))
+	f.Add(schemas(`{"T":{"type":"string","format":"uuid","minLength":2,"default":"root"},"M":{"$ref":"#/components/schemas/T","nullable":false,"default":"outer"}}`))
 	f.Fuzz(func(t *testing.T, input []byte) {
 		if len(input) > 16384 {
 			return

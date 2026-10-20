@@ -1806,14 +1806,18 @@ done
   --output "$workspace/project/build/generated-limits/direct-nullable-component-counts" --package-name org.example.directcounts --api-client-name DirectCounts --model-name-suffix Dto --validation
 "$workspace/openapi-kt" generate --input tests/fixtures/http/direct-nullable-component-counts.json \
   --output "$workspace/project/build/generated-limits/direct-nullable-component-counts" --package-name org.example.directcounts --api-client-name DirectCounts --model-name-suffix Dto --validation --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/nullable-uuid.json \
+  --output "$workspace/project/build/generated-limits/nullable-uuid" --package-name org.example.nullableuuid --api-client-name NullableUuidApiClient --model-name-suffix Dto --validation
+"$workspace/openapi-kt" generate --input tests/fixtures/http/nullable-uuid.json \
+  --output "$workspace/project/build/generated-limits/nullable-uuid" --package-name org.example.nullableuuid --api-client-name NullableUuidApiClient --model-name-suffix Dto --validation --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/uuid-component-defaults.json \
+  --output "$workspace/project/build/generated-limits/uuid-component-defaults" --package-name org.example.uuiddefaults --model-name-suffix Dto --validation
+"$workspace/openapi-kt" generate --input tests/fixtures/http/uuid-component-defaults.json \
+  --output "$workspace/project/build/generated-limits/uuid-component-defaults" --package-name org.example.uuiddefaults --model-name-suffix Dto --validation --check
 "$workspace/openapi-kt" generate --input tests/fixtures/http/numeric-component-defaults.json \
   --output "$workspace/project/build/generated-limits/numeric-component-defaults" --package-name org.example.numericdefaults --model-name-suffix Dto --validation
 "$workspace/openapi-kt" generate --input tests/fixtures/http/numeric-component-defaults.json \
   --output "$workspace/project/build/generated-limits/numeric-component-defaults" --package-name org.example.numericdefaults --model-name-suffix Dto --validation --check
-"$workspace/openapi-kt" generate --input tests/fixtures/http/uuid-component-defaults.json \
-  --output "$workspace/project/build/generated-limits/uuid-component-defaults" --package-name org.example.uuiddefaults --api-client-name UuidDefaultsApiClient --model-name-suffix Dto --validation
-"$workspace/openapi-kt" generate --input tests/fixtures/http/uuid-component-defaults.json \
-  --output "$workspace/project/build/generated-limits/uuid-component-defaults" --package-name org.example.uuiddefaults --api-client-name UuidDefaultsApiClient --model-name-suffix Dto --validation --check
 "$workspace/openapi-kt" generate --input tests/fixtures/http/constrained-component-defaults.json \
   --output "$workspace/project/build/generated-limits/constrained-component-defaults" --package-name org.example.boundeddefaults --model-name-suffix Dto --validation
 "$workspace/openapi-kt" generate --input tests/fixtures/http/constrained-component-defaults.json \

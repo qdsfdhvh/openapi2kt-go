@@ -71,8 +71,8 @@ func TestSchemaInternalScalarPointerAdmissionAndSource(t *testing.T) {
 					rq := request(pointerDoc(tc.target, pointerRef(tc.path)), "Dto")
 					rq.Options.Validation = checked
 					got, err := core.GenerateWithDiagnostics(rq)
-					if err != nil || !strings.Contains(source(t, got, "ConsumerDto"), "public val v: kotlin.String? = null") {
-						t.Fatal("borrowed UUID did not retain String backing", checked, err)
+					if err != nil || !strings.Contains(source(t, got, "ConsumerDto"), "public val v: kotlin.uuid.Uuid? = null") {
+						t.Fatal("borrowed UUID did not retain native backing", checked, err)
 					}
 				}
 				return

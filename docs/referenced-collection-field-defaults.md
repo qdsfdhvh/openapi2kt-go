@@ -1,5 +1,7 @@
 # Referenced builtin collection field defaults
 
+String schemas with `format: uuid` use [Kotlin Uuid](nullable-uuid.md), including admitted scalar/collection defaults. UUID lexical checks, canonical text and the String-to-Uuid migration apply; original source-role and validation restrictions remain.
+
 [Referenced byte field own defaults](referenced-bytes-field-defaults.md) separately admit byte/binary leaves through existing finite referenced collection paths, retaining actual aliases, signed arrays, required/Patch and whole-annotation budgets.
 
 [Referenced String enum collection field defaults](referenced-string-enum-collection-defaults.md) and [referenced native enum collection field defaults](referenced-native-enum-collection-defaults.md) separately extend this own-default role to plain String and native numeric/Boolean enum leaves, and [referenced standard temporal collection field defaults](referenced-temporal-collection-field-defaults.md) through already accepted finite List/typed Map paths with actual date/date-time leaves. Target/chain/root/child defaults and native/provider roles retain their exclusions. through already accepted finite List/typed Map paths with actual date/date-time leaves. Target/chain/root/child defaults and native/provider roles retain their exclusions.

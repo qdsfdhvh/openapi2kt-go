@@ -339,10 +339,10 @@ func sortedComponentNames(components map[string]*component) []string {
 	return names
 }
 
-// isBuiltinScalarFactoryRoot recognizes the builtin source grammar shared by
+// isBuiltinScalarFactoryRoot recognizes builtin source grammar shared by
 // component factories and scalar alias members in object defaults: unformatted
-// builtins, String-mapped uuid and the four numeric formats. Callers own default
-// permission; this predicate grants no marker or composition role.
+// builtins, native UUID and numeric formats. Callers own default permission;
+// this predicate grants no marker or composition role.
 func isBuiltinScalarFactoryRoot(v *document.Value, kind string) bool {
 	if kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
 		return false
@@ -673,7 +673,7 @@ func (a *analyzer) referenceWrapperDefaultEncoded(c *component, validation *anal
 	if validation.scalarLeafTarget(view) {
 		kind, _, _ := schemaType(view, c.Pointer)
 		if target.Nullable != nil || isBuiltinScalarFactoryRoot(view, kind) && (hasPrimitiveBounds(view) || has(view, "format")) {
-			// Explicit alias intent, bounded builtins and numeric formats use the
+			// Explicit alias intent, bounded builtins and builtin formats use the
 			// component leaf role, including source and mapped-value checks.
 			// Other chains retain their existing scalarTargetEncoded policy.
 			node, err := validation.scalarComponentNode(shadow)

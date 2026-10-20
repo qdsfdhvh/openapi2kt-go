@@ -195,7 +195,7 @@
             },
             "default": {
               "name": "outer",
-              "scalarChain": "arbitrary UUID text",
+              "scalarChain": "550e8400-e29b-41d4-a716-446655440000",
               "scalarNull": null,
               "scalarFlag": true,
               "scalarCount": 9223372036854775807,
@@ -603,7 +603,7 @@
                         {"properties": {"count": {"type": "integer", "default": 2}}}
                       ]}}
                     },
-                    "default": {"scalarChain": "patch scalar default", "member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}], "collectionBridgeRows": [{"label": "bridge patch default"}], "collectionInternalRows": [{"label": "internal patch default"}], "collectionEntityRows": [{"label": "entity patch default"}]}
+                    "default": {"scalarChain": "550e8400-e29b-41d4-a716-446655440000", "member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}], "collectionBridgeRows": [{"label": "bridge patch default"}], "collectionInternalRows": [{"label": "internal patch default"}], "collectionEntityRows": [{"label": "entity patch default"}]}
                   },
                   "allOfCfg": {
                     "allOf": [

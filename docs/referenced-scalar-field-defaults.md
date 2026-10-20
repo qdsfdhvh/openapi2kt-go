@@ -1,5 +1,7 @@
 # Referenced scalar field defaults
 
+String schemas with `format: uuid` use [Kotlin Uuid](nullable-uuid.md), including admitted scalar/collection defaults. UUID lexical checks, canonical text and the String-to-Uuid migration apply; original source-role and validation restrictions remain.
+
 [Referenced byte field own defaults](referenced-bytes-field-defaults.md) separately admit scalar byte/binary annotations on existing paths, using signed-array JSON and bounded typed helpers with the same required/Patch/source budgets.
 
 [Referenced String enum scalar field defaults](referenced-string-enum-scalar-defaults.md) separately extend the own-default role to plain String/typeless enum references, retaining actual lexical classifiers, strict annotation vocabulary and open runtime Strings.
@@ -8,7 +10,7 @@
 
 [Referenced standard temporal scalar field defaults](referenced-temporal-scalar-field-defaults.md) separately admit ordinary direct `$ref` fields' own annotations through already accepted date/date-time paths with actual LocalDate/Instant types. Native markers, target/chain/root defaults, collections and other roles retain their exclusions.
 
-An ordinary DTO property with a direct local `$ref` may declare its own `default` when the existing resolver already accepts the named/internal finite path and its terminal is an ordinary builtin String, Boolean, Int, Long, Float or Double schema. Existing aliases, root bridges, source constraints and nearest explicit nullable true/false keep their admission rules. String includes `format: uuid`, including [direct internal leaves and root bridges](root-borrowed-builtin.md#uuid-leaves); annotations reuse ordinary String literals and checks without UUID lexeme validation. For example:
+An ordinary DTO property with a direct local `$ref` may declare its own `default` when the existing resolver already accepts the named/internal finite path and its terminal is an ordinary builtin String, Boolean, Int, Long, Float or Double schema. Existing aliases, root bridges, source constraints and nearest explicit nullable true/false keep their admission rules. String includes `format: uuid`, including [direct internal leaves and root bridges](root-borrowed-builtin.md#uuid-leaves); annotations use the current native Uuid parser and canonical-text checks. For example:
 
 ```json
 {

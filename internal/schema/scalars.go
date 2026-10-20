@@ -40,6 +40,16 @@ func scalarLiteral(scalar string, value *document.Value, pointer string) (string
 			return bad()
 		}
 		return naming.Literal(literal), nil
+	case "kotlin.uuid.Uuid":
+		literal, ok := value.Text()
+		if !ok {
+			return bad()
+		}
+		canonical, ok := canonicalUUID(literal)
+		if !ok {
+			return bad()
+		}
+		return scalar + ".parse(" + naming.Literal(canonical) + ")", nil
 	case "kotlin.time.Instant", "kotlinx.datetime.LocalDate":
 		literal, ok := value.Text()
 		if !ok {
@@ -189,6 +199,9 @@ func constantProfile(name, wire string, v *document.Value, pointer string, depth
 	}
 	if err != nil {
 		return nil, err
+	}
+	if scalar == "kotlin.uuid.Uuid" {
+		initializer = scalarDefaultInitializer(scalar, initializer)
 	}
 	return &Constant{Name: name, WireName: wire, Type: TypeRef{Kind: Scalar, Name: scalar}, Initializer: initializer}, nil
 }

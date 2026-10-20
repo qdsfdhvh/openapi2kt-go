@@ -12,32 +12,46 @@ import (
 func TestUUIDComponentDefaults(t *testing.T) {
 	for _, checked := range []bool{false, true} {
 		for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
-			for _, shape := range []string{`"type":"string"`, `"type":"string","nullable":false`, `"type":"string","nullable":true`, `"type":["string","null"]`} {
-				for _, value := range []string{`"123e4567-e89b-12d3-a456-426614174000"`, `"ordinary text\n雪"`, `""`, `null`} {
-					if value == "null" && !strings.Contains(shape, `true`) && !strings.Contains(shape, `[`) {
-						continue
+			for _, nullable := range []string{"", `,"nullable":false`} {
+				for _, value := range []string{"550e8400-e29b-41d4-a716-446655440000", "550E8400-E29B-41D4-A716-446655440000", "550e8400e29b41d4a716446655440000"} {
+					encoded, _ := json.Marshal(value)
+					shape := `"type":"string","format":"uuid"` + nullable
+					body := `{"T":{` + shape + `,"default":` + string(encoded) + `}}`
+					if checked {
+						body = strings.TrimSuffix(body, "}") + `,"M":{"$ref":"#/components/schemas/T","default":"550e8400-e29b-41d4-a716-446655440001"},"N":{"$ref":"#/components/schemas/M","nullable":false,"default":"550e8400-e29b-41d4-a716-446655440002"},"Plain":{"$ref":"#/components/schemas/N"},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/N"}}}}`
 					}
-					body := `{"T":{` + shape + `,"format":"uuid","default":` + value + `},"Holder":{"required":["required"],"properties":{"required":{"$ref":"#/components/schemas/T"},"optional":{"$ref":"#/components/schemas/T"}}}}`
 					r := request(schemas(body), "Dto")
 					r.Options.Validation, r.Options.ModelStyle = checked, style
 					report, err := core.GenerateWithDiagnostics(r)
 					if err != nil {
-						details, _ := json.Marshal(err)
-						t.Fatal(shape, value, string(details))
+						t.Fatal(err)
 					}
-					encoded, _ := json.Marshal(value)
 					text := source(t, report, "TDto")
-					if !strings.Contains(text, "public typealias TDto = kotlin.String") || !strings.Contains(text, "public fun `TDto default`(): TDto =") || !strings.Contains(text, string(encoded)) {
-						t.Fatal("UUID factory changed String mapping or annotation", text)
+					literal, _ := json.Marshal(string(encoded))
+					if !strings.Contains(text, "public typealias TDto = kotlin.uuid.Uuid") || !strings.Contains(text, "public fun `TDto default`(): TDto =") || !strings.Contains(text, string(literal)) {
+						t.Fatal("Kotlin UUID factory/value changed", text)
 					}
 					again, err := core.GenerateWithDiagnostics(r)
 					if err != nil || !reflect.DeepEqual(report, again) {
-						t.Fatal("UUID factory is nondeterministic", err)
+						t.Fatal("UUID factory generation drift", err)
 					}
-					r.Document = schemas(strings.Replace(body, `,"default":`+value, "", 1))
+					r.Document = schemas(strings.Replace(body, `,"default":`+string(encoded), "", 1))
 					control, err := core.GenerateWithDiagnostics(r)
-					if err != nil || source(t, report, "HolderDto") != source(t, control, "HolderDto") || !reflect.DeepEqual(report.Warnings, control.Warnings) {
-						t.Fatal("UUID component annotation changed consumer presence or warnings", err)
+					if err != nil || !reflect.DeepEqual(report.Warnings, control.Warnings) {
+						t.Fatal("UUID default changed source/warnings", err)
+					}
+					if checked {
+						unchecked := request(schemas(`{"T":{`+shape+`,"default":`+string(encoded)+`}}`), "Dto")
+						unchecked.Options.ModelStyle = style
+						bare, err := core.GenerateWithDiagnostics(unchecked)
+						if err != nil || source(t, bare, "TDto") != text {
+							t.Fatal("UUID root factory depends on validation option", err)
+						}
+						for _, name := range []string{"MDto", "NDto", "PlainDto", "HolderDto"} {
+							if source(t, report, name) != source(t, control, name) {
+								t.Fatal("UUID default inherited/changed another owner", name)
+							}
+						}
 					}
 				}
 			}
@@ -45,86 +59,108 @@ func TestUUIDComponentDefaults(t *testing.T) {
 	}
 }
 
-func TestUUIDComponentDefaultAliasesAndBounds(t *testing.T) {
-	body := `{"T":{"type":"string","format":"uuid","minLength":2,"maxLength":6,"pattern":"^[a-z]+$","default":"given"},"M":{"$ref":"#/components/schemas/T","default":"middle"},"N":{"$ref":"#/components/schemas/M","default":"outer"},"Plain":{"$ref":"#/components/schemas/N"},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/N"}}}}`
-	for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
-		r := request(schemas(body), "Dto")
-		r.Options.Validation, r.Options.ModelStyle = true, style
-		report, err := core.GenerateWithDiagnostics(r)
-		if err != nil {
-			details, _ := json.Marshal(err)
-			t.Fatal(string(details))
+func TestUUIDComponentDefaultConstraints(t *testing.T) {
+	for _, tc := range []struct{ bounds, value string }{
+		{`"minLength":36`, `"550e8400-e29b-41d4-a716-446655440000"`},
+		{`"maxLength":36`, `"550e8400e29b41d4a716446655440000"`},
+		{`"pattern":"^550e8400-"`, `"550E8400-E29B-41D4-A716-446655440000"`},
+	} {
+		r := request(schemas(`{"T":{"type":"string","format":"uuid",`+tc.bounds+`,"default":`+tc.value+`},"M":{"$ref":"#/components/schemas/T","default":`+tc.value+`}}`), "Dto")
+		r.Options.Validation = true
+		if _, err := core.GenerateWithDiagnostics(r); err != nil {
+			t.Fatal("existing String constraint denied UUID factory", tc, err)
 		}
-		for _, name := range []string{"TDto", "MDto", "NDto"} {
-			if !strings.Contains(source(t, report, name), "public fun `"+name+" default`(): "+name+" =") {
-				t.Fatal("alias lost its independent default", name)
+	}
+}
+
+func TestUUIDComponentDefaultValueGuards(t *testing.T) {
+	for _, tc := range []struct{ bounds, value, code string }{
+		{"", "null", "E_SCHEMA_INVALID"},
+		{"", "1", "E_SCHEMA_INVALID"},
+		{"", "true", "E_SCHEMA_INVALID"},
+		{"", "[]", "E_SCHEMA_INVALID"},
+		{"", "{}", "E_SCHEMA_INVALID"},
+		{`,"minLength":37`, `"550e8400-e29b-41d4-a716-446655440000"`, "E_SCHEMA_INVALID"},
+		{`,"maxLength":35`, `"550e8400e29b41d4a716446655440000"`, "E_SCHEMA_INVALID"},
+		{`,"pattern":"^650e"`, `"550e8400-e29b-41d4-a716-446655440000"`, "E_SCHEMA_INVALID"},
+		{`,"pattern":"^[a-z]+$"`, `"é"`, "E_SCHEMA_INVALID"},
+	} {
+		for _, checked := range []bool{false, true} {
+			if !checked && tc.bounds != "" {
+				continue
 			}
-		}
-		r.Document = schemas(strings.Replace(body, `,"default":"given"`, "", 1))
-		control, err := core.GenerateWithDiagnostics(r)
-		if err != nil {
-			t.Fatal(err)
-		}
-		for _, name := range []string{"MDto", "NDto", "PlainDto", "HolderDto"} {
-			if source(t, report, name) != source(t, control, name) {
-				t.Fatal("UUID target default changed another declaration", name)
+			for _, owner := range []string{"T", "M", "N"} {
+				if !checked && owner != "T" {
+					continue
+				}
+				values := map[string]string{"T": "", "M": "", "N": ""}
+				values[owner] = `,"default":` + tc.value
+				body := `{"T":{"type":"string","format":"uuid"` + tc.bounds + values["T"] + `}}`
+				if checked {
+					body = strings.TrimSuffix(body, "}") + `,"M":{"$ref":"#/components/schemas/T"` + values["M"] + `},"N":{"$ref":"#/components/schemas/M","nullable":false` + values["N"] + `}}`
+				}
+				r := request(schemas(body), "Dto")
+				r.Options.Validation = checked
+				report, err := core.GenerateWithDiagnostics(r)
+				ds, ok := err.(core.Diagnostics)
+				if !ok || len(ds) == 0 || ds[0].Code != tc.code || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/"+owner+"/default" || !reflect.DeepEqual(report, core.GenerationReport{}) {
+					t.Fatal("UUID value escaped original owner check", tc, owner, err)
+				}
 			}
 		}
 	}
 }
 
-func TestUUIDComponentDefaultGuards(t *testing.T) {
-	for _, tc := range []struct{ extra, value, code, tail string }{
-		{"", `1`, "E_SCHEMA_INVALID", "default"},
-		{"", `true`, "E_SCHEMA_INVALID", "default"},
-		{"", `[]`, "E_SCHEMA_INVALID", "default"},
-		{"", `{}`, "E_SCHEMA_INVALID", "default"},
-		{"", `null`, "E_SCHEMA_INVALID", "default"},
-		{`,"minLength":2`, `"x"`, "E_SCHEMA_INVALID", "default"},
-		{`,"maxLength":2`, `"long"`, "E_SCHEMA_INVALID", "default"},
-		{`,"pattern":"^[a-z]+$"`, `"UPPER"`, "E_SCHEMA_INVALID", "default"},
-		{`,"minLength":-1`, `"xx"`, "E_SCHEMA_INVALID", "minLength"},
-		{`,"pattern":"["`, `"xx"`, "E_SCHEMA_INVALID", "pattern"},
-		{"", `"` + strings.Repeat("a", 32768) + `"`, "E_MODEL_LIMIT", "default"},
+func TestUUIDComponentDefaultsKeepSourceGates(t *testing.T) {
+	for _, body := range []string{
+		`{"T":{"type":"string","format":"uuid","enum":["text"],"default":"text"}}`,
+		`{"T":{"type":"string","format":"uuid","x-native-type":"org.example.Text","default":"text"}}`,
+		`{"T":{"type":"string","format":"uuid","x-kotlin-value-class":true,"default":"text"}}`,
+		`{"T":{"type":"string","format":"uri","default":"text"}}`,
+		`{"T":{"type":"number","format":"uuid","default":1}}`,
 	} {
-		r := request(schemas(`{"T":{"type":"string","format":"uuid"`+tc.extra+`,"default":`+tc.value+`}}`), "Dto")
+		r := request(schemas(body), "Dto")
 		r.Options.Validation = true
-		report, err := core.GenerateWithDiagnostics(r)
-		ds, ok := err.(core.Diagnostics)
-		if !ok || len(ds) == 0 || ds[0].Code != tc.code || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/T/"+tc.tail || !reflect.DeepEqual(report, core.GenerationReport{}) {
-			t.Fatal("UUID default bypassed value/source/budget checks", tc.extra, tc.code, tc.tail, err)
-		}
-	}
-	for _, owner := range []string{"M", "N"} {
-		for _, value := range []string{`null`, `"x"`, `3`} {
-			values := map[string]string{"M": "", "N": ""}
-			values[owner] = `,"default":` + value
-			r := request(schemas(`{"T":{"type":"string","format":"uuid","minLength":2},"M":{"$ref":"#/components/schemas/T"`+values["M"]+`},"N":{"$ref":"#/components/schemas/M"`+values["N"]+`}}`), "Dto")
-			r.Options.Validation = true
-			report, err := core.GenerateWithDiagnostics(r)
-			ds, ok := err.(core.Diagnostics)
-			if !ok || len(ds) == 0 || ds[0].Code != "E_SCHEMA_INVALID" || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/"+owner+"/default" || !reflect.DeepEqual(report, core.GenerationReport{}) {
-				t.Fatal("UUID alias default lost owner or constraints", owner, value, err)
-			}
+		if report, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
+			t.Fatal("UUID factory widened another source role", body, err)
 		}
 	}
 	for _, body := range []string{
-		`{"T":{"type":"string","format":"uuid","minLength":1,"default":"x"}}`,
-		`{"T":{"type":"string","format":"uuid"},"M":{"$ref":"#/components/schemas/T","default":"x"}}`,
+		`{"T":{"type":"string","format":"uuid","minLength":1,"default":"text"}}`,
+		`{"T":{"type":"string","format":"uuid"},"M":{"$ref":"#/components/schemas/T","default":"text"}}`,
 	} {
 		if report, err := core.GenerateWithDiagnostics(request(schemas(body), "Dto")); err == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
-			t.Fatal("UUID factory bypassed existing validation opt-in", err)
+			t.Fatal("UUID factory bypassed validation opt-in", body, err)
 		}
 	}
-	for _, shape := range []string{
-		`"type":"string","format":"uuid","enum":["a"]`,
-		`"type":"string","format":"uuid","x-kotlin-value-class":true`,
-		`"type":"string","format":"uuid","x-native-type":"org.example.Id"`,
+	for _, tc := range []struct{ bounds, keyword string }{
+		{`"minLength":-1`, "minLength"},
+		{`"minLength":4,"maxLength":2`, "maxLength"},
+		{`"pattern":"["`, "pattern"},
 	} {
-		r := request(schemas(`{"T":{`+shape+`,"default":"a"}}`), "Dto")
+		r := request(schemas(`{"T":{"type":"string","format":"uuid",`+tc.bounds+`,"default":"text"}}`), "Dto")
 		r.Options.Validation = true
-		if report, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
-			t.Fatal("UUID factory widened an excluded source role", shape, err)
+		_, err := core.GenerateWithDiagnostics(r)
+		ds, ok := err.(core.Diagnostics)
+		if !ok || len(ds) == 0 || ds[0].Code != "E_SCHEMA_INVALID" || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/T/"+tc.keyword {
+			t.Fatal("UUID source constraint lost keyword Pointer", tc, err)
+		}
+	}
+}
+
+func TestUUIDComponentDefaultPointerAndBudget(t *testing.T) {
+	for _, checked := range []bool{false, true} {
+		for _, tc := range []struct{ value, code string }{
+			{"1", "E_SCHEMA_INVALID"},
+			{`"` + strings.Repeat("a", 32769) + `"`, "E_MODEL_LIMIT"},
+		} {
+			r := request(schemas(`{"A/B~C":{"type":"string","format":"uuid","default":`+tc.value+`}}`), "Dto")
+			r.Options.Validation = checked
+			report, err := core.GenerateWithDiagnostics(r)
+			ds, ok := err.(core.Diagnostics)
+			if !ok || len(ds) == 0 || ds[0].Code != tc.code || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/A~1B~0C/default" || !reflect.DeepEqual(report, core.GenerationReport{}) {
+				t.Fatal("UUID default escaped Pointer/budget contract", tc.code, err)
+			}
 		}
 	}
 }

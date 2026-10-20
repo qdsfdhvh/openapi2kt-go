@@ -1,84 +1,101 @@
 {
   "openapi": "3.1.0",
-  "info": {"title": "UUID component defaults", "version": "1.0.0"},
+  "info": {
+    "title": "Kotlin UUID component defaults",
+    "version": "1.0.0"
+  },
   "components": {
     "schemas": {
-      "Id": {"type": "string", "format": "uuid", "default": "123e4567-e89b-12d3-a456-426614174000"},
-      "Text": {"type": "string", "format": "uuid", "default": "ordinary text\n雪"},
-      "NullId": {"type": ["string", "null"], "format": "uuid", "default": null},
-      "MaybeId": {"type": "string", "format": "uuid", "nullable": true, "default": "present"},
-      "Inherited": {"$ref": "#/components/schemas/NullId"},
-      "Narrow": {"$ref": "#/components/schemas/Inherited", "nullable": false, "default": "narrow"},
-      "Widen": {"$ref": "#/components/schemas/Narrow", "nullable": true, "default": null},
-      "OwnNullable": {"$ref": "#/components/schemas/Id", "nullable": true, "default": null},
-      "UuidSource": {"properties": {
-        "id": {"type": ["string", "null"], "format": "uuid"},
-        "narrow": {"$ref": "#/components/schemas/UuidSource/properties/id", "nullable": false}
-      }},
-      "UuidBridge": {"$ref": "#/components/schemas/UuidSource/properties/id"},
-      "UuidFalse": {"$ref": "#/components/schemas/UuidSource/properties/narrow"},
-      "Bounded": {"type": "string", "format": "uuid", "minLength": 2, "maxLength": 6, "pattern": "^[a-z]+$", "default": "given"},
-      "Middle": {"$ref": "#/components/schemas/Bounded", "default": "middle"},
-      "Outer": {"$ref": "#/components/schemas/Middle", "default": "outer"},
-      "Plain": {"$ref": "#/components/schemas/Outer"},
+      "Text": {
+        "type": "string",
+        "format": "uuid",
+        "default": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "Escaped": {
+        "type": "string",
+        "default": "quote\"\\\n\u00e9"
+      },
+      "Bounded": {
+        "type": "string",
+        "format": "uuid",
+        "minLength": 36,
+        "maxLength": 36,
+        "pattern": "^550e8400-",
+        "default": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "Middle": {
+        "$ref": "#/components/schemas/Text",
+        "default": "550e8400-e29b-41d4-a716-446655440001"
+      },
+      "Outer": {
+        "$ref": "#/components/schemas/Middle",
+        "nullable": false,
+        "default": "550e8400-e29b-41d4-a716-446655440002"
+      },
+      "Plain": {
+        "$ref": "#/components/schemas/Outer"
+      },
+      "BoundedAlias": {
+        "$ref": "#/components/schemas/Bounded",
+        "default": "550e8400-e29b-41d4-a716-446655440001"
+      },
       "Holder": {
         "type": "object",
         "properties": {
-          "id": {"$ref": "#/components/schemas/Id"},
-          "text": {"$ref": "#/components/schemas/Text"},
-          "nullId": {"$ref": "#/components/schemas/NullId"},
-          "maybeId": {"$ref": "#/components/schemas/MaybeId"},
-          "narrow": {"$ref": "#/components/schemas/Narrow"},
-          "widen": {"$ref": "#/components/schemas/Widen"},
-          "ids": {"type": "array", "items": {"$ref": "#/components/schemas/UuidSource/properties/id"}},
-          "values": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/UuidBridge"}},
-          "borrowed": {"$ref": "#/components/schemas/UuidBridge", "default": "own"},
-          "bounded": {"$ref": "#/components/schemas/Bounded"},
-          "middle": {"$ref": "#/components/schemas/Middle"},
-          "outer": {"$ref": "#/components/schemas/Outer"},
-          "plain": {"$ref": "#/components/schemas/Plain"}
+          "text": {
+            "$ref": "#/components/schemas/Text"
+          },
+          "escaped": {
+            "$ref": "#/components/schemas/Escaped"
+          },
+          "bounded": {
+            "$ref": "#/components/schemas/Bounded"
+          },
+          "outer": {
+            "$ref": "#/components/schemas/Outer"
+          },
+          "plain": {
+            "$ref": "#/components/schemas/Plain"
+          }
         }
       },
       "Required": {
         "type": "object",
-        "required": ["id", "nullableId", "narrow"],
+        "required": [
+          "text",
+          "outer"
+        ],
         "properties": {
-          "id": {"$ref": "#/components/schemas/Id"},
-          "nullableId": {"$ref": "#/components/schemas/NullId"},
-          "narrow": {"$ref": "#/components/schemas/Narrow"}
-        }
-      }
-    }
-  },
-  "paths": {
-    "/echo": {
-      "post": {
-        "operationId": "echo",
-        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/UuidBridge"}}}},
-        "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/UuidBridge"}}}}}
-      }
-    },
-    "/submit": {
-      "post": {
-        "operationId": "submit",
-        "requestBody": {"required": true, "content": {"application/json": {"schema": {
-          "type": "object", "required": ["requiredId", "narrow"], "properties": {
-            "requiredId": {"$ref": "#/components/schemas/UuidBridge"},
-            "narrow": {"$ref": "#/components/schemas/UuidFalse"},
-            "value": {"$ref": "#/components/schemas/UuidSource/properties/id"}
+          "text": {
+            "$ref": "#/components/schemas/Text"
+          },
+          "outer": {
+            "$ref": "#/components/schemas/Outer"
           }
-        }}}},
-        "responses": {"204": {}}
-      }
-    },
-    "/watch": {
-      "get": {
-        "operationId": "watch",
-        "responses": {"200": {"content": {"text/event-stream": {"schema": {"oneOf": [
-          {"type": "object", "required": ["data"], "properties": {
-            "event": {"const": "id"}, "data": {"$ref": "#/components/schemas/UuidSource/properties/id"}
-          }}
-        ]}}}}}
+        }
+      },
+      "NullableRoot": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "uuid",
+        "default": null
+      },
+      "NullableAlias": {
+        "$ref": "#/components/schemas/Text",
+        "nullable": true,
+        "default": null
+      },
+      "NarrowedOwn": {
+        "$ref": "#/components/schemas/NullableRoot",
+        "nullable": false,
+        "default": "550e8400-e29b-41d4-a716-446655440002"
+      },
+      "ReopenedOwn": {
+        "$ref": "#/components/schemas/NarrowedOwn",
+        "nullable": true,
+        "default": null
       }
     }
   }

@@ -9,7 +9,7 @@ import (
 )
 
 func TestScalarAliasObjectDefaultMembersNativeParity(t *testing.T) {
-	valid := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Source":{"properties":{"id":{"type":"string","format":"uuid","nullable":true}}},"Alias":{"$ref":"#/components/schemas/Source/properties/id","nullable":false},"Outer":{"$ref":"#/components/schemas/Alias"},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Outer"}},"default":{"member":"text"}}}}}}}`)
+	valid := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Source":{"properties":{"id":{"type":"string","format":"uuid","nullable":true}}},"Alias":{"$ref":"#/components/schemas/Source/properties/id","nullable":false},"Outer":{"$ref":"#/components/schemas/Alias"},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Outer"}},"default":{"member":"550e8400-e29b-41d4-a716-446655440000"}}}}}}}`)
 	for _, checked := range []bool{false, true} {
 		for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
 			p := newProject(t)
@@ -38,7 +38,7 @@ func TestScalarAliasObjectDefaultMembersNativeParity(t *testing.T) {
 				t.Fatal("readonly/noop changed output")
 			}
 			for _, value := range []string{"null", "1"} {
-				put(t, p.Input, []byte(strings.Replace(string(valid), `"member":"text"`, `"member":`+value, 1)))
+				put(t, p.Input, []byte(strings.Replace(string(valid), `"member":"550e8400-e29b-41d4-a716-446655440000"`, `"member":`+value, 1)))
 				for _, command := range commands {
 					failure := fails(t, invoke(t, p.Root, command...), 1, "E_SCHEMA_INVALID")
 					if failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != "/components/schemas/Holder/properties/v/default/member" || !reflect.DeepEqual(before, snapshot(t, p.Output)) {

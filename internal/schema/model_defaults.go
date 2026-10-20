@@ -38,7 +38,7 @@ func scalarSchemaDefault(v *document.Value, pointer string) (string, *diagnostic
 	if err != nil {
 		return "", err
 	}
-	if !slices.Contains([]string{"kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double", "kotlin.time.Instant", "kotlinx.datetime.LocalDate", "kotlin.ByteArray", "kotlinx.serialization.json.JsonNull"}, scalar) {
+	if !slices.Contains([]string{"kotlin.String", "kotlin.uuid.Uuid", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double", "kotlin.time.Instant", "kotlinx.datetime.LocalDate", "kotlin.ByteArray", "kotlinx.serialization.json.JsonNull"}, scalar) {
 		return "", unsupported(at)
 	}
 	if kind == "null" {
@@ -162,6 +162,13 @@ func validateDefaultChecksAt(value, schema *document.Value, checks *PrimitiveVal
 		return invalid("Default must satisfy the field's retained validation constraints.", valuePointer)
 	}
 	if text, ok := value.Text(); ok {
+		if scalar == "kotlin.uuid.Uuid" {
+			var valid bool
+			text, valid = canonicalUUID(text)
+			if !valid {
+				return bad()
+			}
+		}
 		length := int64(utf8.RuneCountInString(text))
 		if checks.MinLength != nil && length < *checks.MinLength || checks.MaxLength != nil && length > *checks.MaxLength {
 			return bad()
@@ -396,6 +403,8 @@ func scalarDefaultInitializer(scalar, literal string) string {
 		literal = "(-9223372036854775807L - 1L)"
 	}
 	switch scalar {
+	case "kotlin.uuid.Uuid":
+		literal = strings.Replace(literal, "kotlin.uuid.Uuid.parse(", "`openapi-kt default uuid`(", 1)
 	case "kotlin.time.Instant":
 		literal = strings.Replace(literal, "kotlin.time.Instant.parse(", "`openapi-kt default instant`(", 1)
 	case "kotlinx.datetime.LocalDate":

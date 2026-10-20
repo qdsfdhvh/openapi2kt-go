@@ -57,6 +57,12 @@ Still rejected: unsupported default roles, `x-native-type`, value classes, `cons
 
 [Constrained plain-scalar component factories](../component-default-factories.md#constrained-plain-scalar-roots) now admit validation-on root defaults with existing String length/portable pattern, integer bounds/multipleOf and floating bounds. They preserve alias types, original JSON tokens, per-owner factories and non-inheritance. Bounded aliases without explicit nullable intent now validate their annotations against retained constraints; values formerly accepted by the legacy kind-only path fail at the original alias `/default`. Malformed constrained nullable root schemas report the actual constraint keyword (for example `/minLength`) instead of an unsupported-default location. Correct invalid annotations/schema metadata; valid prior output and API/wire behavior require no migration.
 
+## UUID mapping migration after the published alpha
+
+`type: string`, `format: uuid` now generates `kotlin.uuid.Uuid` / `Uuid?`, including nominal wrapper backing, admitted defaults and HTTP/SSE use sites. Replace String arguments with `Uuid.parse`, supply valid UUID annotations/data, and expect lowercase hyphenated output. Root UUID bodies now use JSON strings and nullable JSON null instead of raw String projection. Canonical text also drives length/pattern checks. Opaque IDs should use an unformatted String or a supported explicit native String override. Existing enum vocabularies, mixed primitive unions, native-role gates and output-state formats retain their own contracts. See [the complete migration and tested dependency combination](../nullable-uuid.md#migration).
+
+This is a breaking Kotlin/wire change for the next MINOR before 1.0; it does not modify the published `v0.2.0-alpha.1` tag. Normal regeneration updates manifest-owned files, and `--check` returns 3 until regenerated; no output reset is needed.
+
 ## Acceptance and packaging boundaries
 
 Local source acceptance runs the entire `scripts/test.sh all` profile set and bounded fuzz targets against one frozen source tree. Generated Kotlin is compiled and run from fresh output, with existing compiler options and resource limits; no claims extend to the full option Cartesian product or wide-by-deep maximum combinations.

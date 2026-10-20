@@ -66,9 +66,37 @@ func TestLegacyGoldenOwnedOutputsNeedNoManifestReset(t *testing.T) {
 			put(t, filepath.Join(p.Output, "Notes.kt"), []byte("handwritten"))
 			before := snapshot(t, p.Output)
 			args := []string{"generate", "--input", p.Input, "--output", p.Output, "--package-name", c.PackageName, "--model-name-suffix", c.ModelNameSuffix, "--input-format", c.InputFormat, "--diagnostic-format", "json"}
-			result(t, invoke(t, "", append(args, "--check")...), 0)
-			result(t, invoke(t, "", args...), 0)
+			uuidMigration := c.ID == "scalars-30" || c.ID == "catalog-graph"
+			checkCode := 0
+			if uuidMigration {
+				checkCode = 3
+			}
+			result(t, invoke(t, "", append(args, "--check")...), checkCode)
 			if !reflect.DeepEqual(snapshot(t, p.Output), before) {
+				t.Fatal("check modified legacy outputs")
+			}
+			result(t, invoke(t, "", args...), 0)
+			after := snapshot(t, p.Output)
+			if uuidMigration {
+				for relative, old := range before {
+					if relative == ".openapi-kt-manifest.json" {
+						continue
+					}
+					want := string(testutil.CurrentUUIDSnapshot(t, c, relative, []byte(old.Bytes)))
+					if want != old.Bytes {
+						if after[relative].Bytes != want {
+							t.Fatal("UUID migration output differs", relative)
+						}
+					} else if after[relative] != old {
+						t.Fatal("UUID migration touched unrelated output", relative)
+					}
+				}
+				result(t, invoke(t, "", append(args, "--check")...), 0)
+				result(t, invoke(t, "", args...), 0)
+				if !reflect.DeepEqual(snapshot(t, p.Output), after) {
+					t.Fatal("UUID migration did not converge")
+				}
+			} else if !reflect.DeepEqual(after, before) {
 				t.Fatal("legacy v1 outputs/manifest/lock/handwritten bytes or mtimes changed")
 			}
 		})

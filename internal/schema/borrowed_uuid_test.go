@@ -17,7 +17,7 @@ func TestBorrowedUUIDOriginalSourceAndExport(t *testing.T) {
 	bridge, source := a.components["Bridge"], a.components["Source"]
 	origin := bridge.InternalModelTarget.BorrowedScalar
 	leaf := get(get(source.Schema, "properties"), "id")
-	if origin == nil || origin.Schema != leaf || origin.Owner != source || origin.Pointer != "/components/schemas/Source/properties/id" || bare(origin.Type).Name != "kotlin.String" || origin.Checks == nil || a.validationSources[origin.Checks] != origin.Pointer || len(a.components) != 3 {
+	if origin == nil || origin.Schema != leaf || origin.Owner != source || origin.Pointer != "/components/schemas/Source/properties/id" || bare(origin.Type).Name != "kotlin.uuid.Uuid" || origin.Checks == nil || a.validationSources[origin.Checks] != origin.Pointer || len(a.components) != 3 {
 		t.Fatal("borrowed UUID lost original schema/owner/check authority", origin)
 	}
 	if a.componentType(bridge).Kind != Scalar {

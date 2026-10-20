@@ -11,7 +11,7 @@ import (
 	"openapi-kt/core"
 )
 
-func TestBorrowedUUIDStringParity(t *testing.T) {
+func TestBorrowedUUIDNativeMapping(t *testing.T) {
 	for _, fixture := range []string{"root-borrowed-builtin", "schema-internal-scalar-pointers-qualified"} {
 		input, err := os.ReadFile("../tests/fixtures/http/" + fixture + ".json")
 		if err != nil {
@@ -35,7 +35,8 @@ func TestBorrowedUUIDStringParity(t *testing.T) {
 				if types, ok := v["type"].([]any); ok {
 					kind = reflect.DeepEqual(types, []any{"string", "null"})
 				}
-				if _, formatted := v["format"]; kind && !formatted {
+				_, pinned := v["const"]
+				if _, formatted := v["format"]; kind && !formatted && !pinned {
 					v["format"] = "uuid"
 				}
 				for _, child := range v {
@@ -66,8 +67,15 @@ func TestBorrowedUUIDStringParity(t *testing.T) {
 				}
 				r.Document = uuid
 				got, err := core.GenerateWithDiagnostics(r)
-				if err != nil || !reflect.DeepEqual(got, baseline) {
-					t.Fatal("borrowed UUID changed String artifacts/diagnostics", fixture, checked, style, err)
+				if err != nil || !reflect.DeepEqual(got.Warnings, baseline.Warnings) {
+					t.Fatal("borrowed UUID mapping failed", fixture, checked, style, err)
+				}
+				found := false
+				for _, file := range got.Artifacts.Files {
+					found = found || strings.Contains(file.Content, "kotlin.uuid.Uuid")
+				}
+				if !found {
+					t.Fatal("borrowed UUID lost native backing")
 				}
 				again, err := core.GenerateWithDiagnostics(r)
 				if err != nil || !reflect.DeepEqual(got, again) {
@@ -82,7 +90,7 @@ func TestBorrowedUUIDFieldOwnDefault(t *testing.T) {
 	for _, checked := range []bool{false, true} {
 		for _, extra := range []string{"", `,"nullable":true`, `,"nullable":false`} {
 			for _, target := range []string{"Source/properties/id~1value~0", "Bridge", "Hops/properties/value"} {
-				for _, value := range []string{`"own"`, `null`} {
+				for _, value := range []string{`"550e8400-e29b-41d4-a716-446655440000"`, `null`} {
 					body := `{"Source":{"properties":{"id/value~":{"type":"string","format":"uuid","nullable":true}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/id~1value~0"},"Hops":{"properties":{"value":{"$ref":"#/components/schemas/Bridge"}}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/` + target + `"` + extra + `,"default":` + value + `}}}}`
 					r := request(schemas(body), "Dto")
 					r.Options.Validation = checked
@@ -94,7 +102,11 @@ func TestBorrowedUUIDFieldOwnDefault(t *testing.T) {
 						}
 						continue
 					}
-					if err != nil || !strings.Contains(source(t, got, "HolderDto"), "public val v: kotlin.String? = "+value) {
+					literal := value
+					if value != "null" {
+						literal = "`openapi-kt default uuid`(" + value + ")"
+					}
+					if err != nil || !strings.Contains(source(t, got, "HolderDto"), "public val v: kotlin.uuid.Uuid? = ") || !strings.Contains(source(t, got, "HolderDto"), literal) {
 						t.Fatal("borrowed UUID own-default role lost literal", target, extra, value, err)
 					}
 				}

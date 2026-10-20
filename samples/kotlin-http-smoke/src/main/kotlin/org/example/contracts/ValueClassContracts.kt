@@ -1,5 +1,6 @@
 package org.example.contracts
 
+import kotlin.uuid.Uuid
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.engine.mock.respond
@@ -54,8 +55,8 @@ suspend fun valueClassContracts() {
     for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }
         check(nominal(UserIdDto("same")) == "user:same")
-        check(nominal(OtherIdDto("same")) == "other:same")
-        check(!UserIdDto("same").equals(OtherIdDto("same")))
+        check(nominal(OtherIdDto(Uuid.parse("550e8400-e29b-41d4-a716-446655440000"))) == "other:550e8400-e29b-41d4-a716-446655440000")
+        check(!UserIdDto("same").equals(OtherIdDto(Uuid.parse("550e8400-e29b-41d4-a716-446655440000"))))
         val value = RecordDto(
             id = UserIdDto("a/b"), counter = CounterDto(Long.MIN_VALUE), index = IndexDto(Int.MIN_VALUE),
             enabled = EnabledDto(false), ratio = RatioDto(-0.0), weight = WeightDto(2.5f),
@@ -93,7 +94,7 @@ suspend fun valueClassContracts() {
                 when (request.url.encodedPath) {
                     "/items/a%2Fb" -> {
                         if (calls == 1) {
-                            check(request.url.parameters["other"] == "opaque-id")
+                            check(request.url.parameters["other"] == "550e8400-e29b-41d4-a716-446655440000")
                             check(request.url.parameters.getAll("many") == listOf("x"))
                             check(request.url.parameters["csv"] == "1,9223372036854775807")
                             check(request.url.parameters["kept"] == "2" && "dropped" !in request.url.parameters)
@@ -134,7 +135,7 @@ suspend fun valueClassContracts() {
         val http = HttpClient(engine) { install(SSE); install(ContentNegotiation) { json(codec) } }
         try {
             val api = ValueClassesApiClient(http, "http://example.test/", codec).types
-            check(api.roundTrip(UserIdDto("a/b"), OtherIdDto("opaque-id"), listOf(UserIdDto("x"), null),
+            check(api.roundTrip(UserIdDto("a/b"), OtherIdDto(Uuid.parse("550e8400-e29b-41d4-a716-446655440000")), listOf(UserIdDto("x"), null),
                 listOf(CounterDto(1), CounterDto(Long.MAX_VALUE)), mapOf("kept" to CounterDto(2), "dropped" to null),
                 RoundTripFilterDto(active = EnabledDto(false), id = UserIdDto("filter")), EnabledDto(false), listOf(UserIdDto("x"), null), value) == value)
             check(api.roundTrip(UserIdDto("a/b"), input = value) == value)

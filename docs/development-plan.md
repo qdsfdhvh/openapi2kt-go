@@ -1,9 +1,5 @@
 # openapi2kt-go 开发计划
 
-[内部 UUID 标量引用](root-borrowed-builtin.md#uuid-leaves)：D01/F04/F07/M01/M03/M07/M12，支持直接内部 UUID 叶、有限内部链和 root bridge；保原 source／owner／实际导出／nullablefalse／约束与 source48／checked16／slot240 预算。普通字段自身 default、List/Map、Patch、raw String HTTP 与 SSE 沿用 builtin 合同；terminal／hop／root-wrapper default、enum/native/valueclass 与一般引用图仍独立。已有有效 API/wire/锁无需迁移。
-
-[UUID String 根与组件默认工厂](component-default-factories.md#uuid-string-roots)：F04/F07/D03/M01/M03/M07/M12，支持 intrinsic／own-nullable UUID 根与 nearest true/false 别名覆盖；String? codec、typed List/Map、Patch、raw String HTTP 和 SSE 沿用 builtin 合同。组件及 validation-on 纯 named alias chain 可分别持有 default（显式 nullable 可为 null），保长度／portable pattern、原 Pointer／source／预算、不继承与 required；UUID 词法校验和其他未准入角色仍独立，已有有效 API/wire/锁无需迁移。
-
 本计划定义完整路线图；当前已有可用的 JSON 模型生成、限定 HTTP/SSE、本地配置和安全输出，但尚未完成全部阶段及完整版本验收。
 
 先按目的阅读：
@@ -49,6 +45,7 @@
 - 生成只接收本地文件/显式stdin；下载、鉴权、重试和缓存由外部工具负责，不内置网络适配或curlwrapper，编译不触发隐式联网。
 - 输出清单和异常回滚是工具的核心可靠性契约。
 - inline 对象请求及其递归 inline 子树的 `required + nullable` 使用 `T?`，不设默认值；`explicitNulls=true` 时，即使 `encodeDefaults=false` 也发送 null 键。共享组件、响应与根 union 请求仍保留普通 `T? = null`；`explicitNulls=false` 不保证 null 键，必须分别测试这些上下文及 JSON 配置。
+- UUID 已映射到 `kotlin.uuid.Uuid`，含显式[兼容迁移](nullable-uuid.md#migration)。
 - 日期时间已映射到 `kotlin.time.Instant` 和 `kotlinx.datetime.LocalDate`；见[特殊标量合同](special-scalars.md)。最低依赖版本仍须由实际编译矩阵确定。
 
 测试数据和变更验证要求见[贡献指南](../CONTRIBUTING.md)。

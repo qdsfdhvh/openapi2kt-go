@@ -15,7 +15,7 @@ func scalarAliasMemberDocument(target, hops, member, value string) []byte {
 func TestScalarAliasObjectDefaultMembers(t *testing.T) {
 	for _, tc := range []struct{ target, value string }{
 		{`{"type":"string"}`, `"text"`},
-		{`{"type":"string","format":"uuid"}`, `"arbitrary text"`},
+		{`{"type":"string","format":"uuid"}`, `"550e8400-e29b-41d4-a716-446655440000"`},
 		{`{"type":"boolean"}`, `true`},
 		{`{"type":"integer"}`, `7`},
 		{`{"type":"integer","format":"int32"}`, `7`},

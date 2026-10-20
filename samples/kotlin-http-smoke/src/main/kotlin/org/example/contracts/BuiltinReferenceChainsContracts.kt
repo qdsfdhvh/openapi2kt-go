@@ -51,7 +51,7 @@ import org.example.builtinchains.models.TextBridgeFalseDto
 import org.example.builtinchains.models.WideBridgeDto
 
 @OptIn(io.ktor.utils.io.InternalAPI::class)
-private class BuiltinChainStreamingEngine(config: MockEngineConfig) : MockEngine(config) {
+internal class BuiltinChainStreamingEngine(config: MockEngineConfig) : MockEngine(config) {
     override val supportedCapabilities = super.supportedCapabilities + SSECapability
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
         val response = super.execute(data)

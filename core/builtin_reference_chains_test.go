@@ -55,7 +55,7 @@ func TestBuiltinReferenceChainsCanonicalViews(t *testing.T) {
 }
 
 func TestBuiltinReferenceChainsDirectAndLegacyTerminals(t *testing.T) {
-	for _, terminal := range []string{`{"type":"string"}`, `{"type":"boolean"}`, `{"type":"integer"}`, `{"type":"integer","format":"int64"}`, `{"type":"number","format":"float"}`, `{"type":"number"}`} {
+	for _, terminal := range []string{`{"type":"string"}`, `{"type":"string","format":"uuid"}`, `{"type":"boolean"}`, `{"type":"integer"}`, `{"type":"integer","format":"int64"}`, `{"type":"number","format":"float"}`, `{"type":"number"}`} {
 		for _, alias := range []bool{false, true} {
 			for _, root := range []bool{false, true} {
 				body := `"Value":` + terminal

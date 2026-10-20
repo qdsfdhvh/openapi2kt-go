@@ -18,9 +18,6 @@ from pathlib import Path
 import json,sys
 p=Path(sys.argv[1]);checked=sys.argv[2]=='on'
 d=json.loads(Path('tests/fixtures/http/root-borrowed-builtin.json').read_text())
-# Exercise the same String consumers through a borrowed UUID terminal; the
-# historical unformatted fixture remains unchanged for core/full HTTP controls.
-d['components']['schemas']['Source']['properties']['text']['format']='uuid'
 if checked:
     s=d['components']['schemas']['Source']['properties']
     s['text'].update(minLength=2,pattern='^[a-z]+$')
@@ -31,7 +28,6 @@ if checked:
 (p/'input.json').write_text(json.dumps(d,indent=2)+'\n')
 r='#/components/schemas/'
 s={'Source':{'properties':{'long':{'type':'integer','format':'int64','nullable':True},'double':{'type':'number','format':'double','nullable':True},'text':{'type':'string','nullable':True}}},'Hops':{'properties':{'long':{'$ref':r+'Source/properties/long'},'double':{'$ref':r+'Source/properties/double'},'text':{'$ref':r+'Source/properties/text'}}},'LongBridge':{'$ref':r+'Hops/properties/long','nullable':False},'DoubleBridge':{'$ref':r+'Hops/properties/double','nullable':False},'BoxedBridge':{'$ref':r+'Hops/properties/long'},'TextBridge':{'$ref':r+'Hops/properties/text','nullable':False}}
-s['Source']['properties']['text']['format']='uuid'
 if checked:s['Source']['properties']['text']['minLength']=2
 for name,count,target in [('WideLong',120,'LongBridge'),('WideDouble',120,'DoubleBridge'),('Boxed',240,'BoxedBridge')]:
     s[name]={'properties':{'p'+str(i):{'$ref':r+target} for i in range(count)},'required':['p'+str(i) for i in range(count)]}

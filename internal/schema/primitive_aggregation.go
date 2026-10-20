@@ -62,7 +62,7 @@ func (a *analyzer) ordinaryPrimitiveAggregates(v *document.Value, s *shape, ordi
 			return nil, nil, err
 		}
 		if value, exists := winner.Schema.Get("default"); exists {
-			if scalar == "kotlin.String" {
+			if scalar == "kotlin.String" || scalar == "kotlin.uuid.Uuid" {
 				// Length and the admitted single pattern need one value scan.
 				if err := validateDefaultChecksAt(value, winner.Schema, plan, scalar, winner.Pointer, winner.Pointer+"/default"); err != nil {
 					return nil, nil, err
@@ -93,7 +93,7 @@ func aggregateSignature(fields []field) (string, bool) {
 	}
 	format := get(fields[0].Schema, "format")
 	scalar, err := scalarMapping(kind, fields[0].Schema, fields[0].Pointer)
-	if err != nil || !slices.Contains([]string{"kotlin.String", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double"}, scalar) {
+	if err != nil || !slices.Contains([]string{"kotlin.String", "kotlin.uuid.Uuid", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double"}, scalar) {
 		return "", false
 	}
 	for _, f := range fields {
@@ -121,7 +121,7 @@ func (a *analyzer) mergePrimitiveChecks(fields []field, checks []*PrimitiveValid
 		if check == nil {
 			continue
 		}
-		if scalar == "kotlin.String" {
+		if scalar == "kotlin.String" || scalar == "kotlin.uuid.Uuid" {
 			// Fixed min/max order, with attribution to the source closing the interval.
 			if check.MinLength != nil && (result.MinLength == nil || *check.MinLength > *result.MinLength) {
 				result.MinLength = check.MinLength

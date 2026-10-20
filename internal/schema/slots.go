@@ -139,7 +139,9 @@ func scalarMapping(kind string, v *document.Value, pointer string) (string, *dia
 		return "kotlinx.datetime.LocalDate", nil
 	case kind == "string" && (format == "byte" || format == "binary"):
 		return "kotlin.ByteArray", nil
-	case kind == "string" && (format == "" || format == "uuid"):
+	case kind == "string" && format == "uuid":
+		return "kotlin.uuid.Uuid", nil
+	case kind == "string" && format == "":
 		return "kotlin.String", nil
 	case kind == "integer" && (format == "" || format == "int32"):
 		return "kotlin.Int", nil

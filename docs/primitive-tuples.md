@@ -4,7 +4,7 @@ This is an initial **F08/Q05** subset, not complete JSON Schema tuple or boolean
 
 ## Mapping and diagnostics
 
-Every original prefix member must be an ordinary builtin String/Boolean/Int/Long/Float/Double schema, including supported ordinary numeric formats and string `uuid`. Supported nullable spellings and descriptive metadata remain available. Ref, enum, const, native, value-class, object/container/composition, default, validation-bearing and unknown member keywords are rejected—even when explicit `items` would override them.
+Every original prefix member must be an ordinary builtin String/Boolean/Int/Long/Float/Double schema, including supported ordinary numeric formats and string `uuid` (mapped to [Kotlin Uuid](nullable-uuid.md)). Supported nullable spellings and descriptive metadata remain available. Ref, enum, const, native, value-class, object/container/composition, default, validation-bearing and unknown member keywords are rejected—even when explicit `items` would override them.
 
 - Without `items`, identical scalar kind, format presence/value and effective nullable intent map to `List<T>`.
 - Different supported signatures map to `List<JsonElement>`, not a positional union. Absent versus explicitly empty `format` is a distinct signature, even if both map to String.
