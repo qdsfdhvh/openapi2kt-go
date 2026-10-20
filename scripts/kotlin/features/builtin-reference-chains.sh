@@ -10,6 +10,7 @@ for style in data_class plain_class; do
     mkdir -p "$project/src/main/kotlin/org/example/contracts"
     cp samples/kotlin-http-smoke/{build.gradle.kts,settings.gradle.kts} "$project/"
     cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/BuiltinReferenceChainsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
+    cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/NullableUuidContracts.kt "$project/src/main/kotlin/org/example/contracts/"
     flags=(--model-style "$style")
     if [[ "$checked" == on ]]; then flags+=(--validation); fi
     if [[ "$style" == plain_class ]]; then flags+=(--deduplicate-models --hoist-shared-shapes --qualify-hoisted-names --merge-identical-models); fi
@@ -26,6 +27,12 @@ if checked:
     s['Ratio'].update(minimum=0,maximum=10)
     s['Measure'].update(minimum=0,maximum=10)
 (p/'input.json').write_text(json.dumps(d,indent=2)+'\n')
+uuid=json.loads(Path('tests/fixtures/http/nullable-uuid.json').read_text())
+if not checked:
+    del uuid['components']['schemas']['Aggregate']['allOf'][0]['properties']['id']['minLength']
+    del uuid['components']['schemas']['Aggregate']['allOf'][1]['properties']['id']['pattern']
+    for key in ['minLength','maxLength','pattern']: uuid['components']['schemas']['Bounded'].pop(key)
+(p/'nullable-uuid.json').write_text(json.dumps(uuid,indent=2)+'\n')
 r='#/components/schemas/'
 s={'Long':{'type':'integer','format':'int64','nullable':True},'Double':{'type':'number','format':'double','nullable':True},'Text':{'type':'string','nullable':True},'Hops':{'properties':{'long':{'$ref':r+'Long'},'double':{'$ref':r+'Double'},'text':{'$ref':r+'Text'}}},'LongBridge':{'$ref':r+'Hops/properties/long','nullable':False},'DoubleBridge':{'$ref':r+'Hops/properties/double','nullable':False},'BoxedBridge':{'$ref':r+'Hops/properties/long'},'TextBridge':{'$ref':r+'Hops/properties/text','nullable':False}}
 if checked:s['Text']['minLength']=2
@@ -44,6 +51,8 @@ for name,count,target in [('wide',120,'LongBridge'),('boxed',240,'BoxedBridge')]
 PYINPUT
     "$workspace/openapi-kt" generate --input "$project/input.json" --output "$project/build/generated" --package-name org.example.builtinchains --model-name-suffix Dto "${flags[@]}"
     "$workspace/openapi-kt" generate --input "$project/input.json" --output "$project/build/generated" --package-name org.example.builtinchains --model-name-suffix Dto "${flags[@]}" --check
+    "$workspace/openapi-kt" generate --input "$project/nullable-uuid.json" --output "$project/build/generated-limits/nullable-uuid" --package-name org.example.nullableuuid --api-client-name NullableUuidApiClient --model-name-suffix Dto "${flags[@]}"
+    "$workspace/openapi-kt" generate --input "$project/nullable-uuid.json" --output "$project/build/generated-limits/nullable-uuid" --package-name org.example.nullableuuid --api-client-name NullableUuidApiClient --model-name-suffix Dto "${flags[@]}" --check
     "$workspace/openapi-kt" generate --input "$project/limits.json" --output "$project/build/generated-limits" --package-name org.example.builtinchainlimits --model-name-suffix Dto "${flags[@]}"
     python3 - "$project" "$style" "$checked" <<'PYMAIN'
 from pathlib import Path
@@ -82,6 +91,7 @@ fun main()=runBlocking {
         ''' if checked else '')+'''
     }
     builtinReferenceChainsContracts('''+str(checked).lower()+''')
+    nullableUuidContracts('''+str(checked).lower()+''')
 }
 ''')
 b=p/'build.gradle.kts';b.write_text(b.read_text()+'''

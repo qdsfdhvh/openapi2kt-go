@@ -140,7 +140,7 @@ func TestGenerationCorpus(t *testing.T) {
 				actual[f.Path] = f.Content
 			}
 			for path, golden := range c.Expect.Files {
-				expected[path] = string(testutil.Read(t, golden))
+				expected[path] = string(testutil.CurrentUUIDSnapshot(t, c, path, testutil.Read(t, golden)))
 			}
 			if !reflect.DeepEqual(actual, expected) {
 				for path, text := range expected {

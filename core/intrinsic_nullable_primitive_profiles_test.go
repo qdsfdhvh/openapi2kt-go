@@ -7,7 +7,7 @@ import (
 )
 
 func TestIntrinsicNullablePrimitiveBothSpellings(t *testing.T) {
-	for _, p := range []struct{ kind, format, name string }{{"string", "", "String"}, {"boolean", "", "Boolean"}, {"integer", "int32", "Int"}, {"integer", "int64", "Long"}, {"number", "float", "Float"}, {"number", "double", "Double"}} {
+	for _, p := range []struct{ kind, format, name string }{{"string", "", "String"}, {"string", "uuid", "uuid.Uuid"}, {"boolean", "", "Boolean"}, {"integer", "int32", "Int"}, {"integer", "int64", "Long"}, {"number", "float", "Float"}, {"number", "double", "Double"}} {
 		for _, array := range []bool{false, true} {
 			for _, flag := range []bool{false, true} {
 				scalar := map[string]any{"type": p.kind}
@@ -41,12 +41,18 @@ func TestIntrinsicNullablePrimitiveBothSpellings(t *testing.T) {
 	}
 }
 func TestIntrinsicNullablePrimitiveCheckedCollections(t *testing.T) {
+	for _, format := range []string{"", `,"format":"uuid"`} {
+		t.Run(format, func(t *testing.T) { testIntrinsicPrimitiveCheckedCollections(t, format) })
+	}
+}
+
+func testIntrinsicPrimitiveCheckedCollections(t *testing.T, format string) {
 	for _, n := range []int{16, 17} {
 		leaf := `{"$ref":"#/components/schemas/Z"}`
 		for range n {
 			leaf = `{"type":"array","items":` + leaf + `}`
 		}
-		req := request(schemas(`{"Z":{"type":["string","null"],"minLength":2},"Holder":{"properties":{"v":`+leaf+`}}}`), "Dto")
+		req := request(schemas(`{"Z":{"type":["string","null"]`+format+`,"minLength":2},"Holder":{"properties":{"v":`+leaf+`}}}`), "Dto")
 		req.Options.Validation = true
 		got, e := core.GenerateWithDiagnostics(req)
 		if n == 16 {

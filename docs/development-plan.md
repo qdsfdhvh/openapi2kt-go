@@ -45,6 +45,7 @@
 - 生成只接收本地文件/显式stdin；下载、鉴权、重试和缓存由外部工具负责，不内置网络适配或curlwrapper，编译不触发隐式联网。
 - 输出清单和异常回滚是工具的核心可靠性契约。
 - inline 对象请求及其递归 inline 子树的 `required + nullable` 使用 `T?`，不设默认值；`explicitNulls=true` 时，即使 `encodeDefaults=false` 也发送 null 键。共享组件、响应与根 union 请求仍保留普通 `T? = null`；`explicitNulls=false` 不保证 null 键，必须分别测试这些上下文及 JSON 配置。
+- UUID 已映射到 `kotlin.uuid.Uuid`，含显式[兼容迁移](nullable-uuid.md#migration)。
 - 日期时间已映射到 `kotlin.time.Instant` 和 `kotlinx.datetime.LocalDate`；见[特殊标量合同](special-scalars.md)。最低依赖版本仍须由实际编译矩阵确定。
 
 测试数据和变更验证要求见[贡献指南](../CONTRIBUTING.md)。

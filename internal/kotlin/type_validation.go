@@ -50,7 +50,7 @@ func emitTypeChecks(t schema.TypeRef, receiver, label string, indent int, out *s
 			// Direct checked open-enum leaves retain their nominal type and codec.
 			// Validate the actual payload, including Unrecognized, at this field.
 			fmt.Fprintf(out, "%s%s.serialName.let { value ->\n", pad, receiver)
-			emitPrimitiveChecks(t.Validation, "value", label, indent+1, out)
+			emitPrimitiveChecks(t.Validation, "kotlin.String", "value", label, indent+1, out)
 			fmt.Fprintf(out, "%s}\n", pad)
 			return
 		}
@@ -74,7 +74,7 @@ func emitTypeChecks(t schema.TypeRef, receiver, label string, indent int, out *s
 		emitTypeChecks(*t.Element, "value", label, indent+1, out)
 	default:
 		fmt.Fprintf(out, "%s%s.let { value ->\n", pad, receiver)
-		emitPrimitiveChecks(t.Validation, "value", label, indent+1, out)
+		emitPrimitiveChecks(t.Validation, t.Name, "value", label, indent+1, out)
 	}
 	fmt.Fprintf(out, "%s}\n", pad)
 }

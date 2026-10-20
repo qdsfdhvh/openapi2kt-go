@@ -1,5 +1,7 @@
 # Scalar defaults on DTO fields
 
+String schemas with `format: uuid` use [Kotlin Uuid](nullable-uuid.md), including admitted scalar/collection defaults. UUID lexical checks, canonical text and the String-to-Uuid migration apply; original source-role and validation restrictions remain.
+
 [Nullable component factories](nullable-component-defaults.md) accept null on eligible explicitly nullable direct scalar/temporal/bytes/enum/single-layer collection roots, retaining actual types, complete source checks and opt-in adoption without field inheritance.
 
 [Referenced byte fields](referenced-bytes-field-defaults.md) accept their own annotations through existing scalar and finite List/typed Map byte/binary paths. Signed-array wire, actual source/alias authority, required/Patch and whole-annotation budgets remain; typed helpers keep large scalar initializers bounded.

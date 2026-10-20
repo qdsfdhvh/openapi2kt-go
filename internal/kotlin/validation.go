@@ -15,7 +15,7 @@ func emitValueClass(d *schema.PrimitiveValueClass, out *strings.Builder) {
 		return
 	}
 	out.WriteString(" {\n    init {\n")
-	emitPrimitiveChecks(d.Validation, "rawValue", "rawValue", 2, out)
+	emitPrimitiveChecks(d.Validation, d.Scalar, "rawValue", "rawValue", 2, out)
 	out.WriteString("    }\n}\n")
 }
 
@@ -56,7 +56,7 @@ func emitModelValidation(model *schema.Model, indent int, hints schema.EmissionH
 		if helper := helpers[i]; helper != "" {
 			fmt.Fprintf(out, "%s        this.%s(value)\n", pad, helper)
 		} else {
-			emitPrimitiveChecks(p.Validation, "value", "Field value", indent+2, out)
+			emitPrimitiveChecks(p.Validation, primitiveCheckScalar(p.Type), "value", "Field value", indent+2, out)
 		}
 		fmt.Fprintf(out, "%s    }\n", pad)
 	}
@@ -71,7 +71,7 @@ func emitModelValidation(model *schema.Model, indent int, hints schema.EmissionH
 			if p.Validation == nil {
 				emitTypeChecks(p.Type, "value", "Field value", indent+1, out)
 			} else {
-				emitPrimitiveChecks(p.Validation, "value", "Field value", indent+1, out)
+				emitPrimitiveChecks(p.Validation, primitiveCheckScalar(p.Type), "value", "Field value", indent+1, out)
 			}
 			fmt.Fprintf(out, "%s}\n", pad)
 		}
@@ -122,8 +122,12 @@ func typeNeedsPrimitiveHelper(ty schema.TypeRef, hints schema.EmissionHints) boo
 
 // Messages use fixed labels, never raw values or source property names.
 // Callers isolate local length/index/value variables in their check scopes.
-func emitPrimitiveChecks(v *schema.PrimitiveValidation, value, label string, indent int, out *strings.Builder) {
+func emitPrimitiveChecks(v *schema.PrimitiveValidation, scalar, value, label string, indent int, out *strings.Builder) {
 	pad := strings.Repeat("    ", indent)
+	if scalar == "kotlin.uuid.Uuid" {
+		fmt.Fprintf(out, "%sval text = %s.toString()\n", pad, value)
+		value = "text"
+	}
 	check := func(condition, message string) {
 		fmt.Fprintf(out, "%srequire(%s) { %s }\n", pad, condition, naming.Literal(label+" "+message))
 	}
@@ -174,4 +178,12 @@ func emitPrimitiveChecks(v *schema.PrimitiveValidation, value, label string, ind
 	if v.MultipleOf != nil {
 		check(value+" % "+v.MultipleOf.Literal+" == "+v.MultipleOf.Zero, "does not satisfy multipleOf.")
 	}
+}
+
+// Nullable and Patch checks operate on the non-null value extracted by the caller.
+func primitiveCheckScalar(ty schema.TypeRef) string {
+	for (ty.Kind == schema.Nullable || ty.Kind == schema.PatchValue) && ty.Element != nil {
+		ty = *ty.Element
+	}
+	return ty.Name
 }

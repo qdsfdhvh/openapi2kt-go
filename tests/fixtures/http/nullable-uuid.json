@@ -1,0 +1,424 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Nullable Kotlin UUID contracts",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "Maybe": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "uuid",
+        "default": null
+      },
+      "NullableValue": {
+        "type": "string",
+        "format": "uuid",
+        "nullable": true,
+        "default": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "Base": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "Own": {
+        "$ref": "#/components/schemas/Base",
+        "nullable": true
+      },
+      "Inherited": {
+        "$ref": "#/components/schemas/Maybe"
+      },
+      "Narrow": {
+        "$ref": "#/components/schemas/Inherited",
+        "nullable": false
+      },
+      "Reopened": {
+        "$ref": "#/components/schemas/Narrow",
+        "nullable": true
+      },
+      "Bounded": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "uuid",
+        "minLength": 36,
+        "maxLength": 36,
+        "pattern": "^550e8400-",
+        "default": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "Hops": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Inherited"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Reopened"
+            }
+          },
+          "map": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Narrow"
+            }
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Hops/properties/value",
+        "nullable": false
+      },
+      "Rows": {
+        "$ref": "#/components/schemas/Hops/properties/rows"
+      },
+      "Values": {
+        "$ref": "#/components/schemas/Hops/properties/map"
+      },
+      "Holder": {
+        "type": "object",
+        "required": [
+          "narrow",
+          "bridge"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "own": {
+            "$ref": "#/components/schemas/Own"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/Narrow"
+          },
+          "bridge": {
+            "$ref": "#/components/schemas/Bridge"
+          },
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "values": {
+            "$ref": "#/components/schemas/Values"
+          },
+          "bounded": {
+            "$ref": "#/components/schemas/Bounded"
+          }
+        }
+      },
+      "Defaults": {
+        "properties": {
+          "kotlin": {
+            "type": "string",
+            "default": "shadow"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "default": "550E8400-E29B-41D4-A716-446655440000"
+          },
+          "constant": {
+            "type": "string",
+            "format": "uuid",
+            "const": "550E8400-E29B-41D4-A716-446655440000"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            },
+            "default": [
+              "550e8400e29b41d4a716446655440000",
+              null
+            ]
+          },
+          "nested": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "default": [
+              [
+                "550e8400-e29b-41d4-a716-446655440000"
+              ]
+            ]
+          },
+          "values": {
+            "additionalProperties": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "default": {
+              "key": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          },
+          "referenced": {
+            "$ref": "#/components/schemas/Base",
+            "default": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "plain": {
+            "type": "string",
+            "format": "uuid",
+            "x-native-type": "kotlin.String"
+          }
+        }
+      },
+      "Aggregate": {
+        "allOf": [
+          {
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "minLength": 36
+              }
+            }
+          },
+          {
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^550e8400-",
+                "default": "550E8400-E29B-41D4-A716-446655440000"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echoUuid",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Maybe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Maybe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/narrow": {
+      "post": {
+        "operationId": "echoNarrow",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Bridge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bridge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bound": {
+      "post": {
+        "operationId": "echoBounded",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Bounded"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bounded"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patchUuid",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "requiredNull",
+                  "requiredFalse"
+                ],
+                "properties": {
+                  "requiredNull": {
+                    "$ref": "#/components/schemas/Maybe"
+                  },
+                  "requiredFalse": {
+                    "$ref": "#/components/schemas/Narrow"
+                  },
+                  "value": {
+                    "$ref": "#/components/schemas/Own"
+                  },
+                  "bounded": {
+                    "$ref": "#/components/schemas/Bounded"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watchUuid",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "nullable"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Maybe"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "narrow"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Bridge"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "bounded"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Bounded"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/parameters/{id}": {
+      "get": {
+        "operationId": "uuidParameters",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "lookup",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "trace",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "ids",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

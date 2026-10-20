@@ -81,7 +81,7 @@ func (a *analyzer) collectionDefaultElement(v *document.Value, name, pointer str
 	if err != nil {
 		return TypeRef{}, err
 	}
-	if !slices.Contains([]string{"kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double", "kotlin.time.Instant", "kotlinx.datetime.LocalDate"}, scalar) {
+	if !slices.Contains([]string{"kotlin.String", "kotlin.uuid.Uuid", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double", "kotlin.time.Instant", "kotlinx.datetime.LocalDate"}, scalar) {
 		return TypeRef{}, unsupported(pointer)
 	}
 	checks, err := a.primitiveValidation(v, scalar, pointer)

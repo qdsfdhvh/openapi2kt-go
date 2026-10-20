@@ -1,13 +1,23 @@
 package schema
 
 import (
+	"strings"
 	"testing"
 
 	"openapi-kt/internal/document"
 )
 
 func TestBorrowedCollectionBuiltinLeavesOriginalScalarChecksAndDeclaration(t *testing.T) {
+	for _, format := range []string{"", "uuid"} {
+		t.Run(format, func(t *testing.T) { testBorrowedBuiltinOriginalScalar(t, format) })
+	}
+}
+
+func testBorrowedBuiltinOriginalScalar(t *testing.T, format string) {
 	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Text":{"type":["string","null"],"minLength":2},"Maybe":{"$ref":"#/components/schemas/Text"},"False":{"$ref":"#/components/schemas/Maybe","nullable":false},"Source":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/False"}}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/rows"}}}}`)
+	if format != "" {
+		input = []byte(strings.Replace(string(input), `"type":["string","null"]`, `"type":["string","null"],"format":"`+format+`"`, 1))
+	}
 	root, err := document.Load(input, document.JSON, "")
 	if err != nil {
 		t.Fatal(err)

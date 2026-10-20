@@ -95,7 +95,7 @@ func TestPrimitiveValueClasses(t *testing.T) {
 		t.Fatal(err)
 	}
 	r := report(t, input, "Dto")
-	for _, tc := range []struct{ name, scalar string }{{"UserId", "String"}, {"OtherId", "String"}, {"Counter", "Long"}, {"Index", "Int"}, {"Enabled", "Boolean"}, {"Ratio", "Double"}, {"Weight", "Float"}} {
+	for _, tc := range []struct{ name, scalar string }{{"UserId", "String"}, {"OtherId", "uuid.Uuid"}, {"Counter", "Long"}, {"Index", "Int"}, {"Enabled", "Boolean"}, {"Ratio", "Double"}, {"Weight", "Float"}} {
 		text := source(t, r, tc.name+"Dto")
 		for _, token := range []string{"@kotlinx.serialization.Serializable", "@kotlin.jvm.JvmInline", "public value class " + tc.name + "Dto(", "public val rawValue: kotlin." + tc.scalar} {
 			if !strings.Contains(text, token) {

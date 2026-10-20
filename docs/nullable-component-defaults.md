@@ -50,6 +50,8 @@ A field referencing a defaulted component keeps its neutral presence and never c
 
 [Numeric builtin formats](component-default-factories.md#numeric-builtin-formats) use the same explicit/effective nullable rules and mapped scalar checks.
 
+[UUID factories](component-default-factories.md#uuid-roots) also follow the [nullable UUID contract](nullable-uuid.md): intrinsic and own-nullable aliases retain Uuid? intent, independent factory ownership and original source/value checks; UUID parsing and migration apply.
+
 [Constrained unformatted scalar root factories](component-default-factories.md#constrained-plain-scalar-roots) are validation-only and retain the same nullable rules. Null annotations still validate the complete constraint source; malformed bounds report at their actual source keyword.
 
 ## Bounds and compatibility

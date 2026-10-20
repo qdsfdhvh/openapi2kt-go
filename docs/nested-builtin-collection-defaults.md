@@ -1,5 +1,7 @@
 # Finite nested builtin collection defaults
 
+String schemas with `format: uuid` use [Kotlin Uuid](nullable-uuid.md), including admitted scalar/collection defaults. UUID lexical checks, canonical text and the String-to-Uuid migration apply; original source-role and validation restrictions remain.
+
 Component root annotations use the separate [finite nested component factory contract](nested-component-defaults.md); these factories do not become field initializers.
 
 [Referenced builtin collection field defaults](referenced-collection-field-defaults.md) extend only the outer ordinary direct `$ref` field role through existing accepted List/Map paths. The direct-inline profile below retains its own grammar; target/chain/child defaults remain rejected.

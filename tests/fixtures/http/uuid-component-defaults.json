@@ -1,0 +1,102 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kotlin UUID component defaults",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "Text": {
+        "type": "string",
+        "format": "uuid",
+        "default": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "Escaped": {
+        "type": "string",
+        "default": "quote\"\\\n\u00e9"
+      },
+      "Bounded": {
+        "type": "string",
+        "format": "uuid",
+        "minLength": 36,
+        "maxLength": 36,
+        "pattern": "^550e8400-",
+        "default": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "Middle": {
+        "$ref": "#/components/schemas/Text",
+        "default": "550e8400-e29b-41d4-a716-446655440001"
+      },
+      "Outer": {
+        "$ref": "#/components/schemas/Middle",
+        "nullable": false,
+        "default": "550e8400-e29b-41d4-a716-446655440002"
+      },
+      "Plain": {
+        "$ref": "#/components/schemas/Outer"
+      },
+      "BoundedAlias": {
+        "$ref": "#/components/schemas/Bounded",
+        "default": "550e8400-e29b-41d4-a716-446655440001"
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "$ref": "#/components/schemas/Text"
+          },
+          "escaped": {
+            "$ref": "#/components/schemas/Escaped"
+          },
+          "bounded": {
+            "$ref": "#/components/schemas/Bounded"
+          },
+          "outer": {
+            "$ref": "#/components/schemas/Outer"
+          },
+          "plain": {
+            "$ref": "#/components/schemas/Plain"
+          }
+        }
+      },
+      "Required": {
+        "type": "object",
+        "required": [
+          "text",
+          "outer"
+        ],
+        "properties": {
+          "text": {
+            "$ref": "#/components/schemas/Text"
+          },
+          "outer": {
+            "$ref": "#/components/schemas/Outer"
+          }
+        }
+      },
+      "NullableRoot": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "uuid",
+        "default": null
+      },
+      "NullableAlias": {
+        "$ref": "#/components/schemas/Text",
+        "nullable": true,
+        "default": null
+      },
+      "NarrowedOwn": {
+        "$ref": "#/components/schemas/NullableRoot",
+        "nullable": false,
+        "default": "550e8400-e29b-41d4-a716-446655440002"
+      },
+      "ReopenedOwn": {
+        "$ref": "#/components/schemas/NarrowedOwn",
+        "nullable": true,
+        "default": null
+      }
+    }
+  }
+}

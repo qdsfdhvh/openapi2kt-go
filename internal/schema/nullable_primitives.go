@@ -8,7 +8,7 @@ import (
 // builtinPrimitiveBinding checks the already validated canonical catalog root,
 // not an alias's flattened scalar spelling (which could hide enum/native tags).
 func builtinPrimitiveBinding(c *component) bool {
-	if c == nil || c.Reference != "" || !slices.Contains([]string{"kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double"}, c.Scalar) {
+	if c == nil || c.Reference != "" || !slices.Contains([]string{"kotlin.String", "kotlin.uuid.Uuid", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double"}, c.Scalar) {
 		return false
 	}
 	kind, _, err := schemaType(c.Schema, c.Pointer)
@@ -29,7 +29,9 @@ func nullablePrimitiveCandidate(v *document.Value, kind string) bool {
 		return kind == "string" || kind == "integer" || kind == "number" || kind == "boolean"
 	}
 	switch kind {
-	case "string", "boolean":
+	case "string":
+		return text(format) == "" || text(format) == "uuid"
+	case "boolean":
 		return text(format) == ""
 	case "integer":
 		return text(format) == "" || text(format) == "int32" || text(format) == "int64"

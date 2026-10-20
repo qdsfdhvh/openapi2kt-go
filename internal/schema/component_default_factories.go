@@ -340,8 +340,8 @@ func sortedComponentNames(components map[string]*component) []string {
 }
 
 // isBuiltinScalarFactoryRoot is local to component factory policy. It admits
-// unformatted builtins and the four existing numeric formats, without granting
-// other scalar, marker or composition roles default ownership.
+// unformatted builtins, UUID scalars and the four existing numeric formats,
+// without granting other scalar, marker or composition roles default ownership.
 func isBuiltinScalarFactoryRoot(v *document.Value, kind string) bool {
 	if kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
 		return false
@@ -355,7 +355,8 @@ func isBuiltinScalarFactoryRoot(v *document.Value, kind string) bool {
 		return true
 	}
 	format, ok := get(v, "format").Text()
-	return ok && (kind == "integer" && (format == "int32" || format == "int64") ||
+	return ok && (kind == "string" && format == "uuid" ||
+		kind == "integer" && (format == "int32" || format == "int64") ||
 		kind == "number" && (format == "float" || format == "double"))
 }
 
@@ -671,7 +672,7 @@ func (a *analyzer) referenceWrapperDefaultEncoded(c *component, validation *anal
 	if validation.scalarLeafTarget(view) {
 		kind, _, _ := schemaType(view, c.Pointer)
 		if target.Nullable != nil || isBuiltinScalarFactoryRoot(view, kind) && (hasPrimitiveBounds(view) || has(view, "format")) {
-			// Explicit alias intent, bounded builtins and numeric formats use the
+			// Explicit alias intent, bounded builtins and builtin formats use the
 			// component leaf role, including source and mapped-value checks.
 			// Other chains retain their existing scalarTargetEncoded policy.
 			node, err := validation.scalarComponentNode(shadow)
