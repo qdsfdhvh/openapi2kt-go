@@ -6,6 +6,12 @@
   },
   "components": {
     "schemas": {
+      "BorrowedSource": {"properties": {
+        "id": {"type": ["string", "null"], "format": "uuid"},
+        "hop": {"$ref": "#/components/schemas/BorrowedSource/properties/id"}
+      }},
+      "BorrowedNull": {"$ref": "#/components/schemas/BorrowedSource/properties/hop"},
+      "BorrowedNarrow": {"$ref": "#/components/schemas/BorrowedNull", "nullable": false},
       "Maybe": {
         "type": [
           "string",
@@ -54,17 +60,17 @@
         "type": "object",
         "properties": {
           "value": {
-            "$ref": "#/components/schemas/Inherited"
+            "$ref": "#/components/schemas/BorrowedNull"
           },
           "rows": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Reopened"
+              "$ref": "#/components/schemas/BorrowedSource/properties/id"
             }
           },
           "map": {
             "additionalProperties": {
-              "$ref": "#/components/schemas/Narrow"
+              "$ref": "#/components/schemas/BorrowedSource/properties/id", "nullable": false
             }
           }
         }

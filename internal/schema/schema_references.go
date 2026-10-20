@@ -248,7 +248,7 @@ func terminalInternalScalar(v *document.Value, p, source string) *diagnostic.Dia
 			return invalid("format must be a string.", p)
 		}
 	}
-	legal := kind == "string" && format == "" || kind == "boolean" && format == "" || kind == "integer" && (format == "" || format == "int32" || format == "int64") || kind == "number" && (format == "" || format == "float" || format == "double")
+	legal := kind == "string" && (format == "" || format == "uuid") || kind == "boolean" && format == "" || kind == "integer" && (format == "" || format == "int32" || format == "int64") || kind == "number" && (format == "" || format == "float" || format == "double")
 	if !legal {
 		return schemaReferenceUnsupported(source)
 	}

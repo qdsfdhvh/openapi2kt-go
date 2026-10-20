@@ -65,6 +65,18 @@ func TestSchemaInternalScalarPointerAdmissionAndSource(t *testing.T) {
 		{`{"type":"string","nullable":"no"}`, "Source/properties/leaf", "E_SCHEMA_INVALID", "/components/schemas/Source/properties/leaf/nullable"},
 	} {
 		t.Run(tc.path+tc.target, func(t *testing.T) {
+			if tc.target == `{"type":"string","format":"uuid"}` {
+				// Graduate the exact historical input at its original source role.
+				for _, checked := range []bool{false, true} {
+					rq := request(pointerDoc(tc.target, pointerRef(tc.path)), "Dto")
+					rq.Options.Validation = checked
+					got, err := core.GenerateWithDiagnostics(rq)
+					if err != nil || !strings.Contains(source(t, got, "ConsumerDto"), "public val v: kotlin.uuid.Uuid? = null") {
+						t.Fatal("borrowed UUID did not retain native backing", checked, err)
+					}
+				}
+				return
+			}
 			// Explicit internal-DTO graduation: retain the original input and
 			// assert canonical ownership in both modes, not a weakened negative.
 			if tc.target == `{"type":"object","properties":{"id":{"type":"string"}}}` {

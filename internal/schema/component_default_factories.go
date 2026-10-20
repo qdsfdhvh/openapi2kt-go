@@ -339,9 +339,10 @@ func sortedComponentNames(components map[string]*component) []string {
 	return names
 }
 
-// isBuiltinScalarFactoryRoot is local to component factory policy. It admits
-// unformatted builtins, UUID scalars and the four existing numeric formats,
-// without granting other scalar, marker or composition roles default ownership.
+// isBuiltinScalarFactoryRoot recognizes builtin source grammar shared by
+// component factories and scalar alias members in object defaults: unformatted
+// builtins, native UUID and numeric formats. Callers own default permission;
+// this predicate grants no marker or composition role.
 func isBuiltinScalarFactoryRoot(v *document.Value, kind string) bool {
 	if kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
 		return false

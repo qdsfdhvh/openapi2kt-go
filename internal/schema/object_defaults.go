@@ -352,10 +352,10 @@ func (a *analyzer) objectDefaultConstNode(v *document.Value, pointer string) (*n
 	return &nestedDefaultNode{schema: v, pointer: pointer, ty: TypeRef{Kind: JSON}, constValue: literal, constKind: kind, native: a}, nil
 }
 
-// objectDefaultPlainObjectTerminal reports whether a finite transparent `$ref`
-// chain ends in a plain object target, without consuming the source-work
+// objectDefaultTransparentTerminal routes finite transparent `$ref` chains to
+// plain objects or builtin scalars, without consuming the source-work
 // budget. Routing only; the walk below keeps the full identity and work checks.
-func (a *analyzer) objectDefaultPlainObjectTerminal(v *document.Value) *document.Value {
+func (a *analyzer) objectDefaultTransparentTerminal(v *document.Value) *document.Value {
 	for depth := 0; depth <= MaxSchemaDepth && has(v, "$ref"); depth++ {
 		source, _, err := a.defaultSource(text(get(v, "$ref")), "")
 		if err != nil {
@@ -363,26 +363,29 @@ func (a *analyzer) objectDefaultPlainObjectTerminal(v *document.Value) *document
 		}
 		v = source
 	}
-	if objectDefaultCandidateSchema(v) {
+	kind, _, _ := schemaType(v, "")
+	if objectDefaultCandidateSchema(v) || isBuiltinScalarFactoryRoot(v, kind) {
 		return v
 	}
 	return nil
 }
 
-// objectDefaultPlainObjectChain follows a finite chain of transparent local
-// `$ref`s whose terminal is a plain object target. It keeps every original hop
+// objectDefaultTransparentChain follows a finite chain of transparent local
+// `$ref`s ending in a plain object or builtin scalar. It keeps every original hop
 // and the nearest explicit nullable intent, mirroring the consuming-field role.
 // The caller has already confirmed the terminal with
-// objectDefaultPlainObjectTerminal, so every other role keeps its own walk.
-func (a *analyzer) objectDefaultPlainObjectChain(v *document.Value, pointer, reference string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+// objectDefaultTransparentTerminal, so every other role keeps its own walk.
+func (a *analyzer) objectDefaultTransparentChain(v *document.Value, pointer, reference string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	var nullable *bool
 	for {
 		if err := depthCheck(depth, pointer); err != nil {
 			return nil, err
 		}
 		owner := a.componentsByOriginalSchema(v)
-		if owner == nil && has(v, "$ref") {
-			// A transparent internal hop keeps its original source identity.
+		kind, _, _ := schemaType(v, pointer)
+		scalar := isBuiltinScalarFactoryRoot(v, kind)
+		if owner == nil && (has(v, "$ref") || scalar) {
+			// An internal hop or scalar terminal keeps its original source identity.
 			if err := a.internalDefaultMemberSource(v, pointer, reference); err != nil {
 				return nil, err
 			}
@@ -390,10 +393,15 @@ func (a *analyzer) objectDefaultPlainObjectChain(v *document.Value, pointer, ref
 			return nil, unsupported(naming.Pointer(pointer, "$ref"))
 		}
 		if !has(v, "$ref") {
-			if !objectDefaultCandidateSchema(v) {
+			var node *nestedDefaultNode
+			var err *diagnostic.Diagnostic
+			if scalar {
+				node, err = a.nestedDefaultSchema(v, "Validation", pointer, nil, nil, depth, false)
+			} else if objectDefaultCandidateSchema(v) {
+				node, err = a.objectDefaultNode(v, pointer, depth, false)
+			} else {
 				return nil, unsupported(pointer)
 			}
-			node, err := a.objectDefaultNode(v, pointer, depth, false)
 			if err != nil {
 				return nil, err
 			}
@@ -429,7 +437,8 @@ func (a *analyzer) objectDefaultPlainObjectChain(v *document.Value, pointer, ref
 // objectDefaultPropertyReference resolves an object property's direct local
 // `$ref`. Plain object and named/internal ordinary allOf targets recurse as
 // objects; finite named/internal allOf chains preserve original hops and nullable
-// intent. Chains to other terminal roles remain separate.
+// intent. Builtin scalar chains share that original-hop walk; other terminal
+// roles remain separate.
 func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	if err := checkKeys(v, []string{"$ref", "nullable", "default"}, pointer); err != nil {
 		return nil, err
@@ -443,10 +452,10 @@ func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer str
 	}
 	var node *nestedDefaultNode
 	if has(source, "allOf") || has(source, "$ref") {
-		// A finite transparent chain to a plain object target matches the
-		// consuming-field role; other chains keep their separate terminal roles.
-		if a.objectDefaultPlainObjectTerminal(source) != nil {
-			node, err = a.objectDefaultPlainObjectChain(source, sourcePointer, text(get(v, "$ref")), depth+1)
+		// Finite transparent chains reuse the original builtin scalar/plain object
+		// terminal. Other chains keep their separate terminal roles.
+		if a.objectDefaultTransparentTerminal(source) != nil {
+			node, err = a.objectDefaultTransparentChain(source, sourcePointer, text(get(v, "$ref")), depth+1)
 		} else {
 			node, err = a.referencedAllOfObjectDefaultMember(source, sourcePointer, text(get(v, "$ref")), depth+1)
 		}

@@ -21,6 +21,8 @@ fun main() = runBlocking {
     // The optimized/locked package proves the helper binds its final relocated type.
     val optimized = org.example.nestedobjectopt.models.HolderDto(requiredCfg = org.example.nestedobjectopt.models.HolderDto.RequiredCfg(id = "x"))
     check(optimized.cfg?.name == "outer" && optimized.cfg?.age == 9 && optimized.cfg?.child?.flag == false)
+    check(optimized.cfg?.scalarChain?.toString() == "550e8400-e29b-41d4-a716-446655440000" && optimized.cfg?.scalarNull == null)
+    check(optimized.cfg?.scalarFlag == true && optimized.cfg?.scalarCount == Long.MAX_VALUE)
     check(optimized.cfg?.tags == listOf("a", "b") && optimized.cfg?.counts == mapOf("k" to 1))
     check(optimized.allOfCfg?.z == "merged" && optimized.allOfCfg?.count == 5 && optimized.allOfCfg?.meta?.flag == true)
     check(optimized.allOfNull == null)

@@ -65,6 +65,8 @@ private fun nestedObjectBody(body: OutgoingContent): String = when (body) {
 }
 
 private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMapOf(
+    "scalarChain" to value?.scalarChain, "scalarNull" to value?.scalarNull,
+    "scalarFlag" to value?.scalarFlag, "scalarCount" to value?.scalarCount,
     "name" to value?.name, "age" to value?.age, "status" to value?.status,
     "code" to value?.code, "when" to value?.`when`, "tags" to value?.tags,
     "counts" to value?.counts, "child" to value?.child, "childFlag" to value?.child?.flag,
@@ -110,6 +112,8 @@ private fun nestedObjectFresh(left: Any?, right: Any?) {
 suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     val value = HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x"))
     check(nestedObjectCfg(value.cfg) == nestedObjectCfg(HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x")).cfg))
+    check(value.cfg?.scalarChain?.toString() == "550e8400-e29b-41d4-a716-446655440000" && value.cfg?.scalarNull == null)
+    check(value.cfg?.scalarFlag == true && value.cfg?.scalarCount == Long.MAX_VALUE)
     check(value.cfg?.name == "outer" && value.cfg?.age == 9)
     check(value.cfg?.status == HolderDto.Cfg.Status.ON && value.cfg?.code == 2)
     check(value.cfg?.`when`?.toString() == "2024-01-02")
@@ -438,6 +442,11 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check(mergedOverride.allOfNull?.a == "set" && mergedOverride.allOfNull?.b == 1)
         check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"allOfCfg":null}""").allOfCfg == null)
         check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), missing))) == nestedObjectHolderFields(missing))
+        // Alias members decode through their actual scalar backing.
+        val scalarReplacement = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","scalarChain":"650e8400-e29b-41d4-a716-446655440000","scalarNull":null,"scalarFlag":false,"scalarCount":7}}""")
+        check(scalarReplacement.cfg?.scalarChain?.toString() == "650e8400-e29b-41d4-a716-446655440000" && scalarReplacement.cfg?.scalarNull == null)
+        check(scalarReplacement.cfg?.scalarFlag == false && scalarReplacement.cfg?.scalarCount == 7L)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","scalarCount":9223372036854775808}}""") }.isFailure)
         // Own defaults on the referenced component remain ordinary nullable fields.
         val referenced = codec.decodeFromString<PatchInputDto>("{}")
         check(referenced.cfg?.a == "x" && referenced.cfgNullable == null)

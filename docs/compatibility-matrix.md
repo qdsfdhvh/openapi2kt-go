@@ -1,5 +1,9 @@
 # JSON 首期兼容矩阵
 
+[对象默认值中的 builtin 标量别名成员](nested-object-defaults.md#builtin-scalar-alias-members)：D03/M01/M03/M04/M07/M12，已接受 object-default walk 的属性可沿有限 named/internal/root bridge 链到 builtin String/Uuid/Boolean/数值终点。保原节点／Pointer／source、nearest nullable、既有 validation 准入、逐叶检查和预算；其他终点链/default 角色仍独立。已有有效 API/wire/锁沿用当前主线合同。
+
+[内部 UUID 标量引用](root-borrowed-builtin.md#uuid-leaves)：F04/F07/M01/M03/M07/M12，支持 direct internal UUID 叶、有限内部链和 root bridge；使用当前原生 Uuid、词法／canonical checks、JSON HTTP/SSE，不恢复旧 String 映射。保原 source／owner／export／nullable 与预算；一般引用图仍开放。
+
 [Kotlin UUID 与 nullable 组件](nullable-uuid.md)：F04/F07/M01/M03/M04/M07/M12/D03，string/uuid 默认映射 `kotlin.uuid.Uuid`／`Uuid?`；支持原 named/internal/borrowed List/Map 与 nearest nullable intent、独立 default 工厂和原 source/Pointer/预算。解析合法 UUID，输出小写带连字符；typed length/pattern 检查 canonical 文本。JSON/Patch/HTTP/SSE 使用真实 UUID/null，参数用 canonical 文本，root HTTP 改为 JSON 字符串。**有意兼容性变化**：String 调用、任意文本、raw HTTP 和大小写保留须按[迁移说明](nullable-uuid.md#migration)调整；output/name-lock 格式不变。枚举词表、mixed primitive union 和显式 native override 保各自合同，非一般图或所有平台声明。
 
 [UUID 组件默认工厂](component-default-factories.md#uuid-roots)：D03/M01/M03/M04/M07/M12，default 按实际 Uuid codec 解析，nullable/独立归属/不继承/required/opt-in 与原预算保留。非法值在原 default Pointer 拒绝；同样适用 Uuid 迁移。

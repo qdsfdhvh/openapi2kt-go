@@ -114,8 +114,9 @@ func TestAliasedAllOfObjectDefaultMemberGuardsAndContexts(t *testing.T) {
 		}
 	}
 	internal := schemas(`{"Scalar":{"type":"string"},"Owner":{"properties":{"n":` + allOfObjectMember + `,"hop":{"$ref":"#/components/schemas/Scalar"}}},"Alias":{"$ref":"#/components/schemas/Owner/properties/hop"},"Holder":{"properties":{"v":` + allOfMemberField(`{"$ref":"#/components/schemas/Alias"}`, `{}`) + `}}}`)
-	if _, err := core.GenerateWithDiagnostics(request(internal, "Dto")); err == nil {
-		t.Fatal("internal chain to scalar admitted by allOf role")
+	// The exact historical scalar-hop negative now belongs to the builtin member role.
+	if got, err := core.GenerateWithDiagnostics(request(internal, "Dto")); err != nil || len(got.Artifacts.Files) == 0 {
+		t.Fatal("internal scalar-chain member failed", err)
 	}
 	cycle := strings.Replace(allOfMemberAliases, `"Alias":{"$ref":"#/components/schemas/Target"}`, `"Alias":{"$ref":"#/components/schemas/Outer"}`, 1)
 	if _, err := core.GenerateWithDiagnostics(request(aliasedAllOfMemberDocument(allOfObjectMember, cycle, member, `{}`), "Dto")); err == nil {

@@ -1,8 +1,16 @@
 # Root aliases to borrowed builtin leaves
 
-A component-root reference may point directly or through finite internal hops to an existing ordinary String, Boolean, Int, Long, Float or Double schema leaf inside a component. Pure named aliases and later typed chains may reference that bridge. The exported root remains a native scalar typealias, with the original leaf's checks and path-local nullable intent.
+A component-root reference may point directly or through finite internal hops to an existing ordinary String, Boolean, Int, Long, Float or Double schema leaf inside a component. UUID leaves use the native `kotlin.uuid.Uuid` mapping and canonical-text checks from the [UUID contract](nullable-uuid.md). Pure named aliases and later typed chains may reference that bridge. The exported root remains a native scalar typealias, with the original leaf's checks and path-local nullable intent.
 
 For example, `Bridge → Source/properties/hop → Other/properties/leaf` retains the terminal node in Other, its original Pointer and lexical source catalog. Source is the entry owner, not the terminal owner. No canonical component, nominal declaration, DTO, wrapper or serializer is fabricated for the internal leaf.
+
+## UUID leaves
+
+A direct typed reference such as `#/components/schemas/Source/properties/id` may borrow an original `type: string`, `format: uuid` leaf. Finite internal hops and exported root bridges reuse that same source; no named schema is fabricated for the leaf. `nullable: true` and a String/null type array preserve `Uuid?`, and the nearest explicit false restores `Uuid`. UUID parsing, canonical text and JSON root HTTP behavior follow the [native UUID contract](nullable-uuid.md).
+
+Supported String length/portable pattern constraints still require validation. Original source checks flow into constructor/copy/decode, List/Map, Patch.Value and typed HTTP/SSE consumers. A consuming ordinary field may own a default under the [referenced scalar contract](referenced-scalar-field-defaults.md); effective nullability authorizes null annotations, while nearest false rejects them at the consuming `/default`. A default on the borrowed terminal itself, internal reference hops or a root factory wrapper receives no new permission. Existing enum/const/native/value-class exclusions, original-source/export identity and source48/checked16/slot240 budgets remain.
+
+This F04/F07/M01/M03/M07/M12 profile accepts formerly rejected UUID internal references with the current native Uuid backing; the String-to-Uuid migration belongs to the existing [UUID migration](nullable-uuid.md#migration). [Core mapping/default/source/depth controls](../core/borrowed_uuid_test.go) check native backing and deterministic output; [private source/export checks](../internal/schema/borrowed_uuid_test.go) reject copied sources and missing/replaced exports. The [nullable UUID fixture](../tests/fixtures/http/nullable-uuid.json) and its existing core/native/Kotlin consumer cover borrowed internal chains, root bridges and typed List/Map consumers under four Data/Plain × validation profiles in `builtin-reference-chains`. The same runtime registry covers Patch, JSON UUID HTTP and fragmented SSE. The unformatted `root-borrowed-builtin` fixture remains a separate control. These checks do not establish Android/KMP or general reference graphs.
 
 ## Source and exported-root authority
 
