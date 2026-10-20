@@ -88,6 +88,8 @@ Intrinsic nullable builtin roots have the separate [transparent nullable primiti
 
 ## Intrinsic nullable builtin primitives
 
+[UUID roots and aliases](nullable-uuid.md) use transparent Uuid?/non-null Uuid backing with original source authority, typed canonical-text constraints, Patch and JSON HTTP/SSE codecs. The String-to-Uuid mapping is an intentional API/wire migration.
+
 Plain String/Boolean/Int/Long/Float/Double components may use `nullable: true` or a supported single primitive plus `null` type array. Existing type/format grammar determines the builtin mapping. The exported root is a transparent `typealias Root = kotlin.Long?` (for example), not a wrapper, generated companion or new runtime identity. Use reified `serializer<Root>()` or the builtin serializer's `.nullable` adapter. Native null, Boolean and numeric encoding/range behavior remain unchanged.
 
 Direct and supported single-ref wrappers inherit intrinsic root intent. Pure component aliases **to these intrinsic targets** retain the nearest explicit true/false override; a false root exposes the real non-null builtin backing. List items and map values keep their own intent. Shared nullable fields retain default-null; inline request required-nullable fields have no default, optional-nullable fields use Patch, and optional false-narrowed fields retain ordinary defaults. Nullable/non-null method identities still use builtin erasure and existing numeric suffix allocation.
@@ -536,7 +538,7 @@ public value class UserId(
 )
 ```
 
-Supported underlying types are String, Boolean, Int, Long, Float and Double with their ordinary supported formats, including UUID as an unvalidated String. An explicit type is required. The flag must be boolean; false on the same simple component schemas preserves the existing alias output. Without the flag, existing generated files and call sites are unchanged.
+Supported underlying types are String, Uuid, Boolean, Int, Long, Float and Double with their ordinary supported formats, including UUID as kotlin.uuid.Uuid. UUID wrappers now take Uuid rawValue arguments; see [migration](nullable-uuid.md#migration). An explicit type is required. The flag must be boolean; false on the same simple component schemas preserves the existing alias output. Without the flag, existing generated files and call sites are unchanged.
 
 References keep the wrapper's identity and suffix in fields, nullable uses, list elements and dictionary values, including supported nullable/ref-wrapper folds. Different wrappers of String support distinct Kotlin overloads and are not runtime-equal merely because their raw values match. Use the constructor and `.rawValue` explicitly; transparent primitive aliases do not provide this API, while wrapper aliases retain the canonical wrapper API. Kotlin/JVM may mangle value-class method names; no Java reflection/interoperability contract is established.
 

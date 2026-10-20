@@ -1,13 +1,23 @@
 package schema
 
 import (
+	"strings"
 	"testing"
 
 	"openapi-kt/internal/document"
 )
 
 func TestBuiltinReferenceChainsOriginalIdentityChecksAndCachedWork(t *testing.T) {
+	for _, format := range []string{"", "uuid"} {
+		t.Run(format, func(t *testing.T) { testBuiltinReferenceChainsOriginalIdentity(t, format) })
+	}
+}
+
+func testBuiltinReferenceChainsOriginalIdentity(t *testing.T, format string) {
 	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Text":{"type":["string","null"],"minLength":2},"Legacy":{"type":"integer","format":"int64","minimum":2},"LegacyAlias":{"$ref":"#/components/schemas/Legacy"},"TextAlias":{"$ref":"#/components/schemas/Text"},"Hops":{"properties":{"text":{"$ref":"#/components/schemas/TextAlias"},"legacy":{"$ref":"#/components/schemas/LegacyAlias"},"true":{"$ref":"#/components/schemas/Hops/properties/text","nullable":true},"again":{"$ref":"#/components/schemas/TextBridgeFalse","nullable":true}}},"TextBridgeFalse":{"$ref":"#/components/schemas/Hops/properties/true","nullable":false},"LegacyBridge":{"$ref":"#/components/schemas/Hops/properties/legacy"},"AgainBridge":{"$ref":"#/components/schemas/Hops/properties/again"}}}}`)
+	if format != "" {
+		input = []byte(strings.Replace(string(input), `"type":["string","null"]`, `"type":["string","null"],"format":"`+format+`"`, 1))
+	}
 	root, err := document.Load(input, document.JSON, "")
 	if err != nil {
 		t.Fatal(err)

@@ -188,7 +188,7 @@ func (a *analyzer) nestedDefaultSchema(v *document.Value, name, pointer string, 
 		if err != nil {
 			return nil, err
 		}
-		if !slices.Contains([]string{"kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double", "kotlin.time.Instant", "kotlinx.datetime.LocalDate", "kotlin.ByteArray"}, scalar) {
+		if !slices.Contains([]string{"kotlin.String", "kotlin.uuid.Uuid", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double", "kotlin.time.Instant", "kotlinx.datetime.LocalDate", "kotlin.ByteArray"}, scalar) {
 			return nil, unsupported(pointer)
 		}
 		checks, err := a.primitiveValidation(v, scalar, pointer)
@@ -399,6 +399,8 @@ func nestedDefaultTypeKey(ty TypeRef) string {
 		// unambiguous short keys only for these admitted builtin temporal types;
 		// helpers bind the final actual TypeRef in the existing JSON emitter.
 		switch ty.Name {
+		case "kotlin.uuid.Uuid":
+			return "Scalar Uuid"
 		case "kotlin.time.Instant":
 			return "Scalar Instant"
 		case "kotlinx.datetime.LocalDate":

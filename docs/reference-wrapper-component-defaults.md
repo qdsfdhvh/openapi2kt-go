@@ -38,6 +38,7 @@ A wrapper is admitted exactly when the target's own root default role exists **a
 | String enum, native enum under its existing admission rules, standard temporal, bytes | factory on the wrapper alias |
 | admitted raw `JsonElement` / `JsonObject` carrier | factory on the wrapper alias, using the target's raw-value and null grammar |
 | builtin scalar (`string`/`integer`/`number`/`boolean`, including int32/int64/float/double) | factory only with validation enabled — a `$ref` to a plain scalar is itself a validation-opt-in alias |
+| `string` / `format: uuid` | Uuid/Uuid? factory with validation enabled; [UUID migration](nullable-uuid.md#migration) applies, and nearest nullable intent remains |
 | finite pure component alias chain (`S → M → T`) | factory on S when every intermediate node meets the rules below |
 | explicit outer or intermediate `nullable: true` / `false` | factory follows the nearest explicit alias intent under the profile below |
 | target or intermediate alias with its own admitted `default` | separate factory on each original owner; no inheritance |

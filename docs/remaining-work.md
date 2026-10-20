@@ -1,5 +1,9 @@
 # 实现状态与剩余工作
 
+[Kotlin UUID 与 nullable 组件](nullable-uuid.md)：F04/F07/M01/M03/M04/M07/M12/D03，string/uuid 默认映射 `kotlin.uuid.Uuid`／`Uuid?`；支持原 named/internal/borrowed List/Map 与 nearest nullable intent、独立 default 工厂和原 source/Pointer/预算。解析合法 UUID，输出小写带连字符；typed length/pattern 检查 canonical 文本。JSON/Patch/HTTP/SSE 使用真实 UUID/null，参数用 canonical 文本，root HTTP 改为 JSON 字符串。**有意兼容性变化**：String 调用、任意文本、raw HTTP 和大小写保留须按[迁移说明](nullable-uuid.md#migration)调整；output/name-lock 格式不变。枚举词表、mixed primitive union 和显式 native override 保各自合同，非一般图或所有平台声明。
+
+[UUID 组件默认工厂](component-default-factories.md#uuid-roots)：D03/M01/M03/M04/M07/M12，default 按实际 Uuid codec 解析，nullable/独立归属/不继承/required/opt-in 与原预算保留。非法值在原 default Pointer 拒绝；同样适用 Uuid 迁移。
+
 [数值格式组件默认工厂](component-default-factories.md#numeric-builtin-formats)：D03/M01/M03/M04/M07/M12，integer int32/int64 与 number float/double 的组件自身 default 复用实际 Int/Long/Float/Double 和 shared value checks；无约束 direct root 两种 validation 模式均可，bounds 与 named alias 保原 opt-in。保整数范围、finite Float/IEEE rounding、原 JSON token、nullable intent／独立归属／不继承／Pointer／预算；UUID、其他 formats/native/valueclass/union、floating multipleOf 与一般 default 仍独立。已有有效 API/wire/锁无迁移。
 
 [受约束 plain scalar 组件工厂](component-default-factories.md#constrained-plain-scalar-roots)：D03/M01/M07/M12，validation-on 下已接受的无 format String 长度／portable pattern、integer bounds／multipleOf 与 number bounds 组件自身 default，复用原节点权限和 shared value checks；保原 token／alias／nullable／typed consumer checks／不继承／预算。无显式 nullable 的 bounded alias 亦校验自身注解；此前误接受非法值现在于原 /default 拒绝，坏约束显示实际 keyword Pointer。新 format、floating multipleOf、valueclass/union 与一般默认值角色仍独立。

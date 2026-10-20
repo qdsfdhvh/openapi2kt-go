@@ -82,7 +82,7 @@ func TestOriginalCorpusThroughActualGoBinary(t *testing.T) {
 				}
 				for path, golden := range c.Expect.Files {
 					snapshots++
-					if !bytes.Equal(read(t, filepath.Join(p.Output, filepath.FromSlash(path))), testutil.Read(t, golden)) {
+					if !bytes.Equal(read(t, filepath.Join(p.Output, filepath.FromSlash(path))), testutil.CurrentUUIDSnapshot(t, c, path, testutil.Read(t, golden))) {
 						t.Fatal("original golden drift", path)
 					}
 				}

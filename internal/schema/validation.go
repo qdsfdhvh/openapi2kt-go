@@ -84,7 +84,7 @@ func (a *analyzer) primitiveValidation(v *document.Value, scalar, pointer string
 		return nil, nil
 	}
 	result := &PrimitiveValidation{}
-	if scalar == "kotlin.String" {
+	if scalar == "kotlin.String" || scalar == "kotlin.uuid.Uuid" {
 		for _, key := range keys {
 			if key == "pattern" {
 				pattern, err := validationPattern(get(v, key), pointer+"/"+key)

@@ -1,5 +1,7 @@
 # Referenced scalar field defaults
 
+String schemas with `format: uuid` use [Kotlin Uuid](nullable-uuid.md), including admitted scalar/collection defaults. UUID lexical checks, canonical text and the String-to-Uuid migration apply; original source-role and validation restrictions remain.
+
 [Referenced byte field own defaults](referenced-bytes-field-defaults.md) separately admit scalar byte/binary annotations on existing paths, using signed-array JSON and bounded typed helpers with the same required/Patch/source budgets.
 
 [Referenced String enum scalar field defaults](referenced-string-enum-scalar-defaults.md) separately extend the own-default role to plain String/typeless enum references, retaining actual lexical classifiers, strict annotation vocabulary and open runtime Strings.

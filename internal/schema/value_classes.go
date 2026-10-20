@@ -43,7 +43,7 @@ func valueClassScalar(v *document.Value, kind, pointer string) (string, bool, *d
 	if err != nil {
 		return "", false, err
 	}
-	if !slices.Contains([]string{"kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double"}, scalar) {
+	if !slices.Contains([]string{"kotlin.String", "kotlin.uuid.Uuid", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double"}, scalar) {
 		return "", false, unsupported(pointer + "/format")
 	}
 	return scalar, enabled, nil

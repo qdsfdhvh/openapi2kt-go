@@ -8,7 +8,7 @@ import (
 )
 
 func TestIntrinsicNullablePrimitiveSourceBudgets(t *testing.T) {
-	for _, terminal := range []string{`{"type":"string","nullable":true}`, `{"type":["integer","null"],"format":"int64"}`, `{"type":"number","format":"double","nullable":true}`} {
+	for _, terminal := range []string{`{"type":"string","nullable":true}`, `{"type":"string","format":"uuid","nullable":true}`, `{"type":["integer","null"],"format":"int64"}`, `{"type":"number","format":"double","nullable":true}`} {
 		for _, flag := range []bool{false, true} {
 			for _, typed := range []bool{false, true} {
 				limit := 48

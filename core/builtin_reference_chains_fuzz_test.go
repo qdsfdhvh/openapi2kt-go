@@ -10,6 +10,7 @@ import (
 )
 
 func FuzzBuiltinReferenceChains(f *testing.F) {
+	f.Add(schemas(`{"Value":{"type":["string","null"],"format":"uuid"},"Hops":{"properties":{"value":{"$ref":"#/components/schemas/Value"}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/value","nullable":false}}`))
 	b, err := os.ReadFile("../tests/fixtures/http/builtin-reference-chains.json")
 	if err != nil {
 		f.Fatal(err)

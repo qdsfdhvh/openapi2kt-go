@@ -1,5 +1,7 @@
 # Scalar dictionary defaults on ordinary DTO fields
 
+String schemas with `format: uuid` use [Kotlin Uuid](nullable-uuid.md), including admitted scalar/collection defaults. UUID lexical checks, canonical text and the String-to-Uuid migration apply; original source-role and validation restrictions remain.
+
 Finite direct ordinary DTO dictionaries whose values are further inline List/typed Map containers use the separate [nested builtin default profile](nested-builtin-collection-defaults.md). Per-layer nullable/count/leaf checks and canonical keys are retained; [direct nested temporal defaults](nested-temporal-collection-defaults.md) extend the finite tree, while enum/nominal/ref roles remain excluded.
 
 Ordinary DTO fields with a direct object schema and direct scalar `additionalProperties` accept a JSON object `default`. Supported values are String, Boolean, Int, Long, Float and Double, plus direct String `format: date` / `date-time` mapped to LocalDate / Instant, with independently nullable values. The object may omit `type`, or use an explicit object/nullable-object type. Fixed properties are not part of this profile.

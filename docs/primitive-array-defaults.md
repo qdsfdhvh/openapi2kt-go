@@ -1,5 +1,7 @@
 # Scalar array defaults on ordinary DTO fields
 
+String schemas with `format: uuid` use [Kotlin Uuid](nullable-uuid.md), including admitted scalar/collection defaults. UUID lexical checks, canonical text and the String-to-Uuid migration apply; original source-role and validation restrictions remain.
+
 Finite direct ordinary DTO arrays whose items are further inline List/typed Map containers use the separate [nested builtin default profile](nested-builtin-collection-defaults.md). That profile preserves native types and per-layer checks; [direct nested temporal leaves](nested-temporal-collection-defaults.md) have their own extension, while enum/nominal/ref trees remain excluded.
 
 Ordinary DTO properties with a direct `type: array` and direct scalar `items` accept a representable array `default`. Element types are String, Boolean, Int, Long, Float and Double, plus direct String `format: date` / `date-time` mapped to LocalDate / Instant; nullable elements are supported independently of container nullability. This extends M01/M02/M03/M07 and exercises the existing A03/A05/A08 request, response and SSE contracts.

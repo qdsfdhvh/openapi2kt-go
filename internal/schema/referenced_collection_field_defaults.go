@@ -291,7 +291,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		return nil, err
 	}
 	switch scalar {
-	case "kotlin.String", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double":
+	case "kotlin.String", "kotlin.uuid.Uuid", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double":
 	case "kotlin.ByteArray":
 		// Own defaults use only the already-linked byte/binary backing. The
 		// source role is independent of coincident native/provider type names.
