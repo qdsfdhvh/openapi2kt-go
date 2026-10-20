@@ -1,0 +1,150 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Nullable scalar wrapper defaults",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "CheckedText": {
+        "type": "string",
+        "minLength": 1
+      },
+      "CheckedTextBridge": {
+        "$ref": "#/components/schemas/CheckedText",
+        "nullable": true
+      },
+      "NullableCheckedText": {
+        "$ref": "#/components/schemas/CheckedTextBridge",
+        "nullable": true,
+        "default": "given"
+      },
+      "NullCheckedText": {
+        "$ref": "#/components/schemas/CheckedTextBridge",
+        "nullable": true,
+        "default": null
+      },
+      "CheckedEnum": {
+        "type": "integer",
+        "format": "int32",
+        "enum": [
+          1,
+          2
+        ]
+      },
+      "CheckedEnumBridge": {
+        "$ref": "#/components/schemas/CheckedEnum",
+        "nullable": true
+      },
+      "NullableCheckedEnum": {
+        "$ref": "#/components/schemas/CheckedEnumBridge",
+        "nullable": true,
+        "default": 2
+      },
+      "NullCheckedEnum": {
+        "$ref": "#/components/schemas/CheckedEnumBridge",
+        "nullable": true,
+        "default": null
+      },
+      "CheckedWrapperHolder": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "$ref": "#/components/schemas/NullableCheckedText"
+          },
+          "number": {
+            "$ref": "#/components/schemas/NullableCheckedEnum"
+          }
+        }
+      },
+      "NarrowCheckedText": {
+        "$ref": "#/components/schemas/CheckedTextBridge",
+        "nullable": false
+      },
+      "InheritedCheckedText": {
+        "$ref": "#/components/schemas/CheckedTextBridge",
+        "default": null
+      },
+      "SelectedCheckedText": {
+        "$ref": "#/components/schemas/CheckedTextBridge",
+        "nullable": false,
+        "default": "given"
+      },
+      "MiddleCheckedText": {
+        "$ref": "#/components/schemas/NarrowCheckedText",
+        "default": "given"
+      },
+      "ReopenedCheckedText": {
+        "$ref": "#/components/schemas/NarrowCheckedText",
+        "nullable": true,
+        "default": null
+      },
+      "NarrowCheckedEnum": {
+        "$ref": "#/components/schemas/CheckedEnumBridge",
+        "nullable": false
+      },
+      "InheritedCheckedEnum": {
+        "$ref": "#/components/schemas/CheckedEnumBridge",
+        "default": null
+      },
+      "SelectedCheckedEnum": {
+        "$ref": "#/components/schemas/CheckedEnumBridge",
+        "nullable": false,
+        "default": 2
+      },
+      "MiddleCheckedEnum": {
+        "$ref": "#/components/schemas/NarrowCheckedEnum",
+        "default": 2
+      },
+      "ReopenedCheckedEnum": {
+        "$ref": "#/components/schemas/NarrowCheckedEnum",
+        "nullable": true,
+        "default": null
+      },
+      "OwnedText": {
+        "type": "string",
+        "default": "target"
+      },
+      "OwnedTextBridge": {
+        "$ref": "#/components/schemas/OwnedText",
+        "nullable": true,
+        "default": "middle"
+      },
+      "OwnedTextOuter": {
+        "$ref": "#/components/schemas/OwnedTextBridge",
+        "nullable": false,
+        "default": "outer"
+      },
+      "OwnedTextNull": {
+        "$ref": "#/components/schemas/OwnedTextOuter",
+        "nullable": true,
+        "default": null
+      },
+      "OwnedNumber": {
+        "type": "integer",
+        "format": "int32",
+        "enum": [
+          1,
+          2,
+          3
+        ],
+        "default": 1
+      },
+      "OwnedNumberBridge": {
+        "$ref": "#/components/schemas/OwnedNumber",
+        "nullable": true,
+        "default": 2
+      },
+      "OwnedNumberOuter": {
+        "$ref": "#/components/schemas/OwnedNumberBridge",
+        "nullable": false,
+        "default": 3
+      },
+      "OwnedNumberNull": {
+        "$ref": "#/components/schemas/OwnedNumberOuter",
+        "nullable": true,
+        "default": null
+      }
+    }
+  }
+}

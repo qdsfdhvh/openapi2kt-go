@@ -75,6 +75,25 @@ A constructor initializer would silently change wire behavior. `required: ["z"]`
 
 The factory keeps the constructor, the public property list, the `required`/Patch classification and every emitted byte of the class body unchanged. Adopting the default is an explicit caller decision.
 
+## Constrained plain-scalar roots
+
+With validation enabled, an existing unformatted plain scalar component may combine its own `default` with supported primitive constraints. String roots retain minLength/maxLength/portable pattern; integer roots retain supported bounds and integer multipleOf; number roots retain supported inclusive/exclusive bounds. No new format or constraint grammar is introduced.
+
+```json
+{"Label": {"type": "string", "minLength": 2, "maxLength": 6, "pattern": "^[a-z]+$", "default": "given"},
+ "Count": {"type": "integer", "minimum": 0, "maximum": 10, "multipleOf": 2, "default": 4}}
+```
+
+Factories retain the top-level alias form. The annotation is checked through the shared scalar value checker before emission; invalid values report `E_SCHEMA_INVALID` at the original component `/default`. Original JSON tokens are preserved, including decimal spelling. Portable pattern defaults retain the existing printable-ASCII matching boundary. Nullable roots may own null factories, but null does not skip malformed constraint/source validation. Non-nullable null remains invalid.
+
+Each admitted component or alias on a finite named-reference chain may own a separate factory under the [wrapper contract](reference-wrapper-component-defaults.md). Nearest alias nullable intent applies, and every annotation satisfies its retained constraints. No field or unannotated alias inherits a default. Generated typealias types, required/optional constructor parameters, warnings, descriptors and wire behavior stay unchanged. Typed DTO consumers retain constructor/copy/decode checks; standalone scalar alias codecs remain unchecked.
+
+Validation-off constrained roots, new formats, floating multipleOf, temporal/bytes/native/valueclass/enum/composition roles and collection/child defaults receive no new permission. Original source/depth/value/JSON budgets remain. Default admission is tied to an original component source node, so a copied or arbitrary bounded use does not gain permission.
+
+This is an additive D03/M01/M07/M12 profile for formerly rejected constrained root annotations. Valid prior inputs require no migration. Bounded scalar alias factories without explicit nullable intent now enforce their retained constraints too: invalid annotations previously accepted by the legacy kind-only path fail at the alias's original `/default`. Malformed nullable scalar root constraints now report the actual constraint Pointer (for example `/minLength`), rather than being masked by the previous unsupported-default diagnostic. Valid output, Kotlin APIs and persisted lock formats are unchanged.
+
+[Core acceptance/value/source/opt-in guards](../core/constrained_component_defaults_test.go), [source identity/permission](../internal/schema/constrained_component_defaults_test.go), [native parity/read-only/failure preservation](../internal/cli/constrained_component_defaults_process_test.go), [fixture](../tests/fixtures/http/constrained-component-defaults.json) and [consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ConstrainedComponentDefaultsContracts.kt) cover this profile. The validation-on Data/Plain projects in `feature reference-wrapper-component-defaults` and the full `http` registry execute its JSON and typed-consumer assertions.
+
 ## Admission
 
 Admission reuses the existing default planner for property defaults; this contract adds no new shape grammar. A component is eligible when its own node carries `default` and the value validates through the same walk that the equivalent **property** default would use:

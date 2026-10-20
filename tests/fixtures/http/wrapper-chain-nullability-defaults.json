@@ -1,0 +1,573 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Nullable alias-chain defaults",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "TargetObject": {
+        "type": "object",
+        "required": [
+          "z"
+        ],
+        "properties": {
+          "z": {
+            "type": "string"
+          }
+        }
+      },
+      "WideObject": {
+        "$ref": "#/components/schemas/TargetObject",
+        "nullable": true
+      },
+      "NarrowObject": {
+        "$ref": "#/components/schemas/WideObject",
+        "nullable": false
+      },
+      "InheritedObject": {
+        "$ref": "#/components/schemas/WideObject",
+        "default": null
+      },
+      "SelectedObject": {
+        "$ref": "#/components/schemas/WideObject",
+        "default": {
+          "z": "given"
+        },
+        "nullable": false
+      },
+      "MiddleObject": {
+        "$ref": "#/components/schemas/NarrowObject",
+        "default": {
+          "z": "given"
+        }
+      },
+      "ReopenedObject": {
+        "$ref": "#/components/schemas/NarrowObject",
+        "default": null,
+        "nullable": true
+      },
+      "FreshObject": {
+        "$ref": "#/components/schemas/WideObject",
+        "default": {
+          "z": "given"
+        }
+      },
+      "TargetCombined": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "allOf": [
+          {
+            "properties": {
+              "z": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "z"
+            ]
+          }
+        ]
+      },
+      "WideCombined": {
+        "$ref": "#/components/schemas/TargetCombined",
+        "nullable": true
+      },
+      "NarrowCombined": {
+        "$ref": "#/components/schemas/WideCombined",
+        "nullable": false
+      },
+      "InheritedCombined": {
+        "$ref": "#/components/schemas/WideCombined",
+        "default": null
+      },
+      "SelectedCombined": {
+        "$ref": "#/components/schemas/WideCombined",
+        "default": {
+          "z": "combined"
+        },
+        "nullable": false
+      },
+      "MiddleCombined": {
+        "$ref": "#/components/schemas/NarrowCombined",
+        "default": {
+          "z": "combined"
+        }
+      },
+      "ReopenedCombined": {
+        "$ref": "#/components/schemas/NarrowCombined",
+        "default": null,
+        "nullable": true
+      },
+      "FreshCombined": {
+        "$ref": "#/components/schemas/WideCombined",
+        "default": {
+          "z": "combined"
+        }
+      },
+      "TargetRows": {
+        "type": [
+          "array",
+          "null"
+        ],
+        "items": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "WideRows": {
+        "$ref": "#/components/schemas/TargetRows",
+        "nullable": true
+      },
+      "NarrowRows": {
+        "$ref": "#/components/schemas/WideRows",
+        "nullable": false
+      },
+      "InheritedRows": {
+        "$ref": "#/components/schemas/WideRows",
+        "default": null
+      },
+      "SelectedRows": {
+        "$ref": "#/components/schemas/WideRows",
+        "default": [
+          null,
+          "given"
+        ],
+        "nullable": false
+      },
+      "MiddleRows": {
+        "$ref": "#/components/schemas/NarrowRows",
+        "default": [
+          null,
+          "given"
+        ]
+      },
+      "ReopenedRows": {
+        "$ref": "#/components/schemas/NarrowRows",
+        "default": null,
+        "nullable": true
+      },
+      "FreshRows": {
+        "$ref": "#/components/schemas/WideRows",
+        "default": [
+          null,
+          "given"
+        ]
+      },
+      "TargetMap": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "WideMap": {
+        "$ref": "#/components/schemas/TargetMap",
+        "nullable": true
+      },
+      "NarrowMap": {
+        "$ref": "#/components/schemas/WideMap",
+        "nullable": false
+      },
+      "InheritedMap": {
+        "$ref": "#/components/schemas/WideMap",
+        "default": null
+      },
+      "SelectedMap": {
+        "$ref": "#/components/schemas/WideMap",
+        "default": {
+          "nil": null,
+          "a": 1
+        },
+        "nullable": false
+      },
+      "MiddleMap": {
+        "$ref": "#/components/schemas/NarrowMap",
+        "default": {
+          "nil": null,
+          "a": 1
+        }
+      },
+      "ReopenedMap": {
+        "$ref": "#/components/schemas/NarrowMap",
+        "default": null,
+        "nullable": true
+      },
+      "FreshMap": {
+        "$ref": "#/components/schemas/WideMap",
+        "default": {
+          "nil": null,
+          "a": 1
+        }
+      },
+      "TargetMode": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          "a",
+          "b"
+        ]
+      },
+      "WideMode": {
+        "$ref": "#/components/schemas/TargetMode",
+        "nullable": true
+      },
+      "NarrowMode": {
+        "$ref": "#/components/schemas/WideMode",
+        "nullable": false
+      },
+      "InheritedMode": {
+        "$ref": "#/components/schemas/WideMode",
+        "default": null
+      },
+      "SelectedMode": {
+        "$ref": "#/components/schemas/WideMode",
+        "default": "a",
+        "nullable": false
+      },
+      "MiddleMode": {
+        "$ref": "#/components/schemas/NarrowMode",
+        "default": "a"
+      },
+      "ReopenedMode": {
+        "$ref": "#/components/schemas/NarrowMode",
+        "default": null,
+        "nullable": true
+      },
+      "FreshMode": {
+        "$ref": "#/components/schemas/WideMode",
+        "default": "a"
+      },
+      "TargetDay": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date"
+      },
+      "WideDay": {
+        "$ref": "#/components/schemas/TargetDay",
+        "nullable": true
+      },
+      "NarrowDay": {
+        "$ref": "#/components/schemas/WideDay",
+        "nullable": false
+      },
+      "InheritedDay": {
+        "$ref": "#/components/schemas/WideDay",
+        "default": null
+      },
+      "SelectedDay": {
+        "$ref": "#/components/schemas/WideDay",
+        "default": "2024-02-29",
+        "nullable": false
+      },
+      "MiddleDay": {
+        "$ref": "#/components/schemas/NarrowDay",
+        "default": "2024-02-29"
+      },
+      "ReopenedDay": {
+        "$ref": "#/components/schemas/NarrowDay",
+        "default": null,
+        "nullable": true
+      },
+      "FreshDay": {
+        "$ref": "#/components/schemas/WideDay",
+        "default": "2024-02-29"
+      },
+      "TargetBlob": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "byte"
+      },
+      "WideBlob": {
+        "$ref": "#/components/schemas/TargetBlob",
+        "nullable": true
+      },
+      "NarrowBlob": {
+        "$ref": "#/components/schemas/WideBlob",
+        "nullable": false
+      },
+      "InheritedBlob": {
+        "$ref": "#/components/schemas/WideBlob",
+        "default": null
+      },
+      "SelectedBlob": {
+        "$ref": "#/components/schemas/WideBlob",
+        "default": [
+          -128,
+          127
+        ],
+        "nullable": false
+      },
+      "MiddleBlob": {
+        "$ref": "#/components/schemas/NarrowBlob",
+        "default": [
+          -128,
+          127
+        ]
+      },
+      "ReopenedBlob": {
+        "$ref": "#/components/schemas/NarrowBlob",
+        "default": null,
+        "nullable": true
+      },
+      "FreshBlob": {
+        "$ref": "#/components/schemas/WideBlob",
+        "default": [
+          -128,
+          127
+        ]
+      },
+      "TargetRaw": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "WideRaw": {
+        "$ref": "#/components/schemas/TargetRaw",
+        "nullable": true
+      },
+      "NarrowRaw": {
+        "$ref": "#/components/schemas/WideRaw",
+        "nullable": false
+      },
+      "InheritedRaw": {
+        "$ref": "#/components/schemas/WideRaw",
+        "default": null
+      },
+      "SelectedRaw": {
+        "$ref": "#/components/schemas/WideRaw",
+        "default": {
+          "nil": null
+        },
+        "nullable": false
+      },
+      "MiddleRaw": {
+        "$ref": "#/components/schemas/NarrowRaw",
+        "default": {
+          "nil": null
+        }
+      },
+      "ReopenedRaw": {
+        "$ref": "#/components/schemas/NarrowRaw",
+        "default": null,
+        "nullable": true
+      },
+      "FreshRaw": {
+        "$ref": "#/components/schemas/WideRaw",
+        "default": {
+          "nil": null
+        }
+      },
+      "TargetOpen": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "additionalProperties": true
+      },
+      "WideOpen": {
+        "$ref": "#/components/schemas/TargetOpen",
+        "nullable": true
+      },
+      "NarrowOpen": {
+        "$ref": "#/components/schemas/WideOpen",
+        "nullable": false
+      },
+      "InheritedOpen": {
+        "$ref": "#/components/schemas/WideOpen",
+        "default": null
+      },
+      "SelectedOpen": {
+        "$ref": "#/components/schemas/WideOpen",
+        "default": {
+          "nil": null
+        },
+        "nullable": false
+      },
+      "MiddleOpen": {
+        "$ref": "#/components/schemas/NarrowOpen",
+        "default": {
+          "nil": null
+        }
+      },
+      "ReopenedOpen": {
+        "$ref": "#/components/schemas/NarrowOpen",
+        "default": null,
+        "nullable": true
+      },
+      "FreshOpen": {
+        "$ref": "#/components/schemas/WideOpen",
+        "default": {
+          "nil": null
+        }
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "inheritedObject": {
+            "$ref": "#/components/schemas/InheritedObject"
+          },
+          "selectedObject": {
+            "$ref": "#/components/schemas/SelectedObject"
+          },
+          "middleObject": {
+            "$ref": "#/components/schemas/MiddleObject"
+          },
+          "reopenedObject": {
+            "$ref": "#/components/schemas/ReopenedObject"
+          },
+          "freshObject": {
+            "$ref": "#/components/schemas/FreshObject"
+          },
+          "inheritedCombined": {
+            "$ref": "#/components/schemas/InheritedCombined"
+          },
+          "selectedCombined": {
+            "$ref": "#/components/schemas/SelectedCombined"
+          },
+          "middleCombined": {
+            "$ref": "#/components/schemas/MiddleCombined"
+          },
+          "reopenedCombined": {
+            "$ref": "#/components/schemas/ReopenedCombined"
+          },
+          "freshCombined": {
+            "$ref": "#/components/schemas/FreshCombined"
+          },
+          "inheritedRows": {
+            "$ref": "#/components/schemas/InheritedRows"
+          },
+          "selectedRows": {
+            "$ref": "#/components/schemas/SelectedRows"
+          },
+          "middleRows": {
+            "$ref": "#/components/schemas/MiddleRows"
+          },
+          "reopenedRows": {
+            "$ref": "#/components/schemas/ReopenedRows"
+          },
+          "freshRows": {
+            "$ref": "#/components/schemas/FreshRows"
+          },
+          "inheritedMap": {
+            "$ref": "#/components/schemas/InheritedMap"
+          },
+          "selectedMap": {
+            "$ref": "#/components/schemas/SelectedMap"
+          },
+          "middleMap": {
+            "$ref": "#/components/schemas/MiddleMap"
+          },
+          "reopenedMap": {
+            "$ref": "#/components/schemas/ReopenedMap"
+          },
+          "freshMap": {
+            "$ref": "#/components/schemas/FreshMap"
+          },
+          "inheritedMode": {
+            "$ref": "#/components/schemas/InheritedMode"
+          },
+          "selectedMode": {
+            "$ref": "#/components/schemas/SelectedMode"
+          },
+          "middleMode": {
+            "$ref": "#/components/schemas/MiddleMode"
+          },
+          "reopenedMode": {
+            "$ref": "#/components/schemas/ReopenedMode"
+          },
+          "freshMode": {
+            "$ref": "#/components/schemas/FreshMode"
+          },
+          "inheritedDay": {
+            "$ref": "#/components/schemas/InheritedDay"
+          },
+          "selectedDay": {
+            "$ref": "#/components/schemas/SelectedDay"
+          },
+          "middleDay": {
+            "$ref": "#/components/schemas/MiddleDay"
+          },
+          "reopenedDay": {
+            "$ref": "#/components/schemas/ReopenedDay"
+          },
+          "freshDay": {
+            "$ref": "#/components/schemas/FreshDay"
+          },
+          "inheritedBlob": {
+            "$ref": "#/components/schemas/InheritedBlob"
+          },
+          "selectedBlob": {
+            "$ref": "#/components/schemas/SelectedBlob"
+          },
+          "middleBlob": {
+            "$ref": "#/components/schemas/MiddleBlob"
+          },
+          "reopenedBlob": {
+            "$ref": "#/components/schemas/ReopenedBlob"
+          },
+          "freshBlob": {
+            "$ref": "#/components/schemas/FreshBlob"
+          },
+          "inheritedRaw": {
+            "$ref": "#/components/schemas/InheritedRaw"
+          },
+          "selectedRaw": {
+            "$ref": "#/components/schemas/SelectedRaw"
+          },
+          "middleRaw": {
+            "$ref": "#/components/schemas/MiddleRaw"
+          },
+          "reopenedRaw": {
+            "$ref": "#/components/schemas/ReopenedRaw"
+          },
+          "freshRaw": {
+            "$ref": "#/components/schemas/FreshRaw"
+          },
+          "inheritedOpen": {
+            "$ref": "#/components/schemas/InheritedOpen"
+          },
+          "selectedOpen": {
+            "$ref": "#/components/schemas/SelectedOpen"
+          },
+          "middleOpen": {
+            "$ref": "#/components/schemas/MiddleOpen"
+          },
+          "reopenedOpen": {
+            "$ref": "#/components/schemas/ReopenedOpen"
+          },
+          "freshOpen": {
+            "$ref": "#/components/schemas/FreshOpen"
+          }
+        }
+      },
+      "Required": {
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/SelectedObject"
+          }
+        }
+      }
+    }
+  }
+}

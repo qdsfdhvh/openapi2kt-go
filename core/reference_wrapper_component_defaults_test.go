@@ -97,7 +97,6 @@ func TestReferenceWrapperComponentDefaultsKeepOtherRolesRejected(t *testing.T) {
 	for _, tc := range []struct{ name, doc, pointer string }{
 		{"chained plain scalar, validation off", `{"T":{"type":"string"},"M":{"$ref":"#/components/schemas/T"},"S":{"$ref":"#/components/schemas/M","default":"x"}}`, "/components/schemas/S/default"},
 		{"nullable wrapper", `{"T":{"type":"string"},"S":{"$ref":"#/components/schemas/T","nullable":true,"default":"x"}}`, "/components/schemas/S/default"},
-		{"target owns a default", `{"T":{"type":"object","properties":{"z":{"type":"string"}},"default":{"z":"t"}},"S":{"$ref":"#/components/schemas/T","default":{"z":"s"}}}`, "/components/schemas/S/default"},
 		{"missing reference", `{"S":{"$ref":"#/components/schemas/Nope","default":{}}}`, "/components/schemas/S/default"},
 		{"union target", `{"T":{"oneOf":[{"type":"string"},{"type":"integer"}]},"S":{"$ref":"#/components/schemas/T","default":"x"}}`, "/components/schemas/S/default"},
 		{"plain scalar target, validation off", `{"T":{"type":"string"},"S":{"$ref":"#/components/schemas/T","default":"x"}}`, "/components/schemas/S/default"},

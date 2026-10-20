@@ -1806,6 +1806,22 @@ done
   --output "$workspace/project/build/generated-limits/direct-nullable-component-counts" --package-name org.example.directcounts --api-client-name DirectCounts --model-name-suffix Dto --validation
 "$workspace/openapi-kt" generate --input tests/fixtures/http/direct-nullable-component-counts.json \
   --output "$workspace/project/build/generated-limits/direct-nullable-component-counts" --package-name org.example.directcounts --api-client-name DirectCounts --model-name-suffix Dto --validation --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/constrained-component-defaults.json \
+  --output "$workspace/project/build/generated-limits/constrained-component-defaults" --package-name org.example.boundeddefaults --model-name-suffix Dto --validation
+"$workspace/openapi-kt" generate --input tests/fixtures/http/constrained-component-defaults.json \
+  --output "$workspace/project/build/generated-limits/constrained-component-defaults" --package-name org.example.boundeddefaults --model-name-suffix Dto --validation --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/wrapper-owned-defaults.json \
+  --output "$workspace/project/build/generated-limits/wrapper-owned" --package-name org.example.owneddefaults --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/wrapper-owned-defaults.json \
+  --output "$workspace/project/build/generated-limits/wrapper-owned" --package-name org.example.owneddefaults --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/wrapper-chain-nullability-defaults.json \
+  --output "$workspace/project/build/generated-limits/wrapper-chain" --package-name org.example.wrapperchain --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/wrapper-chain-nullability-defaults.json \
+  --output "$workspace/project/build/generated-limits/wrapper-chain" --package-name org.example.wrapperchain --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/nullable-scalar-wrapper-defaults.json \
+  --output "$workspace/project/build/generated-limits/nullable-scalar-wrapper-defaults" --package-name org.example.refwrapper --model-name-suffix Dto --validation
+"$workspace/openapi-kt" generate --input tests/fixtures/http/nullable-scalar-wrapper-defaults.json \
+  --output "$workspace/project/build/generated-limits/nullable-scalar-wrapper-defaults" --package-name org.example.refwrapper --model-name-suffix Dto --validation --check
 for contract in bytes-field-defaults bytes-component-defaults reference-wrapper-component-defaults hierarchy-inline-members nullable-component-defaults raw-json-component-defaults; do
   case "$contract" in
     bytes-field-defaults) pkg=org.example.bytesfielddefaults; client=BytesFieldDefaults ;;

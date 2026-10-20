@@ -119,6 +119,54 @@
           },
           "nilObject": {
             "$ref": "#/components/schemas/WrappedNilObject"
+          },
+          "nullableObject": {
+            "$ref": "#/components/schemas/NullableObject"
+          },
+          "nullObject": {
+            "$ref": "#/components/schemas/NullObject"
+          },
+          "nullableCombined": {
+            "$ref": "#/components/schemas/NullableCombined"
+          },
+          "nullCombined": {
+            "$ref": "#/components/schemas/NullCombined"
+          },
+          "nullableNested": {
+            "$ref": "#/components/schemas/NullableNested"
+          },
+          "nullNested": {
+            "$ref": "#/components/schemas/NullNested"
+          },
+          "nullableMode": {
+            "$ref": "#/components/schemas/NullableMode"
+          },
+          "nullMode": {
+            "$ref": "#/components/schemas/NullMode"
+          },
+          "nullableDay": {
+            "$ref": "#/components/schemas/NullableDay"
+          },
+          "nullDay": {
+            "$ref": "#/components/schemas/NullDay"
+          },
+          "nullableBlob": {
+            "$ref": "#/components/schemas/NullableBlob"
+          },
+          "nullBlob": {
+            "$ref": "#/components/schemas/NullBlob"
+          },
+          "nullableRaw": {
+            "$ref": "#/components/schemas/NullableRaw"
+          },
+          "nullRaw": {
+            "$ref": "#/components/schemas/NullRaw"
+          },
+          "nullableOpen": {
+            "$ref": "#/components/schemas/NullableOpen"
+          },
+          "nullOpen": {
+            "$ref": "#/components/schemas/NullOpen"
           }
         }
       },
@@ -228,6 +276,131 @@
           },
           "nilRaw": {
             "$ref": "#/components/schemas/WrappedNilRaw"
+          }
+        }
+      },
+      "Combined": {
+        "allOf": [
+          {
+            "properties": {
+              "z": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "z"
+            ]
+          }
+        ]
+      },
+      "Open": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "NullableObject": {
+        "$ref": "#/components/schemas/ObjectBridge",
+        "nullable": true,
+        "default": {
+          "z": "given"
+        }
+      },
+      "NullObject": {
+        "$ref": "#/components/schemas/ObjectBridge",
+        "nullable": true,
+        "default": null
+      },
+      "NullableCombined": {
+        "$ref": "#/components/schemas/Combined",
+        "nullable": true,
+        "default": {
+          "z": "combined"
+        }
+      },
+      "NullCombined": {
+        "$ref": "#/components/schemas/Combined",
+        "nullable": true,
+        "default": null
+      },
+      "NullableNested": {
+        "$ref": "#/components/schemas/NestedBridge",
+        "nullable": true,
+        "default": [
+          {
+            "a": 2,
+            "b": null
+          }
+        ]
+      },
+      "NullNested": {
+        "$ref": "#/components/schemas/NestedBridge",
+        "nullable": true,
+        "default": null
+      },
+      "NullableMode": {
+        "$ref": "#/components/schemas/ModeBridge",
+        "nullable": true,
+        "default": "a"
+      },
+      "NullMode": {
+        "$ref": "#/components/schemas/ModeBridge",
+        "nullable": true,
+        "default": null
+      },
+      "NullableDay": {
+        "$ref": "#/components/schemas/DayBridge",
+        "nullable": true,
+        "default": "2024-02-29"
+      },
+      "NullDay": {
+        "$ref": "#/components/schemas/DayBridge",
+        "nullable": true,
+        "default": null
+      },
+      "NullableBlob": {
+        "$ref": "#/components/schemas/BlobBridge",
+        "nullable": true,
+        "default": [
+          -128,
+          127
+        ]
+      },
+      "NullBlob": {
+        "$ref": "#/components/schemas/BlobBridge",
+        "nullable": true,
+        "default": null
+      },
+      "NullableRaw": {
+        "$ref": "#/components/schemas/RawBridge",
+        "nullable": true,
+        "default": {
+          "nil": null
+        }
+      },
+      "NullRaw": {
+        "$ref": "#/components/schemas/RawBridge",
+        "nullable": true,
+        "default": null
+      },
+      "NullableOpen": {
+        "$ref": "#/components/schemas/Open",
+        "nullable": true,
+        "default": {
+          "nil": null
+        }
+      },
+      "NullOpen": {
+        "$ref": "#/components/schemas/Open",
+        "nullable": true,
+        "default": null
+      },
+      "RequiredNullable": {
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/NullObject"
           }
         }
       }

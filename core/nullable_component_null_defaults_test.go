@@ -87,7 +87,7 @@ func TestNullableComponentNullFactorySchemaIsNotSkipped(t *testing.T) {
 		}
 	}
 	for _, tc := range []struct{ body, pointer string }{
-		{`{"N":{"type":"string","nullable":true,"minLength":-1,"default":null}}`, "/components/schemas/N/default"},
+		{`{"N":{"type":"string","nullable":true,"minLength":-1,"default":null}}`, "/components/schemas/N/minLength"},
 		{`{"N":{"type":"array","nullable":true,"minItems":-1,"items":{"type":"string"},"default":null}}`, "/components/schemas/N/default"},
 	} {
 		r := request(schemas(tc.body), "Dto")

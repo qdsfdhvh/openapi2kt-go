@@ -20,9 +20,9 @@ func TestWrapperDefaultTargetBoundsAndOriginalNodes(t *testing.T) {
 		before, _ := root.MarshalJSON()
 		schemas := get(get(root, "components"), "schemas")
 		a := &analyzer{componentSchemas: schemas}
-		pointer, target, ok := a.referenceWrapperDefaultTarget(&component{Schema: get(schemas, "A0")})
-		if edges <= MaxSchemaDepth && (!ok || pointer != "/components/schemas/T" || target != get(schemas, "T")) || edges > MaxSchemaDepth && ok {
-			t.Fatal("chain target lost original identity or exceeded hop cap", edges, pointer, ok)
+		target := a.referenceWrapperDefaultTarget(&component{Schema: get(schemas, "A0")})
+		if edges <= MaxSchemaDepth && (target == nil || target.Pointer != "/components/schemas/T" || target.Schema != get(schemas, "T")) || edges > MaxSchemaDepth && target != nil {
+			t.Fatal("chain target lost original identity or exceeded hop cap", edges, target)
 		}
 		after, _ := root.MarshalJSON()
 		if string(before) != string(after) {
@@ -55,6 +55,34 @@ func TestChainedWrapperDefaultRetainsAliasOwnership(t *testing.T) {
 		after, _ := root.MarshalJSON()
 		if string(before) != string(after) {
 			t.Fatal("chain factory changed original schemas/default data")
+		}
+	}
+}
+
+func TestWrapperDefaultSourceRetainsNearestNullableAndOriginalNodes(t *testing.T) {
+	for _, tc := range []struct {
+		outer, middle, far string
+		want               bool
+	}{
+		{"", "true", "false", true}, {"", "false", "true", false}, {"false", "true", "", false}, {"true", "false", "", true},
+	} {
+		add := func(value string) string {
+			if value == "" {
+				return ""
+			}
+			return `,"nullable":` + value
+		}
+		root := loadComponentDocument(t, `{"T":{"type":["array","null"],"items":{"type":["string","null"]}},"B":{"$ref":"#/components/schemas/T"`+add(tc.far)+`},"M":{"$ref":"#/components/schemas/B"`+add(tc.middle)+`},"N":{"$ref":"#/components/schemas/M"`+add(tc.outer)+`,"default":[]}}`)
+		before, _ := root.MarshalJSON()
+		schemas := get(get(root, "components"), "schemas")
+		a := &analyzer{componentSchemas: schemas}
+		source := a.referenceWrapperDefaultTarget(&component{Schema: get(schemas, "N")})
+		if source == nil || source.Pointer != "/components/schemas/T" || source.Schema != get(schemas, "T") || source.Nullable == nil || *source.Nullable != tc.want {
+			t.Fatal("lost nearest intent/source", tc, source)
+		}
+		after, _ := root.MarshalJSON()
+		if string(before) != string(after) {
+			t.Fatal("intent walk rewrote original sources")
 		}
 	}
 }

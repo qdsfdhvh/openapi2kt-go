@@ -10,12 +10,26 @@ for style in data_class plain_class; do
     mkdir -p "$project/src/main/kotlin/org/example/contracts"
     cp samples/kotlin-http-smoke/{build.gradle.kts,settings.gradle.kts} "$project/"
     cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ReferenceWrapperComponentDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
+    cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/WrapperOwnedDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
+    cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/WrapperChainNullabilityDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
     cp tests/fixtures/http/reference-wrapper-component-defaults.json "$project/input.json"
     flags=()
     [[ "$validation" == off ]] || flags+=(--validation)
     "$workspace/openapi-kt" generate --input "$project/input.json" --output "$project/build/generated" --package-name org.example.refwrapper --api-client-name RefWrapper --model-name-suffix Dto --model-style "$style" "${flags[@]}"
     "$workspace/openapi-kt" generate --input "$project/input.json" --output "$project/build/generated" --package-name org.example.refwrapper --api-client-name RefWrapper --model-name-suffix Dto --model-style "$style" "${flags[@]}" --check
-    python3 - "$project" "$style" <<'PYMAIN'
+    "$workspace/openapi-kt" generate --input tests/fixtures/http/wrapper-chain-nullability-defaults.json --output "$project/build/generated-limits/wrapper-chain" --package-name org.example.wrapperchain --model-name-suffix Dto --model-style "$style" "${flags[@]}"
+    "$workspace/openapi-kt" generate --input tests/fixtures/http/wrapper-chain-nullability-defaults.json --output "$project/build/generated-limits/wrapper-chain" --package-name org.example.wrapperchain --model-name-suffix Dto --model-style "$style" "${flags[@]}" --check
+    "$workspace/openapi-kt" generate --input tests/fixtures/http/wrapper-owned-defaults.json --output "$project/build/generated-limits/wrapper-owned" --package-name org.example.owneddefaults --model-name-suffix Dto --model-style "$style" "${flags[@]}"
+    "$workspace/openapi-kt" generate --input tests/fixtures/http/wrapper-owned-defaults.json --output "$project/build/generated-limits/wrapper-owned" --package-name org.example.owneddefaults --model-name-suffix Dto --model-style "$style" "${flags[@]}" --check
+    if [[ "$validation" == on ]]; then
+      cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ConstrainedComponentDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
+      "$workspace/openapi-kt" generate --input tests/fixtures/http/constrained-component-defaults.json --output "$project/build/generated-checked/bounded" --package-name org.example.boundeddefaults --model-name-suffix Dto --model-style "$style" --validation
+      "$workspace/openapi-kt" generate --input tests/fixtures/http/constrained-component-defaults.json --output "$project/build/generated-checked/bounded" --package-name org.example.boundeddefaults --model-name-suffix Dto --model-style "$style" --validation --check
+      cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/NullableScalarWrapperDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
+      "$workspace/openapi-kt" generate --input tests/fixtures/http/nullable-scalar-wrapper-defaults.json --output "$project/build/generated-checked/scalars" --package-name org.example.refwrapper --model-name-suffix Dto --model-style "$style" --validation
+      "$workspace/openapi-kt" generate --input tests/fixtures/http/nullable-scalar-wrapper-defaults.json --output "$project/build/generated-checked/scalars" --package-name org.example.refwrapper --model-name-suffix Dto --model-style "$style" --validation --check
+    fi
+    python3 - "$project" "$style" "$validation" <<'PYMAIN'
 from pathlib import Path
 import sys
 p=Path(sys.argv[1]);copy='' if sys.argv[2]=='plain_class' else '''
@@ -30,9 +44,12 @@ p=Path(sys.argv[1]);copy='' if sys.argv[2]=='plain_class' else '''
 (p/'src/main/kotlin/org/example/contracts/Main.kt').write_text('''package org.example.contracts
 import kotlinx.coroutines.runBlocking
 fun main() = runBlocking {
-'''+copy+''' referenceWrapperComponentDefaultsContracts() }
+'''+copy+(' nullableScalarWrapperDefaultsContracts()\n constrainedComponentDefaultsContracts()\n' if sys.argv[3]=='on' else '')+''' wrapperOwnedDefaultsContracts()
+ wrapperChainNullabilityDefaultsContracts()
+ referenceWrapperComponentDefaultsContracts() }
 ''')
 b=p/'build.gradle.kts';b.write_text(b.read_text()+'''
+kotlin.sourceSets.main { kotlin.srcDir(layout.buildDirectory.dir("generated-checked")) }
 tasks.register<JavaExec>("runReferenceWrapperComponentDefaultsContracts") {
  dependsOn(tasks.named("classes"))
  classpath=sourceSets["main"].runtimeClasspath
