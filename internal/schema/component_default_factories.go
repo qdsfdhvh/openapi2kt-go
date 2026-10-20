@@ -60,7 +60,7 @@ func (a *analyzer) componentDefaultShape(c *component) bool {
 	}
 	// A Scalar only exists after the declaration loop, and markComponentDefaultSource
 	// runs before it. Key the dispatch off the schema itself so both callers agree.
-	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind) {
+	if has(c.Schema, "enum") || isBuiltinScalarFactoryRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind) {
 		return a.scalarComponentDefaultCandidate(c)
 	}
 	switch {
@@ -194,14 +194,14 @@ func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Di
 	}
 
 	kind, _, _ := schemaType(c.Schema, c.Pointer)
-	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind) {
+	if has(c.Schema, "enum") || isBuiltinScalarFactoryRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind) {
 		// The enum/scalar roles own their own validation above; the canonical
 		// value is the literal JSON of the annotation itself.
 		node, err := validation.scalarComponentNode(c)
 		if err != nil {
 			return "", err
 		}
-		if value.Kind() != document.Null && isPlainScalarRoot(c.Schema, kind) && hasPrimitiveBounds(c.Schema) {
+		if value.Kind() != document.Null && isBuiltinScalarFactoryRoot(c.Schema, kind) && (hasPrimitiveBounds(c.Schema) || has(c.Schema, "format")) {
 			if _, err := node.value(value, at); err != nil {
 				return "", err
 			}
@@ -251,7 +251,7 @@ func (a *analyzer) componentDefaultNode(c *component) (*nestedDefaultNode, *diag
 	if err != nil {
 		return nil, err
 	}
-	if has(c.Schema, "enum") || isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind) {
+	if has(c.Schema, "enum") || isBuiltinScalarFactoryRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind) {
 		return a.scalarComponentNode(c)
 	}
 	if kind == "array" || dictionarySchema(c.Schema) {
@@ -260,7 +260,7 @@ func (a *analyzer) componentDefaultNode(c *component) (*nestedDefaultNode, *diag
 	return a.objectDefaultNode(c.Schema, c.Pointer, 0, true)
 }
 
-// scalarComponentDefaultCandidate admits the plain scalar and String-enum roots
+// scalarComponentDefaultCandidate admits builtin scalar and String-enum roots
 // whose field default role exists. Native enum, temporal, bytes, caller-native,
 // bigint and value-class components keep their own contracts.
 func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
@@ -292,13 +292,7 @@ func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
 		}
 		return kind == "integer" || kind == "number"
 	}
-	// A non-enum `format` is admitted only for the formats whose field default
-	// role already exists: the standard temporal scalars and byte/binary. Other
-	// formats stay excluded.
-	if has(c.Schema, "format") && !isTemporalScalarRoot(c.Schema, kind) && !isBytesScalarRoot(c.Schema, kind) {
-		return false
-	}
-	return isPlainScalarRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind)
+	return isBuiltinScalarFactoryRoot(c.Schema, kind) || isTemporalScalarRoot(c.Schema, kind) || isBytesScalarRoot(c.Schema, kind)
 }
 
 // collectionComponentDefaultCandidate admits finite inline List/typed Map
@@ -345,18 +339,24 @@ func sortedComponentNames(components map[string]*component) []string {
 	return names
 }
 
-// isPlainScalarRoot reports a plain scalar schema root without markers, formats
-// or composition, which is the shape the scalar component factory admits.
-func isPlainScalarRoot(v *document.Value, kind string) bool {
+// isBuiltinScalarFactoryRoot is local to component factory policy. It admits
+// unformatted builtins and the four existing numeric formats, without granting
+// other scalar, marker or composition roles default ownership.
+func isBuiltinScalarFactoryRoot(v *document.Value, kind string) bool {
 	if kind != "string" && kind != "integer" && kind != "number" && kind != "boolean" {
 		return false
 	}
-	if has(v, "format") || has(v, "x-native-type") || has(v, "x-kotlin-value-class") ||
+	if has(v, "x-native-type") || has(v, "x-kotlin-value-class") ||
 		has(v, "const") || has(v, "oneOf") || has(v, "anyOf") || has(v, "allOf") ||
 		has(v, "$ref") || has(v, "enum") || dictionarySchema(v) {
 		return false
 	}
-	return true
+	if !has(v, "format") {
+		return true
+	}
+	format, ok := get(v, "format").Text()
+	return ok && (kind == "integer" && (format == "int32" || format == "int64") ||
+		kind == "number" && (format == "float" || format == "double"))
 }
 
 // scalarComponentNode validates a scalar or String-enum component default with
@@ -517,9 +517,9 @@ func (a *analyzer) referenceWrapperDefaultCandidate(c *component) bool {
 	if kindErr != nil {
 		return false
 	}
-	// A `$ref` to a plain scalar is itself a validation-opt-in alias, so a wrapper
+	// A `$ref` to a builtin scalar is itself a validation-opt-in alias, so a wrapper
 	// must not widen that role; leaving it out keeps the original rejection.
-	if !a.options.Validation && isPlainScalarRoot(target.Schema, targetKind) {
+	if !a.options.Validation && isBuiltinScalarFactoryRoot(target.Schema, targetKind) {
 		return false
 	}
 	return a.componentDefaultShape(&component{Wire: target.Pointer, Name: target.Pointer, Pointer: target.Pointer, Schema: target.Schema})
@@ -670,15 +670,15 @@ func (a *analyzer) referenceWrapperDefaultEncoded(c *component, validation *anal
 	// nested collection walk would misclassify the value for those shapes.
 	if validation.scalarLeafTarget(view) {
 		kind, _, _ := schemaType(view, c.Pointer)
-		if target.Nullable != nil || isPlainScalarRoot(view, kind) && hasPrimitiveBounds(view) {
-			// Explicit alias intent and bounded plain scalars use the component
-			// leaf role, including source validation for null and annotation checks.
+		if target.Nullable != nil || isBuiltinScalarFactoryRoot(view, kind) && (hasPrimitiveBounds(view) || has(view, "format")) {
+			// Explicit alias intent, bounded builtins and numeric formats use the
+			// component leaf role, including source and mapped-value checks.
 			// Other chains retain their existing scalarTargetEncoded policy.
 			node, err := validation.scalarComponentNode(shadow)
 			if err != nil {
 				return "", err
 			}
-			if value.Kind() != document.Null && isPlainScalarRoot(view, kind) {
+			if value.Kind() != document.Null && isBuiltinScalarFactoryRoot(view, kind) {
 				// Planning retains primitive checks; visiting the annotation is
 				// what enforces them. Keep the original JSON token for emission.
 				if _, err := node.value(value, at); err != nil {
@@ -736,7 +736,7 @@ func (a *analyzer) scalarLeafTarget(view *document.Value) bool {
 	if err != nil {
 		return false
 	}
-	return has(view, "enum") || isPlainScalarRoot(view, kind) ||
+	return has(view, "enum") || isBuiltinScalarFactoryRoot(view, kind) ||
 		isTemporalScalarRoot(view, kind) || isBytesScalarRoot(view, kind)
 }
 

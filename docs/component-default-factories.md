@@ -94,13 +94,28 @@ This is an additive D03/M01/M07/M12 profile for formerly rejected constrained ro
 
 [Core acceptance/value/source/opt-in guards](../core/constrained_component_defaults_test.go), [source identity/permission](../internal/schema/constrained_component_defaults_test.go), [native parity/read-only/failure preservation](../internal/cli/constrained_component_defaults_process_test.go), [fixture](../tests/fixtures/http/constrained-component-defaults.json) and [consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ConstrainedComponentDefaultsContracts.kt) cover this profile. The validation-on Data/Plain projects in `feature reference-wrapper-component-defaults` and the full `http` registry execute its JSON and typed-consumer assertions.
 
+## Numeric builtin formats
+
+Numeric components may own defaults with `integer` formats `int32`/`int64` or `number` formats `float`/`double`. Factories return the existing `Int`/`Long`/`Float`/`Double` aliases through the same top-level `X default()` API. Unconstrained direct roots work with validation off or on; primitive bounds require validation. Named reference aliases keep their existing validation opt-in.
+
+```json
+{"Count": {"type": "integer", "format": "int64", "default": 9223372036854775807},
+ "Ratio": {"type": "number", "format": "float", "default": 0.300000004}}
+```
+
+Every non-null annotation must fit its mapped Kotlin type, even without explicit bounds. Integers require integral JSON tokens in Int/Long range; decimal/exponent tokens and integer `-0` remain rejected. Float values must stay finite after mapping and use ordinary IEEE rounding; Double retains the input loader's finite-number boundary. The factory preserves the original JSON token and decodes through the actual alias serializer. A Float factory for the example returns `0.300000004.toFloat()`; this does not promise decimal-exact arithmetic. Existing retained bounds and integer multipleOf use the shared value checker, including mapped floating-bound comparisons. Floating multipleOf remains excluded.
+
+Explicitly nullable roots may own null or non-null values. Eligible finite named-component alias chains use nearest nullable intent and may independently own defaults, with diagnostics at each annotation's original `/default`. Null still validates the full source. Fields and unannotated aliases do not inherit defaults; required parameters retain their constructor presence. Unknown/mismatched formats, UUID, caller-native/value-class/union roles and other default contexts gain no admission. Source identity and existing depth/value/JSON budgets remain.
+
+This additive D03/M01/M03/M04/M07/M12 profile accepts formerly rejected annotations. Existing valid Kotlin call sites, wire behavior and persisted locks require no migration. [Core acceptance/value guards](../core/numeric_component_defaults_test.go), [source ownership](../internal/schema/numeric_component_defaults_test.go), [native parity/failure preservation](../internal/cli/numeric_component_defaults_process_test.go), [fixture](../tests/fixtures/http/numeric-component-defaults.json) and [Kotlin consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/NumericComponentDefaultsContracts.kt) cover mapped extrema, Float rounding/negative zero, nullable chains, constraints and non-inheritance. The validation-on Data/Plain projects in `feature reference-wrapper-component-defaults` and the full `http` registry run the consumer under all four Json default/null configurations.
+
 ## Admission
 
 Admission reuses the existing default planner for property defaults; this contract adds no new shape grammar. A component is eligible when its own node carries `default` and the value validates through the same walk that the equivalent **property** default would use:
 
 - plain inline ordinary object (explicit or inferred `type: "object"` with declared properties);
 - disjoint ordinary `allOf` constructor roots;
-- plain scalar roots (`string`, `integer`, `number`, `boolean`), standard temporal roots (`format: date` / `date-time`), plain unformatted String-enum roots, and numeric/Boolean native enum roots (`int32`/`int64`/`float`/`double` numeric vocabularies and Boolean vocabularies);
+- builtin scalar roots (`string`, `integer`, `number`, `boolean`, including the numeric formats above), standard temporal roots (`format: date` / `date-time`), plain unformatted String-enum roots, and numeric/Boolean native enum roots (`int32`/`int64`/`float`/`double` numeric vocabularies and Boolean vocabularies);
 - a finite inline List/typed Map tree whose terminal is a nullable or non-nullable leaf the nested collection default walk already supports (builtin scalar, temporal, String enum, native enum, or [signed bytes](bytes-default-trees.md));
 - nullable direct scalar/temporal/bytes/enum/finite inline collection roots with a null annotation under the [nullable component contract](nullable-component-defaults.md);
 - disjoint ordinary `allOf` constructor;
@@ -113,7 +128,7 @@ Admission reuses the existing default planner for property defaults; this contra
 ## Exclusions
 
 - Reference wrappers use the separate [wrapper contract](reference-wrapper-component-defaults.md); the direct nullable-root role does not widen their null permission.
-- Scalar roots with a non-temporal `format` (bytes), `x-native-type`, `x-kotlin-value-class`, `const`, `nullable`, `oneOf`/`anyOf` and `$ref` wrappers keep their own roles and their existing rejection at the original `.../default` Pointer.
+- Other scalar format roots, `x-native-type`, `x-kotlin-value-class`, `const`, `nullable`, `oneOf`/`anyOf` and `$ref` wrappers keep their own roles and their existing rejection at the original `.../default` Pointer.
 - An **unformatted numeric** enum root keeps its existing rejection; a numeric native vocabulary needs the explicit native `format`. The native enum's scalar wire type, exact pre-rounding vocabulary membership and the existing `W_ENUM_NATIVE_APPROXIMATION` warning are retained. A temporal root validates its lexeme through the existing temporal role, so a bad date or instant value is rejected at the annotation.
 - Collection roots keep every exclusion the field role enforces: an `allOf`-wrapped container, a `$ref` element, a composition element and an out-of-vocabulary element all stay rejected. Nested inline List/typed Map elements follow the [finite tree contract](nested-component-defaults.md). Nullable roots follow the [nullable component contract](nullable-component-defaults.md). Counts and `uniqueItems` retain their existing opt-in behaviour.
 - Empty/raw object projections now have the separate [raw JSON carrier component contract](raw-json-component-defaults.md); const-only projections, hierarchy sources and object-union products keep their separate contracts.
