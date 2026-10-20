@@ -204,12 +204,22 @@ def partition(project):
         raise ValueError('Every original source must belong to exactly one compilation')
     (output / 'inventory.json').write_text(json.dumps(inventory, indent=2) + '\n')
     literal = lambda values: ', '.join(json.dumps(value) for value in values)
+    library_owner = {path: name for name, kind in names if kind == 'Library' for path in inventory[name]}
+    internal_sources = {path for path in libraries if re.search(r'\binternal\b', sources[path])}
+    internal_friends = defaultdict(set)
+    for path in libraries:
+        for child in edges[path] & internal_sources:
+            if library_owner[path] != library_owner[child]:
+                internal_friends[library_owner[path]].add(library_owner[child])
+    friend_entries = ', '.join(json.dumps(name) + ' to listOf(' + literal(sorted(friends)) + ')'
+                               for name, friends in sorted(internal_friends.items()))
     build = project / 'build.gradle.kts'
     build.write_text(build.read_text() + '''
 // Complete HTTP source inventory, split into independent compiler invocations.
 val httpLibraries = listOf<String>(''' + literal([n for n, k in names if k == 'Library']) + ''')
 val httpContracts = listOf<String>(''' + literal([n for n, k in names if k == 'Contract']) + ''')
 val httpCompilations = httpLibraries + httpContracts
+val httpInternalFriends = mapOf<String, List<String>>(''' + friend_entries + ''')
 // Keep declared external dependencies independent of main's friend-module
 // inheritance; associateWith adds the consumer configurations back to main.
 val httpDeclaredImplementation = configurations.create("httpDeclaredImplementation") {
@@ -236,6 +246,23 @@ kotlin.sourceSets.getByName("main").kotlin.setSrcDirs(listOf("build/http-compila
 sourceSets.main {
     compileClasspath += files(httpCompilations.map { sourceSets.getByName(it).output })
     runtimeClasspath += files(httpCompilations.map { sourceSets.getByName(it).output })
+}
+// Preserve the original single-test-module internal visibility across these
+// compiler invocations. Sealed families still stay physically in one module.
+(httpCompilations + "main").forEach { name ->
+    val friends = when {
+        name == "main" -> httpCompilations
+        name in httpContracts -> httpLibraries
+        else -> httpInternalFriends[name].orEmpty()
+    }
+    if (friends.isNotEmpty()) {
+        kotlin.target.compilations.getByName(name).compileTaskProvider.configure {
+            compilerOptions.freeCompilerArgs.add(providers.provider {
+                "-Xfriend-paths=" + files(friends.map { sourceSets.getByName(it).output.classesDirs })
+                    .files.filter { it.exists() }.joinToString(",") { it.absolutePath }
+            })
+        }
+    }
 }
 // The original runtime registry can use internal helpers from its test modules.
 httpContracts.forEach { name ->

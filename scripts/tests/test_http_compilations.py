@@ -40,6 +40,7 @@ class HTTPCompilationTests(unittest.TestCase):
             self.assertEqual((root / 'build/http-compilations/main/HttpContracts.kt').read_text(), sources[inventory['main'][0]])
             build = (root / 'build.gradle.kts').read_text()
             self.assertIn('associateWith', build)
+            self.assertIn('-Xfriend-paths=', build)
             self.assertIn('mustRunAfter', build)
             self.assertNotIn('jvmargs', build)
             with self.assertRaisesRegex(ValueError, 'fresh HTTP compilation plan'):
@@ -67,6 +68,30 @@ class HTTPCompilationTests(unittest.TestCase):
             libraries = [paths for name, paths in inventory.items() if 'Library' in name]
             self.assertEqual(len(libraries), 1)
             self.assertEqual(len(libraries[0]), 2)
+
+    def test_internal_serializer_dependency_keeps_original_test_module_access(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            sources = {
+                'build/generated/Serializer.kt': 'package org.example.codec\ninternal object Codec',
+                'build/generated/Holder.kt': 'package org.example.model\nclass Holder(val value: org.example.codec.Codec)',
+                'src/main/kotlin/org/example/contracts/HttpContracts.kt': 'package org.example.contracts\nfun main() {}',
+            }
+            for name, text in sources.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(text)
+            (root / 'build.gradle.kts').write_text('// declared build\n')
+            previous = compilations.TARGET_BYTES
+            try:
+                compilations.TARGET_BYTES = 1
+                compilations.partition(root)
+            finally:
+                compilations.TARGET_BYTES = previous
+            build = (root / 'build.gradle.kts').read_text()
+            self.assertIn('"httpLibrary001" to listOf("httpLibrary000")', build)
+            self.assertIn('"-Xfriend-paths="', build)
+            self.assertIn('httpInternalFriends[name].orEmpty()', build)
 
     def test_recursive_components_keep_their_original_dependency_order(self):
         edges = {'a': {'b'}, 'b': {'a', 'provider'}, 'provider': set(), 'client': {'a'}}
