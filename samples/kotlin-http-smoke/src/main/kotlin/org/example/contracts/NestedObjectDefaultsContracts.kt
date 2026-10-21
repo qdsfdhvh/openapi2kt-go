@@ -65,6 +65,8 @@ private fun nestedObjectBody(body: OutgoingContent): String = when (body) {
 }
 
 private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMapOf(
+    "bytesChain" to value?.bytesChain?.toList(), "bytesNull" to value?.bytesNull?.toList(), "binaryChain" to value?.binaryChain?.toList(),
+    "dayChain" to value?.dayChain, "dayNull" to value?.dayNull, "instantChain" to value?.instantChain,
     "scalarChain" to value?.scalarChain, "scalarNull" to value?.scalarNull,
     "scalarFlag" to value?.scalarFlag, "scalarCount" to value?.scalarCount,
     "name" to value?.name, "age" to value?.age, "status" to value?.status,
@@ -112,6 +114,14 @@ private fun nestedObjectFresh(left: Any?, right: Any?) {
 suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     val value = HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x"))
     check(nestedObjectCfg(value.cfg) == nestedObjectCfg(HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x")).cfg))
+    check(value.cfg?.bytesChain?.contentEquals(byteArrayOf(-128, 0, 127)) == true && value.cfg?.bytesNull == null)
+    check(value.cfg?.binaryChain?.contentEquals(byteArrayOf(-1, 1)) == true)
+    val independentBytes = HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x")).cfg?.bytesChain ?: error("Missing bytes default")
+    check(independentBytes !== value.cfg?.bytesChain)
+    independentBytes[0] = 7
+    check(value.cfg?.bytesChain?.get(0) == (-128).toByte())
+    check(value.cfg?.dayChain?.toString() == "2024-02-29" && value.cfg?.dayNull == null)
+    check(value.cfg?.instantChain?.toString() == "2024-02-29T01:04:05.123456789Z")
     check(value.cfg?.scalarChain?.toString() == "550e8400-e29b-41d4-a716-446655440000" && value.cfg?.scalarNull == null)
     check(value.cfg?.scalarFlag == true && value.cfg?.scalarCount == Long.MAX_VALUE)
     check(value.cfg?.name == "outer" && value.cfg?.age == 9)
@@ -447,6 +457,20 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check(scalarReplacement.cfg?.scalarChain?.toString() == "650e8400-e29b-41d4-a716-446655440000" && scalarReplacement.cfg?.scalarNull == null)
         check(scalarReplacement.cfg?.scalarFlag == false && scalarReplacement.cfg?.scalarCount == 7L)
         check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","scalarCount":9223372036854775808}}""") }.isFailure)
+        val temporalReplacement = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","dayChain":"2024-03-01","dayNull":null,"instantChain":"2024-03-01T00:00:00Z"}}""")
+        check(temporalReplacement.cfg?.dayChain?.toString() == "2024-03-01" && temporalReplacement.cfg?.dayNull == null)
+        check(temporalReplacement.cfg?.instantChain?.toString() == "2024-03-01T00:00:00Z")
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","dayChain":"2023-02-29"}}""") }.isFailure)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","instantChain":"bad"}}""") }.isFailure)
+        val bytesReplacement = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","bytesChain":[2,3],"bytesNull":null,"binaryChain":[]}}""")
+        check(bytesReplacement.cfg?.bytesChain?.contentEquals(byteArrayOf(2, 3)) == true && bytesReplacement.cfg?.bytesNull == null)
+        check(bytesReplacement.cfg?.binaryChain?.isEmpty() == true)
+        val bytesDecodedAgain = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"}}""")
+        check(bytesDecodedAgain.cfg?.bytesChain !== missing.cfg?.bytesChain)
+        val bytesWire = codec.encodeToJsonElement(HolderDto.serializer(), missing) as JsonObject
+        check((bytesWire["cfg"] as JsonObject)["bytesChain"] == codec.parseToJsonElement("[-128,0,127]"))
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","bytesChain":[128]}}""") }.isFailure)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","binaryChain":"AA=="}}""") }.isFailure)
         // Own defaults on the referenced component remain ordinary nullable fields.
         val referenced = codec.decodeFromString<PatchInputDto>("{}")
         check(referenced.cfg?.a == "x" && referenced.cfgNullable == null)
@@ -459,8 +483,10 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["cfg"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["allOfCfg"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["aliasCfg"] === JsonNull)
-        val aliasUpdate = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"member":{"label":"update"},"owned":{"label":"owned update"},"chained":{"label":"chain update"},"rows":[{"label":"rows update"}],"refs":[{"label":"refs update"}],"namedRows":[{"label":"named update"}],"collectionBridgeRows":[{"label":"bridge update"}],"collectionInternalRows":[{"label":"internal update"}],"collectionEntityRows":[{"label":"entity update"}]}}""").aliasCfg
+        val aliasUpdate = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"bytesChain":[1,2],"dayChain":"2024-03-01","member":{"label":"update"},"owned":{"label":"owned update"},"chained":{"label":"chain update"},"rows":[{"label":"rows update"}],"refs":[{"label":"refs update"}],"namedRows":[{"label":"named update"}],"collectionBridgeRows":[{"label":"bridge update"}],"collectionInternalRows":[{"label":"internal update"}],"collectionEntityRows":[{"label":"entity update"}]}}""").aliasCfg
         check(aliasUpdate is Patch.Value && aliasUpdate.value.member?.label == "update" && aliasUpdate.value.member?.count == 2)
+        check(aliasUpdate.value.bytesChain?.contentEquals(byteArrayOf(1, 2)) == true)
+        check(aliasUpdate.value.dayChain?.toString() == "2024-03-01")
         check(aliasUpdate.value.owned?.label == "owned update" && aliasUpdate.value.owned?.child?.flag == true)
         check(aliasUpdate.value.chained?.label == "chain update" && aliasUpdate.value.chained?.child?.flag == true)
         check(aliasUpdate.value.rows?.single()?.label == "rows update" && aliasUpdate.value.rows?.single()?.count == 2)

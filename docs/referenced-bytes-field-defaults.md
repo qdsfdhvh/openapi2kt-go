@@ -18,6 +18,8 @@ Ordinary DTO fields with a direct local `$ref` accept their own `default` when t
 
 `blob` retains its `ByteArray?` property type; `rows` retains its actual collection alias and element codec. Private typed JSON helpers supply the initializers, including scalar bytes, so large accepted annotations do not expand into unbounded `byteArrayOf` expressions. Helpers are shared within a file, follow relocated collection types through optimization, and produce fresh mutable arrays for every constructor or missing-key decode.
 
+Object-default properties that follow existing finite byte/binary reference paths use the separate [bytes alias member contract](nested-object-defaults.md#bytes-scalar-alias-members).
+
 ## Values and presence
 
 Defaults use the existing signed numeric-array JSON wire: each byte must be an integer token in `[-128,127]`. Base64 text, fractional/exponent tokens, `-0`, null byte elements and out-of-range integers fail with `E_SCHEMA_INVALID` at their original value Pointer. A Map key such as `a/~` retains JSON Pointer escaping; `$ref` inside default data is an ordinary key. Map keys are canonicalized without changing array order.
