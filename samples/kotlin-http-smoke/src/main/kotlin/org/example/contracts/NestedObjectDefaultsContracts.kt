@@ -37,9 +37,11 @@ import org.example.nestedobject.NestedObject
 import org.example.nestedobject.api.models.PatchHolderInputDto
 import org.example.nestedobject.api.models.WatchHoldersEventDto
 import org.example.nestedobject.models.HolderDto
+import org.example.nestedobject.models.MemberStatusDto
 import org.example.nestedobject.models.Patch
 import org.example.nestedobject.models.PatchInputDto
 import org.example.nestedobject.models.RequiredNullableCfgDto
+import org.example.nestedobject.models.ScalarMemberSourceDto
 
 @OptIn(io.ktor.utils.io.InternalAPI::class)
 private class NestedObjectEngine(config: MockEngineConfig) : MockEngine(config) {
@@ -65,6 +67,11 @@ private fun nestedObjectBody(body: OutgoingContent): String = when (body) {
 }
 
 private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMapOf(
+    "nativeInt" to value?.nativeInt, "nativeIntNull" to value?.nativeIntNull,
+    "nativeLong" to value?.nativeLong, "nativeFloat" to value?.nativeFloat,
+    "nativeDouble" to value?.nativeDouble, "nativeFlag" to value?.nativeFlag,
+    "enumChain" to value?.enumChain, "enumNull" to value?.enumNull,
+    "enumTextNull" to value?.enumTextNull, "enumInternal" to value?.enumInternal,
     "bytesChain" to value?.bytesChain?.toList(), "bytesNull" to value?.bytesNull?.toList(), "binaryChain" to value?.binaryChain?.toList(),
     "dayChain" to value?.dayChain, "dayNull" to value?.dayNull, "instantChain" to value?.instantChain,
     "scalarChain" to value?.scalarChain, "scalarNull" to value?.scalarNull,
@@ -113,6 +120,12 @@ private fun nestedObjectFresh(left: Any?, right: Any?) {
 
 suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     val value = HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x"))
+    check(value.cfg?.nativeInt == Int.MIN_VALUE && value.cfg?.nativeIntNull == null)
+    check(value.cfg?.nativeLong == Long.MAX_VALUE && value.cfg?.nativeFloat == 1.5f)
+    check(value.cfg?.nativeDouble == 1.25 && value.cfg?.nativeFlag == true)
+    check(value.cfg?.enumChain === MemberStatusDto.ON && value.cfg?.enumNull == null)
+    check(value.cfg?.enumTextNull?.serialName == "null" && value.cfg?.enumTextNull !is MemberStatusDto.Unrecognized)
+    check(value.cfg?.enumInternal === ScalarMemberSourceDto.Code.LEFT)
     check(nestedObjectCfg(value.cfg) == nestedObjectCfg(HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x")).cfg))
     check(value.cfg?.bytesChain?.contentEquals(byteArrayOf(-128, 0, 127)) == true && value.cfg?.bytesNull == null)
     check(value.cfg?.binaryChain?.contentEquals(byteArrayOf(-1, 1)) == true)
@@ -259,6 +272,7 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     nestedObjectFresh(nestedObjectCfg(HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x")).cfg), nestedObjectCfg(value.cfg))
     // Nested property own defaults apply when the outer default omits them.
     val fresh = HolderDto.Cfg(name = "n")
+    check(fresh.enumChain == null && fresh.enumInternal == null && fresh.enumTextNull == null)
     check(fresh.age == 7 && fresh.child?.flag == true && fresh.status == null && fresh.code == null)
     check(fresh.composed?.label == "member" && fresh.composed?.count == 2 && fresh.composed?.child?.flag == true)
     check(fresh.linked?.label == "linked member" && fresh.linked?.count == 2 && fresh.linked?.child?.flag == true)
@@ -307,6 +321,7 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check(runCatching { codec.decodeFromString<HolderDto>("{}") }.isFailure)
         val missing = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"}}""")
         check(nestedObjectHolderFields(missing) == nestedObjectHolderFields(value))
+        check(missing.cfg?.enumChain === MemberStatusDto.ON && missing.cfg?.enumInternal === ScalarMemberSourceDto.Code.LEFT)
         val overridden = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"y"},"cfg":{"name":"z"}}""")
         check(overridden.requiredCfg.id == "y" && overridden.cfg?.name == "z" && overridden.cfg?.age == 7 && overridden.cfg?.child?.flag == true)
         check(overridden.cfg?.composed?.label == "member" && overridden.cfg?.composed?.count == 2)
@@ -452,6 +467,31 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check(mergedOverride.allOfNull?.a == "set" && mergedOverride.allOfNull?.b == 1)
         check(codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"allOfCfg":null}""").allOfCfg == null)
         check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), missing))) == nestedObjectHolderFields(missing))
+        // Strict annotation vocabularies keep open runtime enum serializers.
+        val mappedFloat = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","nativeFloat":1.000000001}}""")
+        check(mappedFloat.cfg?.nativeFloat == 1.0f) // Runtime membership uses mapped Float equality.
+        val nativeUnknownJson = """{"requiredCfg":{"id":"x"},"cfg":{"name":"n","nativeInt":9,"nativeLong":7,"nativeFloat":2.5,"nativeDouble":3.5,"nativeFlag":false}}"""
+        if (checked) {
+            check(runCatching { HolderDto.Cfg(name = "n", nativeInt = 9) }.isFailure)
+            check(runCatching { HolderDto.Cfg(name = "n", nativeFlag = false) }.isFailure)
+            for ((key, token) in listOf("nativeInt" to "9", "nativeLong" to "7", "nativeFloat" to "2.5", "nativeDouble" to "3.5", "nativeFlag" to "false")) {
+                check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","$key":$token}}""") }.isFailure)
+            }
+        } else {
+            val suppliedNative = codec.decodeFromString<HolderDto>(nativeUnknownJson)
+            check(suppliedNative.cfg?.nativeInt == 9 && suppliedNative.cfg?.nativeLong == 7L)
+            check(suppliedNative.cfg?.nativeFloat == 2.5f && suppliedNative.cfg?.nativeDouble == 3.5 && suppliedNative.cfg?.nativeFlag == false)
+            check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), suppliedNative))) == nestedObjectHolderFields(suppliedNative))
+        }
+        // Open String enums stay separate from checked native enums.
+        val enumReplacement = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","enumChain":"future","enumNull":null,"enumTextNull":"null","enumInternal":"other"}}""")
+        check(enumReplacement.cfg?.enumChain == MemberStatusDto.Unrecognized("future") && enumReplacement.cfg?.enumNull == null)
+        check(enumReplacement.cfg?.enumTextNull?.serialName == "null" && enumReplacement.cfg?.enumTextNull !is MemberStatusDto.Unrecognized)
+        check(enumReplacement.cfg?.enumInternal == ScalarMemberSourceDto.Code.Unrecognized("other"))
+        check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), enumReplacement))) == nestedObjectHolderFields(enumReplacement))
+        val enumCleared = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","enumChain":null,"enumTextNull":null}}""")
+        check(enumCleared.cfg?.enumChain == null && enumCleared.cfg?.enumTextNull == null)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","enumChain":1}}""") }.isFailure)
         // Alias members decode through their actual scalar backing.
         val scalarReplacement = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","scalarChain":"650e8400-e29b-41d4-a716-446655440000","scalarNull":null,"scalarFlag":false,"scalarCount":7}}""")
         check(scalarReplacement.cfg?.scalarChain?.toString() == "650e8400-e29b-41d4-a716-446655440000" && scalarReplacement.cfg?.scalarNull == null)
@@ -483,8 +523,10 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["cfg"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["allOfCfg"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["aliasCfg"] === JsonNull)
-        val aliasUpdate = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"bytesChain":[1,2],"dayChain":"2024-03-01","member":{"label":"update"},"owned":{"label":"owned update"},"chained":{"label":"chain update"},"rows":[{"label":"rows update"}],"refs":[{"label":"refs update"}],"namedRows":[{"label":"named update"}],"collectionBridgeRows":[{"label":"bridge update"}],"collectionInternalRows":[{"label":"internal update"}],"collectionEntityRows":[{"label":"entity update"}]}}""").aliasCfg
+        val aliasUpdate = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"nativeInt":2,"enumChain":"off","bytesChain":[1,2],"dayChain":"2024-03-01","member":{"label":"update"},"owned":{"label":"owned update"},"chained":{"label":"chain update"},"rows":[{"label":"rows update"}],"refs":[{"label":"refs update"}],"namedRows":[{"label":"named update"}],"collectionBridgeRows":[{"label":"bridge update"}],"collectionInternalRows":[{"label":"internal update"}],"collectionEntityRows":[{"label":"entity update"}]}}""").aliasCfg
         check(aliasUpdate is Patch.Value && aliasUpdate.value.member?.label == "update" && aliasUpdate.value.member?.count == 2)
+        check(aliasUpdate.value.enumChain === MemberStatusDto.OFF)
+        check(aliasUpdate.value.nativeInt == 2)
         check(aliasUpdate.value.bytesChain?.contentEquals(byteArrayOf(1, 2)) == true)
         check(aliasUpdate.value.dayChain?.toString() == "2024-03-01")
         check(aliasUpdate.value.owned?.label == "owned update" && aliasUpdate.value.owned?.child?.flag == true)
@@ -572,26 +614,41 @@ private suspend fun nestedObjectWire(codec: Json, value: HolderDto, checked: Boo
         check(calls == before && callbacks == beforeCallbacks)
         val event = (withTimeout(10000) { stream.toList() }.single() as WatchHoldersEventDto.Holder).data
         check(nestedObjectHolderFields(event) == nestedObjectHolderFields(value))
-        if (checked) {
-            payload = """{"requiredCfg":{"id":"x"},"cfg":{"name":"n","code":9}}"""
-            failing = true
-            val beforeFailure = calls
-            nestedObjectReject("enum") { api.sendHolder(value) { callbacks++ } }
-            check(calls == beforeFailure + 1 && callbacks == calls)
-            nestedObjectReject("enum") { withTimeout(10000) { api.watchHolders { callbacks++ }.toList() } }
-            check(calls == beforeFailure + 2 && callbacks == calls)
-            withTimeout(10000) { framesWritten.last().await() }
-            check(channels.last().isClosedForRead) { "Failed full-frame still-open stream was not closed" }
-            payload = codec.encodeToString(HolderDto.serializer(), value)
-            failing = false
-            check(nestedObjectHolderFields(api.sendHolder(value) { callbacks++ }) == nestedObjectHolderFields(value))
-            val recovered = (withTimeout(10000) { api.watchHolders { callbacks++ }.toList() }.single() as WatchHoldersEventDto.Holder).data
-            check(nestedObjectHolderFields(recovered) == nestedObjectHolderFields(value))
-        } else {
-            payload = """{"requiredCfg":{"id":"x"},"cfg":{"name":"n","code":9}}"""
-            val unknown = api.sendHolder(value) { callbacks++ }
-            check(unknown.cfg?.code == 9)
-            payload = codec.encodeToString(HolderDto.serializer(), value)
+        payload = """{"requiredCfg":{"id":"x"},"cfg":{"name":"n","enumChain":"future","enumInternal":"other"}}"""
+        val openEnumResponse = api.sendHolder(value) { callbacks++ }
+        check(openEnumResponse.cfg?.enumChain == MemberStatusDto.Unrecognized("future"))
+        check(openEnumResponse.cfg?.enumInternal == ScalarMemberSourceDto.Code.Unrecognized("other"))
+        val openEnumEvent = (withTimeout(10000) { api.watchHolders { callbacks++ }.toList() }.single() as WatchHoldersEventDto.Holder).data
+        check(openEnumEvent.cfg?.enumChain == MemberStatusDto.Unrecognized("future"))
+        check(openEnumEvent.cfg?.enumInternal == ScalarMemberSourceDto.Code.Unrecognized("other"))
+        payload = codec.encodeToString(HolderDto.serializer(), value)
+        for ((invalidPayload, nativeMember) in listOf(
+            """{"requiredCfg":{"id":"x"},"cfg":{"name":"n","code":9}}""" to false,
+            """{"requiredCfg":{"id":"x"},"cfg":{"name":"n","nativeInt":9,"nativeFlag":false}}""" to true
+        )) {
+            if (checked) {
+                payload = invalidPayload
+                failing = true
+                val beforeFailure = calls
+                nestedObjectReject("enum") { api.sendHolder(value) { callbacks++ } }
+                check(calls == beforeFailure + 1 && callbacks == calls)
+                nestedObjectReject("enum") { withTimeout(10000) { api.watchHolders { callbacks++ }.toList() } }
+                check(calls == beforeFailure + 2 && callbacks == calls)
+                withTimeout(10000) { framesWritten.last().await() }
+                check(channels.last().isClosedForRead) { "Failed full-frame still-open stream was not closed" }
+                payload = codec.encodeToString(HolderDto.serializer(), value)
+                failing = false
+                check(nestedObjectHolderFields(api.sendHolder(value) { callbacks++ }) == nestedObjectHolderFields(value))
+                val recovered = (withTimeout(10000) { api.watchHolders { callbacks++ }.toList() }.single() as WatchHoldersEventDto.Holder).data
+                check(nestedObjectHolderFields(recovered) == nestedObjectHolderFields(value))
+            } else {
+                payload = invalidPayload
+                val unknown = api.sendHolder(value) { callbacks++ }
+                check(if (nativeMember) unknown.cfg?.nativeInt == 9 && unknown.cfg?.nativeFlag == false else unknown.cfg?.code == 9)
+                val unknownEvent = (withTimeout(10000) { api.watchHolders { callbacks++ }.toList() }.single() as WatchHoldersEventDto.Holder).data
+                check(if (nativeMember) unknownEvent.cfg?.nativeInt == 9 && unknownEvent.cfg?.nativeFlag == false else unknownEvent.cfg?.code == 9)
+                payload = codec.encodeToString(HolderDto.serializer(), value)
+            }
         }
     } finally { http.close(); producers.cancel(); channels.forEach { it.close() } }
     println("Nested object defaults checked=$checked constructor-serde-Patch-HTTP-liveSSE passed")

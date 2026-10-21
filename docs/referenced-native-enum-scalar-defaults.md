@@ -1,5 +1,7 @@
 # Referenced native enum scalar field defaults
 
+[Native enum alias members in object defaults](nested-object-defaults.md#native-enum-alias-members) separately compose existing reference paths with an enclosing object annotation, preserving original vocabulary, native scalar types and validation gates.
+
 An ordinary DTO field with a direct local `$ref` can declare its own `default` when its already accepted target resolves to a native numeric or Boolean enum scalar: Int, Long, Float, Double or Boolean. The resolver keeps authority over named components, aliases, internal references and nullable intent. In particular, internal native enum references and intrinsic nullable native enum schemas retain their existing validation opt-in; a default does not admit a new reference shape.
 
 ```json
