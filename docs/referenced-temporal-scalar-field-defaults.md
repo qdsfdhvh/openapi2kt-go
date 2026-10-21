@@ -13,6 +13,8 @@ An ordinary DTO property with a direct local `$ref` may declare its own `default
 
 The optional property retains `LocalDate?` and a typed parse initializer. Private file-level helpers keep initializers safe when fields are named `kotlin` or `kotlinx`. The transparent alias, provider serializer, classifier, descriptor and nullable backing remain those of the existing no-default input. There is no new DTO, wrapper, JSON-tree helper, constructor check or serializer barrier. [Builtin scalar defaults](referenced-scalar-field-defaults.md) and [referenced builtin collection defaults](referenced-collection-field-defaults.md) retain their separate profiles.
 
+Object-default properties that follow these existing temporal reference paths use the separate [temporal alias member contract](nested-object-defaults.md#temporal-scalar-alias-members).
+
 ## Annotation, source and presence
 
 Only the consuming field's own annotation is admitted. Target, intermediate chain, component/root and container-child defaults remain rejected, even when the consumer also supplies a default. Nullable precedence never implies default inheritance. The nearest explicit true/false intent follows the existing resolver; incidental optional-field nullability does not legalize a null annotation.

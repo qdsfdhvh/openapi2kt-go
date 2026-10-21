@@ -6,7 +6,20 @@
   },
   "components": {
     "schemas": {
+      "MemberBytes": {"type": ["string", "null"], "format": "byte"},
+      "MemberBytesAlias": {"$ref": "#/components/schemas/MemberBytes", "nullable": false},
+      "MemberBinary": {"type": "string", "format": "binary"},
+      "MemberBinaryAlias": {"$ref": "#/components/schemas/MemberBinary"},
+      "MemberBytesBridge": {"$ref": "#/components/schemas/ScalarMemberSource/properties/bytesHop"},
+      "TemporalDay": {"type": ["string", "null"], "format": "date"},
+      "TemporalDayAlias": {"$ref": "#/components/schemas/TemporalDay", "nullable": false},
+      "TemporalInstant": {"type": "string", "format": "date-time"},
+      "TemporalInstantAlias": {"$ref": "#/components/schemas/TemporalInstant"},
+      "TemporalDayBridge": {"$ref": "#/components/schemas/ScalarMemberSource/properties/dayHop"},
       "ScalarMemberSource": {"properties": {
+        "bytesHop": {"$ref": "#/components/schemas/MemberBytesAlias"},
+        "dayHop": {"$ref": "#/components/schemas/TemporalDayAlias"},
+        "instantHop": {"$ref": "#/components/schemas/TemporalInstantAlias"},
         "id": {"type": "string", "format": "uuid", "nullable": true},
         "flag": {"type": "boolean"},
         "count": {"type": "integer", "format": "int64"}
@@ -27,6 +40,12 @@
               "name": {
                 "type": "string"
               },
+              "bytesChain": {"$ref": "#/components/schemas/MemberBytesBridge"},
+              "bytesNull": {"$ref": "#/components/schemas/MemberBytesBridge", "nullable": true},
+              "binaryChain": {"$ref": "#/components/schemas/MemberBinaryAlias"},
+              "dayChain": {"$ref": "#/components/schemas/TemporalDayBridge"},
+              "dayNull": {"$ref": "#/components/schemas/TemporalDayBridge", "nullable": true},
+              "instantChain": {"$ref": "#/components/schemas/ScalarMemberSource/properties/instantHop"},
               "scalarChain": {"$ref": "#/components/schemas/ScalarMemberOuter"},
               "scalarNull": {"$ref": "#/components/schemas/ScalarMemberOuter", "nullable": true},
               "scalarFlag": {"$ref": "#/components/schemas/ScalarFlagAlias"},
@@ -195,6 +214,12 @@
             },
             "default": {
               "name": "outer",
+              "bytesChain": [-128, 0, 127],
+              "bytesNull": null,
+              "binaryChain": [-1, 1],
+              "dayChain": "2024-02-29",
+              "dayNull": null,
+              "instantChain": "2024-02-29T03:04:05.123456789+02:00",
               "scalarChain": "550e8400-e29b-41d4-a716-446655440000",
               "scalarNull": null,
               "scalarFlag": true,
@@ -589,6 +614,8 @@
                     "type": "object",
                     "nullable": true,
                     "properties": {
+                      "bytesChain": {"$ref": "#/components/schemas/MemberBytesBridge"},
+                      "dayChain": {"$ref": "#/components/schemas/TemporalDayBridge"},
                       "scalarChain": {"$ref": "#/components/schemas/ScalarMemberOuter"},
                       "member": {"$ref": "#/components/schemas/ComposedOuter"},
                       "owned": {"$ref": "#/components/schemas/OwnedCfg/properties/node", "nullable": false},
@@ -603,7 +630,7 @@
                         {"properties": {"count": {"type": "integer", "default": 2}}}
                       ]}}
                     },
-                    "default": {"scalarChain": "550e8400-e29b-41d4-a716-446655440000", "member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}], "collectionBridgeRows": [{"label": "bridge patch default"}], "collectionInternalRows": [{"label": "internal patch default"}], "collectionEntityRows": [{"label": "entity patch default"}]}
+                    "default": {"bytesChain": [-128, 0, 127], "dayChain": "2024-02-29", "scalarChain": "550e8400-e29b-41d4-a716-446655440000", "member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}], "collectionBridgeRows": [{"label": "bridge patch default"}], "collectionInternalRows": [{"label": "internal patch default"}], "collectionEntityRows": [{"label": "entity patch default"}]}
                   },
                   "allOfCfg": {
                     "allOf": [

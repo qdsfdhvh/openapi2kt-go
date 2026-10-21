@@ -97,8 +97,15 @@ func TestScalarAliasObjectDefaultMemberGuards(t *testing.T) {
 			}
 		}
 	}
-	// This role does not grant enum/temporal/collection alias terminals or hop defaults.
+	// Enum/collection alias terminals and hop defaults keep their separate roles.
 	for _, target := range []string{`{"type":"string","enum":["x"]}`, `{"type":"string","format":"date"}`, `{"type":"array","items":{"type":"string"}}`} {
+		// Preserve the historical date input as a graduated temporal member case.
+		if target == `{"type":"string","format":"date"}` {
+			if got, err := core.GenerateWithDiagnostics(request(scalarAliasMemberDocument(target, allOfMemberHops, `{"$ref":"#/components/schemas/Bridge"}`, `{}`), "Dto")); err != nil || len(got.Artifacts.Files) == 0 {
+				t.Fatal("temporal member graduation", err)
+			}
+			continue
+		}
 		if got, err := core.GenerateWithDiagnostics(request(scalarAliasMemberDocument(target, allOfMemberHops, `{"$ref":"#/components/schemas/Bridge"}`, `{}`), "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
 			t.Fatal("excluded role", target, err)
 		}

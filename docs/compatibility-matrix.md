@@ -1,5 +1,9 @@
 # JSON 首期兼容矩阵
 
+[对象默认值中的 bytes 标量别名成员](nested-object-defaults.md#bytes-scalar-alias-members)：D03/M01/M02/M07，既有 object-default walk 属性支持有限链到已接受 byte/binary 组件，保 ByteArray、有符号数组 wire、逐字节 Pointer、fresh arrays、nearest nullable、原 source/export 与预算；required/Patch/discarded 先验证。新引用图、byte bounds/uniqueItems、native/valueclass/enum 和 hop/terminal default 仍独立；有效 API/wire/锁无迁移。
+
+[对象默认值中的 temporal 标量别名成员](nested-object-defaults.md#temporal-scalar-alias-members)：D03/M02/M07，既有 object-default walk 的属性支持有限 named/internal hop/root bridge 链到原已接受 date/date-time 组件；保 LocalDate/Instant、nearest nullable、原 source/Pointer、词法/required/Patch/discarded 与深度/工作/值预算。physical temporal 内部叶的新引用准入、bounds、enum/native/valueclass/child default 仍独立；已有有效 API/wire/锁无迁移。
+
 [对象默认值中的 builtin 标量别名成员](nested-object-defaults.md#builtin-scalar-alias-members)：D03/M01/M03/M04/M07/M12，已接受 object-default walk 的属性可沿有限 named/internal/root bridge 链到 builtin String/Uuid/Boolean/数值终点。保原节点／Pointer／source、nearest nullable、既有 validation 准入、逐叶检查和预算；其他终点链/default 角色仍独立。已有有效 API/wire/锁沿用当前主线合同。
 
 [内部 UUID 标量引用](root-borrowed-builtin.md#uuid-leaves)：F04/F07/M01/M03/M07/M12，支持 direct internal UUID 叶、有限内部链和 root bridge；使用当前原生 Uuid、词法／canonical checks、JSON HTTP/SSE，不恢复旧 String 映射。保原 source／owner／export／nullable 与预算；一般引用图仍开放。

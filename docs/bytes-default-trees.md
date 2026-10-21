@@ -10,6 +10,8 @@ Existing finite collection and ordinary object default trees accept direct `type
 
 The field remains a `List<ByteArray>` with its existing optional-null view. A private typed JSON helper creates its initializer. Each construction and each factory call decodes fresh mutable arrays; defaults do not share a mutable byte buffer. No Base64 codec is introduced.
 
+[Finite byte/binary alias chains in object-default members](nested-object-defaults.md#bytes-scalar-alias-members) additionally preserve original hops and nearest nullable intent through already admitted named byte roots.
+
 ## Accepted roles and presence
 
 - An ordinary direct inline DTO collection field's own outer default can contain byte leaves through its existing finite List/typed Map tree. Root containers and byte leaves have independent explicit nullable intent.

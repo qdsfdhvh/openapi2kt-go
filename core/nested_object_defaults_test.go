@@ -42,7 +42,7 @@ func TestNestedObjectDefaultsTypedPresence(t *testing.T) {
 			}
 			// Canonical keys are sorted; source member order only drives
 			// diagnostics.
-			if !strings.Contains(holder, `{\"age\":9,\"aliasNull\":null,\"child\":{\"flag\":false}`) {
+			if !strings.Contains(holder, `{\"age\":9,\"aliasNull\":null,\"binaryChain\":[-1,1],\"bytesChain\":[-128,0,127],\"bytesNull\":null,\"child\":{\"flag\":false}`) {
 				t.Fatal("default JSON was not canonically sorted", holder)
 			}
 			patch := source(t, got, "PatchHolderInputDto")
