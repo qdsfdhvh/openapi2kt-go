@@ -25,8 +25,17 @@
       "Flags": {
         "$ref": "#/components/schemas/Source/properties/flags"
       },
+      "PhysicalAlias": {"$ref": "#/components/schemas/Source/properties/physicalHop"},
       "Record": {
         "properties": {
+          "nativeCfg": {
+            "properties": {
+              "value": {"$ref": "#/components/schemas/Alias"},
+              "nil": {"$ref": "#/components/schemas/NonNullBridge", "nullable": true},
+              "borrowed": {"$ref": "#/components/schemas/PhysicalAlias"}
+            },
+            "default": {"value": 4, "nil": null, "borrowed": 2}
+          },
           "code": {
             "$ref": "#/components/schemas/Alias"
           },
@@ -103,6 +112,8 @@
       },
       "Source": {
         "properties": {
+          "physical": {"type": ["integer", "null"], "enum": [null, 1, 2, 4], "minimum": 2, "multipleOf": 2},
+          "physicalHop": {"$ref": "#/components/schemas/Source/properties/physical", "nullable": false},
           "hop": {
             "$ref": "#/components/schemas/CodeAlias"
           },

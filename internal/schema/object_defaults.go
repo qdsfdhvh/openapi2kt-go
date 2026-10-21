@@ -352,8 +352,15 @@ func (a *analyzer) objectDefaultConstNode(v *document.Value, pointer string) (*n
 	return &nestedDefaultNode{schema: v, pointer: pointer, ty: TypeRef{Kind: JSON}, constValue: literal, constKind: kind, native: a}, nil
 }
 
+// objectDefaultTransparentLeaf only classifies a source for the member walk.
+// The shared field planner still owns reference admission and runtime checks;
+// nestedDefaultSchema validates the original leaf grammar and vocabulary.
+func objectDefaultTransparentLeaf(v *document.Value, kind string) bool {
+	return isBuiltinScalarFactoryRoot(v, kind) || isTemporalScalarRoot(v, kind) || isBytesScalarRoot(v, kind) || enumNominalCandidate(v) || nullableNativeEnumCandidate(v, kind)
+}
+
 // objectDefaultTransparentTerminal routes finite transparent `$ref` chains to
-// plain objects or builtin/temporal/bytes/plain String enum leaves, without
+// plain objects or supported scalar/enum leaves, without
 // consuming the source-work budget. The walk below keeps identity/work checks.
 func (a *analyzer) objectDefaultTransparentTerminal(v *document.Value) *document.Value {
 	for depth := 0; depth <= MaxSchemaDepth && has(v, "$ref"); depth++ {
@@ -364,14 +371,14 @@ func (a *analyzer) objectDefaultTransparentTerminal(v *document.Value) *document
 		v = source
 	}
 	kind, _, _ := schemaType(v, "")
-	if objectDefaultCandidateSchema(v) || isBuiltinScalarFactoryRoot(v, kind) || isTemporalScalarRoot(v, kind) || isBytesScalarRoot(v, kind) || enumNominalCandidate(v) {
+	if objectDefaultCandidateSchema(v) || objectDefaultTransparentLeaf(v, kind) {
 		return v
 	}
 	return nil
 }
 
 // objectDefaultTransparentChain follows a finite chain of transparent local
-// `$ref`s ending in a plain object or builtin/temporal/bytes/plain String enum
+// `$ref`s ending in a plain object or supported scalar/enum
 // leaf. It keeps every original hop and nearest explicit nullable intent.
 // The caller has already confirmed the terminal with
 // objectDefaultTransparentTerminal, so every other role keeps its own walk.
@@ -383,7 +390,7 @@ func (a *analyzer) objectDefaultTransparentChain(v *document.Value, pointer, ref
 		}
 		owner := a.componentsByOriginalSchema(v)
 		kind, _, _ := schemaType(v, pointer)
-		leaf := isBuiltinScalarFactoryRoot(v, kind) || isTemporalScalarRoot(v, kind) || isBytesScalarRoot(v, kind) || enumNominalCandidate(v)
+		leaf := objectDefaultTransparentLeaf(v, kind)
 		if owner == nil && (has(v, "$ref") || leaf) {
 			// An internal hop or leaf keeps its original source identity.
 			if err := a.internalDefaultMemberSource(v, pointer, reference); err != nil {
@@ -439,7 +446,7 @@ func (a *analyzer) objectDefaultTransparentChain(v *document.Value, pointer, ref
 // objectDefaultPropertyReference resolves an object property's direct local
 // `$ref`. Plain object and named/internal ordinary allOf targets recurse as
 // objects; finite named/internal allOf chains preserve original hops and nullable
-// intent. Builtin, temporal, bytes and plain String enum chains share that walk;
+// intent. Builtin, temporal, bytes and String/native enum chains share that walk;
 // other terminal roles remain separate.
 func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	if err := checkKeys(v, []string{"$ref", "nullable", "default"}, pointer); err != nil {

@@ -1,5 +1,7 @@
 # JSON 首期兼容矩阵
 
+[对象默认值中的 native enum 别名成员](nested-object-defaults.md#native-enum-alias-members)：D03/M01/M02/M03/M07/M08，既有 object-default walk 属性支持已准入的 numeric/Boolean enum 有限链，保持 Int/Long/Float/Double/Boolean 与 native wire。注解按原词表在浮点映射前严格比较；内部引用、nullable 词表及 bounds 保原 validation 准入与运行时检查，保 nearest nullable、原来源／Pointer／预算及失败保旧。新引用图、native/valueclass/const、hop/terminal/child default 仍独立；有效 API/wire/锁无迁移。
+
 [对象默认值中的 String enum 别名成员](nested-object-defaults.md#string-enum-alias-members)：D03/M01/M03/M07/M08，既有 object-default walk 的属性支持有限 named/internal/root bridge 链到已接受的 plain String/typeless enum。默认值严格匹配原词表，保实际 lexical classifier、null 与字符串 "null"、nearest nullable、原来源和预算；运行时未知字符串仍为 Unrecognized。新引用图、bounds/format/native/valueclass、hop/terminal/child default 仍独立，已有有效 API/wire/锁无迁移。
 
 [对象默认值中的 bytes 标量别名成员](nested-object-defaults.md#bytes-scalar-alias-members)：D03/M01/M02/M07，既有 object-default walk 属性支持有限链到已接受 byte/binary 组件，保 ByteArray、有符号数组 wire、逐字节 Pointer、fresh arrays、nearest nullable、原 source/export 与预算；required/Patch/discarded 先验证。新引用图、byte bounds/uniqueItems、native/valueclass/enum 和 hop/terminal default 仍独立；有效 API/wire/锁无迁移。
