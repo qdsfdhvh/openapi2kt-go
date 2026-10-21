@@ -20,6 +20,8 @@
 
 An optional ordinary field gets a typed initializer that decodes the canonical JSON through the actual final DTO serializer, for example `val cfg: Cfg? = `openapi-kt model default org.example.models.HolderDto Cfg`("{...}")`. Missing JSON uses the default, a supplied value replaces it and explicit JSON null remains null when the field is explicitly nullable. Every default evaluation produces a fresh tree. A required field validates the same annotation but keeps its constructor argument without an initializer; optional explicitly nullable inline request fields keep `Patch.Absent`, and a missing request key never becomes an update. Required/nullable/Patch and `explicitNulls = false` behavior mirrors the collection profile and [request presence](request-presence.md).
 
+Referenced collection members also support [scalar alias elements](allof-object-defaults.md#scalar-alias-elements) along already-admitted finite named/internal reference chains, preserving nearest nullable intent and the original leaf/value contracts.
+
 ## Admission and source fidelity
 
 Only a direct ordinary DTO field's own `default` grants this role, and only when the field schema is a plain inline object: `type` may be explicit `"object"` or inferred from a non-empty `properties` map. Rejected sub-constructs keep their original diagnostics at the same or a more precise original Pointer. Excluded here:

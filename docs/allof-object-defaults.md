@@ -390,6 +390,17 @@ Required/Patch/discarded annotations validate this element intent before initial
 **Compatibility correction:** valid null elements under an explicit true now generate. Null elements/values under an explicit false now fail with `E_SCHEMA_INVALID` at their original consuming default Pointer, including previously accepted suppressed annotations. Existing valid non-null call sites, wire behavior and persisted lock formats require no migration; regenerate affected inputs after correcting invalid null defaults. This aligns the bounded M02/M03/M04/M07/M08 and D03 member validation with the existing typed contract rather than admitting new graphs.
 
 
+### Scalar alias elements
+
+A referenced List/typed Map member may use a finite transparent local `$ref` chain for its scalar element/value, when that same chain already generates without the enclosing object default. For example, `member → Rows`, `Rows.items → Alias`, `Alias → Day` accepts an annotation such as `["2024-02-29"]` when `Day` is an admitted date leaf. Named and internal hops may mix, retaining the original source identity at every hop. This does not admit new reference types or bypass their existing validation-on requirements.
+
+Terminals reuse the existing builtin scalar (including UUID), date/date-time, signed byte/binary and String/native enum planners. Non-null values satisfy the original kind, vocabulary and retained bounds; numeric enum membership is checked before floating-point mapping. An element reference's explicit nullable intent takes precedence, then the nearest explicit alias intent, then the terminal intent. Container nullability remains independent. The actual generated collection type, enum classifier and enclosing serializer remain authoritative.
+
+Every original hop consumes the existing shared schema-work budget and source depth; original source/check Pointers and the enclosing value/byte budgets are preserved. Empty or omitted members still validate the entire source. Defaults on hops or terminals, element-owned defaults, inter-container aliases and other composition/union/native/value-class roles retain their separate exclusions. Required/Patch/discarded annotations validate before initializer suppression. Collection component factories and standalone field-default roles gain no additional permission.
+
+The [core acceptance, nullable, value and exclusion tests](../core/scalar_alias_collection_object_default_members_test.go), [source/check/depth/work tests](../internal/schema/scalar_alias_collection_object_default_members_test.go) and [native parity/check/failure preservation tests](../internal/cli/scalar_alias_collection_object_default_members_process_test.go) define admission. The nested-object fixture and consumer exercise temporal, String/native enum and bytes alias elements through fresh Data/Plain × validation profiles, four Json settings, independent arrays, optimized/locked defaults, Patch and HTTP/SSE. This additive D03/M01/M02/M03/M07/M08 role requires no migration for previously accepted inputs; unannotated declarations, call sites, wire behavior and persisted lock formats stay unchanged.
+
+
 ## Bounded admission
 
 Inline fields and references to eligible named or internal constructor Models apply in ordinary shared/response/request DTOs. These remain separate:

@@ -69,6 +69,8 @@ private fun nestedObjectBody(body: OutgoingContent): String = when (body) {
 }
 
 private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMapOf(
+    "aliasBytesRows" to value?.aliasBytesRows?.map { it?.toList() },
+    "aliasNativeValues" to value?.aliasNativeValues,
     "wideTimes" to value?.wideTimes, "narrowDays" to value?.narrowDays,
     "wideModes" to value?.wideModes, "narrowModes" to value?.narrowModes,
     "nativeInt" to value?.nativeInt, "nativeIntNull" to value?.nativeIntNull,
@@ -229,6 +231,9 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     check(value.cfg?.viaChain == other.cfg?.viaChain && value.cfg?.viaChain !== other.cfg?.viaChain)
     check(value.cfg?.viaChain?.child !== other.cfg?.viaChain?.child)
     check(value.cfg?.viaNamedChain == other.cfg?.viaNamedChain && value.cfg?.viaNamedChain !== other.cfg?.viaNamedChain)
+    check(value.cfg?.aliasBytesRows !== other.cfg?.aliasBytesRows)
+    check(value.cfg?.aliasBytesRows?.first() !== other.cfg?.aliasBytesRows?.first())
+    check(value.cfg?.aliasNativeValues !== other.cfg?.aliasNativeValues)
     check(value.cfg?.owned == other.cfg?.owned && value.cfg?.owned !== other.cfg?.owned)
     check(value.cfg?.owned?.child !== other.cfg?.owned?.child)
     check(value.cfg?.ownedRow == other.cfg?.ownedRow && value.cfg?.ownedRow !== other.cfg?.ownedRow)
@@ -334,8 +339,12 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         val missing = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"}}""")
         check(nestedObjectHolderFields(missing) == nestedObjectHolderFields(value))
         check(missing.cfg?.enumChain === MemberStatusDto.ON && missing.cfg?.enumInternal === ScalarMemberSourceDto.Code.LEFT)
+        check(missing.cfg?.aliasBytesRows?.first()?.contentEquals(byteArrayOf(-128, 0, 127)) == true && missing.cfg?.aliasBytesRows?.get(1) == null)
+        check(missing.cfg?.aliasNativeValues == mapOf("min" to Int.MIN_VALUE, "nil" to null))
         check(missing.cfg?.wideTimes?.first() == null && missing.cfg?.wideModes?.containsKey("nil") == true)
-        val elementUpdate = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","wideTimes":[null,"2024-03-01T00:00:00Z"],"narrowDays":["2024-03-01"],"wideModes":{"nil":null,"value":"future"},"narrowModes":{"value":"future"}}}""")
+        val elementUpdate = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","aliasBytesRows":[[1,2],null],"aliasNativeValues":{"next":2,"nil":null},"wideTimes":[null,"2024-03-01T00:00:00Z"],"narrowDays":["2024-03-01"],"wideModes":{"nil":null,"value":"future"},"narrowModes":{"value":"future"}}}""")
+        check(elementUpdate.cfg?.aliasBytesRows?.first()?.contentEquals(byteArrayOf(1, 2)) == true && elementUpdate.cfg?.aliasBytesRows?.get(1) == null)
+        check(elementUpdate.cfg?.aliasNativeValues == mapOf("next" to 2, "nil" to null))
         check(elementUpdate.cfg?.wideTimes?.first() == null && elementUpdate.cfg?.wideTimes?.get(1)?.toString() == "2024-03-01T00:00:00Z")
         check(elementUpdate.cfg?.wideModes?.get("value") == CollectionModeDto.Unrecognized("future"))
         check(elementUpdate.cfg?.narrowModes?.get("value") == MemberStatusDto.Unrecognized("future"))

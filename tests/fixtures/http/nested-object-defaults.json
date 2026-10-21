@@ -7,10 +7,13 @@
   "components": {
     "schemas": {
       "CollectionMode": {"type": "string", "enum": ["on", "off", "null"]},
-      "WideTimes": {"type": "array", "items": {"$ref": "#/components/schemas/TemporalInstant", "nullable": true}},
-      "NarrowDays": {"type": "array", "items": {"$ref": "#/components/schemas/TemporalDay", "nullable": false}},
-      "WideModes": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/CollectionMode", "nullable": true}},
-      "NarrowModes": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/MemberStatus", "nullable": false}},
+      "CollectionModeAlias": {"$ref": "#/components/schemas/CollectionMode"},
+      "AliasBytesRows": {"type": "array", "items": {"$ref": "#/components/schemas/MemberBytesBridge", "nullable": true}},
+      "AliasNativeValues": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/NativeMemberIntOuter", "nullable": true}},
+      "WideTimes": {"type": "array", "items": {"$ref": "#/components/schemas/TemporalInstantAlias", "nullable": true}},
+      "NarrowDays": {"type": "array", "items": {"$ref": "#/components/schemas/TemporalDayBridge", "nullable": false}},
+      "WideModes": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/CollectionModeAlias", "nullable": true}},
+      "NarrowModes": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/MemberStatusBridge", "nullable": false}},
       "NativeMemberInt": {"type": "integer", "format": "int32", "enum": [-2147483648, 1, 2]},
       "NativeMemberIntAlias": {"$ref": "#/components/schemas/NativeMemberInt"},
       "NativeMemberIntOuter": {"$ref": "#/components/schemas/NativeMemberIntAlias"},
@@ -63,6 +66,8 @@
               "name": {
                 "type": "string"
               },
+              "aliasBytesRows": {"$ref": "#/components/schemas/AliasBytesRows"},
+              "aliasNativeValues": {"$ref": "#/components/schemas/AliasNativeValues"},
               "wideTimes": {"$ref": "#/components/schemas/WideTimes"},
               "narrowDays": {"$ref": "#/components/schemas/NarrowDays"},
               "wideModes": {"$ref": "#/components/schemas/WideModes"},
@@ -251,6 +256,8 @@
             },
             "default": {
               "name": "outer",
+              "aliasBytesRows": [[-128, 0, 127], null],
+              "aliasNativeValues": {"min": -2147483648, "nil": null},
               "wideTimes": [null, "2024-02-29T01:04:05Z"],
               "narrowDays": ["2024-02-29"],
               "wideModes": {"nil": null, "value": "on", "text": "null"},

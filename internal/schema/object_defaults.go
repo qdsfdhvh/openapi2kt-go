@@ -748,6 +748,7 @@ func (a *analyzer) objectDefaultScalarCollectionNode(v *document.Value, pointer 
 	edgeSchema := get(v, edge)
 	edgePointer := naming.Pointer(pointer, edge)
 	var elementIntent *bool
+	var reference string
 	if has(edgeSchema, "$ref") {
 		// A referenced scalar/enum/temporal element keeps the existing leaf
 		// planner against the resolved source.
@@ -758,13 +759,23 @@ func (a *analyzer) objectDefaultScalarCollectionNode(v *document.Value, pointer 
 			return nil, err
 		}
 		elementIntent = nullableOverride(edgeSchema)
-		source, sourcePointer, err := a.defaultSource(text(get(edgeSchema, "$ref")), edgePointer)
+		reference = text(get(edgeSchema, "$ref"))
+		source, sourcePointer, err := a.defaultSource(reference, edgePointer)
 		if err != nil {
 			return nil, err
 		}
 		edgeSchema, edgePointer = source, sourcePointer
 	}
-	child, err := a.nestedDefaultSchema(edgeSchema, "Validation", edgePointer, nil, nil, depth+1, false)
+	var child *nestedDefaultNode
+	terminal := a.objectDefaultTransparentTerminal(edgeSchema)
+	terminalKind, _, _ := schemaType(terminal, "")
+	if has(edgeSchema, "$ref") && terminal != nil && objectDefaultTransparentLeaf(terminal, terminalKind) {
+		// Reuse the original-hop walk only for already-admitted scalar leaves;
+		// inter-container and composed elements retain their separate roles.
+		child, err = a.objectDefaultTransparentChain(edgeSchema, edgePointer, reference, depth+1)
+	} else {
+		child, err = a.nestedDefaultSchema(edgeSchema, "Validation", edgePointer, nil, nil, depth+1, false)
+	}
 	if err != nil {
 		return nil, err
 	}

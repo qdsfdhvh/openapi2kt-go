@@ -1,5 +1,7 @@
 # JSON 首期兼容矩阵
 
+[对象默认值集合中的标量别名元素](allof-object-defaults.md#scalar-alias-elements)：D03/M01/M02/M03/M07/M08，既有 List/typed Map 成员的元素支持已准入 named/internal scalar/UUID/temporal/bytes/String/native enum 有限链；保 nullable 优先级、原词表／检查／来源及共享预算，不扩张类型图或其他 default 角色，已有输入无迁移。
+
 [引用集合成员的元素可空性](allof-object-defaults.md#element-nullable-overrides)：对象默认值中的 scalar/temporal/enum/bytes List 元素与 typed Map 值按引用处显式 nullable 覆盖原终点，与既有 Kotlin 类型一致。显式 true 接纳合法 null，false 在原 default Pointer 拒绝 null，required/Patch/discarded 同样先校验；保原词表、检查、来源、预算与失败保旧，不扩张引用/default 角色。此前误接受的 false/null 注解现在拒绝，已有有效 API/wire/锁无迁移。
 
 [对象默认值中的 native enum 别名成员](nested-object-defaults.md#native-enum-alias-members)：D03/M01/M02/M03/M07/M08，既有 object-default walk 属性支持已准入的 numeric/Boolean enum 有限链，保持 Int/Long/Float/Double/Boolean 与 native wire。注解按原词表在浮点映射前严格比较；内部引用、nullable 词表及 bounds 保原 validation 准入与运行时检查，保 nearest nullable、原来源／Pointer／预算及失败保旧。新引用图、native/valueclass/const、hop/terminal/child default 仍独立；有效 API/wire/锁无迁移。

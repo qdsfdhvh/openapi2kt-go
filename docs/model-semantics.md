@@ -76,6 +76,8 @@
 
 The [P1 contract](p1-contract.md) defines the original model subset; this document records implemented model extensions. [HTTP](http-client.md), [SSE](sse.md) and [request-only Patch](request-presence.md) have their own bounded context contracts.
 
+Referenced scalar-element collection members in an object default support [finite scalar alias elements](allof-object-defaults.md#scalar-alias-elements), retaining the existing type admission, nearest nullable intent, original vocabulary/check authority and source/value budgets. Other field and component default roles remain separate.
+
 ## Primitive components
 
 Non-nullable string, boolean, integer and number components generate Kotlin typealiases using the same scalar/format resolver as inline properties. Local references to these components inline the resolved Kotlin scalar in consuming model fields, including array items and nullable references. Object and string-enum references continue to use their generated named types.
