@@ -6,6 +6,10 @@
   },
   "components": {
     "schemas": {
+      "MemberStatus": {"type": ["string", "null"], "enum": [null, "on", "off", "null"]},
+      "MemberStatusAlias": {"$ref": "#/components/schemas/MemberStatus", "nullable": false},
+      "MemberStatusBridge": {"$ref": "#/components/schemas/ScalarMemberSource/properties/statusHop"},
+      "MemberCodeAlias": {"$ref": "#/components/schemas/ScalarMemberSource/properties/codeHop"},
       "MemberBytes": {"type": ["string", "null"], "format": "byte"},
       "MemberBytesAlias": {"$ref": "#/components/schemas/MemberBytes", "nullable": false},
       "MemberBinary": {"type": "string", "format": "binary"},
@@ -17,6 +21,9 @@
       "TemporalInstantAlias": {"$ref": "#/components/schemas/TemporalInstant"},
       "TemporalDayBridge": {"$ref": "#/components/schemas/ScalarMemberSource/properties/dayHop"},
       "ScalarMemberSource": {"properties": {
+        "code": {"enum": ["left", "right", "null"]},
+        "codeHop": {"$ref": "#/components/schemas/ScalarMemberSource/properties/code", "nullable": true},
+        "statusHop": {"$ref": "#/components/schemas/MemberStatusAlias"},
         "bytesHop": {"$ref": "#/components/schemas/MemberBytesAlias"},
         "dayHop": {"$ref": "#/components/schemas/TemporalDayAlias"},
         "instantHop": {"$ref": "#/components/schemas/TemporalInstantAlias"},
@@ -40,6 +47,10 @@
               "name": {
                 "type": "string"
               },
+              "enumChain": {"$ref": "#/components/schemas/MemberStatusBridge"},
+              "enumNull": {"$ref": "#/components/schemas/MemberStatusBridge", "nullable": true},
+              "enumTextNull": {"$ref": "#/components/schemas/MemberStatusBridge"},
+              "enumInternal": {"$ref": "#/components/schemas/MemberCodeAlias"},
               "bytesChain": {"$ref": "#/components/schemas/MemberBytesBridge"},
               "bytesNull": {"$ref": "#/components/schemas/MemberBytesBridge", "nullable": true},
               "binaryChain": {"$ref": "#/components/schemas/MemberBinaryAlias"},
@@ -214,6 +225,10 @@
             },
             "default": {
               "name": "outer",
+              "enumChain": "on",
+              "enumNull": null,
+              "enumTextNull": "null",
+              "enumInternal": "left",
               "bytesChain": [-128, 0, 127],
               "bytesNull": null,
               "binaryChain": [-1, 1],
@@ -614,6 +629,7 @@
                     "type": "object",
                     "nullable": true,
                     "properties": {
+                      "enumChain": {"$ref": "#/components/schemas/MemberStatusBridge"},
                       "bytesChain": {"$ref": "#/components/schemas/MemberBytesBridge"},
                       "dayChain": {"$ref": "#/components/schemas/TemporalDayBridge"},
                       "scalarChain": {"$ref": "#/components/schemas/ScalarMemberOuter"},
@@ -630,7 +646,7 @@
                         {"properties": {"count": {"type": "integer", "default": 2}}}
                       ]}}
                     },
-                    "default": {"bytesChain": [-128, 0, 127], "dayChain": "2024-02-29", "scalarChain": "550e8400-e29b-41d4-a716-446655440000", "member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}], "collectionBridgeRows": [{"label": "bridge patch default"}], "collectionInternalRows": [{"label": "internal patch default"}], "collectionEntityRows": [{"label": "entity patch default"}]}
+                    "default": {"enumChain": "on", "bytesChain": [-128, 0, 127], "dayChain": "2024-02-29", "scalarChain": "550e8400-e29b-41d4-a716-446655440000", "member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}], "collectionBridgeRows": [{"label": "bridge patch default"}], "collectionInternalRows": [{"label": "internal patch default"}], "collectionEntityRows": [{"label": "entity patch default"}]}
                   },
                   "allOfCfg": {
                     "allOf": [

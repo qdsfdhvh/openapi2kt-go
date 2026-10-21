@@ -1,5 +1,7 @@
 # JSON 首期兼容矩阵
 
+[对象默认值中的 String enum 别名成员](nested-object-defaults.md#string-enum-alias-members)：D03/M01/M03/M07/M08，既有 object-default walk 的属性支持有限 named/internal/root bridge 链到已接受的 plain String/typeless enum。默认值严格匹配原词表，保实际 lexical classifier、null 与字符串 "null"、nearest nullable、原来源和预算；运行时未知字符串仍为 Unrecognized。新引用图、bounds/format/native/valueclass、hop/terminal/child default 仍独立，已有有效 API/wire/锁无迁移。
+
 [对象默认值中的 bytes 标量别名成员](nested-object-defaults.md#bytes-scalar-alias-members)：D03/M01/M02/M07，既有 object-default walk 属性支持有限链到已接受 byte/binary 组件，保 ByteArray、有符号数组 wire、逐字节 Pointer、fresh arrays、nearest nullable、原 source/export 与预算；required/Patch/discarded 先验证。新引用图、byte bounds/uniqueItems、native/valueclass/enum 和 hop/terminal default 仍独立；有效 API/wire/锁无迁移。
 
 [对象默认值中的 temporal 标量别名成员](nested-object-defaults.md#temporal-scalar-alias-members)：D03/M02/M07，既有 object-default walk 的属性支持有限 named/internal hop/root bridge 链到原已接受 date/date-time 组件；保 LocalDate/Instant、nearest nullable、原 source/Pointer、词法/required/Patch/discarded 与深度/工作/值预算。physical temporal 内部叶的新引用准入、bounds、enum/native/valueclass/child default 仍独立；已有有效 API/wire/锁无迁移。

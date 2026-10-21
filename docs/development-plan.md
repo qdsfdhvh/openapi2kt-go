@@ -9,7 +9,7 @@
 - **查看精确输入/API/wire 边界**：[兼容矩阵](compatibility-matrix.md)及其中链接的功能合同；有界 profile 不代表整个矩阵 ID 完成。
 - **交付当前 alpha**：[JSON 发布候选清单](json-release-checklist.md)，范围固定为现有 JSON profile、macOS ARM64 CLI 和 Kotlin/JVM。R01 范围冻结不等于 R02–R08 运行和发布门槛通过。
 
-下面架构和完整 DoD 保留为长期设计；具体 CLI/config 示例遵循现有接口。新增功能合同应同步更新剩余工作，不再在本页堆叠重复的增量状态段落。D03 的[对象默认值 builtin scalar 别名成员](nested-object-defaults.md#builtin-scalar-alias-members)已有有限链合同，保既有类型准入、nullable 和资源边界；标准 date/date-time 链另有[temporal 成员合同](nested-object-defaults.md#temporal-scalar-alias-members)，byte/binary 链另有[bytes 成员合同](nested-object-defaults.md#bytes-scalar-alias-members)，一般默认值图仍开放。
+下面架构和完整 DoD 保留为长期设计；具体 CLI/config 示例遵循现有接口。新增功能合同应同步更新剩余工作，不再在本页堆叠重复的增量状态段落。D03 的[对象默认值 builtin scalar 别名成员](nested-object-defaults.md#builtin-scalar-alias-members)已有有限链合同，保既有类型准入、nullable 和资源边界；标准 date/date-time 链另有[temporal 成员合同](nested-object-defaults.md#temporal-scalar-alias-members)，byte/binary 链另有[bytes 成员合同](nested-object-defaults.md#bytes-scalar-alias-members)，plain String/typeless enum 链另有[enum 成员合同](nested-object-defaults.md#string-enum-alias-members)，一般默认值图仍开放。
 
 ## 1. 目标与发布边界
 

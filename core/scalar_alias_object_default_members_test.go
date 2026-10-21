@@ -97,12 +97,12 @@ func TestScalarAliasObjectDefaultMemberGuards(t *testing.T) {
 			}
 		}
 	}
-	// Enum/collection alias terminals and hop defaults keep their separate roles.
+	// Preserve the historical enum/date inputs as graduated member cases.
+	// Collection terminals and hop defaults keep their separate roles.
 	for _, target := range []string{`{"type":"string","enum":["x"]}`, `{"type":"string","format":"date"}`, `{"type":"array","items":{"type":"string"}}`} {
-		// Preserve the historical date input as a graduated temporal member case.
-		if target == `{"type":"string","format":"date"}` {
+		if target == `{"type":"string","format":"date"}` || target == `{"type":"string","enum":["x"]}` {
 			if got, err := core.GenerateWithDiagnostics(request(scalarAliasMemberDocument(target, allOfMemberHops, `{"$ref":"#/components/schemas/Bridge"}`, `{}`), "Dto")); err != nil || len(got.Artifacts.Files) == 0 {
-				t.Fatal("temporal member graduation", err)
+				t.Fatal("enum/temporal member graduation", err)
 			}
 			continue
 		}

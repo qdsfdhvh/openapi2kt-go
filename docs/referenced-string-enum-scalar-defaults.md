@@ -1,5 +1,7 @@
 # Referenced String enum scalar field defaults
 
+[Enum alias members inside object defaults](nested-object-defaults.md#string-enum-alias-members) separately compose already accepted reference paths with an enclosing object annotation, retaining the actual classifier and strict original vocabulary.
+
 [Null vocabulary members](referenced-string-enum-null-member-defaults.md) separately compose this own-default role with already admitted explicitly nullable String enum vocabularies, preserving actual narrowed views and the distinction between null and `"null"`.
 
 An ordinary DTO field with a direct local `$ref` may declare its own `default` when its already accepted reference path ends at a plain, unformatted explicit or typeless String enum with a String vocabulary; one null member is admitted separately under the explicit-nullable contract linked above. Named components, existing internal chains, root aliases and nullable intent retain the resolver's admission rules. A default does not admit a new reference graph or nominal role.

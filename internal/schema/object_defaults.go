@@ -353,8 +353,8 @@ func (a *analyzer) objectDefaultConstNode(v *document.Value, pointer string) (*n
 }
 
 // objectDefaultTransparentTerminal routes finite transparent `$ref` chains to
-// plain objects or builtin/temporal/bytes scalars, without consuming the source-work
-// budget. Routing only; the walk below keeps the full identity and work checks.
+// plain objects or builtin/temporal/bytes/plain String enum leaves, without
+// consuming the source-work budget. The walk below keeps identity/work checks.
 func (a *analyzer) objectDefaultTransparentTerminal(v *document.Value) *document.Value {
 	for depth := 0; depth <= MaxSchemaDepth && has(v, "$ref"); depth++ {
 		source, _, err := a.defaultSource(text(get(v, "$ref")), "")
@@ -364,15 +364,15 @@ func (a *analyzer) objectDefaultTransparentTerminal(v *document.Value) *document
 		v = source
 	}
 	kind, _, _ := schemaType(v, "")
-	if objectDefaultCandidateSchema(v) || isBuiltinScalarFactoryRoot(v, kind) || isTemporalScalarRoot(v, kind) || isBytesScalarRoot(v, kind) {
+	if objectDefaultCandidateSchema(v) || isBuiltinScalarFactoryRoot(v, kind) || isTemporalScalarRoot(v, kind) || isBytesScalarRoot(v, kind) || enumNominalCandidate(v) {
 		return v
 	}
 	return nil
 }
 
 // objectDefaultTransparentChain follows a finite chain of transparent local
-// `$ref`s ending in a plain object or builtin/temporal/bytes scalar. It keeps every original hop
-// and the nearest explicit nullable intent, mirroring the consuming-field role.
+// `$ref`s ending in a plain object or builtin/temporal/bytes/plain String enum
+// leaf. It keeps every original hop and nearest explicit nullable intent.
 // The caller has already confirmed the terminal with
 // objectDefaultTransparentTerminal, so every other role keeps its own walk.
 func (a *analyzer) objectDefaultTransparentChain(v *document.Value, pointer, reference string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
@@ -383,9 +383,9 @@ func (a *analyzer) objectDefaultTransparentChain(v *document.Value, pointer, ref
 		}
 		owner := a.componentsByOriginalSchema(v)
 		kind, _, _ := schemaType(v, pointer)
-		scalar := isBuiltinScalarFactoryRoot(v, kind) || isTemporalScalarRoot(v, kind) || isBytesScalarRoot(v, kind)
-		if owner == nil && (has(v, "$ref") || scalar) {
-			// An internal hop or scalar terminal keeps its original source identity.
+		leaf := isBuiltinScalarFactoryRoot(v, kind) || isTemporalScalarRoot(v, kind) || isBytesScalarRoot(v, kind) || enumNominalCandidate(v)
+		if owner == nil && (has(v, "$ref") || leaf) {
+			// An internal hop or leaf keeps its original source identity.
 			if err := a.internalDefaultMemberSource(v, pointer, reference); err != nil {
 				return nil, err
 			}
@@ -395,7 +395,9 @@ func (a *analyzer) objectDefaultTransparentChain(v *document.Value, pointer, ref
 		if !has(v, "$ref") {
 			var node *nestedDefaultNode
 			var err *diagnostic.Diagnostic
-			if scalar {
+			if leaf {
+				// Validation borrows the original vocabulary; the ordinary field
+				// planner remains the sole authority for the actual enum classifier.
 				node, err = a.nestedDefaultSchema(v, "Validation", pointer, nil, nil, depth, false)
 			} else if objectDefaultCandidateSchema(v) {
 				node, err = a.objectDefaultNode(v, pointer, depth, false)
@@ -437,8 +439,8 @@ func (a *analyzer) objectDefaultTransparentChain(v *document.Value, pointer, ref
 // objectDefaultPropertyReference resolves an object property's direct local
 // `$ref`. Plain object and named/internal ordinary allOf targets recurse as
 // objects; finite named/internal allOf chains preserve original hops and nullable
-// intent. Builtin, temporal and bytes chains share that original-hop walk; other terminal
-// roles remain separate.
+// intent. Builtin, temporal, bytes and plain String enum chains share that walk;
+// other terminal roles remain separate.
 func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	if err := checkKeys(v, []string{"$ref", "nullable", "default"}, pointer); err != nil {
 		return nil, err
