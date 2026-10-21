@@ -25,6 +25,8 @@
       "Flags": {
         "$ref": "#/components/schemas/Source/properties/flags"
       },
+      "NarrowCodeRows": {"type": "array", "items": {"$ref": "#/components/schemas/Source/properties/physical", "nullable": false}},
+      "WideCodeMap": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Code", "nullable": true}},
       "PhysicalAlias": {"$ref": "#/components/schemas/Source/properties/physicalHop"},
       "Record": {
         "properties": {
@@ -32,9 +34,11 @@
             "properties": {
               "value": {"$ref": "#/components/schemas/Alias"},
               "nil": {"$ref": "#/components/schemas/NonNullBridge", "nullable": true},
-              "borrowed": {"$ref": "#/components/schemas/PhysicalAlias"}
+              "borrowed": {"$ref": "#/components/schemas/PhysicalAlias"},
+              "rows": {"$ref": "#/components/schemas/NarrowCodeRows"},
+              "values": {"$ref": "#/components/schemas/WideCodeMap"}
             },
-            "default": {"value": 4, "nil": null, "borrowed": 2}
+            "default": {"value": 4, "nil": null, "borrowed": 2, "rows": [2, 4], "values": {"nil": null, "value": 2}}
           },
           "code": {
             "$ref": "#/components/schemas/Alias"

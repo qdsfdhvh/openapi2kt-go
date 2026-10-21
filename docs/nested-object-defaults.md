@@ -33,6 +33,8 @@ Every declared property is checked, including when the default object omits it, 
 
 The planner borrows the original schema and value nodes; it never rewrites the source. Canonical JSON sorts object keys with the same rule as typed dictionaries, but validation runs in original member order so diagnostics keep their source precedence. Success behavior therefore ignores key reordering and mapped Float/Double spelling, while changing an effective value, a nullable layer or a retained check changes the final shape seen by deduplication, merging, hoisting and name locks. The helper binds the final actual nominal TypeRef after relocation; a nested type is never spelled with a stale short name.
 
+Referenced scalar collection members preserve [element nullable overrides](allof-object-defaults.md#element-nullable-overrides): explicit true/false on the element reference controls default nulls independently of container intent, using the same nullable view as the existing generated Kotlin type.
+
 ## Builtin scalar alias members
 
 A property inside an accepted object-default walk may follow a finite transparent local `$ref` chain to an existing builtin scalar. Named aliases, internal hops and root bridges keep each original schema node, Pointer and source catalog. Terminals are unformatted String/Boolean/Integer/Number, String `format: uuid`, integer `int32`/`int64` and number `float`/`double`. UUID uses native `kotlin.uuid.Uuid`, lexical validation and canonical-text checks from the [UUID contract](nullable-uuid.md).

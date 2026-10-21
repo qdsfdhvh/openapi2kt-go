@@ -747,12 +747,17 @@ func (a *analyzer) objectDefaultScalarCollectionNode(v *document.Value, pointer 
 	}
 	edgeSchema := get(v, edge)
 	edgePointer := naming.Pointer(pointer, edge)
+	var elementIntent *bool
 	if has(edgeSchema, "$ref") {
 		// A referenced scalar/enum/temporal element keeps the existing leaf
 		// planner against the resolved source.
 		if err := checkKeys(edgeSchema, []string{"$ref", "nullable"}, edgePointer); err != nil {
 			return nil, err
 		}
+		if _, _, err := schemaType(edgeSchema, edgePointer); err != nil {
+			return nil, err
+		}
+		elementIntent = nullableOverride(edgeSchema)
 		source, sourcePointer, err := a.defaultSource(text(get(edgeSchema, "$ref")), edgePointer)
 		if err != nil {
 			return nil, err
@@ -762,6 +767,14 @@ func (a *analyzer) objectDefaultScalarCollectionNode(v *document.Value, pointer 
 	child, err := a.nestedDefaultSchema(edgeSchema, "Validation", edgePointer, nil, nil, depth+1, false)
 	if err != nil {
 		return nil, err
+	}
+	// Resolving the source must not erase the element reference's nearer
+	// nullable view. Keep its original vocabulary, checks and source Pointer.
+	if elementIntent != nil {
+		child.ty = child.ty.WithoutRootNull()
+		if *elementIntent {
+			child.ty = child.ty.Null()
+		}
 	}
 	ty.Element = &child.ty
 	checked, err := a.checkedCollection(ty, v, pointer)

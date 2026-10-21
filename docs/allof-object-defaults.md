@@ -379,6 +379,17 @@ Element values reuse the existing nested collection leaf planner: the resolved t
 [Core member/nullable/guard tests](../core/referenced_collection_allof_object_default_members_test.go), [original container/element source checks](../internal/schema/referenced_collection_object_members_test.go) and [native parity/check/failure preservation](../internal/cli/referenced_allof_object_default_members_process_test.go) define admission. The nested-object feature adds a referenced temporal List with fresh defaults and element diagnostics across Data/Plain × validation.
 
 
+### Element nullable overrides
+
+For these referenced scalar-element collection members, an explicit `nullable` on the element's `$ref` (`items` or `additionalProperties`) overrides the terminal schema's nullable intent. The default validator uses the same element/value view as the existing generated Kotlin type. For example, a non-null date target referenced with `nullable:true` admits `[null,"2024-02-29"]` in a List member; an intrinsically nullable date referenced with `nullable:false` rejects null elements. The same rule applies to typed Map values, including escaped key Pointers.
+
+Omitting the reference override retains the terminal intent. Container nullability and incidental optional-property nullability do not widen an element. Source null enum members do not bypass an explicit false, and the String `"null"` remains a non-null enum member only when present in its original vocabulary. Non-null values still satisfy the complete original leaf kind, vocabulary and retained checks. Source nodes, declaration authority, resource accounting and existing reference/default-role exclusions remain unchanged.
+
+Required/Patch/discarded annotations validate this element intent before initializer suppression. The [core regression matrix](../core/object_default_collection_element_nullability_test.go), [original source/check and budget assertions](../internal/schema/object_default_collection_element_nullability_test.go), [native parity/failure preservation](../internal/cli/object_default_collection_element_nullability_process_test.go) and existing `nested-object-defaults` / checked `named-native-enums` fixtures and consumers define the behavior across List/Map, Data/Plain, four Json settings, optimized/locked types, Patch and HTTP/SSE.
+
+**Compatibility correction:** valid null elements under an explicit true now generate. Null elements/values under an explicit false now fail with `E_SCHEMA_INVALID` at their original consuming default Pointer, including previously accepted suppressed annotations. Existing valid non-null call sites, wire behavior and persisted lock formats require no migration; regenerate affected inputs after correcting invalid null defaults. This aligns the bounded M02/M03/M04/M07/M08 and D03 member validation with the existing typed contract rather than admitting new graphs.
+
+
 ## Bounded admission
 
 Inline fields and references to eligible named or internal constructor Models apply in ordinary shared/response/request DTOs. These remain separate:

@@ -6,6 +6,11 @@
   },
   "components": {
     "schemas": {
+      "CollectionMode": {"type": "string", "enum": ["on", "off", "null"]},
+      "WideTimes": {"type": "array", "items": {"$ref": "#/components/schemas/TemporalInstant", "nullable": true}},
+      "NarrowDays": {"type": "array", "items": {"$ref": "#/components/schemas/TemporalDay", "nullable": false}},
+      "WideModes": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/CollectionMode", "nullable": true}},
+      "NarrowModes": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/MemberStatus", "nullable": false}},
       "NativeMemberInt": {"type": "integer", "format": "int32", "enum": [-2147483648, 1, 2]},
       "NativeMemberIntAlias": {"$ref": "#/components/schemas/NativeMemberInt"},
       "NativeMemberIntOuter": {"$ref": "#/components/schemas/NativeMemberIntAlias"},
@@ -58,6 +63,10 @@
               "name": {
                 "type": "string"
               },
+              "wideTimes": {"$ref": "#/components/schemas/WideTimes"},
+              "narrowDays": {"$ref": "#/components/schemas/NarrowDays"},
+              "wideModes": {"$ref": "#/components/schemas/WideModes"},
+              "narrowModes": {"$ref": "#/components/schemas/NarrowModes"},
               "nativeInt": {"$ref": "#/components/schemas/NativeMemberIntOuter"},
               "nativeIntNull": {"$ref": "#/components/schemas/NativeMemberIntOuter", "nullable": true},
               "nativeLong": {"$ref": "#/components/schemas/NativeMemberLongAlias"},
@@ -242,6 +251,10 @@
             },
             "default": {
               "name": "outer",
+              "wideTimes": [null, "2024-02-29T01:04:05Z"],
+              "narrowDays": ["2024-02-29"],
+              "wideModes": {"nil": null, "value": "on", "text": "null"},
+              "narrowModes": {"value": "on", "text": "null"},
               "nativeInt": -2147483648,
               "nativeIntNull": null,
               "nativeLong": 9223372036854775807,
@@ -652,6 +665,7 @@
                     "type": "object",
                     "nullable": true,
                     "properties": {
+                      "wideTimes": {"$ref": "#/components/schemas/WideTimes"},
                       "nativeInt": {"$ref": "#/components/schemas/NativeMemberIntOuter"},
                       "enumChain": {"$ref": "#/components/schemas/MemberStatusBridge"},
                       "bytesChain": {"$ref": "#/components/schemas/MemberBytesBridge"},
@@ -670,7 +684,7 @@
                         {"properties": {"count": {"type": "integer", "default": 2}}}
                       ]}}
                     },
-                    "default": {"nativeInt": 1, "enumChain": "on", "bytesChain": [-128, 0, 127], "dayChain": "2024-02-29", "scalarChain": "550e8400-e29b-41d4-a716-446655440000", "member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}], "collectionBridgeRows": [{"label": "bridge patch default"}], "collectionInternalRows": [{"label": "internal patch default"}], "collectionEntityRows": [{"label": "entity patch default"}]}
+                    "default": {"wideTimes": [null, "2024-02-29T01:04:05Z"], "nativeInt": 1, "enumChain": "on", "bytesChain": [-128, 0, 127], "dayChain": "2024-02-29", "scalarChain": "550e8400-e29b-41d4-a716-446655440000", "member": {"label": "patch default"}, "owned": {"label": "owned patch default"}, "chained": {"label": "chain patch default"}, "rows": [{"label": "rows patch default"}], "refs": [{"label": "refs patch default"}], "namedRows": [{"label": "named patch default"}], "collectionBridgeRows": [{"label": "bridge patch default"}], "collectionInternalRows": [{"label": "internal patch default"}], "collectionEntityRows": [{"label": "entity patch default"}]}
                   },
                   "allOfCfg": {
                     "allOf": [

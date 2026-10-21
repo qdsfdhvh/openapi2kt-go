@@ -33,10 +33,12 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.datetime.LocalDate
 import org.example.nestedobject.NestedObject
 import org.example.nestedobject.api.models.PatchHolderInputDto
 import org.example.nestedobject.api.models.WatchHoldersEventDto
 import org.example.nestedobject.models.HolderDto
+import org.example.nestedobject.models.CollectionModeDto
 import org.example.nestedobject.models.MemberStatusDto
 import org.example.nestedobject.models.Patch
 import org.example.nestedobject.models.PatchInputDto
@@ -67,6 +69,8 @@ private fun nestedObjectBody(body: OutgoingContent): String = when (body) {
 }
 
 private fun nestedObjectCfg(value: HolderDto.Cfg?): Map<String, Any?> = linkedMapOf(
+    "wideTimes" to value?.wideTimes, "narrowDays" to value?.narrowDays,
+    "wideModes" to value?.wideModes, "narrowModes" to value?.narrowModes,
     "nativeInt" to value?.nativeInt, "nativeIntNull" to value?.nativeIntNull,
     "nativeLong" to value?.nativeLong, "nativeFloat" to value?.nativeFloat,
     "nativeDouble" to value?.nativeDouble, "nativeFlag" to value?.nativeFlag,
@@ -120,6 +124,14 @@ private fun nestedObjectFresh(left: Any?, right: Any?) {
 
 suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
     val value = HolderDto(requiredCfg = HolderDto.RequiredCfg(id = "x"))
+    check(value.cfg?.wideTimes?.size == 2 && value.cfg?.wideTimes?.first() == null)
+    check(value.cfg?.wideTimes?.get(1)?.toString() == "2024-02-29T01:04:05Z")
+    val narrowedDays: List<LocalDate> = value.cfg?.narrowDays ?: error("Missing narrowed dates")
+    check(narrowedDays.single().toString() == "2024-02-29")
+    check(value.cfg?.wideModes?.containsKey("nil") == true && value.cfg?.wideModes?.get("nil") == null)
+    check(value.cfg?.wideModes?.get("value") === CollectionModeDto.ON && value.cfg?.wideModes?.get("text")?.serialName == "null")
+    val narrowedModes: Map<String, MemberStatusDto> = value.cfg?.narrowModes ?: error("Missing narrowed enums")
+    check(narrowedModes["value"] === MemberStatusDto.ON && narrowedModes["text"]?.serialName == "null")
     check(value.cfg?.nativeInt == Int.MIN_VALUE && value.cfg?.nativeIntNull == null)
     check(value.cfg?.nativeLong == Long.MAX_VALUE && value.cfg?.nativeFloat == 1.5f)
     check(value.cfg?.nativeDouble == 1.25 && value.cfg?.nativeFlag == true)
@@ -322,6 +334,14 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         val missing = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"}}""")
         check(nestedObjectHolderFields(missing) == nestedObjectHolderFields(value))
         check(missing.cfg?.enumChain === MemberStatusDto.ON && missing.cfg?.enumInternal === ScalarMemberSourceDto.Code.LEFT)
+        check(missing.cfg?.wideTimes?.first() == null && missing.cfg?.wideModes?.containsKey("nil") == true)
+        val elementUpdate = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","wideTimes":[null,"2024-03-01T00:00:00Z"],"narrowDays":["2024-03-01"],"wideModes":{"nil":null,"value":"future"},"narrowModes":{"value":"future"}}}""")
+        check(elementUpdate.cfg?.wideTimes?.first() == null && elementUpdate.cfg?.wideTimes?.get(1)?.toString() == "2024-03-01T00:00:00Z")
+        check(elementUpdate.cfg?.wideModes?.get("value") == CollectionModeDto.Unrecognized("future"))
+        check(elementUpdate.cfg?.narrowModes?.get("value") == MemberStatusDto.Unrecognized("future"))
+        check(nestedObjectHolderFields(codec.decodeFromJsonElement(HolderDto.serializer(), codec.encodeToJsonElement(HolderDto.serializer(), elementUpdate))) == nestedObjectHolderFields(elementUpdate))
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","narrowDays":[null]}}""") }.isFailure)
+        check(runCatching { codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"x"},"cfg":{"name":"n","narrowModes":{"k":null}}}""") }.isFailure)
         val overridden = codec.decodeFromString<HolderDto>("""{"requiredCfg":{"id":"y"},"cfg":{"name":"z"}}""")
         check(overridden.requiredCfg.id == "y" && overridden.cfg?.name == "z" && overridden.cfg?.age == 7 && overridden.cfg?.child?.flag == true)
         check(overridden.cfg?.composed?.label == "member" && overridden.cfg?.composed?.count == 2)
@@ -523,10 +543,11 @@ suspend fun nestedObjectDefaultsContracts(checked: Boolean) {
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["cfg"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["allOfCfg"] === JsonNull)
         check((codec.encodeToJsonElement(PatchHolderInputDto.serializer(), cleared) as JsonObject)["aliasCfg"] === JsonNull)
-        val aliasUpdate = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"nativeInt":2,"enumChain":"off","bytesChain":[1,2],"dayChain":"2024-03-01","member":{"label":"update"},"owned":{"label":"owned update"},"chained":{"label":"chain update"},"rows":[{"label":"rows update"}],"refs":[{"label":"refs update"}],"namedRows":[{"label":"named update"}],"collectionBridgeRows":[{"label":"bridge update"}],"collectionInternalRows":[{"label":"internal update"}],"collectionEntityRows":[{"label":"entity update"}]}}""").aliasCfg
+        val aliasUpdate = codec.decodeFromString<PatchHolderInputDto>("""{"required":null,"aliasCfg":{"wideTimes":[null,"2024-03-01T00:00:00Z"],"nativeInt":2,"enumChain":"off","bytesChain":[1,2],"dayChain":"2024-03-01","member":{"label":"update"},"owned":{"label":"owned update"},"chained":{"label":"chain update"},"rows":[{"label":"rows update"}],"refs":[{"label":"refs update"}],"namedRows":[{"label":"named update"}],"collectionBridgeRows":[{"label":"bridge update"}],"collectionInternalRows":[{"label":"internal update"}],"collectionEntityRows":[{"label":"entity update"}]}}""").aliasCfg
         check(aliasUpdate is Patch.Value && aliasUpdate.value.member?.label == "update" && aliasUpdate.value.member?.count == 2)
         check(aliasUpdate.value.enumChain === MemberStatusDto.OFF)
         check(aliasUpdate.value.nativeInt == 2)
+        check(aliasUpdate.value.wideTimes?.size == 2 && aliasUpdate.value.wideTimes?.first() == null)
         check(aliasUpdate.value.bytesChain?.contentEquals(byteArrayOf(1, 2)) == true)
         check(aliasUpdate.value.dayChain?.toString() == "2024-03-01")
         check(aliasUpdate.value.owned?.label == "owned update" && aliasUpdate.value.owned?.child?.flag == true)

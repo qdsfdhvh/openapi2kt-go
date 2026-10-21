@@ -57,6 +57,12 @@ suspend fun namedNativeEnumContracts() {
         check(codec.decodeFromString<RecordDto>(codec.encodeToString(value)) == value)
         check(value.defaulted == 2)
         check(value.nativeCfg?.value == 4 && value.nativeCfg?.nil == null && value.nativeCfg?.borrowed == 2)
+        val narrowedRows: List<Int> = value.nativeCfg?.rows ?: error("Missing narrowed rows")
+        check(narrowedRows == listOf(2, 4))
+        check(value.nativeCfg?.values?.containsKey("nil") == true && value.nativeCfg?.values?.get("nil") == null)
+        check(value.nativeCfg?.values?.get("value") == 2)
+        check(runCatching { codec.decodeFromString<RecordDto>("""{"code":2,"nativeCfg":{"rows":[null]}}""") }.isFailure)
+        check(runCatching { RecordDto.NativeCfg(values = mapOf("k" to 3)) }.isFailure)
         val memberDefault = codec.decodeFromString<RecordDto>("""{"code":2}""").nativeCfg
         check(memberDefault?.value == 4 && memberDefault?.borrowed == 2)
         val replaced = codec.decodeFromString<RecordDto>("""{"code":2,"nativeCfg":{"value":2,"borrowed":4}}""")
