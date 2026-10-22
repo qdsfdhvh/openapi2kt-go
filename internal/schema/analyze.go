@@ -158,7 +158,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 				kind = "union"
 			}
 		}
-		if hasObjectCounts(v) && (kind != "object" || nullable && !dictionarySchema(v) && !(a.options.Validation && directNullableDTOCountCandidate(v, pointer))) {
+		if hasObjectCounts(v) && (kind != "object" || nullable && !dictionarySchema(v) && !(a.options.Validation && (directNullableDTOCountCandidate(v, pointer) || nullableAllOfDTOCountCandidate(v, pointer)))) {
 			return nil, rejectObjectCounts(v, pointer)
 		}
 		nullableStructuredConst := nullable && structuredLiteral(v)

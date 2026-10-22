@@ -10,6 +10,7 @@ import (
 )
 
 func TestCollectionCountsGuards(t *testing.T) {
+	floatingUniqueGraduation(t, fieldDoc(`{"type":"array","items":{"type":"number"},"uniqueItems":true}`))
 	for _, tc := range []struct{ shape, key, code string }{
 		{`{"type":"array","items":{"type":"string"},"minItems":-1}`, "minItems", "E_SCHEMA_INVALID"},
 		{`{"type":"array","items":{"type":"string"},"maxItems":true}`, "maxItems", "E_SCHEMA_INVALID"},
@@ -20,7 +21,6 @@ func TestCollectionCountsGuards(t *testing.T) {
 		{`{"type":"object","additionalProperties":true,"minProperties":2,"maxProperties":1}`, "maxProperties", "E_SCHEMA_INVALID"},
 		{`{"type":"object","additionalProperties":true,"minItems":1}`, "minItems", "E_SCHEMA_UNSUPPORTED"},
 		{`{"type":"string","minItems":1}`, "minItems", "E_SCHEMA_UNSUPPORTED"},
-		{`{"type":"array","items":{"type":"number"},"uniqueItems":true}`, "uniqueItems", "E_SCHEMA_UNSUPPORTED"},
 	} {
 		aliasFailure(t, fieldDoc(tc.shape), tc.code, "/components/schemas/Record/properties/value/"+tc.key)
 	}

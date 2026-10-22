@@ -9,6 +9,19 @@ import (
 )
 
 func TestBorrowedCollectionRecursiveCoverLeavesIncomingSCCAndCheckedBudgets(t *testing.T) {
+	borrowedRecursiveCoverBudgets(t, false)
+}
+
+func TestJSONUniqueRecursiveCoverIncomingSCCAndCheckedBudgets(t *testing.T) {
+	borrowedRecursiveCoverBudgets(t, true)
+}
+
+func borrowedRecursiveCoverBudgets(t *testing.T, unique bool) {
+	t.Helper()
+	uniqueKey := ""
+	if unique {
+		uniqueKey = `,"uniqueItems":true`
+	}
 	for _, tc := range []struct {
 		catalog string
 		height  int
@@ -29,7 +42,7 @@ func TestBorrowedCollectionRecursiveCoverLeavesIncomingSCCAndCheckedBudgets(t *t
 					props = append(props, fmt.Sprintf(`%q:{"$ref":"#/components/schemas/Source/properties/%s","nullable":false}`, key, next))
 					next = key
 				}
-				props = append(props, `"rows":{"type":"array","items":{"$ref":"#/components/schemas/Source/properties/`+next+`","nullable":false}}`)
+				props = append(props, `"rows":{"type":"array","items":{"$ref":"#/components/schemas/Source/properties/`+next+`","nullable":false}`+uniqueKey+`}`)
 				use := `{"$ref":"#/components/schemas/Source/properties/rows","nullable":false}`
 				bridge := ""
 				if cached {
@@ -37,7 +50,9 @@ func TestBorrowedCollectionRecursiveCoverLeavesIncomingSCCAndCheckedBudgets(t *t
 					use = `{"$ref":"#/components/schemas/Bridge","nullable":false}`
 				}
 				input := schemas(`{` + tc.catalog + `,"Source":{"properties":{` + strings.Join(props, ",") + `}}` + bridge + `,"Holder":{"properties":{"rows":` + use + `},"required":["rows"]}}`)
-				got, err := core.GenerateWithDiagnostics(request(input, "Dto"))
+				rq := request(input, "Dto")
+				rq.Options.Validation = unique
+				got, err := core.GenerateWithDiagnostics(rq)
 				if hops == limit {
 					if err != nil {
 						t.Fatal("completegraph source48 rejected", tc.height, cached, hops, err)
@@ -53,7 +68,7 @@ func TestBorrowedCollectionRecursiveCoverLeavesIncomingSCCAndCheckedBudgets(t *t
 		for i := 0; i < depth; i++ {
 			leaf = `{"type":"array","minItems":1,"items":` + leaf + `}`
 		}
-		input := schemas(`{"Node":` + coverChainRoot("Node", "Node") + `,"Source":{"properties":{"rows":{"type":"array","minItems":1,"items":{"$ref":"#/components/schemas/Node"}}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/rows"},"Holder":{"properties":{"rows":` + leaf + `},"required":["rows"]}}`)
+		input := schemas(`{"Node":` + coverChainRoot("Node", "Node") + `,"Source":{"properties":{"rows":{"type":"array","minItems":1,"items":{"$ref":"#/components/schemas/Node"}` + uniqueKey + `}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/rows"},"Holder":{"properties":{"rows":` + leaf + `},"required":["rows"]}}`)
 		rq := request(input, "Dto")
 		rq.Options.Validation = true
 		got, err := core.GenerateWithDiagnostics(rq)

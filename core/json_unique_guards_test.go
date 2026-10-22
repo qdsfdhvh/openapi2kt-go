@@ -9,7 +9,7 @@ import (
 )
 
 func TestJSONUniqueSourceEligibilityAndLimits(t *testing.T) {
-	for _, leaf := range []string{`false`, `{"$ref":"#/components/schemas/Raw"}`, `{"x-native-type":"kotlinx.serialization.json.JsonElement"}`, `{"type":"object","additionalProperties":{"type":"string"}}`, `{"type":"object","properties":{"v":{"type":"string"}}}`} {
+	for _, leaf := range []string{`false`, `{"x-native-type":"kotlinx.serialization.json.JsonElement"}`, `{"type":"object","properties":{"v":{"type":"string"}}}`} {
 		rq := request(schemas(`{"Raw":true,"Record":{"properties":{"value":{"type":"array","items":`+leaf+`,"uniqueItems":true}}}}`), "Dto")
 		rq.Options.Validation = true
 		got, err := core.GenerateWithDiagnostics(rq)
@@ -17,6 +17,7 @@ func TestJSONUniqueSourceEligibilityAndLimits(t *testing.T) {
 			t.Fatal("type spelling granted JSON equality authority", leaf, got, err)
 		}
 	}
+	mapUniqueGraduation(t, schemas(`{"Raw":true,"Record":{"properties":{"value":{"type":"array","items":{"type":"object","additionalProperties":{"type":"string"}},"uniqueItems":true}}}}`))
 	for _, edges := range []int{16, 17} {
 		field := `{"type":"array","items":true,"uniqueItems":true}`
 		for i := 1; i < edges; i++ {

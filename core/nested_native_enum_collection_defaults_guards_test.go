@@ -135,7 +135,6 @@ func TestNestedNativeEnumCollectionDefaultsRetainedCountsBoundsAndFactors(t *tes
 		{nestedDefaultChain(2, `{"type":"number","enum":[1,2],"multipleOf":0.5}`, `[]`), "E_SCHEMA_UNSUPPORTED", "/items/items/multipleOf"},
 		{nestedDefaultChain(2, `{"type":"boolean","enum":[true],"minimum":0}`, `[]`), "E_SCHEMA_UNSUPPORTED", "/items/items/minimum"},
 		{nestedDefaultChain(2, `{"type":"integer","enum":[1],"minLength":1}`, `[]`), "E_SCHEMA_UNSUPPORTED", "/items/items/minLength"},
-		{`{"type":"array","items":{"type":"array","uniqueItems":true,"items":{"type":"integer","enum":[1]}},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/items/uniqueItems"},
 		{`{"type":"array","uniqueItems":true,"items":{"type":"array","items":{"type":"boolean","enum":[true]}},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/uniqueItems"},
 	} {
 		r := request(fieldDoc(tc.field), "Dto")

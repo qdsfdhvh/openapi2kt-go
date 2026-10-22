@@ -83,6 +83,12 @@ func TestNullableComponentDefaultGuards(t *testing.T) {
 				r := request(schemas(tc.schemas), "Dto")
 				r.Options.Validation = checked
 				got, err := core.GenerateWithDiagnostics(r)
+				if checked && tc.name == "counted nullable" {
+					if err != nil || !strings.Contains(source(t, got, "NDto"), "public fun default(): NDto? = null") {
+						t.Fatal("counted nullable null factory lost", err)
+					}
+					return
+				}
 				ds, ok := err.(core.Diagnostics)
 				if !ok || len(ds) == 0 || ds[0].Code != tc.code || ds[0].Pointer == nil || *ds[0].Pointer != tc.pointer || !reflect.DeepEqual(got, core.GenerationReport{}) {
 					t.Fatalf("%s: want %s at %s, got %v", tc.name, tc.code, tc.pointer, err)

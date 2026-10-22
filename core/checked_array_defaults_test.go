@@ -58,6 +58,7 @@ func TestCheckedPrimitiveArrayDefaultsDoNotLoseOriginalSources(t *testing.T) {
 }
 
 func TestCheckedPrimitiveArrayDefaultDiagnostics(t *testing.T) {
+	floatingUniqueGraduation(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":{"type":"number"},"default":[]}`))
 	for _, tc := range []struct{ field, code, tail string }{
 		{`{"type":"array","minItems":2,"items":{"type":"integer"},"default":[1]}`, "E_SCHEMA_INVALID", "/default"},
 		{`{"type":"array","maxItems":0,"items":{"type":"integer"},"default":[1]}`, "E_SCHEMA_INVALID", "/default"},
@@ -70,7 +71,6 @@ func TestCheckedPrimitiveArrayDefaultDiagnostics(t *testing.T) {
 		{`{"type":"array","items":{"type":"string","pattern":"^[a-z]+$"},"default":["A"]}`, "E_SCHEMA_INVALID", "/default/0"},
 		{`{"type":"array","items":{"type":"string","pattern":"."},"default":["😀"]}`, "E_SCHEMA_UNSUPPORTED", "/default/0"},
 		{`{"type":"array","items":{"type":"number","format":"float","exclusiveMinimum":1},"default":[1.000000001]}`, "E_SCHEMA_INVALID", "/default/0"},
-		{`{"type":"array","uniqueItems":true,"items":{"type":"number"},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/uniqueItems"},
 		{`{"type":"array","minItems":2,"maxItems":1,"items":{"type":"integer"},"default":[]}`, "E_SCHEMA_INVALID", "/maxItems"},
 		{`{"type":"array","minItems":-1,"items":{"type":"integer"},"default":[]}`, "E_SCHEMA_INVALID", "/minItems"},
 		{`{"type":"array","items":{"type":"integer","minimum":"bad"},"default":[]}`, "E_SCHEMA_INVALID", "/items/minimum"},

@@ -6,14 +6,15 @@ import (
 )
 
 func TestBorrowedCollectionRawTrueLeavesActualSourceAuthority(t *testing.T) {
-	for _, terminal := range []string{`{"type":"object","nullable":true}`, `{"allOf":[{"type":"object"},{"properties":{}}]}`, `true`} {
-		input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Value":` + terminal + `,"Alias":{"$ref":"#/components/schemas/Value","nullable":true},"Hops":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Alias"}}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/rows","nullable":false}}}}`)
+	for _, terminal := range []string{`{"type":"object","nullable":true}`, `{"allOf":[{"type":"object"},{"properties":{}}]}`, `{"allOf":[{"$ref":"#/components/schemas/Base"},{"properties":{}}]}`, `true`} {
+		unique := `,"uniqueItems":true`
+		input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Base":{"type":"object"},"Value":` + terminal + `,"Alias":{"$ref":"#/components/schemas/Value","nullable":true},"Hops":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Alias"}` + unique + `}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/rows","nullable":false}}}}`)
 		root, err := document.Load(input, document.JSON, "")
 		if err != nil {
 			t.Fatal(err)
 		}
 		before, _ := root.MarshalJSON()
-		a := analyzer{root: root, options: Options{PackageName: "org.example.rawtrue", Suffix: "Dto"}, components: map[string]*component{}, emissionHints: EmissionHints{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}}
+		a := analyzer{root: root, options: Options{PackageName: "org.example.rawtrue", Suffix: "Dto", Validation: true}, components: map[string]*component{}, emissionHints: EmissionHints{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}}
 		ds, err := a.analyze(root)
 		if err != nil {
 			t.Fatal(terminal, err)
@@ -65,6 +66,20 @@ func TestBorrowedCollectionRawTrueLeavesActualSourceAuthority(t *testing.T) {
 			t.Fatal("samebytes copied source authorized")
 		}
 		c.Schema = saved
+		if has(c.Schema, "allOf") {
+			members := get(c.Schema, "allOf").Items()
+			old := members[0]
+			copied, e := document.Load(before, document.JSON, "")
+			if e != nil {
+				t.Fatal(e)
+			}
+			replacement := get(get(get(get(copied, "components"), "schemas"), "Value"), "allOf").Items()[0]
+			members[0] = replacement
+			if err := a.validateBorrowedRawTrueLeaves(ds); err == nil {
+				t.Fatal("same-byte original composition member replacement authorized")
+			}
+			members[0] = old
+		}
 		if alias, ok := actual.(*ValueAlias); ok {
 			alias.Type.Serializer = "synthetic.Override"
 			if err := a.validateBorrowedRawTrueLeaves(ds); err == nil {

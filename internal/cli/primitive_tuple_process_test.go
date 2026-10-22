@@ -59,6 +59,19 @@ func TestPrimitiveTupleNativeWholeLifecycle(t *testing.T) {
 						t.Fatal("discarded invalid member changed old output")
 					}
 				}
+				put(t, p.Input, input)
+				p.change(t, func(doc map[string]any) {
+					schema := schemas(doc)["DateTuple"].(map[string]any)
+					schema["items"] = map[string]any{"type": "string"}
+					schema["prefixItems"].([]any)[1].(map[string]any)["minLength"] = 1
+				})
+				for _, extra := range [][]string{nil, {"--check"}} {
+					args := append(append([]string{}, flags...), extra...)
+					fails(t, p.generate(t, args...), 1, "E_SCHEMA_UNSUPPORTED")
+					if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("discarded invalid temporal member changed old output")
+					}
+				}
 			})
 		}
 	}

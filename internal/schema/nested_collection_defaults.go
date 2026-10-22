@@ -37,6 +37,7 @@ type nestedDefaultNode struct {
 	// nominal type binding lives with the consuming field plan.
 	object       bool
 	objectFields []objectDefaultProperty
+	objectCounts *CollectionValidation
 	// Inline primitive union leaves retain the shared declaration and validate
 	// each value against its kinds and enum/const pins.
 	union *PrimitiveUnion
@@ -359,10 +360,14 @@ func (node *nestedDefaultNode) value(v *document.Value, pointer string) (string,
 				return "", err
 			}
 			if seen != nil {
-				if seen[encoded] {
+				key := uniqueScalarDefaultKey(node.element.ty, member)
+				if uniqueMapType(node.element.ty) {
+					key = uniqueMapDefaultKey(node.element.ty, member)
+				}
+				if seen[key] {
 					return "", invalid("Default members must satisfy uniqueItems.", location)
 				}
-				seen[encoded] = true
+				seen[key] = true
 			}
 			members = append(members, encoded)
 		}

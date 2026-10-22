@@ -17,7 +17,6 @@ func TestCollectionUniqueFailureAndOwnership(t *testing.T) {
 	before := snapshot(t, p.Output)
 	for _, tc := range []struct{ old, next, code, pointer string }{
 		{`"uniqueItems": true`, `"uniqueItems": "true"`, "E_SCHEMA_INVALID", "/components/schemas/Bag/additionalProperties/uniqueItems"},
-		{`"integer"`, `"number"`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Bag/additionalProperties/uniqueItems"},
 	} {
 		old, next := []byte(tc.old), []byte(tc.next)
 		old = bytes.ReplaceAll(old, []byte(`\n`), []byte("\n"))
@@ -91,6 +90,19 @@ func TestCollectionUniqueExcludedOperationStillValidated(t *testing.T) {
 	}
 	schema := doc["paths"].(map[string]any)["/values"].(map[string]any)["post"].(map[string]any)["responses"].(map[string]any)["200"].(map[string]any)["content"].(map[string]any)["application/json"].(map[string]any)["schema"].(map[string]any)
 	schema["items"] = map[string]any{"type": "number"}
+	// The exact formerly rejected floating response now retains its check.
+	graduated, err := json.Marshal(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	accepted := newProject(t)
+	put(t, accepted.Input, graduated)
+	result(t, accepted.generate(t, "--validation"), 0)
+	result(t, accepted.generate(t, "--validation", "--check"), 0)
+	result(t, accepted.generate(t, "--validation", "--exclude-api", "UniqueApi"), 0)
+	result(t, accepted.generate(t, "--validation", "--exclude-api", "UniqueApi", "--check"), 0)
+	// Structured elements still cannot lose an unsupported uniqueness check.
+	schema["items"] = map[string]any{"type": "array", "items": map[string]any{"type": "number"}}
 	bad, err := json.Marshal(doc)
 	if err != nil {
 		t.Fatal(err)

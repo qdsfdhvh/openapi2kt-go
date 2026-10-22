@@ -11,6 +11,8 @@ func FuzzGeneratePrimitiveTuple(f *testing.F) {
 		`{"openapi":"3.1.0","components":{"schemas":{"A":{"type":"array","prefixItems":[{"type":"string"},{"type":"integer"}]}}}}`,
 		`{"openapi":"3.1.0","components":{"schemas":{"A":{"type":"array","prefixItems":[{"type":"string","minimum":0}],"items":{"type":"boolean"}}}}}`,
 		`{"openapi":"3.1.0","components":{"schemas":{"A":{"type":"array","prefixItems":[{"type":["string","null"]}],"items":false}}}}`,
+		`{"openapi":"3.1.0","components":{"schemas":{"A":{"type":"array","prefixItems":[{"type":"string","format":"date"},{"type":"string","format":"date-time"}]}}}}`,
+		`{"openapi":"3.1.0","components":{"schemas":{"A":{"type":"array","prefixItems":[{"type":"string","format":"date-time","nullable":true}],"items":{"type":"string","format":"date","nullable":true}}}}}`,
 	} {
 		f.Add([]byte(seed))
 	}

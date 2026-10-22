@@ -74,8 +74,8 @@ type Parameter struct {
 	DeepObject                 *DeepObject
 }
 
-// CollectionFormat is a wire decision, independent of Kotlin's List rendering.
-// Enum describes the scalar itself or each list element, never a whole list.
+// CollectionFormat is a wire decision, independent of Kotlin type rendering.
+// Enum describes the scalar or supported container leaf, never the container.
 type CollectionFormat uint8
 
 const (
@@ -86,6 +86,12 @@ const (
 	PipeParameter
 	IndexedParameter
 	MapParameter
+	MapCSVParameter
+	LabelParameter
+	LabelExplodedParameter
+	MatrixParameter
+	MatrixExplodedParameter
+	MapDeepObjectParameter
 )
 
 func operationUnsupported(pointer string) *diagnostic.Diagnostic {

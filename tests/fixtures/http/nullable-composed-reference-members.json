@@ -1,0 +1,402 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NullableComposedReferenceMembers",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/OriginalProduct"
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "stamp": {
+                "const": "shared"
+              }
+            },
+            "required": [
+              "ok"
+            ]
+          }
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Product"
+      },
+      "Maybe": {
+        "$ref": "#/components/schemas/Alias",
+        "nullable": true
+      },
+      "False": {
+        "$ref": "#/components/schemas/Maybe",
+        "nullable": false
+      },
+      "Box": {
+        "properties": {
+          "value": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/OriginalNested",
+                "nullable": true
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "b"
+                  },
+                  "ok": {
+                    "type": "boolean"
+                  },
+                  "stamp": {
+                    "const": "shared"
+                  }
+                },
+                "required": [
+                  "ok"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "NestedAlias": {
+        "$ref": "#/components/schemas/Box/properties/value"
+      },
+      "NestedFalse": {
+        "$ref": "#/components/schemas/NestedAlias",
+        "nullable": false
+      },
+      "Holder": {
+        "properties": {
+          "direct": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "maybe": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/False"
+          },
+          "box": {
+            "$ref": "#/components/schemas/Box"
+          }
+        },
+        "required": [
+          "direct",
+          "maybe",
+          "narrow",
+          "box"
+        ]
+      },
+      "OriginalProduct": {
+        "nullable": true,
+        "allOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          {
+            "properties": {
+              "stamp": {
+                "const": "shared"
+              }
+            }
+          }
+        ]
+      },
+      "OriginalNested": {
+        "$ref": "#/components/schemas/ComposedOwner/allOf/0/properties/node"
+      },
+      "ComposedOwner": {
+        "allOf": [
+          {
+            "properties": {
+              "node": {
+                "nullable": true,
+                "allOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "a"
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "stamp": {
+                        "const": "shared"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "extra": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "OrdinaryOwner": {
+        "properties": {
+          "plain": {
+            "properties": {
+              "kind": {
+                "const": "a"
+              },
+              "id": {
+                "type": "string"
+              },
+              "stamp": {
+                "const": "shared"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "PlainAlias": {
+        "$ref": "#/components/schemas/OrdinaryOwner/properties/plain",
+        "nullable": false
+      },
+      "BorrowedSource": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlainAlias"
+            }
+          }
+        }
+      },
+      "BorrowedRows": {
+        "$ref": "#/components/schemas/BorrowedSource/properties/rows"
+      },
+      "BorrowedUse": {
+        "properties": {
+          "values": {
+            "$ref": "#/components/schemas/BorrowedRows"
+          }
+        }
+      },
+      "DirectInternalChoice": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/OrdinaryOwner/properties/plain"
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "stamp": {
+                "const": "shared"
+              }
+            },
+            "required": [
+              "ok"
+            ]
+          }
+        ]
+      },
+      "NarrowInternalChoice": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/OrdinaryOwner/properties/plain",
+            "nullable": false
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "stamp": {
+                "const": "shared"
+              }
+            },
+            "required": [
+              "ok"
+            ]
+          }
+        ]
+      },
+      "DirectComposedChoice": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ComposedOwner/allOf/0/properties/node"
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "b"
+              },
+              "ok": {
+                "type": "boolean"
+              },
+              "stamp": {
+                "const": "shared"
+              }
+            },
+            "required": [
+              "ok"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "oneOf": [
+                      {
+                        "properties": {
+                          "kind": {
+                            "const": "a"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "stamp": {
+                            "const": "shared"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ],
+                        "nullable": true
+                      },
+                      {
+                        "properties": {
+                          "kind": {
+                            "const": "b"
+                          },
+                          "ok": {
+                            "type": "boolean"
+                          },
+                          "stamp": {
+                            "const": "shared"
+                          }
+                        },
+                        "required": [
+                          "ok"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Product"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

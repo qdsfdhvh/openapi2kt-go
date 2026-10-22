@@ -68,6 +68,12 @@ func TestNullableAllOfComponentNullFactoryGuards(t *testing.T) {
 				r := request(schemas(tc.body), "Dto")
 				r.Options.Validation = checked
 				got, err := core.GenerateWithDiagnostics(r)
+				if checked && (tc.name == "root counts" || tc.name == "member counts") {
+					if err != nil || !strings.Contains(source(t, got, "NDto"), "public fun default(): NDto? = null") {
+						t.Fatal("counted null factory lost", err)
+					}
+					return
+				}
 				ds, ok := err.(core.Diagnostics)
 				if !ok || len(ds) == 0 || ds[0].Pointer == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 					t.Fatal("null annotation bypassed source validation", err, got)

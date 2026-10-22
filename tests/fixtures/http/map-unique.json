@@ -1,0 +1,478 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MapUnique",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "DirectValues": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "nullable": true,
+          "additionalProperties": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "uniqueItems": true
+      },
+      "Values": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "nullable": true,
+          "additionalProperties": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "uniqueItems": true,
+        "nullable": true
+      },
+      "DefaultValues": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "nullable": true,
+          "additionalProperties": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "uniqueItems": true,
+        "default": [
+          {
+            "a": "one",
+            "b": null
+          },
+          null
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "directValues": {
+            "$ref": "#/components/schemas/DirectValues"
+          },
+          "values": {
+            "$ref": "#/components/schemas/Values"
+          },
+          "nested": {
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "nullable": true,
+                "additionalProperties": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "uniqueItems": true
+            }
+          },
+          "defaultDirectValues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "additionalProperties": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "uniqueItems": true,
+            "default": [
+              {
+                "a": "one",
+                "b": null
+              },
+              null
+            ]
+          },
+          "defaultValues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "additionalProperties": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "uniqueItems": true,
+            "default": [
+              {
+                "b": null,
+                "a": "one"
+              },
+              null
+            ]
+          },
+          "defaultNested": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "nullable": true,
+                "additionalProperties": {
+                  "type": "string",
+                  "nullable": true
+                }
+              },
+              "uniqueItems": true
+            },
+            "default": [
+              [
+                {
+                  "a": "one",
+                  "b": null
+                },
+                null
+              ]
+            ]
+          },
+          "bridged": {
+            "$ref": "#/components/schemas/Bridge"
+          },
+          "ints": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "nullable": true,
+                "format": "int32"
+              },
+              "nullable": true
+            }
+          },
+          "longs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "nullable": true,
+                "format": "int64"
+              },
+              "nullable": true
+            }
+          },
+          "booleans": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "boolean",
+                "nullable": true
+              },
+              "nullable": true
+            }
+          },
+          "bounded": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "additionalProperties": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              }
+            }
+          },
+          "dates": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "additionalProperties": {
+                "type": "string",
+                "format": "date",
+                "nullable": true
+              }
+            }
+          },
+          "instants": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "additionalProperties": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            }
+          },
+          "defaultInstantMaps": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "additionalProperties": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            },
+            "default": [
+              {
+                "a": "2026-01-02T05:04:05+02:00",
+                "b": null
+              },
+              null
+            ]
+          }
+        },
+        "required": [
+          "directValues"
+        ]
+      },
+      "Source": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "additionalProperties": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Source/properties/rows"
+      },
+      "InstantValues": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "nullable": true,
+          "additionalProperties": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "nullable": true
+      },
+      "DefaultIdMaps": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "nullable": true,
+          "additionalProperties": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "default": [
+          {
+            "a": "550E8400E29B41D4A716446655440000"
+          },
+          null
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/values": {
+      "post": {
+        "operationId": "values",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Values"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Values"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "directValues": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  },
+                  "values": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": {
+                        "type": "string",
+                        "nullable": true
+                      }
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  },
+                  "instants": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                      }
+                    },
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/instants": {
+      "post": {
+        "operationId": "instants",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstantValues"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstantValues"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

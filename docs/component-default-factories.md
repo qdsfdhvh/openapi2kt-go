@@ -161,7 +161,7 @@ public companion object {
 
 Eligible scalar, temporal, bytes and finite inline collection aliases use their actual nullable serializer to decode the null literal. Plain String enums retain the physical classifier and receive a top-level `X default(): X? = null`; their non-null serializers and non-null factories remain unchanged. Native enum roots keep their existing validation-on source role and factory warning.
 
-A nullable root that also declares whole-object counts keeps its separate nullable-component-counts role. Null and non-null annotations follow the precise [nullable component root contract](nullable-component-defaults.md); other nullable compositions and excluded roles receive no additional permission.
+An ordinary constructor DTO root may combine its own default factory with admitted whole-object counts when validation is enabled; the counted factory contract below preserves its separate value and codec checks. Null and non-null annotations follow the precise [nullable component root contract](nullable-component-defaults.md); other nullable compositions and excluded roles receive no additional permission.
 
 A nullable component still emits its normal nullable public type; the factory signature follows the component's own generated type, not the annotation.
 
@@ -187,3 +187,11 @@ This is an additive role for previously rejected input. Components without a `de
 - [Source authority tests](../internal/schema/component_default_factories_test.go) cover the eligible shapes, exclusion list and budget behaviour on original nodes.
 - [Native parity/preservation](../internal/cli/component_default_factories_process_test.go) checks native output, readonly `--check` and unchanged output on failure.
 - The nested-object feature fixture and Kotlin consumer call generated factories for an object, a scalar and a String-enum component, proving each form compiles and decodes to the same value as an explicitly constructed instance.
+
+## Counted DTO component factories
+
+An ordinary direct or disjoint `allOf` constructor component may declare its own `default` with admitted whole-object property counts, including explicitly nullable roots. Validation must be enabled. Direct bounds and original referenced/nested allOf contributions are validated and folded by the same model count planner. A non-null annotation must contain a permitted number of JSON members as well as satisfying the existing complete object-default grammar, required members, leaf checks and budgets. Its `default()` factory decodes that canonical JSON with the component's actual serializer. A schema-authorized null annotation returns Kotlin null directly and skips value counts, while still validating the entire source shape and every bound.
+
+Permission is scoped to this one original component's own default walk. It does not transfer through copied views, wrapper factories, consuming-field defaults, child annotations or a coincident marked target. Raw carriers/dictionaries, empty or const-only models, discarded contributions and other unaccepted object-default roles keep their existing rules. The annotation is opt-in through `default()` and is never inherited by fields or aliases. A factory value can later fail re-encoding if caller Json settings change its physical member count; constructors/copy are not wire-count barriers.
+
+[Core regressions](../core/counted_component_defaults_test.go) preserve source-role and invalid-count rejection; the existing [counted nullable DTO consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/DirectNullableComponentCountsContracts.kt) exercises null and composed object factories with fresh generated Kotlin. Existing accepted API/wire output and output metadata formats remain unchanged.

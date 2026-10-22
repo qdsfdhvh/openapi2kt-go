@@ -35,6 +35,57 @@
             ],
             "items": true,
             "uniqueItems": true
+          },
+          "referenced": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnyBridge"
+            },
+            "uniqueItems": true
+          },
+          "raw": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Raw"
+            },
+            "uniqueItems": true
+          },
+          "covered": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/CoverBridge"
+            }
+          },
+          "selfCovered": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/SelfCover"
+            }
+          },
+          "coveredMap": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/components/schemas/CoverAlias"
+              }
+            }
+          },
+          "composed": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/ComposedBridge"
+            }
+          },
+          "composedMap": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ComposedRows"
+            }
           }
         },
         "required": [
@@ -43,13 +94,195 @@
       },
       "Rows": {
         "type": "array",
-        "items": true,
+        "items": {
+          "$ref": "#/components/schemas/AnyAlias"
+        },
         "uniqueItems": true
       },
       "Holder": {
         "properties": {
           "rows": {
             "$ref": "#/components/schemas/Rows"
+          }
+        }
+      },
+      "Raw": {
+        "type": "object",
+        "nullable": true
+      },
+      "AnyValue": true,
+      "AnyAlias": {
+        "$ref": "#/components/schemas/AnyValue",
+        "nullable": true
+      },
+      "Hops": {
+        "properties": {
+          "ref": {
+            "$ref": "#/components/schemas/AnyAlias",
+            "nullable": false
+          },
+          "coverRef": {
+            "$ref": "#/components/schemas/CoverAlias",
+            "nullable": false
+          },
+          "composedRef": {
+            "$ref": "#/components/schemas/ComposedAlias",
+            "nullable": false
+          }
+        }
+      },
+      "AnyBridge": {
+        "$ref": "#/components/schemas/Hops/properties/ref"
+      },
+      "SelfCover": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SelfCover"
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SelfCover"
+            }
+          }
+        ]
+      },
+      "Cover": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToPeer"
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Peer"
+            }
+          }
+        ]
+      },
+      "Peer": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToCover"
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Cover"
+            }
+          }
+        ]
+      },
+      "ToPeer": {
+        "$ref": "#/components/schemas/Peer"
+      },
+      "ToCover": {
+        "$ref": "#/components/schemas/Cover"
+      },
+      "CoverAlias": {
+        "$ref": "#/components/schemas/Cover",
+        "nullable": true
+      },
+      "CoverBridge": {
+        "$ref": "#/components/schemas/Hops/properties/coverRef"
+      },
+      "CoveredRows": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "$ref": "#/components/schemas/CoverAlias"
+        }
+      },
+      "CoveredHolder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/CoveredRows"
+          }
+        }
+      },
+      "ComposedBase": {
+        "type": "object"
+      },
+      "ComposedRaw": {
+        "allOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ComposedBase"
+              },
+              {
+                "properties": {}
+              }
+            ]
+          },
+          {
+            "type": "object"
+          }
+        ]
+      },
+      "ComposedAlias": {
+        "$ref": "#/components/schemas/ComposedRaw",
+        "nullable": true
+      },
+      "ComposedBridge": {
+        "$ref": "#/components/schemas/Hops/properties/composedRef"
+      },
+      "ComposedRows": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "$ref": "#/components/schemas/ComposedAlias"
+        }
+      },
+      "ComposedHolder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/ComposedRows"
           }
         }
       }
@@ -67,7 +300,9 @@
                 "properties": {
                   "required": {
                     "type": "array",
-                    "items": true,
+                    "items": {
+                      "$ref": "#/components/schemas/AnyBridge"
+                    },
                     "uniqueItems": true
                   },
                   "patch": {
@@ -75,8 +310,31 @@
                       "array",
                       "null"
                     ],
-                    "items": true,
+                    "items": {
+                      "$ref": "#/components/schemas/Raw",
+                      "nullable": false
+                    },
                     "uniqueItems": true
+                  },
+                  "covered": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "uniqueItems": true,
+                    "items": {
+                      "$ref": "#/components/schemas/CoverAlias"
+                    }
+                  },
+                  "composed": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "uniqueItems": true,
+                    "items": {
+                      "$ref": "#/components/schemas/ComposedAlias"
+                    }
                   }
                 },
                 "required": [
@@ -120,6 +378,58 @@
                       }
                     }
                   ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cover": {
+      "post": {
+        "operationId": "applyCovered",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoveredRows"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoveredRows"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/composed": {
+      "post": {
+        "operationId": "applyComposed",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComposedRows"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComposedRows"
                 }
               }
             }

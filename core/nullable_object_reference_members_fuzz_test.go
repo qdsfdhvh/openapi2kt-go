@@ -11,6 +11,8 @@ import (
 func FuzzNullableObjectReferenceMembers(f *testing.F) {
 	f.Add(schemas(`{"Value":{"nullable":true,"properties":{"kind":{"const":"a"},"id":{"type":"string"}}},"Choice":{"oneOf":[{"$ref":"#/components/schemas/Value"},{"properties":{"kind":{"const":"b"}}}]}}`))
 	f.Add(schemas(`{"Value":{"properties":{"kind":{"const":"a"},"id":{"type":"string"}}},"Alias":{"$ref":"#/components/schemas/Value","nullable":true},"Choice":{"oneOf":[{"$ref":"#/components/schemas/Alias"},{"properties":{"kind":{"const":"b"}}}]}}`))
+	f.Add(schemas(`{"Value":{"nullable":true,"allOf":[{"properties":{"kind":{"const":"a"},"id":{"type":"string"}}}]},"False":{"$ref":"#/components/schemas/Value","nullable":false},"Choice":{"anyOf":[{"$ref":"#/components/schemas/False"},{"properties":{"kind":{"const":"b"}}}]}}`))
+	f.Add(schemas(`{"Box":{"properties":{"value":{"oneOf":[{"$ref":"#/components/schemas/Alias"},{"properties":{"kind":{"const":"b"}}}]}}},"Export":{"$ref":"#/components/schemas/Box/properties/value"},"Alias":{"$ref":"#/components/schemas/Owner/allOf/0/properties/node"},"Owner":{"allOf":[{"properties":{"node":{"nullable":true,"allOf":[{"properties":{"kind":{"const":"a"},"id":{"type":"string"}}}]}}}]}}`))
 	f.Fuzz(func(t *testing.T, input []byte) {
 		if len(input) > 16384 {
 			return

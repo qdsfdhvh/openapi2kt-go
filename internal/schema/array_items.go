@@ -39,7 +39,7 @@ func tupleScalar(v *document.Value, pointer string, depth int) (tupleScalarSigna
 		return tupleScalarSignature{}, err
 	}
 	format := text(get(v, "format"))
-	ordinary := kind == "string" && (format == "" || format == "uuid") || kind == "boolean" && format == "" || kind == "integer" && (format == "" || format == "int32" || format == "int64") || kind == "number" && (format == "" || format == "float" || format == "double")
+	ordinary := kind == "string" && (format == "" || format == "uuid" || format == "date" || format == "date-time") || kind == "boolean" && format == "" || kind == "integer" && (format == "" || format == "int32" || format == "int64") || kind == "number" && (format == "" || format == "float" || format == "double")
 	if !ordinary {
 		return tupleScalarSignature{}, unsupported(pointer)
 	}

@@ -49,8 +49,8 @@ func TestNestedTemporalCollectionDefaultsKeepExcludedRolesAndNoDrop(t *testing.T
 			}
 		}
 	}
+	temporalUniqueGraduation(t, fieldDoc(`{"type":"array","items":{"type":"array","items":{"type":"string","format":"date"},"uniqueItems":true},"default":[]}`))
 	for _, field := range []string{
-		`{"type":"array","items":{"type":"array","items":{"type":"string","format":"date"},"uniqueItems":true},"default":[]}`,
 		`{"type":"array","items":{"type":"array","items":{"type":"string","format":"date"},"default":[]},"default":[]}`,
 	} {
 		for _, checked := range []bool{false, true} {

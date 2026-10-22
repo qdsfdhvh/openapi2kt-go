@@ -21,7 +21,6 @@ func TestNullableAllOfDTOFinalConstructorAndShapeGuards(t *testing.T) {
 		`{"nullable":true,"allOf":[{"properties":{"pin":{"const":"fixed"}}}]}`,
 		`{"nullable":true,"allOf":[{"additionalProperties":{"type":"string"}}]}`,
 		`{"allOf":[{"nullable":true,"properties":{"id":{"type":"string"}}}]}`,
-		`{"nullable":true,"allOf":[{"properties":{"id":{"type":"string"}}}],"minProperties":1}`,
 	} {
 		for _, checked := range []bool{false, true} {
 			rq := request(schemas(`{"Value":`+body+`}`), "Dto")
@@ -35,7 +34,6 @@ func TestNullableAllOfDTOFinalConstructorAndShapeGuards(t *testing.T) {
 	value := `{"nullable":true,"allOf":[{"properties":{"id":{"type":"string"}},"required":["id"]}]}`
 	for _, tail := range []string{
 		`,"Other":{"allOf":[{"$ref":"#/components/schemas/Value","nullable":false},{"properties":{"more":{"type":"string"}}}]}`,
-		`,"Other":{"oneOf":[{"$ref":"#/components/schemas/False"},{"properties":{"ok":{"type":"boolean"}}}]}`,
 	} {
 		got, err := core.GenerateWithDiagnostics(request(schemas(`{"Value":`+value+`,"False":{"$ref":"#/components/schemas/Value","nullable":false}`+tail+`}`), "Dto"))
 		if err == nil || len(got.Artifacts.Files) != 0 {

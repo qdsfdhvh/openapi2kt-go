@@ -93,6 +93,19 @@ func emitRequestParameter(p schema.Parameter, out *strings.Builder) {
 		fmt.Fprintf(out, "            %s.forEachIndexed { index, item -> parameter(%s + index + %s, %s) }\n", receiver, naming.Literal(p.Wire+"["), naming.Literal("]"), wireParameter("item", p))
 	case schema.MapParameter:
 		fmt.Fprintf(out, "            %s.forEach { (key, value) -> parameter(key, %s) }\n", receiver, wireParameter("value", p))
+	case schema.MapDeepObjectParameter:
+		fmt.Fprintf(out, "            %s.forEach { (key, value) -> parameter(%s + key + %s, %s) }\n", receiver, naming.Literal(p.Wire+"["), naming.Literal("]"), wireParameter("value", p))
+	case schema.MapCSVParameter:
+		expr := name
+		if nullable {
+			expr = "it"
+		}
+		value := expr + ".entries.joinToString(\",\") { (key, value) -> key + \",\" + value.toString() }"
+		if nullable {
+			fmt.Fprintf(out, "            %s?.let { parameter(%s, %s) }\n", name, key, value)
+		} else {
+			fmt.Fprintf(out, "            parameter(%s, %s)\n", key, value)
+		}
 	default:
 		call := "parameter"
 		if p.Location == "header" {
@@ -112,4 +125,40 @@ func emitRequestParameter(p schema.Parameter, out *strings.Builder) {
 			fmt.Fprintf(out, "            %s(%s, %s)\n", call, key, value)
 		}
 	}
+}
+
+// Style separators remain syntax; each value is encoded as a path part before
+// assembly so slashes and reserved characters cannot alter the route.
+func styledPathParameter(p schema.Parameter) string {
+	name := naming.CodeName(p.Name)
+	value := wireParameter(name, p) + ".toString().encodeURLPathPart()"
+	isList := p.Type.WithoutRootNull().Kind == schema.List
+	key := naming.Literal(p.Wire) + ".encodeURLPathPart()"
+	if p.Type.WithoutRootNull().Kind == schema.Map {
+		item := wireParameter("value", p) + ".toString().encodeURLPathPart()"
+		entry := "key.encodeURLPathPart() + \",\" + " + item
+		separator := ","
+		switch p.Format {
+		case schema.LabelExplodedParameter:
+			entry = "key.encodeURLPathPart() + \"=\" + " + item
+			separator = "."
+		case schema.MatrixExplodedParameter:
+			return name + ".entries.joinToString(\"\") { (key, value) -> \";\" + key.encodeURLPathPart() + \"=\" + " + item + " }"
+		}
+		value = name + ".entries.joinToString(" + naming.Literal(separator) + ") { (key, value) -> " + entry + " }"
+	} else if isList {
+		separator := ","
+		if p.Format == schema.LabelExplodedParameter {
+			separator = "."
+		}
+		item := wireParameter("it", p) + ".toString().encodeURLPathPart()"
+		if p.Format == schema.MatrixExplodedParameter {
+			return name + ".joinToString(\"\") { \";\" + " + key + " + \"=\" + " + item + " }"
+		}
+		value = name + ".joinToString(" + naming.Literal(separator) + ") { " + item + " }"
+	}
+	if p.Format == schema.MatrixParameter || p.Format == schema.MatrixExplodedParameter {
+		return "\";\" + " + key + " + \"=\" + " + value
+	}
+	return "\".\" + " + value
 }

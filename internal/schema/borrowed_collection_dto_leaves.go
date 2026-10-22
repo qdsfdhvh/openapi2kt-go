@@ -181,7 +181,20 @@ func (a *analyzer) validateBorrowedDTOLeaves(ds []Declaration) *diagnostic.Diagn
 			}
 		}
 		all := matches[use.Schema]
-		if len(all) != 1 || all[0].Owner != use.Owner || all[0].Name != use.Name || a.modelPointers[all[0].Model] != use.Pointer {
+		if len(all) != 1 || all[0].Owner != use.Owner || a.modelPointers[all[0].Model] != use.Pointer {
+			return schemaReferenceUnsupported(use.Source)
+		}
+		if use.Name == "" {
+			// A composed lexical owner may be built after its first union use.
+			// Only that original deferred source and one retained declaration
+			// can supply the physical name; borrowed variant copies cannot.
+			binding := a.deferredNominals[use.Schema]
+			if binding == nil || binding.Schema != use.Schema || binding.Owner != use.Owner || binding.Pointer != use.Pointer {
+				return schemaReferenceUnsupported(use.Source)
+			}
+			use.Name = all[0].Name
+		}
+		if all[0].Name != use.Name {
 			return schemaReferenceUnsupported(use.Source)
 		}
 		if use.Actual != nil && use.Actual != all[0].Model {

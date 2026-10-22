@@ -40,6 +40,7 @@ func TestTemporalArrayDefaultsTypedPresenceAndOriginalAdmission(t *testing.T) {
 }
 
 func TestTemporalArrayDefaultsKeepInvalidMembersAndUnsupportedRoles(t *testing.T) {
+	temporalUniqueGraduation(t, fieldDoc(`{"type":"array","items":{"type":"string","format":"date"},"default":[],"uniqueItems":true}`))
 	for _, tc := range []struct{ field, code, tail string }{
 		{`{"type":"array","items":{"type":"string","format":"date"},"default":["2024-02-29","2023-02-29"]}`, "E_SCHEMA_INVALID", "/default/1"},
 		{`{"type":"array","items":{"type":"string","format":"date"},"default":["2024-13-01"]}`, "E_SCHEMA_INVALID", "/default/0"},
@@ -48,7 +49,6 @@ func TestTemporalArrayDefaultsKeepInvalidMembersAndUnsupportedRoles(t *testing.T
 		{`{"type":"array","items":{"type":"string","format":"date"},"default":[null]}`, "E_SCHEMA_INVALID", "/default/0"},
 		{`{"type":"array","items":{"type":"string","format":"date"},"default":null}`, "E_SCHEMA_INVALID", "/default"},
 		{`{"type":"array","items":{"type":"string","format":"date","minLength":1},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/items/minLength"},
-		{`{"type":"array","items":{"type":"string","format":"date"},"default":[],"uniqueItems":true}`, "E_SCHEMA_UNSUPPORTED", "/uniqueItems"},
 		{`{"type":"array","items":{"type":"string","x-native-type":"date"},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/items/x-native-type"},
 		{`{"type":"array","items":{"type":"string","format":"date","enum":["2024-02-29"]},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/items/enum"},
 	} {

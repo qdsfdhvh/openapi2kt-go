@@ -21,10 +21,16 @@ type borrowedEnumLeafUse struct {
 	Final                           bool
 }
 
-// Forward root-container traversal shares the existing catalog DFS only when
-// the original alias chain ends at an enum. Other admitted source profiles keep
-// their historical diagnostic/order policy.
+// Forward nominal-source traversal shares the existing catalog DFS before a
+// consumer caches source metadata. Only already admitted terminal profiles
+// trigger a visit; traversing DTO fields is not part of alias resolution.
 func (a *analyzer) visitBorrowedEnumAlias(reference, source string, depth int) *diagnostic.Diagnostic {
+	return a.visitBorrowedSourceAlias(reference, source, depth, false)
+}
+
+func (a *analyzer) visitBorrowedSourceAlias(reference, source string, depth int, ordinaryDTO bool) *diagnostic.Diagnostic {
+	// Nullable union members also need ordinary forward DTO aliases resolved.
+	// Existing borrowed-container callers keep their terminal/diagnostic policy.
 	if a.borrowedEnumAliasVisit == nil {
 		return nil
 	}
@@ -41,7 +47,7 @@ func (a *analyzer) visitBorrowedEnumAlias(reference, source string, depth int) *
 		seen[target.Schema] = true
 		kind, _, _ := schemaType(target.Schema, target.Pointer)
 		internalNativeEnum := a.options.Validation && target.Catalog == nil && has(target.Schema, "enum") && (kind == "integer" || kind == "number" || kind == "boolean")
-		if internalNativeEnum || enumNominalCandidate(target.Schema) || composedModelCandidate(target.Schema) || unionNominalCandidate(target.Schema) || a.hierarchySources[target.Schema] || target.Catalog != nil && (builtinPrimitiveBinding(target.Catalog) || a.options.Validation && nativeEnumBinding(target.Catalog) || temporalBinding(target.Catalog) || bigintBinding(target.Catalog) || bytesBinding(target.Catalog) || callerNativeBinding(target.Catalog) || a.rawTrueCandidate(target.Catalog) || target.Catalog.RecursiveJSON || target.Catalog.ValueClass && target.Catalog.Schema == target.Schema) {
+		if internalNativeEnum || enumNominalCandidate(target.Schema) || ordinaryDTO && directInternalModel(target.Schema, target.Pointer) || composedModelCandidate(target.Schema) || unionNominalCandidate(target.Schema) || a.hierarchySources[target.Schema] || target.Catalog != nil && (builtinPrimitiveBinding(target.Catalog) || a.options.Validation && nativeEnumBinding(target.Catalog) || temporalBinding(target.Catalog) || bigintBinding(target.Catalog) || bytesBinding(target.Catalog) || callerNativeBinding(target.Catalog) || a.rawTrueCandidate(target.Catalog) || target.Catalog.RecursiveJSON || target.Catalog.ValueClass && target.Catalog.Schema == target.Schema) {
 			return a.borrowedEnumAliasVisit(declared, depth)
 		}
 		if !has(target.Schema, "$ref") {

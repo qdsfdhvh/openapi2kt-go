@@ -30,15 +30,8 @@ func TestDirectElementValidationGuards(t *testing.T) {
 			aliasFailure(t, fieldDoc(container.schema), tc.code, "/components/schemas/Record/properties/value"+container.pointer+tc.suffix)
 		}
 	}
-	for _, schema := range []string{
-		`{"type":"array","items":{"type":"number","minimum":1},"uniqueItems":true}`,
-	} {
-		req := request(fieldDoc(schema), "")
-		req.Options.Validation = true
-		if _, err := core.Generate(req); err == nil {
-			t.Fatal("unsupported uniqueness/fixed-object cardinality silently accepted", schema)
-		}
-	}
+	floatingUniqueGraduation(t, fieldDoc(`{"type":"array","items":{"type":"number","minimum":1},"uniqueItems":true}`))
+
 	counted := fieldDoc(`{"type":"object","properties":{"v":{"type":"string"}},"minProperties":1}`)
 	countedRequest := request(counted, "Dto")
 	countedRequest.Options.Validation = true

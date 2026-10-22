@@ -119,9 +119,8 @@ func TestReferencedStringEnumCollectionFieldDefaultsExcludedSourceRolesAndNoDrop
 			}
 		}
 	}
+	stringEnumUniqueGraduation(t, referencedFieldDoc(`{"type":"array","uniqueItems":true,"items":{"type":"string","enum":["on"]}}`, `[]`, ""))
 	for _, checked := range []bool{false, true} {
-		// Enum bounds never join this profile, with or without validation.
-		stringEnumDefaultFailure(t, referencedFieldDoc(`{"type":"array","uniqueItems":true,"items":{"type":"string","enum":["on"]}}`, `[]`, ""), checked, "E_SCHEMA_UNSUPPORTED", "")
 		// Validation-only counts stay admitted and checked against the default.
 		r := request(referencedFieldDoc(`{"type":"array","maxItems":2,"items":{"type":"string","enum":["on","off"]}}`, `["on","off"]`, ""), "Dto")
 		r.Options.Validation = checked

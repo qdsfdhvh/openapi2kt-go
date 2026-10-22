@@ -72,7 +72,6 @@ func TestNestedStringEnumCollectionDefaultsNullableEmptyLongerAndBeforeSuppressi
 	for _, tc := range []struct{ field, tail string }{
 		{`{"type":"array","items":{"type":"array","items":{"enum":["one"]},"minItems":1},"default":[[]]}`, "/default/0"},
 		{`{"additionalProperties":{"additionalProperties":{"enum":["one"]},"maxProperties":0},"default":{"z":{"a/~":"one"}}}`, "/default/z"},
-		{`{"type":"array","items":{"type":"array","items":{"enum":["one"]},"uniqueItems":true},"default":[]}`, "/items/uniqueItems"},
 	} {
 		r := request(fieldDoc(tc.field), "Dto")
 		r.Options.Validation = true

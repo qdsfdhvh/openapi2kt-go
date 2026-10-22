@@ -78,7 +78,6 @@ func TestNativeEnumCollectionDefaultsCheckedBoundsAndNullVocabulary(t *testing.T
 		{`{"type":"array","items":{"type":"integer","enum":[1],"minimum":2},"default":[]}`, "E_SCHEMA_INVALID", "/items/enum"},
 		{`{"type":"array","items":{"type":"integer","enum":[1]},"minItems":1,"default":[]}`, "E_SCHEMA_INVALID", "/default"},
 		{`{"type":"object","additionalProperties":{"type":"integer","enum":[1]},"maxProperties":0,"default":{"a":1}}`, "E_SCHEMA_INVALID", "/default"},
-		{`{"type":"array","items":{"type":"integer","enum":[1]},"uniqueItems":true,"default":[1]}`, "E_SCHEMA_UNSUPPORTED", "/uniqueItems"},
 		{`{"type":"object","additionalProperties":{"type":"boolean","nullable":true,"enum":[null,true,null]},"default":{}}`, "E_SCHEMA_INVALID", "/additionalProperties/enum/2"},
 	} {
 		r := request(fieldDoc(tc.field), "Dto")

@@ -148,7 +148,7 @@ func TestStringEnumCollectionBoundsNoDropAndExcludedScopes(t *testing.T) {
 			t.Fatal("Expanded special role", leaf)
 		}
 	}
-	enumBoundsDiagnostic(t, fieldDoc(strings.Replace(field, `,"default"`, `,"uniqueItems":true,"default"`, 1)), true, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Record/properties/value/uniqueItems")
+	stringEnumUniqueGraduation(t, fieldDoc(strings.Replace(field, `,"default"`, `,"uniqueItems":true,"default"`, 1)))
 	// A reference cannot turn a checked collection DTO into an unchecked raw projection.
 	r.Document = []byte(`{"openapi":"3.1.0","components":{"schemas":{"Holder":{"properties":{"codes":` + field + `}}}},"paths":{"/raw":{"post":{"requestBody":{"content":{"application/json":{"schema":{"properties":{"raw":{"anyOf":[{"$ref":"#/components/schemas/Holder"},{"type":"boolean"}]}}}}}},"responses":{"204":{}}}}}}`)
 	if _, err := core.GenerateWithDiagnostics(r); err == nil {

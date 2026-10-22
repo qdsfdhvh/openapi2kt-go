@@ -62,7 +62,7 @@ func emitFile(declaration schema.Declaration, pkg, directory string, hints schem
 	emitNullLiteralHelper(declaration, &out)
 	emitStructuredConstHelpers(declaration, &out)
 	if declarationHasUnique(declaration) {
-		emitUniqueHelper(&out)
+		emitUniqueHelper(&out, declarationUsesUnique(declaration, floatingUniqueElement), declarationUsesUnique(declaration, mapUniqueElement))
 	}
 	if declarationHasJSONUnique(declaration) {
 		emitJSONUniqueHelper(&out)

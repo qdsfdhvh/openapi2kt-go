@@ -1,19 +1,31 @@
 package schema
 
 import (
+	"strings"
 	"testing"
 
 	"openapi-kt/internal/document"
 )
 
 func TestBorrowedCollectionEnumLeavesActualVocabularyAndSourceAuthority(t *testing.T) {
+	testBorrowedCollectionEnumLeavesAuthority(t, false)
+}
+
+func TestReferencedStringEnumUniqueActualVocabularyAndSourceAuthority(t *testing.T) {
+	testBorrowedCollectionEnumLeavesAuthority(t, true)
+}
+
+func testBorrowedCollectionEnumLeavesAuthority(t *testing.T, unique bool) {
 	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"State":{"type":"string","enum":["ready","done"]},"Alias":{"$ref":"#/components/schemas/State"},"Owner":{"properties":{"state":{"type":"string","enum":["open","closed"]}}},"Source":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Alias"}},"map":{"additionalProperties":{"$ref":"#/components/schemas/Owner/properties/state"}}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/rows"},"MapBridge":{"$ref":"#/components/schemas/Source/properties/map"}}}}`)
+	if unique {
+		input = []byte(strings.Replace(string(input), `"type":"array","items"`, `"type":"array","uniqueItems":true,"items"`, 1))
+	}
 	root, err := document.Load(input, document.JSON, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	before, _ := root.MarshalJSON()
-	a := analyzer{root: root, options: Options{PackageName: "org.example.borrowedenums", Suffix: "Dto"}, components: map[string]*component{}, emissionHints: EmissionHints{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}}
+	a := analyzer{root: root, options: Options{PackageName: "org.example.borrowedenums", Suffix: "Dto", Validation: unique}, components: map[string]*component{}, emissionHints: EmissionHints{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}}
 	ds, err := a.analyze(root)
 	if err != nil {
 		t.Fatal(err)

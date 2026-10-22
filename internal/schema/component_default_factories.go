@@ -54,8 +54,7 @@ func (a *analyzer) componentDefaultShape(c *component) bool {
 		(has(c.Schema, "oneOf") || has(c.Schema, "anyOf")) {
 		return false
 	}
-	if nullable && hasObjectCounts(c.Schema) {
-		// A counted nullable root is a separate role regardless of its annotation.
+	if nullable && hasObjectCounts(c.Schema) && (!a.options.Validation || dictionarySchema(c.Schema) || rawJSONComponentRoot(c.Schema)) {
 		return false
 	}
 	// A Scalar only exists after the declaration loop, and markComponentDefaultSource
@@ -85,6 +84,12 @@ func (a *analyzer) componentDefaultShape(c *component) bool {
 		return objectDefaultCandidateSchema(c.Schema)
 	}
 	return false
+}
+
+// Only a component's own already-marked default can retain DTO wire counts in
+// the value walk. This does not grant field, child, wrapper or borrowed roles.
+func (a *analyzer) componentDefaultCounts(v *document.Value, pointer string) bool {
+	return a.options.Validation && a.componentDefaultCountRoot == v && a.componentDefaultSchemas[v] && a.componentRoot(v, pointer)
 }
 
 // rawJSONComponentRoot reports the two raw JSON carrier roots whose field default
@@ -184,6 +189,7 @@ func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Di
 	// as W_ENUM_NATIVE_APPROXIMATION and they must reach the caller once.
 	validation := *a
 	validation.objectDefaultWork = nil
+	validation.componentDefaultCountRoot = c.Schema
 	if validation.objectDefaultSchemas == nil {
 		validation.objectDefaultSchemas = map[*document.Value]bool{}
 	}

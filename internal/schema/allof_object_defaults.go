@@ -183,16 +183,23 @@ func (a *analyzer) ordinaryAllOfDefaultNode(v *document.Value, pointer string, d
 	if wrapper != nil {
 		return nil, unsupported(naming.Pointer(pointer, "default"))
 	}
-	shape, err := a.objectShape(v, pointer, depth)
+	counted := a.componentDefaultCounts(v, pointer)
+	shape, err := a.modelShape(v, pointer, depth, counted)
 	if err != nil {
 		return nil, err
 	}
-	if len(shape.Fields) == 0 || len(shape.Discarded) != 0 || len(shape.Additional) != 0 || len(shape.CountSources) != 0 {
+	if len(shape.Fields) == 0 || len(shape.Discarded) != 0 || len(shape.Additional) != 0 || !counted && len(shape.CountSources) != 0 {
 		return nil, unsupported(naming.Pointer(pointer, "default"))
 	}
 	node, err := a.objectDefaultShapeNode(shape, pointer, true)
 	if err != nil {
 		return nil, err
+	}
+	if counted {
+		node.objectCounts, err = a.ordinaryObjectCounts(v, pointer, shape, true, true)
+		if err != nil {
+			return nil, err
+		}
 	}
 	node.schema = v
 	if shape.Nullable != nil && *shape.Nullable {
