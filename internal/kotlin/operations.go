@@ -96,7 +96,7 @@ func EmitClient(client *schema.Client, rootPackage string) []File {
 		}
 		out.WriteString("}\n")
 		if groupHasUnique(group) {
-			emitUniqueHelper(&out)
+			emitUniqueHelper(&out, groupUsesUnique(group, floatingUniqueElement), groupUsesUnique(group, mapUniqueElement))
 		}
 		if groupHasJSONUnique(group) {
 			emitJSONUniqueHelper(&out)
@@ -170,6 +170,10 @@ func urlExpression(owner string, op schema.Operation) string {
 		wire := rest[start+1 : end]
 		for _, p := range op.Parameters {
 			if p.Location == "path" && p.Wire == wire {
+				if p.Format == schema.LabelParameter || p.Format == schema.LabelExplodedParameter || p.Format == schema.MatrixParameter || p.Format == schema.MatrixExplodedParameter {
+					parts = append(parts, styledPathParameter(p))
+					break
+				}
 				expr := naming.CodeName(p.Name)
 				if p.Format == schema.CSVParameter {
 					expr = joinedParameter(expr, p)

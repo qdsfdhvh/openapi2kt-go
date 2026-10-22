@@ -204,8 +204,8 @@ func TestRootInternalDTOAliasExcludedTargetsAndShapeUses(t *testing.T) {
 			t.Fatal("canonical internal-alias chain graduation", err)
 		}
 	}
-	// Borrowed container admission stays builtin-only even for a named alias.
-	aliasFailure(t, schemas(`{`+owner+`,"Extra":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Alias"}}}},"Consumer":{"properties":{"v":{"$ref":"#/components/schemas/Extra/properties/rows"}}}}`), "E_REF_UNSUPPORTED", "/components/schemas/Extra/properties/rows/items")
+	// The alias retains its original lexical owner through borrowed containers.
+	borrowedDTOGraduation(t, schemas(`{`+owner+`,"Extra":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Alias"}}}},"Consumer":{"properties":{"v":{"$ref":"#/components/schemas/Extra/properties/rows"}}}}`), "org.example.models.models.OwnerDto.Node")
 	// Syntax that later projects to a const-only class must not invent a DTO.
 	aliasFailure(t, schemas(`{"Alias":{"$ref":"#/components/schemas/Owner/properties/node"},"Literal":{"type":"string","const":"fixed"},"Owner":{"properties":{"node":{"properties":{"id":{"$ref":"#/components/schemas/Literal"}}}}}}`), "E_REF_UNSUPPORTED", "/components/schemas/Alias/$ref")
 }

@@ -36,7 +36,7 @@ Helper 使用合法 JVM 方法名中的 LocalDate/Instant key，serializer 泛�
 
 `--validation` 下，每层 List min/maxItems、typed Map min/maxProperties 检查同时作用于原 default 与 supplied typed 值。null 只跳过自己的 non-null checks，empty 集合仍须符合最小数量并验证整个叶 grammar。constructor、Data copy、automatic serde、Patch.Value、typed HTTP 与 SSE 使用既有 recursive checks。
 
-Temporal String/numeric bounds 和 temporal `uniqueItems:true` 仍拒绝，包括 empty/null default；源类型为 String 不引入 String length/pattern。`uniqueItems:false` 沿用既有 validation metadata/no-op 合同。原 builtin 叶检查与所有 NoDrop guards 保留。裸集合赋值、独立 builtin codec、调用方后续 mutation 和 requestBuilder 替换不形成 schema validation 屏障。
+Temporal `uniqueItems:true` 沿用[映射值唯一性合同](temporal-unique.md)，包含 default 中等价 Instant 的 offset/fraction 判重；Temporal String/numeric bounds 仍拒绝，包括 empty/null default；源类型为 String 不引入 String length/pattern。`uniqueItems:false` 沿用既有 validation metadata/no-op 合同。原 builtin 叶检查与所有 NoDrop guards 保留。裸集合赋值、独立 builtin codec、调用方后续 mutation 和 requestBuilder 替换不形成 schema validation 屏障。
 
 原预算完全不变：输入 8 MiB、source depth48、checked collection depth16、serialized slots240、analysis work16384，以及现有 schema/alias/name-lock caps。每个原 default 整树在 canonical allocation 前独立 preflight 16,384 values（含 containers/null）与 32 KiB compact JSON；canonical JSON 再独立限制 32 KiB。key 与标量内容均计 bytes，required/Patch/discarded 注解同样计预算。失败不返回部分文件/锁/warnings，native generation 不改旧 owned 输出或 handwritten 文件。未提高 compiler heap，不承诺最大宽度×最大深度或 Android/KMP。
 

@@ -87,6 +87,17 @@ func (a *analyzer) parameters(v *document.Value, present bool, pointer string) (
 		if plain.Kind == Nullable {
 			plain = *plain.Element
 		}
+		if location == "query" && text(get(value, "style")) == "deepObject" {
+			// Inspect the already validated transparent backing for wire shape;
+			// keep the original alias/type/check graph on the public parameter.
+			backing := plain
+			for backing.Kind == Named && backing.Element != nil {
+				backing = bare(*backing.Element)
+			}
+			if backing.Kind == Map {
+				plain = backing
+			}
+		}
 		wireType := plain
 		elementNullable := false
 		if plain.Kind == List || plain.Kind == Map {
@@ -105,11 +116,18 @@ func (a *analyzer) parameters(v *document.Value, present bool, pointer string) (
 		if len(nested) != 0 && inline == nil {
 			return nil, operationUnsupported(p + "/schema")
 		}
-		if plain.Kind == Map {
+		deepMap := location == "query" && text(get(value, "style")) == "deepObject" && plain.Kind == Map
+		if plain.Kind == Map && !deepMap && !(location == "path" && (text(get(value, "style")) == "label" || text(get(value, "style")) == "matrix")) {
 			enum = false // Map values are forwarded directly, not serialName-unwrapped.
 		}
-		if wireType.Kind != Scalar && wireType.Kind != InlineValue && !enum || plain.Kind == Map && location != "query" {
+		if wireType.Kind != Scalar && wireType.Kind != InlineValue && !enum || plain.Kind == Map && location != "query" && text(get(value, "style")) != "label" && text(get(value, "style")) != "matrix" {
 			a.warn("W_HTTP_PARAMETER_PROJECTION", "A structured parameter uses Ktor toString, not recursive encoding or enum-value unwrapping.", p+"/schema")
+		}
+		if location == "path" && (text(get(value, "style")) == "label" || text(get(value, "style")) == "matrix") && wireType.Kind != Scalar && wireType.Kind != InlineValue && !enum {
+			return nil, operationUnsupported(p + "/schema")
+		}
+		if deepMap && wireType.Kind != Scalar && wireType.Kind != InlineValue && !enum {
+			return nil, operationUnsupported(p + "/schema")
 		}
 		format, err := parameterFormat(value, location, plain.Kind, p)
 		if err != nil {
@@ -155,6 +173,20 @@ func parameterFormat(v *document.Value, location string, kind TypeKind, pointer 
 		exploded, _ = get(v, "explode").Bool()
 	}
 	if location != "query" {
+		if location == "path" && kind != JSONObject {
+			switch style {
+			case "label":
+				if exploded {
+					return LabelExplodedParameter, nil
+				}
+				return LabelParameter, nil
+			case "matrix":
+				if exploded {
+					return MatrixExplodedParameter, nil
+				}
+				return MatrixParameter, nil
+			}
+		}
 		if style != "simple" {
 			return 0, operationUnsupported(pointer + "/style")
 		}
@@ -164,11 +196,17 @@ func parameterFormat(v *document.Value, location string, kind TypeKind, pointer 
 		return ScalarParameter, nil
 	}
 	if kind == Map || kind == JSONObject {
+		if style == "deepObject" && kind == Map {
+			if has(v, "explode") && !exploded {
+				return 0, operationUnsupported(pointer + "/explode")
+			}
+			return MapDeepObjectParameter, nil
+		}
 		if style != "form" {
 			return 0, operationUnsupported(pointer + "/style")
 		}
 		if !exploded {
-			return 0, operationUnsupported(pointer + "/explode")
+			return MapCSVParameter, nil
 		}
 		return MapParameter, nil
 	}

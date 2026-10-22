@@ -6,6 +6,19 @@ import (
 )
 
 func TestBorrowedCollectionRecursiveCoverLeavesActualGraphAuthority(t *testing.T) {
+	borrowedRecursiveCoverGraphAuthority(t, false)
+}
+
+func TestJSONUniqueRecursiveCoverGraphAuthority(t *testing.T) {
+	borrowedRecursiveCoverGraphAuthority(t, true)
+}
+
+func borrowedRecursiveCoverGraphAuthority(t *testing.T, unique bool) {
+	t.Helper()
+	uniqueKey := ""
+	if unique {
+		uniqueKey = `,"uniqueItems":true`
+	}
 	for _, tc := range []struct {
 		body          string
 		height, nodes int
@@ -15,12 +28,12 @@ func TestBorrowedCollectionRecursiveCoverLeavesActualGraphAuthority(t *testing.T
 		{`"Value":` + jsonGraphCover("ToOther", "Other") + `,"ToOther":{"$ref":"#/components/schemas/Other"},"Other":` + jsonGraphCover("ToValue", "Value") + `,"ToValue":{"$ref":"#/components/schemas/Value"}`, 6, 4},
 		{`"Value":` + jsonGraphCover("Other", "End") + `,"Other":` + jsonGraphCover("Value", "End") + `,"End":` + jsonGraphCover("End", "End"), 6, 3},
 	} {
-		root, err := document.ParseObject([]byte(`{"openapi":"3.1.0","components":{"schemas":{`+tc.body+`,"Alias":{"$ref":"#/components/schemas/Value","nullable":true},"Hops":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Alias"}},"map":{"additionalProperties":{"$ref":"#/components/schemas/Value"}}}},"RowsBridge":{"$ref":"#/components/schemas/Hops/properties/rows","nullable":false},"MapBridge":{"$ref":"#/components/schemas/Hops/properties/map"}}}}`), document.MaxDocumentBytes)
+		root, err := document.ParseObject([]byte(`{"openapi":"3.1.0","components":{"schemas":{`+tc.body+`,"Alias":{"$ref":"#/components/schemas/Value","nullable":true},"Hops":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Alias"}`+uniqueKey+`},"map":{"additionalProperties":{"$ref":"#/components/schemas/Value"}}}},"RowsBridge":{"$ref":"#/components/schemas/Hops/properties/rows","nullable":false},"MapBridge":{"$ref":"#/components/schemas/Hops/properties/map"}}}}`), document.MaxDocumentBytes)
 		if err != nil {
 			t.Fatal(err)
 		}
 		before, _ := root.MarshalJSON()
-		a := analyzer{root: root, options: Options{PackageName: "org.example.coverchains", Suffix: "Dto"}, components: map[string]*component{}, emissionHints: EmissionHints{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}}
+		a := analyzer{root: root, options: Options{PackageName: "org.example.coverchains", Suffix: "Dto", Validation: unique}, components: map[string]*component{}, emissionHints: EmissionHints{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}}
 		ds, err := a.analyze(root)
 		if err != nil {
 			t.Fatal(tc, err)

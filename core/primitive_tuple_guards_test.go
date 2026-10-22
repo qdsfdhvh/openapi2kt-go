@@ -29,6 +29,12 @@ func TestPrimitiveTupleExactSignatures(t *testing.T) {
 		{`[{"type":"string","nullable":true},{"type":["null","string"]}]`, "", "kotlin.String?"},
 		{`[{"type":"string","nullable":false},{"type":"string","nullable":true}]`, "", "kotlinx.serialization.json.JsonElement"},
 		{`[{"type":"integer"},{"type":"boolean"}]`, `,"items":{"type":"number","format":"float"}`, "kotlin.Float"},
+		// Preserve the exact former date-member rejection as a positive.
+		{`[{"type":"string","format":"date"}]`, "", "kotlinx.datetime.LocalDate"},
+		{`[{"type":"string","format":"date-time"},{"type":"string","format":"date-time"}]`, "", "kotlin.time.Instant"},
+		{`[{"type":"string","format":"date","nullable":true},{"type":["null","string"],"format":"date"}]`, "", "kotlinx.datetime.LocalDate?"},
+		{`[{"type":"string","format":"date"},{"type":"string","format":"date-time"}]`, "", "kotlinx.serialization.json.JsonElement"},
+		{`[{"type":"string","format":"date"},{"type":"string"}]`, `,"items":{"type":"string","format":"date-time","nullable":true}`, "kotlin.time.Instant?"},
 	} {
 		var schema any
 		if err := json.Unmarshal([]byte(`{"type":"array","prefixItems":`+test.prefix+test.items+`}`), &schema); err != nil {
@@ -59,7 +65,10 @@ func TestPrimitiveTupleNoDropGuards(t *testing.T) {
 		{`{"type":"array","prefixItems":[{"type":"string","enum":["a"]}]}`, "E_SCHEMA_UNSUPPORTED", "/prefixItems/0/enum"},
 		{`{"type":"array","prefixItems":[{"type":"string","x-native-type":"org.example.Provider"}]}`, "E_SCHEMA_UNSUPPORTED", "/prefixItems/0/x-native-type"},
 		{`{"type":"array","prefixItems":[{"$ref":"#/components/schemas/Probe"}]}`, "E_SCHEMA_UNSUPPORTED", "/prefixItems/0/$ref"},
-		{`{"type":"array","prefixItems":[{"type":"string","format":"date"}]}`, "E_SCHEMA_UNSUPPORTED", "/prefixItems/0"},
+		{`{"type":"array","prefixItems":[{"type":"string","format":"date","minLength":1}],"items":{"type":"string"}}`, "E_SCHEMA_UNSUPPORTED", "/prefixItems/0/minLength"},
+		{`{"type":"array","prefixItems":[{"type":"string","format":"date-time","default":"2026-01-01T00:00:00Z"}],"items":{"type":"string"}}`, "E_SCHEMA_UNSUPPORTED", "/prefixItems/0/default"},
+		{`{"type":"array","prefixItems":[{"type":"string","format":"binary"}]}`, "E_SCHEMA_UNSUPPORTED", "/prefixItems/0"},
+		{`{"type":"array","prefixItems":[{"type":"string","format":"date"}],"uniqueItems":true}`, "E_SCHEMA_UNSUPPORTED", "/uniqueItems"},
 		{`{"type":"array","prefixItems":[{"type":"string"}],"items":false}`, "E_SCHEMA_UNSUPPORTED", "/prefixItems"},
 		{`{"type":"array","prefixItems":[{"type":"string"}],"items":true}`, "E_SCHEMA_UNSUPPORTED", "/prefixItems"},
 	} {

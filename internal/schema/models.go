@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"slices"
 	"strings"
 
 	"openapi-kt/internal/diagnostic"
@@ -98,7 +99,18 @@ func (a *analyzer) buildModelPlan(name string, v *document.Value, pointer string
 // Borrowed composition alternatives use the same fields, const, validation and
 // presence rules as ordinary models without fabricating expanded schema nodes.
 func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer string, shape *shape, common []Property, singleEnumBody bool, typed map[string]typedLeafField, ordinary bool) (*Model, *diagnostic.Diagnostic) {
-	if ordinary && shape.Nullable != nil && *shape.Nullable && a.componentRoot(v, pointer) && !directNullableDTOOwnCounts(v, pointer, shape) {
+	if ordinary && a.componentRoot(v, pointer) && nullableAllOfDTOCountCandidate(v, pointer) {
+		// Only the original composition traversal may grant counted nullable
+		// root authority. Real but unrelated source nodes are insufficient.
+		original, err := a.modelShape(v, pointer, 0, true)
+		if err != nil {
+			return nil, err
+		}
+		if !slices.Equal(original.CountSources, shape.CountSources) {
+			return nil, unsupported(pointer)
+		}
+	}
+	if ordinary && shape.Nullable != nil && *shape.Nullable && a.componentRoot(v, pointer) && !directNullableDTOOwnCounts(v, pointer, shape) && !nullableAllOfDTOCountCandidate(v, pointer) {
 		if err := rejectNullableComponentCounts(v, pointer, shape); err != nil {
 			return nil, err
 		}

@@ -1,13 +1,25 @@
 package schema
 
 import (
+	"strings"
 	"testing"
 
 	"openapi-kt/internal/document"
 )
 
 func TestNamedNativeEnumBorrowingNeedsActualVocabularyAndScalarExport(t *testing.T) {
+	testNamedNativeEnumSourceAuthority(t, false)
+}
+
+func TestNativeEnumUniqueRetainsActualVocabularyAndScalarExport(t *testing.T) {
+	testNamedNativeEnumSourceAuthority(t, true)
+}
+
+func testNamedNativeEnumSourceAuthority(t *testing.T, unique bool) {
 	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Code":{"type":"integer","enum":[1,2,3,4],"minimum":2},"Alias":{"$ref":"#/components/schemas/Code"},"Source":{"properties":{"hop":{"$ref":"#/components/schemas/Alias"},"rows":{"type":"array","items":{"$ref":"#/components/schemas/Alias"}}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/hop"},"Rows":{"$ref":"#/components/schemas/Source/properties/rows"}}}}`)
+	if unique {
+		input = []byte(strings.Replace(string(input), `"type":"array","items"`, `"type":"array","uniqueItems":true,"items"`, 1))
+	}
 	root, e := document.Load(input, document.JSON, "")
 	if e != nil {
 		t.Fatal(e)

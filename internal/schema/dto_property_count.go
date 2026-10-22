@@ -122,6 +122,14 @@ func directNullableDTOCountCandidate(v *document.Value, pointer string) bool {
 	return err == nil && kind == "object" && nullable && !has(v, "$ref") && !has(v, "allOf") && nullableDTOCandidate(v)
 }
 
+// Composed nullable DTOs keep the same physical constructor and JSON delegate
+// as ordinary counted allOf models. Explicit root intent authorizes this role;
+// inferred nullable members and transparent reference wrappers remain separate.
+func nullableAllOfDTOCountCandidate(v *document.Value, pointer string) bool {
+	kind, nullable, err := schemaType(v, pointer)
+	return err == nil && (kind == "object" || kind == "") && nullable && has(v, "allOf") && !has(v, "$ref") && nullableDTOCandidate(v)
+}
+
 // The nullable component increment owns exactly its local count source. Borrowed
 // sources cannot acquire permission from a coincident direct nullable root.
 // ordinaryObjectCounts retains immutable-node, depth and full grammar checks.
@@ -170,6 +178,15 @@ func (a *analyzer) rejectDTOCountProjectionRole(v *document.Value, pointer strin
 			continue
 		}
 		seen[v] = true
+		if directNullableRootsOnly && a.componentRoot(v, p) && nullableAllOfDTOCountCandidate(v, p) {
+			shape, err := a.modelShape(v, p, 0, true)
+			if err != nil {
+				return err
+			}
+			if err := rejectNullableComponentCounts(v, p, shape); err != nil {
+				return err
+			}
+		}
 		if !dictionarySchema(v) && (!directNullableRootsOnly || a.componentRoot(v, p) && directNullableDTOCountCandidate(v, p)) {
 			if err := rejectObjectCounts(v, p); err != nil {
 				return err

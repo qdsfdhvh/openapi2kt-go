@@ -7,7 +7,7 @@ import (
 )
 
 func TestBorrowedUUIDOriginalSourceAndExport(t *testing.T) {
-	root := loadComponentDocument(t, `{"Source":{"properties":{"id":{"type":["string","null"],"format":"uuid","minLength":2},"hop":{"$ref":"#/components/schemas/Source/properties/id","nullable":false}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/hop"},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Bridge"}}}}`)
+	root := loadComponentDocument(t, `{"Source":{"properties":{"id":{"type":["string","null"],"format":"uuid","minLength":2},"hop":{"$ref":"#/components/schemas/Source/properties/id","nullable":false}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/hop"},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Bridge"},"rows":{"type":"array","items":{"$ref":"#/components/schemas/Bridge"},"uniqueItems":true}}}}`)
 	before, _ := root.MarshalJSON()
 	a := analyzer{root: root, options: Options{PackageName: "org.example.uuid", Suffix: "Dto", Validation: true}, components: map[string]*component{}, emissionHints: EmissionHints{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}}
 	ds, err := a.analyze(root)

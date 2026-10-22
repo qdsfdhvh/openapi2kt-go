@@ -34,7 +34,7 @@ Pure root aliases retain canonical backing and original source hops. They do not
 
 The non-null Kotlin carrier contains `JsonNull` as a JSON value. Explicit nullable **consumers** retain the existing `JsonElement?` policy: JSON null can decode to Kotlin null; optional fields retain their default/presence policy. Required nullable constructor arguments do not guarantee a wire key with `explicitNulls=false`. Request-only `Patch.Value(JsonNull)` and `Patch.Null` share a wire representation; nullable Patch decoding yields `Patch.Null`.
 
-Typed fields, lists/maps, JSON HTTP bodies/responses and existing SSE data use the same carrier. No generated positional/native union wrapper or extra input/response DTO is introduced for the root. SSE envelopes and nominal allOf/union/hierarchy shape borrowing do not gain support.
+Typed fields, lists/maps, JSON HTTP bodies/responses and existing SSE data use the same carrier. With validation enabled, arrays with existing named complete-cover item references also support [exact JSON-value uniqueness](json-unique.md#complete-recursive-cover-item-references), retaining full graph/source authority and the existing runtime equality limits. No generated positional/native union wrapper or extra input/response DTO is introduced for the root. SSE envelopes and nominal allOf/union/hierarchy shape borrowing do not gain support.
 
 [Typed reference chains to named complete covers](recursive-cover-reference-chains.md) now have a separate source-identity contract, including finite internal Pointers to reference-only leaves and component-root bridges. Incoming hops add to the original graph suffix; this does not admit inline cover nodes or nominal shape borrowing.
 

@@ -32,10 +32,16 @@ func TestHTTPParameterInheritanceOrder(t *testing.T) {
 }
 
 func TestHTTPCollectionUnsupportedShapes(t *testing.T) {
+	// Original typed deepObject dictionary input now uses bracket-key scalar
+	// expansion. Keep its exact source as an explicit supported graduation.
+	original := `{"in":"query","name":"v","style":"deepObject","schema":{"type":"object","additionalProperties":{"type":"string"}}}`
+	api := source(t, report(t, httpDoc(`{"parameters":[`+original+`],"responses":{"204":{}}}`), ""), "DefaultApi")
+	if !strings.Contains(api, `parameter("v[" + key + "]", value)`) {
+		t.Fatal("original dictionary did not acquire bracket-key wire plan", api)
+	}
 	for _, tc := range []struct{ parameter, tail string }{
 		{`{"in":"query","name":"v","style":"matrix","schema":{"type":"array","items":{"type":"string"}}}`, "/style"},
 		{`{"in":"header","name":"v","style":"form","schema":{"type":"array","items":{"type":"string"}}}`, "/style"},
-		{`{"in":"query","name":"v","style":"deepObject","schema":{"type":"object","additionalProperties":{"type":"string"}}}`, "/style"},
 	} {
 		failure(t, httpDoc(`{"parameters":[`+tc.parameter+`],"responses":{"204":{}}}`), "E_OPERATIONS_UNSUPPORTED", "/paths/~1ping/get/parameters/0"+tc.tail)
 	}

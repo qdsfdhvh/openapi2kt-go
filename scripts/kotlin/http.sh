@@ -5,6 +5,38 @@ mkdir -p build
 workspace="$(mktemp -d "$root/build/http-smoke-XXXXXX")"
 cp -R samples/kotlin-http-smoke "$workspace/project"
 openapi_kt_build_cli "$workspace/openapi-kt"
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/map-unique.json \
+  --output "$workspace/project/build/generated-limits/map-unique" --package-name org.example.mapunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/map-unique.json \
+  --output "$workspace/project/build/generated-limits/map-unique" --package-name org.example.mapunique --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/uuid-unique.json \
+  --output "$workspace/project/build/generated-limits/uuid-unique" --package-name org.example.uuidunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/uuid-unique.json \
+  --output "$workspace/project/build/generated-limits/uuid-unique" --package-name org.example.uuidunique --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/floating-unique.json \
+  --output "$workspace/project/build/generated-limits/floating-unique" --package-name org.example.floatingunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/floating-unique.json \
+  --output "$workspace/project/build/generated-limits/floating-unique" --package-name org.example.floatingunique --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/native-enum-unique.json \
+  --output "$workspace/project/build/generated-limits/native-enum-unique" --package-name org.example.nativeenumunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/native-enum-unique.json \
+  --output "$workspace/project/build/generated-limits/native-enum-unique" --package-name org.example.nativeenumunique --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/string-enum-unique.json \
+  --output "$workspace/project/build/generated-limits/string-enum-unique" --package-name org.example.enumunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/string-enum-unique.json \
+  --output "$workspace/project/build/generated-limits/string-enum-unique" --package-name org.example.enumunique --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/temporal-unique.json \
+  --output "$workspace/project/build/generated-limits/temporal-unique" --package-name org.example.temporalunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/temporal-unique.json \
+  --output "$workspace/project/build/generated-limits/temporal-unique" --package-name org.example.temporalunique --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/nullable-composed-reference-members.json \
+  --output "$workspace/project/build/generated-limits/nullable-composed-reference-members" --package-name org.example.composedmembers --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/nullable-composed-reference-members.json \
+  --output "$workspace/project/build/generated-limits/nullable-composed-reference-members" --package-name org.example.composedmembers --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/parameter-styles.json \
+  --output "$workspace/project/build/generated-limits/parameter-styles" --package-name org.example.parameterstyles --api-client-name ParameterStyles --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/parameter-styles.json \
+  --output "$workspace/project/build/generated-limits/parameter-styles" --package-name org.example.parameterstyles --api-client-name ParameterStyles --model-name-suffix Dto --check
 "$workspace/openapi-kt" generate --input tests/fixtures/http/raw-response-media.json \
   --output "$workspace/project/build/generated-limits/raw-response-media" --package-name org.example.rawmedia --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/raw-response-media.json \

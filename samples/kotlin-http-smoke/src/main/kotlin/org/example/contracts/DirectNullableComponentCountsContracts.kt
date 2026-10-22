@@ -47,6 +47,11 @@ import org.example.directcounts.DirectCounts
 import org.example.directcounts.api.models.PatchInputDto
 import org.example.directcounts.api.models.WatchEventDto
 import org.example.directcounts.models.CheckedDto
+import org.example.directcounts.models.ComposedDto
+import org.example.directcounts.models.ComposedAliasDto
+import org.example.directcounts.models.ComposedNarrowDto
+import org.example.directcounts.models.CountedNullDefaultDto
+import org.example.directcounts.models.CountedValueDefaultDto
 import org.example.directcounts.models.DefaultedDto
 import org.example.directcounts.models.HolderDto
 import org.example.directcounts.models.InheritedDto
@@ -116,6 +121,8 @@ private object DirectCountNonJsonDecoder : AbstractDecoder() {
 
 suspend fun directNullableComponentCountsContracts() {
     val physical = RecordDto.serializer().descriptor
+    directCountVerify(CountedNullDefaultDto.default() == null, "counted nullable factory returns null without object counts")
+    directCountVerify(CountedValueDefaultDto.default() == CountedValueDefaultDto("ready"), "counted composed factory decodes its own original value")
     directCountVerify(physical === RecordDto.generatedSerializer().descriptor && !physical.isNullable, "original non-null physical descriptor identity")
     directCountVerify(physical.elementsCount == 1 && physical.getElementName(0) == "value" && physical.isElementOptional(0), "original constructor/default descriptor")
     directCountVerify(InheritedDto.serializer().descriptor === physical, "nullable alias companion stays canonical non-null")
@@ -134,6 +141,16 @@ suspend fun directNullableComponentCountsContracts() {
     for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls; ignoreUnknownKeys = true }
         val strict = Json(codec) { ignoreUnknownKeys = false }
+        val composed = ComposedDto(id = "ok")
+        directCountParity(codec, ComposedDto.serializer(), ComposedDto.generatedSerializer(), composed)
+        directCountVerify(codec.decodeFromString(serializer<ComposedAliasDto>(), "null") == null, "composed nullable alias retains null adapter")
+        directCountVerify(!serializer<ComposedNarrowDto>().descriptor.isNullable, "composed nearest false keeps physical serializer")
+        directCountInputReject(codec, ComposedDto.serializer(), "{}", "Object violates minProperties.")
+        directCountInputReject(codec, ComposedDto.serializer(), "{\"id\":\"ok\",\"note\":null,\"extra\":null}", "Object violates maxProperties.")
+        directCountVerify(codec.decodeFromString(ComposedDto.serializer(), "{\"unknown\":null}") == ComposedDto(), "borrowed allOf count precedes unknown-key loss")
+        val emptyComposed = codec.encodeToJsonElement(ComposedDto.generatedSerializer(), ComposedDto()) as JsonObject
+        if (emptyComposed.isEmpty()) directCountReject("Object violates minProperties.") { codec.encodeToString(ComposedDto.serializer(), ComposedDto()) }
+        else directCountParity(codec, ComposedDto.serializer(), ComposedDto.generatedSerializer(), ComposedDto())
         val record = RecordDto("ok")
         directCountVerify(directCountParity(codec, RecordDto.serializer(), RecordDto.generatedSerializer(), record).size == 1, "ordinary direct output one member")
         for (nullable in listOf(RecordDto.serializer().nullable, serializer<InheritedDto>(), serializer<RenullDto>())) {
@@ -219,7 +236,7 @@ private suspend fun directCountWire(codec: Json, strict: Json, record: RecordDto
         addHandler { request ->
             calls++
             when (request.url.encodedPath) {
-                "/records", "/narrow", "/zero", "/checked" -> {
+                "/records", "/narrow", "/zero", "/checked", "/composed" -> {
                     directCountVerify(directCountBody(request.body) == expectedBody, "actual typed HTTP caller-codec body bytes")
                     respond(response, HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
                 }
@@ -245,6 +262,15 @@ private suspend fun directCountWire(codec: Json, strict: Json, record: RecordDto
     val http = HttpClient(engine) { install(SSE); install(ContentNegotiation) { json(codec) } }
     try {
         val api = DirectCounts(http, "http://example.test/", strict).counts
+        val composed = ComposedDto(id = "ok")
+        response = "{\"id\":\"ok\"}"
+        expectedBody = codec.encodeToString(ComposedDto.generatedSerializer(), composed)
+        directCountVerify(api.sendComposed(composed) == composed, "composed nullable typed HTTP uses aggregate count codec")
+        response = "{}"
+        directCountWireReject("Object violates minProperties.") { api.sendComposed(composed) }
+        response = "null"; expectedBody = "null"
+        directCountVerify(api.sendComposed(null) == null, "composed nullable HTTP null skips count checks")
+        response = "{\"value\":\"ok\"}"
         expectedBody = codec.encodeToString(RecordDto.generatedSerializer(), record)
         directCountVerify(api.send(record) == record && api.sendNarrow(record) == record, "nullable and narrowed typed HTTP value codecs")
         response = "null"; expectedBody = "null"

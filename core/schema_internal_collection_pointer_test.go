@@ -55,6 +55,7 @@ func TestSchemaInternalCollectionPointerPreciseArrayBothFlags(t *testing.T) {
 }
 
 func TestSchemaInternalCollectionPointerGrammarAndSources(t *testing.T) {
+	floatingUniqueGraduation(t, pointerDoc(`{"type":"array","items":{"type":"number"},"uniqueItems":true}`, pointerRef("Source/properties/leaf")))
 	at := "/components/schemas/Source/properties/leaf"
 	use := "/components/schemas/Consumer/properties/v"
 	for _, tc := range []struct{ target, code, pointer string }{
@@ -74,7 +75,6 @@ func TestSchemaInternalCollectionPointerGrammarAndSources(t *testing.T) {
 		{`{"type":"array","items":{"type":"string","const":"ok"}}`, "E_REF_UNSUPPORTED", use},
 		{`{"type":"array","items":{"type":"string","format":"date"}}`, "E_REF_UNSUPPORTED", use},
 		{`{"type":"array","items":{"type":"null"}}`, "E_REF_UNSUPPORTED", use},
-		{`{"type":"array","items":{"type":"number"},"uniqueItems":true}`, "E_SCHEMA_UNSUPPORTED", at + "/uniqueItems"},
 		{`{"type":"array","items":{"type":"array","items":{"type":"integer"}},"uniqueItems":true}`, "E_SCHEMA_UNSUPPORTED", at + "/uniqueItems"},
 		{`{"type":"array","items":{"type":"integer"},"uniqueItems":"no"}`, "E_SCHEMA_INVALID", at + "/uniqueItems"},
 		{`{"type":"array","items":{"$ref":"#/components/schemas/Source/properties/leaf"}}`, "E_REF_UNSUPPORTED", at + "/items"},

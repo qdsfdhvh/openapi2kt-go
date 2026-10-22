@@ -30,8 +30,14 @@ func TestReferencedNestedAllOfCountsKeepExcludedContextsAndNullablePointers(t *t
 		r := request(input, "Dto")
 		r.Options.Validation = true
 		got, e := core.GenerateWithDiagnostics(r)
+		if bounds == `"minProperties":0` {
+			if e != nil || !strings.Contains(source(t, got, "RootDto"), "element.size < 0") {
+				t.Fatal("nullable nested allOf counts lost", e)
+			}
+			continue
+		}
 		key := strings.Split(bounds, `"`)[1]
-		if e == nil || e.(core.Diagnostics)[0].Code != "E_SCHEMA_UNSUPPORTED" || *e.(core.Diagnostics)[0].Pointer != "/components/schemas/Root/allOf/0/allOf/0/"+key || !reflect.DeepEqual(got, core.GenerationReport{}) {
+		if e == nil || e.(core.Diagnostics)[0].Code != "E_SCHEMA_INVALID" || *e.(core.Diagnostics)[0].Pointer != "/components/schemas/Root/allOf/0/allOf/0/"+key || !reflect.DeepEqual(got, core.GenerationReport{}) {
 			t.Fatal("Nullable component count diagnostic changed", bounds, e)
 		}
 	}

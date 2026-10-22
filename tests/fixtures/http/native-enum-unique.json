@@ -1,0 +1,348 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NativeEnumUnique",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Code": {
+        "type": "integer",
+        "format": "int64",
+        "enum": [
+          -9223372036854775808,
+          0,
+          1,
+          9223372036854775807
+        ]
+      },
+      "Flags": {
+        "type": "array",
+        "items": {
+          "type": "boolean",
+          "nullable": true,
+          "enum": [
+            true,
+            false,
+            null
+          ]
+        },
+        "uniqueItems": true
+      },
+      "Codes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Alias",
+          "nullable": true
+        },
+        "uniqueItems": true,
+        "nullable": true
+      },
+      "DefaultCodes": {
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "format": "int64",
+          "nullable": true,
+          "enum": [
+            -9223372036854775808,
+            0,
+            1,
+            9223372036854775807
+          ]
+        },
+        "uniqueItems": true,
+        "default": [
+          1,
+          null
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "flags": {
+            "$ref": "#/components/schemas/Flags"
+          },
+          "codes": {
+            "$ref": "#/components/schemas/Codes"
+          },
+          "nested": {
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64",
+                "nullable": true,
+                "enum": [
+                  -9223372036854775808,
+                  0,
+                  1,
+                  9223372036854775807
+                ]
+              },
+              "uniqueItems": true
+            }
+          },
+          "defaultFlags": {
+            "type": "array",
+            "items": {
+              "type": "boolean",
+              "nullable": true,
+              "enum": [
+                true,
+                false,
+                null
+              ]
+            },
+            "uniqueItems": true,
+            "default": [
+              true,
+              null
+            ]
+          },
+          "defaultCodes": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64",
+              "nullable": true,
+              "enum": [
+                -9223372036854775808,
+                0,
+                1,
+                9223372036854775807
+              ]
+            },
+            "uniqueItems": true,
+            "default": [
+              1,
+              null
+            ]
+          },
+          "defaultNested": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64",
+                "nullable": true,
+                "enum": [
+                  -9223372036854775808,
+                  0,
+                  1,
+                  9223372036854775807
+                ]
+              },
+              "uniqueItems": true
+            },
+            "default": [
+              [
+                1,
+                null
+              ]
+            ]
+          },
+          "ints": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "enum": [
+                -2147483648,
+                0,
+                1,
+                2147483647
+              ],
+              "nullable": true
+            },
+            "uniqueItems": true,
+            "default": [
+              0,
+              null
+            ]
+          },
+          "bounded": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "enum": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "minimum": 2,
+              "multipleOf": 2
+            },
+            "uniqueItems": true
+          },
+          "borrowedCodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Bridge",
+              "nullable": false
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "flags"
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Code"
+      },
+      "Source": {
+        "properties": {
+          "code": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "enum": [
+              0,
+              1
+            ]
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Source/properties/code"
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/codes": {
+      "post": {
+        "operationId": "codes",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Codes"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Codes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "flags": {
+                    "type": "array",
+                    "items": {
+                      "type": "boolean",
+                      "nullable": true,
+                      "enum": [
+                        true,
+                        false,
+                        null
+                      ]
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  },
+                  "codes": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int64",
+                      "nullable": true,
+                      "enum": [
+                        -9223372036854775808,
+                        0,
+                        1,
+                        9223372036854775807
+                      ]
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

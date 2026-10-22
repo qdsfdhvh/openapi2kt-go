@@ -375,7 +375,7 @@ func TestComponentDefaultFactoryNullableObject(t *testing.T) {
 			t.Fatal(checked, "nullable object non-null factory", text)
 		}
 	}
-	// Whole-object counts keep the separate nullable-component-counts role.
+	// Preserve the original counted nullable inputs as factory regressions.
 	for _, tc := range []struct{ name, schemas string }{
 		{"nullable root with counts", `{"S":{"type":"object","nullable":true,"minProperties":0,"properties":{"z":{"type":"string"}},"default":null}}`},
 		{"nullable root with counts non-null", `{"S":{"type":"object","nullable":true,"minProperties":0,"properties":{"z":{"type":"string"}},"default":{"z":"1"}}}`},
@@ -383,8 +383,8 @@ func TestComponentDefaultFactoryNullableObject(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			r := request(schemas(tc.schemas), "Dto")
 			r.Options.Validation = true
-			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
-				t.Fatalf("excluded nullable role admitted: %v", err)
+			if got, err := core.GenerateWithDiagnostics(r); err != nil || !strings.Contains(source(t, got, "SDto"), "public fun default(): SDto?") {
+				t.Fatalf("counted nullable factory lost: %v", err)
 			}
 		})
 	}

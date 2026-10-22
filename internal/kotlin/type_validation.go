@@ -27,7 +27,25 @@ func emitTypeChecks(t schema.TypeRef, receiver, label string, indent int, out *s
 		fmt.Fprintf(out, "%s%s.let { value ->\n", pad, receiver)
 		emitCollectionChecks(t.Collection, "value", label, indent+1, out)
 		if t.Collection.Unique {
-			emitUniqueChecks("value", indent+1, out)
+			if mapUniqueElement(*t.Element) {
+				fmt.Fprintf(out, "%s    %s(value)\n", pad, mapUniqueHelperName)
+			} else if floatingUniqueElement(*t.Element) {
+				fmt.Fprintf(out, "%s    %s(value)\n", pad, floatingUniqueHelperName)
+			} else {
+				value := "value"
+				leaf := t.Element.WithoutRootNull()
+				if leaf.Kind == schema.Named && leaf.Element == nil {
+					// The analyzer admits nominal uniqueness only for an original
+					// String enum source. Compare payloads so a known member and an
+					// Unrecognized instance with the same wire token collide.
+					member := "it.serialName"
+					if t.Element.Kind == schema.Nullable {
+						member = "it?.serialName"
+					}
+					value += ".map { " + member + " }"
+				}
+				emitUniqueChecks(value, indent+1, out)
+			}
 		}
 		if t.Collection.UniqueJSON {
 			fmt.Fprintf(out, "%s    `openapi-kt unique JSON items`(value)\n", pad)
@@ -93,52 +111,89 @@ func emitCollectionChecks(v *schema.CollectionValidation, value, label string, i
 // method bytecode limit. Its escaped name cannot be produced by schema naming:
 // generated identifiers contain ASCII letters/digits/underscores, never spaces.
 const uniqueHelperName = "`openapi-kt uniqueItems`"
+const mapUniqueHelperName = "`openapi-kt unique map items`"
+const floatingUniqueHelperName = "`openapi-kt unique floating items`"
+
+func mapUniqueElement(t schema.TypeRef) bool {
+	return t.WithoutRootNull().Kind == schema.Map
+}
+
+func floatingUniqueElement(t schema.TypeRef) bool {
+	t = t.WithoutRootNull()
+	return t.Kind == schema.Scalar && (t.Name == "kotlin.Float" || t.Name == "kotlin.Double")
+}
 
 func emitUniqueChecks(value string, indent int, out *strings.Builder) {
 	fmt.Fprintf(out, "%s%s(%s)\n", strings.Repeat("    ", indent), uniqueHelperName, value)
 }
 
-func emitUniqueHelper(out *strings.Builder) {
+func emitUniqueHelper(out *strings.Builder, floating, maps bool) {
 	fmt.Fprintf(out, "\nprivate fun <T : kotlin.Comparable<T>> %s(input: kotlin.collections.List<T?>) {\n", uniqueHelperName)
 	out.WriteString("    require(input.count { it == null } <= 1) { \"Field value contains duplicate entries for uniqueItems.\" }\n")
 	out.WriteString("    val sorted = input.filterNotNull().sorted()\n")
 	out.WriteString("    for (index in 1 until sorted.size) {\n")
 	out.WriteString("        require(sorted[index - 1] != sorted[index]) { \"Field value contains duplicate entries for uniqueItems.\" }\n")
 	out.WriteString("    }\n}\n")
+	if maps {
+		fmt.Fprintf(out, "\nprivate fun <T> %s(input: kotlin.collections.List<kotlin.collections.Map<kotlin.String, T>?>) {\n", mapUniqueHelperName)
+		out.WriteString("    require(input.toSet().size == input.size) { \"Field value contains duplicate entries for uniqueItems.\" }\n}\n")
+	}
+	if floating {
+		fmt.Fprintf(out, "\nprivate fun <T : kotlin.Number> %s(input: kotlin.collections.List<T?>) {\n", floatingUniqueHelperName)
+		out.WriteString("    require(input.count { it == null } <= 1) { \"Field value contains duplicate entries for uniqueItems.\" }\n")
+		// Widening Float preserves its already mapped value exactly. Concrete
+		// Double equality below treats signed zeros equally; generic/boxed
+		// Comparable equality deliberately remains unchanged for other leaves.
+		out.WriteString("    val values = input.filterNotNull().map { it.toDouble() }\n")
+		out.WriteString("    require(values.all { it.isFinite() }) { \"Field value contains non-finite entries for uniqueItems.\" }\n")
+		out.WriteString("    val sorted = values.sorted()\n")
+		out.WriteString("    for (index in 1 until sorted.size) {\n")
+		out.WriteString("        require(sorted[index - 1] != sorted[index]) { \"Field value contains duplicate entries for uniqueItems.\" }\n")
+		out.WriteString("    }\n}\n")
+	}
 }
 
 func typeHasUnique(t schema.TypeRef) bool {
-	return t.Collection != nil && t.Collection.Unique || t.Element != nil && typeHasUnique(*t.Element)
+	return typeUsesUnique(t, nil)
+}
+
+func typeUsesUnique(t schema.TypeRef, accept func(schema.TypeRef) bool) bool {
+	return t.Collection != nil && t.Collection.Unique && (accept == nil || t.Element != nil && accept(*t.Element)) ||
+		t.Element != nil && typeUsesUnique(*t.Element, accept)
 }
 
 // Only executable consumers need a helper: standalone typealiases deliberately
 // do not enforce checks. Inspect semantic IR rather than source text/literals.
 func declarationHasUnique(d schema.Declaration) bool {
+	return declarationUsesUnique(d, nil)
+}
+
+func declarationUsesUnique(d schema.Declaration, accept func(schema.TypeRef) bool) bool {
 	switch d := d.(type) {
 	case *schema.Model:
 		for _, p := range d.Properties {
-			if typeHasUnique(p.Type) {
+			if typeUsesUnique(p.Type, accept) {
 				return true
 			}
 		}
 		for _, nested := range d.Nested {
-			if declarationHasUnique(nested) {
+			if declarationUsesUnique(nested, accept) {
 				return true
 			}
 		}
 	case *schema.ObjectUnion:
 		for _, variant := range d.Variants {
-			if declarationHasUnique(variant) {
+			if declarationUsesUnique(variant, accept) {
 				return true
 			}
 		}
 	case *schema.PrimitiveUnion:
-		return d.Object != nil && declarationHasUnique(d.Object)
+		return d.Object != nil && declarationUsesUnique(d.Object, accept)
 	case *schema.Hierarchy:
-		return d.Leaf != nil && declarationHasUnique(d.Leaf)
+		return d.Leaf != nil && declarationUsesUnique(d.Leaf, accept)
 	case *schema.SSEEvents:
 		for _, variant := range d.Variants {
-			if variant.Data != nil && typeHasUnique(*variant.Data) {
+			if variant.Data != nil && typeUsesUnique(*variant.Data, accept) {
 				return true
 			}
 		}
@@ -147,13 +202,17 @@ func declarationHasUnique(d schema.Declaration) bool {
 }
 
 func groupHasUnique(group schema.APIGroup) bool {
+	return groupUsesUnique(group, nil)
+}
+
+func groupUsesUnique(group schema.APIGroup, accept func(schema.TypeRef) bool) bool {
 	for _, op := range group.Operations {
 		for _, p := range op.Parameters {
-			if typeHasUnique(p.Type) {
+			if typeUsesUnique(p.Type, accept) {
 				return true
 			}
 		}
-		if op.Body != nil && typeHasUnique(op.Body.Type) || typeHasUnique(op.Response) {
+		if op.Body != nil && typeUsesUnique(op.Body.Type, accept) || typeUsesUnique(op.Response, accept) {
 			return true
 		}
 	}

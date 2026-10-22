@@ -1,0 +1,318 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FloatingUnique",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Code": {
+        "type": "number",
+        "format": "double"
+      },
+      "Floats": {
+        "type": "array",
+        "items": {
+          "type": "number",
+          "nullable": true,
+          "format": "float"
+        },
+        "uniqueItems": true
+      },
+      "Doubles": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Alias",
+          "nullable": true
+        },
+        "uniqueItems": true,
+        "nullable": true
+      },
+      "DefaultDoubles": {
+        "type": "array",
+        "items": {
+          "type": "number",
+          "format": "double",
+          "nullable": true
+        },
+        "uniqueItems": true,
+        "default": [
+          1,
+          null
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "floats": {
+            "$ref": "#/components/schemas/Floats"
+          },
+          "doubles": {
+            "$ref": "#/components/schemas/Doubles"
+          },
+          "nested": {
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "format": "double",
+                "nullable": true
+              },
+              "uniqueItems": true
+            }
+          },
+          "defaultFloats": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "nullable": true,
+              "format": "float"
+            },
+            "uniqueItems": true,
+            "default": [
+              1,
+              null
+            ]
+          },
+          "defaultDoubles": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double",
+              "nullable": true
+            },
+            "uniqueItems": true,
+            "default": [
+              1,
+              null
+            ]
+          },
+          "defaultNested": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "format": "double",
+                "nullable": true
+              },
+              "uniqueItems": true
+            },
+            "default": [
+              [
+                1,
+                null
+              ]
+            ]
+          },
+          "enumFloats": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "float",
+              "enum": [
+                0,
+                1,
+                1.000000001,
+                2,
+                null
+              ],
+              "nullable": true
+            },
+            "uniqueItems": true,
+            "default": [
+              0,
+              null
+            ]
+          },
+          "enumDoubles": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double",
+              "enum": [
+                1,
+                1.0,
+                2,
+                3,
+                4
+              ],
+              "minimum": 2,
+              "maximum": 4
+            },
+            "uniqueItems": true
+          },
+          "borrowedDoubles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Bridge",
+              "nullable": false
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "floats"
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Code"
+      },
+      "Source": {
+        "properties": {
+          "code": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double",
+            "enum": [
+              0,
+              1
+            ]
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Source/properties/code"
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doubles": {
+      "post": {
+        "operationId": "doubles",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Doubles"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Doubles"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "floats": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "format": "float",
+                      "nullable": true
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  },
+                  "doubles": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "format": "double",
+                      "nullable": true
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    },
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "values"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Doubles"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

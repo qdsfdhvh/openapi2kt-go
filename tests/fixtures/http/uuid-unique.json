@@ -1,0 +1,266 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "UUIDUnique",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Value": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "uuid"
+      },
+      "DirectValues": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "uuid",
+          "nullable": true
+        },
+        "uniqueItems": true
+      },
+      "Values": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Value",
+          "nullable": true
+        },
+        "uniqueItems": true,
+        "nullable": true
+      },
+      "DefaultValues": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "uuid",
+          "nullable": true
+        },
+        "uniqueItems": true,
+        "default": [
+          "550E8400E29B41D4A716446655440000",
+          null
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "directValues": {
+            "$ref": "#/components/schemas/DirectValues"
+          },
+          "values": {
+            "$ref": "#/components/schemas/Values"
+          },
+          "nested": {
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              },
+              "uniqueItems": true
+            }
+          },
+          "defaultDirectValues": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            },
+            "uniqueItems": true,
+            "default": [
+              "550e8400-e29b-41d4-a716-446655440000",
+              null
+            ]
+          },
+          "defaultValues": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            },
+            "uniqueItems": true,
+            "default": [
+              "550E8400E29B41D4A716446655440000",
+              null
+            ]
+          },
+          "defaultNested": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "nullable": true
+              },
+              "uniqueItems": true
+            },
+            "default": [
+              [
+                "550E8400E29B41D4A716446655440000",
+                null
+              ]
+            ]
+          },
+          "bridged": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/Bridge"
+            }
+          }
+        },
+        "required": [
+          "directValues"
+        ]
+      },
+      "Source": {
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "hop": {
+            "$ref": "#/components/schemas/Source/properties/id",
+            "nullable": false
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Source/properties/hop"
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/values": {
+      "post": {
+        "operationId": "values",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Values"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Values"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "directValues": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  },
+                  "values": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "nullable": true
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

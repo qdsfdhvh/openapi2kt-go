@@ -23,7 +23,6 @@ func TestNestedNativeEnumCollectionDefaultsNativeBoundsNullMembersAndNoDrop(t *t
 		{nestedNativeEnumField("LL", `{"type":"integer","enum":[1],"minimum":2}`, `[]`, ""), "E_SCHEMA_INVALID", "/items/items/enum"},
 		{nestedNativeEnumField("LL", `{"type":"number","enum":[1],"multipleOf":0.5}`, `[]`, ""), "E_SCHEMA_UNSUPPORTED", "/items/items/multipleOf"},
 		{nestedNativeEnumField("LL", `{"type":"integer","enum":[1]}`, `[[]]`, `"minItems":1,`), "E_SCHEMA_INVALID", "/default/0"},
-		{`{"type":"array","items":{"type":"array","uniqueItems":true,"items":{"type":"integer","enum":[1]}},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/items/uniqueItems"},
 		{nestedNativeEnumField("LM", `{"type":"boolean","nullable":true,"enum":[null,true,null]}`, `[]`, ""), "E_SCHEMA_INVALID", "/items/additionalProperties/enum/2"},
 	} {
 		put(t, p.Input, nestedNativeEnumDocument(tc.field))

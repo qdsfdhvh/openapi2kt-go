@@ -397,6 +397,13 @@ func (a *analyzer) objectUnionContext(union *unionView, name string, depth int, 
 			return nil, err
 		}
 		memberNullable := nullable && kind == "object" && !has(v, "allOf")
+		if has(v, "allOf") && has(branch.Schema, "$ref") {
+			bound, admitted, err := a.nullableObjectReferenceMember(branch, depth)
+			if err != nil {
+				return nil, err
+			}
+			memberNullable = admitted && bound.Schema == v && bound.Pointer == p
+		}
 		if nullable && !memberNullable {
 			return nil, unsupported(p)
 		}
@@ -600,9 +607,29 @@ func (a *analyzer) objectUnionContext(union *unionView, name string, depth int, 
 		if standalone && isRef {
 			component, err := a.resolve(reference, union.Branches[index].Pointer)
 			if err != nil {
-				return nil, err
+				// A newly admitted internal member owns a fresh union variant,
+				// independently of the canonical DTO it borrows. Derive this new
+				// subtype name from the original terminal Pointer, never a guessed
+				// physical classifier or an alias-owned nested namespace.
+				target, admitted, failure := a.nullableObjectReferenceMember(union.Branches[index], depth)
+				if failure != nil {
+					return nil, failure
+				}
+				if !admitted || target.Schema != branch.schema || target.Pointer != branch.pointer {
+					return nil, err
+				}
+				wire, failure := naming.DecodePointerSegment(target.Pointer[strings.LastIndexByte(target.Pointer, '/')+1:], target.Pointer)
+				if failure != nil {
+					return nil, failure
+				}
+				local, failure := naming.ClassName(wire, target.Pointer)
+				if failure != nil {
+					return nil, failure
+				}
+				variant = uniqueVariantName(local, index, used)
+			} else {
+				variant = uniqueVariantName(component.Name, index, used)
 			}
-			variant = uniqueVariantName(component.Name, index, used)
 		} else {
 			value := ""
 			if len(values) > 0 {

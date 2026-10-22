@@ -1,0 +1,360 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "StringEnumUnique",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Rows": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "done",
+            "null",
+            null
+          ],
+          "nullable": true
+        },
+        "uniqueItems": true
+      },
+      "Holder": {
+        "properties": {
+          "codes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ready",
+                "done",
+                "null",
+                null
+              ],
+              "nullable": true
+            },
+            "uniqueItems": true,
+            "default": [
+              "ready",
+              null
+            ]
+          },
+          "rows": {
+            "$ref": "#/components/schemas/Rows",
+            "nullable": true
+          },
+          "nested": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "done",
+                  "null",
+                  null
+                ],
+                "nullable": true
+              },
+              "uniqueItems": true
+            },
+            "default": [
+              [
+                "ready",
+                null
+              ]
+            ]
+          },
+          "bounded": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "ok",
+                "x"
+              ],
+              "minLength": 2
+            },
+            "uniqueItems": true
+          },
+          "refCodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateAlias"
+            },
+            "uniqueItems": true
+          },
+          "refNarrow": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateNarrow"
+            },
+            "uniqueItems": true
+          },
+          "internalCodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Owner/properties/state",
+              "nullable": true
+            },
+            "uniqueItems": true
+          },
+          "internalNarrow": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Owner/properties/narrow"
+            },
+            "uniqueItems": true
+          },
+          "bridgeCodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StateBridge"
+            },
+            "uniqueItems": true
+          },
+          "refRows": {
+            "$ref": "#/components/schemas/RefRows",
+            "default": [
+              "ready",
+              null
+            ]
+          },
+          "refNested": {
+            "$ref": "#/components/schemas/RefNested",
+            "default": [
+              {
+                "entry": [
+                  "ready",
+                  null
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "State": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          "ready",
+          "done",
+          "null",
+          null
+        ]
+      },
+      "StateAlias": {
+        "$ref": "#/components/schemas/State",
+        "nullable": true
+      },
+      "StateNarrow": {
+        "$ref": "#/components/schemas/StateAlias",
+        "nullable": false
+      },
+      "Owner": {
+        "properties": {
+          "state": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "ready",
+              "done",
+              "null",
+              null
+            ]
+          },
+          "hop": {
+            "$ref": "#/components/schemas/StateAlias",
+            "nullable": true
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/Owner/properties/hop",
+            "nullable": false
+          }
+        }
+      },
+      "StateBridge": {
+        "$ref": "#/components/schemas/Owner/properties/hop"
+      },
+      "RefRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/StateAlias"
+        },
+        "uniqueItems": true,
+        "nullable": true
+      },
+      "RefNested": {
+        "type": "array",
+        "items": {
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Owner/properties/state",
+              "nullable": true
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "codes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ready",
+                        "done",
+                        "null",
+                        null
+                      ],
+                      "nullable": true
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  },
+                  "refCodes": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/StateAlias"
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rows": {
+      "post": {
+        "operationId": "rows",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rows"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rows"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/refrows": {
+      "post": {
+        "operationId": "refrows",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefRows"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefRows"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

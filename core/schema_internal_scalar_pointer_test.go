@@ -231,7 +231,7 @@ func TestSchemaInternalScalarPointerNoDropUniqueAndCatalogCounts(t *testing.T) {
 	} {
 		aliasFailure(t, []byte(prefix+paths+`}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Source/properties/leaf/minLength")
 	}
-	aliasFailure(t, pointerDoc(`{"type":"number","format":"double"}`, `{"type":"array","uniqueItems":true,"items":`+pointerRef("Source/properties/leaf")+`}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Consumer/properties/v/uniqueItems")
+	floatingUniqueGraduation(t, pointerDoc(`{"type":"number","format":"double"}`, `{"type":"array","uniqueItems":true,"items":`+pointerRef("Source/properties/leaf")+`}`))
 	aggregationReport(t, pointerDoc(`{"type":["integer","null"],"minimum":0}`, `{"type":"array","uniqueItems":true,"items":`+pointerRef("Source/properties/leaf")+`}`))
 	for _, name := range []string{"Nullable", "Null~able/slot"} {
 		key, _ := json.Marshal(name)

@@ -184,6 +184,9 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 		return nil, unsupported(naming.Pointer(pointer, "type"))
 	}
 	keys := []string{"type", "nullable", "properties", "required"}
+	if a.componentDefaultCounts(v, pointer) {
+		keys = append(keys, "minProperties", "maxProperties")
+	}
 	if allowOwnDefault {
 		// A property may declare its own default. Its nested model plan owns that
 		// annotation; this walk only validates the outer supplied value.
@@ -201,6 +204,13 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 		return nil, err
 	}
 	node := &nestedDefaultNode{schema: v, pointer: pointer, ty: TypeRef{Kind: JSON}, object: true}
+	if a.componentDefaultCounts(v, pointer) {
+		checked, err := a.checkedCollection(TypeRef{Kind: JSONObject}, v, pointer)
+		if err != nil {
+			return nil, err
+		}
+		node.objectCounts = checked.Collection
+	}
 	if nullable {
 		node.ty = node.ty.Null()
 	}
@@ -653,6 +663,12 @@ func (a *analyzer) objectDefaultInitializer(f field) (string, *diagnostic.Diagno
 func (node *nestedDefaultNode) objectValue(v *document.Value, pointer string) (string, *diagnostic.Diagnostic) {
 	if v.Kind() != document.Object {
 		return "", invalid("A typed object default must be a JSON object.", pointer)
+	}
+	if counts := node.objectCounts; counts != nil {
+		n := int64(len(v.Members()))
+		if counts.Minimum != nil && n < *counts.Minimum || counts.Maximum != nil && n > *counts.Maximum {
+			return "", invalid("Object default must satisfy its retained property counts.", pointer)
+		}
 	}
 	index := map[string]*objectDefaultProperty{}
 	for i := range node.objectFields {

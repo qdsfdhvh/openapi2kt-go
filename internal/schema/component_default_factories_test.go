@@ -300,8 +300,7 @@ func TestComponentDefaultFactoryNullableObjectAuthority(t *testing.T) {
 	if model == nil || model.ComponentDefault != "null" {
 		t.Fatalf("lost nullable component default: %+v", model)
 	}
-	// The nullable-component-counts role stays excluded. A non-null annotation is
-	// an ordinary value of the nullable object's declared type.
+	// A non-null annotation is an ordinary value of the nullable declared type.
 	for _, checked := range []bool{false, true} {
 		nonNull, _, err := Analyze(loadComponentDocument(t, `{"S":{"type":"object","nullable":true,"required":["z"],"properties":{"z":{"type":"string"}},"default":{"z":"1"}}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: checked})
 		if err != nil {
@@ -316,8 +315,12 @@ func TestComponentDefaultFactoryNullableObjectAuthority(t *testing.T) {
 		{"counts non-null", `{"S":{"type":"object","nullable":true,"minProperties":0,"properties":{"z":{"type":"string"}},"default":{"z":"1"}}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			if _, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true}); err == nil {
-				t.Fatal("excluded nullable role admitted")
+			plan, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true})
+			if err != nil || componentModel(plan.Models, "SDto").ComponentDefault == "" {
+				t.Fatal("counted component factory lost", err)
+			}
+			if _, _, err := Analyze(loadComponentDocument(t, tc.schemas), Options{PackageName: "org.example.defaults", Suffix: "Dto"}); err == nil {
+				t.Fatal("counted component factory lost validation opt-in")
 			}
 		})
 	}

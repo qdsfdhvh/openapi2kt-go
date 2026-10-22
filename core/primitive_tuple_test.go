@@ -34,7 +34,7 @@ func TestPrimitiveTupleWholeLoweredControl(t *testing.T) {
 				if err != nil || len(got.Artifacts.Files) == 0 {
 					t.Fatal("whole envelope control", err)
 				}
-				for name, element := range map[string]string{"StringTupleDto": "kotlin.String", "LongTupleDto": "kotlin.Long", "MixedTupleDto": "kotlinx.serialization.json.JsonElement", "PriorityTupleDto": "kotlin.String"} {
+				for name, element := range map[string]string{"StringTupleDto": "kotlin.String", "LongTupleDto": "kotlin.Long", "MixedTupleDto": "kotlinx.serialization.json.JsonElement", "PriorityTupleDto": "kotlin.String", "DateTupleDto": "kotlinx.datetime.LocalDate", "InstantTupleDto": "kotlin.time.Instant?", "MixedTemporalTupleDto": "kotlinx.serialization.json.JsonElement", "PriorityTemporalTupleDto": "kotlinx.datetime.LocalDate"} {
 					if !strings.Contains(source(t, got, "models/"+name), "List<"+element+">") {
 						t.Fatal(name, element)
 					}
@@ -59,7 +59,7 @@ func TestPrimitiveTupleDesiredWholeEnvelope(t *testing.T) {
 				if e != nil || !reflect.DeepEqual(got, again) {
 					t.Fatal("nondeterministic", e)
 				}
-				for name, element := range map[string]string{"StringTupleDto": "kotlin.String", "LongTupleDto": "kotlin.Long", "MixedTupleDto": "kotlinx.serialization.json.JsonElement", "PriorityTupleDto": "kotlin.String"} {
+				for name, element := range map[string]string{"StringTupleDto": "kotlin.String", "LongTupleDto": "kotlin.Long", "MixedTupleDto": "kotlinx.serialization.json.JsonElement", "PriorityTupleDto": "kotlin.String", "DateTupleDto": "kotlinx.datetime.LocalDate", "InstantTupleDto": "kotlin.time.Instant?", "MixedTemporalTupleDto": "kotlinx.serialization.json.JsonElement", "PriorityTemporalTupleDto": "kotlinx.datetime.LocalDate"} {
 					if !strings.Contains(source(t, got, "models/"+name), "List<"+element+">") {
 						t.Fatal(name, element)
 					}

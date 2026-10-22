@@ -83,7 +83,6 @@ func TestStringEnumCollectionDefaultsChecksAndExcludedRoles(t *testing.T) {
 	for _, tc := range []struct{ field, code, tail string }{
 		{`{"type":"array","items":{"enum":["one"]},"minItems":1,"default":[]}`, "E_SCHEMA_INVALID", "/default"},
 		{`{"additionalProperties":{"enum":["one"]},"maxProperties":0,"default":{"a":"one"}}`, "E_SCHEMA_INVALID", "/default"},
-		{`{"type":"array","items":{"enum":["one"]},"uniqueItems":true,"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/uniqueItems"},
 		{`{"additionalProperties":{"enum":["one"],"maximum":1},"default":{}}`, "E_SCHEMA_UNSUPPORTED", "/additionalProperties/maximum"},
 	} {
 		r := request(fieldDoc(tc.field), "Dto")

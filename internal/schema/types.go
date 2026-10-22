@@ -255,6 +255,8 @@ type analyzer struct {
 	// componentDefaultSchemas marks original component roots whose own `default`
 	// the factory planner validates instead of the shared type plan.
 	componentDefaultSchemas map[*document.Value]bool
+	// Count permission exists only during one component's own default walk.
+	componentDefaultCountRoot *document.Value
 	// componentSchemas keeps the original /components/schemas object so the
 	// reference-wrapper dispatch can read a target before a.components exists.
 	componentSchemas *document.Value

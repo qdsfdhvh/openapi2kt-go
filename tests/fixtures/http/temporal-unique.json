@@ -1,0 +1,238 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TemporalUnique",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Moment": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "Dates": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "date",
+          "nullable": true
+        },
+        "uniqueItems": true
+      },
+      "Moments": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Moment",
+          "nullable": true
+        },
+        "uniqueItems": true,
+        "nullable": true
+      },
+      "DefaultMoments": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "date-time",
+          "nullable": true
+        },
+        "uniqueItems": true,
+        "default": [
+          "2026-01-02T05:04:05+02:00",
+          null
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "dates": {
+            "$ref": "#/components/schemas/Dates"
+          },
+          "moments": {
+            "$ref": "#/components/schemas/Moments"
+          },
+          "nested": {
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "uniqueItems": true
+            }
+          },
+          "defaultDates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date",
+              "nullable": true
+            },
+            "uniqueItems": true,
+            "default": [
+              "2024-02-29",
+              null
+            ]
+          },
+          "defaultMoments": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "uniqueItems": true,
+            "default": [
+              "2026-01-02T05:04:05+02:00",
+              null
+            ]
+          },
+          "defaultNested": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "uniqueItems": true
+            },
+            "default": [
+              [
+                "2026-01-02T05:04:05+02:00",
+                null
+              ]
+            ]
+          }
+        },
+        "required": [
+          "dates"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/moments": {
+      "post": {
+        "operationId": "moments",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Moments"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Moments"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "dates": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "date",
+                      "nullable": true
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  },
+                  "moments": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true
+                    },
+                    "uniqueItems": true,
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

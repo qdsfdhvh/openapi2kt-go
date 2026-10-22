@@ -20,11 +20,10 @@ func TestCollectionUniqueGrammarAndEquality(t *testing.T) {
 		}
 	}
 	for _, leaf := range []string{
-		`{"type":"number"}`, `{"type":"number","format":"float"}`, `{"type":"array","items":{"type":"string"}}`,
-		`{"type":"object","additionalProperties":{"type":"string"}}`,
-		`{"type":"object","properties":{"v":{"type":"string"}}}`, `{"type":"integer","enum":[1,2]}`,
-		`{"type":"boolean","enum":[true]}`, `{"type":"string","enum":["x"]}`, `{"type":"integer","const":1}`,
-		`{"type":"string","format":"date"}`, `{"type":"string","format":"date-time"}`, `{"type":"string","format":"byte"}`,
+		`{"type":"array","items":{"type":"string"}}`,
+		`{"type":"object","properties":{"v":{"type":"string"}}}`,
+		`{"type":"integer","const":1}`,
+		`{"type":"string","format":"byte"}`,
 		`{"type":"string","x-native-type":"bigint"}`, `{"type":"integer","x-kotlin-value-class":true}`,
 	} {
 		// Nominal value classes are component-only; validate that separately below.
@@ -33,12 +32,21 @@ func TestCollectionUniqueGrammarAndEquality(t *testing.T) {
 		}
 		aliasFailure(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":`+leaf+`}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Record/properties/value/uniqueItems")
 	}
+	mapUniqueGraduation(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":{"type":"object","additionalProperties":{"type":"string"}}}`))
+	for _, leaf := range []string{`{"type":"number"}`, `{"type":"number","format":"float"}`} {
+		floatingUniqueGraduation(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":`+leaf+`}`))
+	}
+	stringEnumUniqueGraduation(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":{"type":"string","enum":["x"]}}`))
+	for _, leaf := range []string{`{"type":"string","format":"date"}`, `{"type":"string","format":"date-time"}`} {
+		// Preserve the exact original temporal negatives as opt-in positives.
+		temporalUniqueGraduation(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":`+leaf+`}`))
+	}
 	// Keep the original JsonObject input as an explicit new-profile regression.
 	jsonValues := aggregationReport(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":{"type":"object","additionalProperties":true}}`))
 	if !strings.Contains(source(t, jsonValues, "Record"), "`openapi-kt unique JSON items`(value)") {
 		t.Fatal("original JsonObject equality projection lost", jsonValues)
 	}
-	for _, leaf := range []string{`{"type":"integer","enum":[1]}`, `{"type":"integer","const":1}`, `{"type":"string","x-native-type":"bigint"}`, `{"type":"integer","x-kotlin-value-class":true}`} {
+	for _, leaf := range []string{`{"type":"integer","const":1}`, `{"type":"string","x-native-type":"bigint"}`, `{"type":"integer","x-kotlin-value-class":true}`} {
 		aliasFailure(t, schemas(`{"Leaf":`+leaf+`,"Record":{"type":"object","properties":{"value":{"type":"array","uniqueItems":true,"items":{"$ref":"#/components/schemas/Leaf"}}}}}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Record/properties/value/uniqueItems")
 	}
 	for _, leaf := range []string{`{"type":"string"}`, `{"type":"integer"}`, `{"type":"integer","format":"int64"}`, `{"type":"boolean"}`, `{"type":["boolean","null"]}`, `{"anyOf":[{"type":"integer"},{"type":"null"}]}`} {
@@ -59,7 +67,7 @@ func TestCollectionUniqueGrammarAndEquality(t *testing.T) {
 }
 
 func TestCollectionUniqueFalseNoop(t *testing.T) {
-	for _, leaf := range []string{`{"type":"string"}`, `{"type":"number"}`, `{"type":"array","items":{"type":"string"}}`, `{"type":"object","additionalProperties":true}`, `{"type":"object","properties":{"v":{"type":"string"}}}`} {
+	for _, leaf := range []string{`{"enum":["ready",null],"nullable":true}`, `{"type":"string"}`, `{"type":"string","format":"date"}`, `{"type":"string","format":"date-time"}`, `{"type":"number"}`, `{"type":"array","items":{"type":"string"}}`, `{"type":"object","additionalProperties":true}`, `{"type":"object","properties":{"v":{"type":"string"}}}`} {
 		plain := fieldDoc(`{"type":"array","items":` + leaf + `}`)
 		noop := fieldDoc(`{"type":"array","uniqueItems":false,"items":` + leaf + `}`)
 		a, b := request(plain, ""), request(noop, "")
@@ -103,7 +111,7 @@ func TestCollectionUniqueNoDrop(t *testing.T) {
 			}
 		}
 	}
-	aliasFailure(t, schemas(`{"Unused":{"type":"object","properties":{"v":{"type":"array","uniqueItems":true,"items":{"type":"number"}}}}}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Unused/properties/v/uniqueItems")
+	floatingUniqueGraduation(t, schemas(`{"Unused":{"type":"object","properties":{"v":{"type":"array","uniqueItems":true,"items":{"type":"number"}}}}}`))
 }
 
 func TestCollectionUniqueDepthSlotsAndIdentity(t *testing.T) {
@@ -156,7 +164,7 @@ func TestCollectionUniqueDepthSlotsAndIdentity(t *testing.T) {
 }
 
 func TestCollectionUniqueOperationProjectionSources(t *testing.T) {
-	for _, leaf := range []string{`{"type":"integer","enum":[1]}`, `{"type":"boolean","enum":[true]}`, `{"type":"string","enum":["x"]}`, `{"type":"integer","const":1}`, `{"type":"string","x-native-type":"bigint"}`} {
+	for _, leaf := range []string{`{"type":"string","enum":["x"]}`, `{"type":"integer","const":1}`, `{"type":"string","x-native-type":"bigint"}`} {
 		shape := `{"type":"array","uniqueItems":true,"items":` + leaf + `}`
 		aliasFailure(t, httpDoc(`{"responses":{"200":{"content":{"application/json":{"schema":`+shape+`}}}}}`), "E_SCHEMA_UNSUPPORTED", "/paths/~1ping/get/responses/200/content/application~1json/schema/uniqueItems")
 	}

@@ -16,7 +16,7 @@ If composition products retain multiple occurrences of one source node under its
 
 Nearest nullable true/false intent and all erased internal/named reference hops follow the [reference-chain contract](hierarchy-reference-chains.md). Canonical classes and their direct serializers remain non-null; nullable typed views use the nullable codec. Self/mutual nominal recursion, list/map consumers, request Patch, HTTP and SSE data use the same physical types. Container nullability remains independent from item/value nullability.
 
-This extends typed reference ownership. Existing [object union/allOf](union-allof.md) merging and dispatch rules remain: later field overrides, finite tag/key dispatch and Unknown behavior are approximations rather than exact JSON Schema intersections or oneOf validation. Borrowing an internal DTO reference as an allOf or union schema branch remains excluded; structured common fields and dictionary intersections need their own contracts.
+This extends typed reference ownership. Existing [object union/allOf](union-allof.md) merging and dispatch rules remain: later field overrides, finite tag/key dispatch and Unknown behavior are approximations rather than exact JSON Schema intersections or oneOf validation. [Nullable ordinary DTO union members](nullable-object-reference-members.md#composed-and-internal-constructor-sources) separately admit field borrowing from eligible unique internal/composed constructors. Internal DTO allOf intersections, structured common fields and dictionary intersections keep their separate contracts.
 
 ## Limits and evidence
 

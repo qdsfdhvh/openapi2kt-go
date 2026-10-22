@@ -84,13 +84,7 @@ func (a *analyzer) primitiveArrayDefault(v *document.Value, name, pointer string
 	for index, member := range value.Items() {
 		location := fmt.Sprintf("%s/%d", at, index)
 		if seen != nil {
-			encoded, _ := member.MarshalJSON()
-			key := string(encoded)
-			if scalar == "kotlin.Int" || scalar == "kotlin.Long" {
-				if integer, ok := integerLiteral(member); ok {
-					key = strconv.FormatInt(integer, 10)
-				}
-			}
+			key := uniqueScalarDefaultKey(leaf, member)
 			if seen[key] {
 				return TypeRef{}, "", invalid("Array default members must satisfy uniqueItems.", location)
 			}

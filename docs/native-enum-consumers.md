@@ -28,6 +28,8 @@ The same mapped Float/Double semantics, finite-value check and 240 raw-member li
 
 [Named native enum borrowing](named-native-enums.md) additionally retains checks from actual named catalog sources through internal/borrowed graphs.
 
+Int/Long/Boolean enum lists additionally accept opt-in [native uniqueness](native-enum-unique.md), retaining these membership/bounds checks and existing source authority. Float/Double enum lists follow the separate [finite floating equality contract](floating-unique.md).
+
 ## No-drop and unsupported roles
 
 Ignored additionalProperties, discarded allOf fields and raw/stringification projections cannot erase enforcing enum metadata; validation rejects those source `enum` locations. Generic primitive union pins, multi-branch scalar enum union aggregation, const intersections, native overrides/value-class annotations, String/null-only vocabularies, general internal/named enum graphs and closed String-enum validation remain separate. A single scalar+null fold can reuse the direct scalar check when existing normalization retains that branch; exact oneOf match-count is unchanged.

@@ -106,8 +106,8 @@ func TestReferencedTemporalCollectionFieldDefaultsExcludedSourceRolesAndNoDrop(t
 		for _, own := range []string{"", `,"default":[]`} {
 			temporalDefaultFailure(t, schemas(`{"Owner":{"properties":{"rows":{"type":"array","items":{"type":"string","format":"date"}}}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Owner/properties/rows"`+own+`}}}}`), checked, "E_REF_UNSUPPORTED", "/components/schemas/Holder/properties/v")
 		}
-		temporalDefaultFailure(t, referencedFieldDoc(`{"type":"array","uniqueItems":true,"items":{"type":"string","format":"date"}}`, `[]`, ""), checked, "E_SCHEMA_UNSUPPORTED", "")
 	}
+	temporalUniqueGraduation(t, referencedFieldDoc(`{"type":"array","uniqueItems":true,"items":{"type":"string","format":"date"}}`, `[]`, ""))
 	// Validated false remains exactly effect-free, including default identity.
 	r := request(referencedFieldDoc(`{"type":"array","items":{"type":"string","format":"date"}}`, `[]`, ""), "Dto")
 	r.Options.Validation = true

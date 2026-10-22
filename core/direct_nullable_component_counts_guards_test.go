@@ -45,7 +45,6 @@ func TestDirectNullableComponentCountsOriginalGrammar(t *testing.T) {
 	}
 	for _, tc := range []struct{ sibling, tail string }{
 		{`,"required":["missing"]`, ""},
-		{`,"default":null`, "/default"},
 		{`,"additionalProperties":{"type":"string","minLength":1}`, "/additionalProperties/minLength"},
 	} {
 		code := "E_SCHEMA_UNSUPPORTED"
@@ -58,15 +57,11 @@ func TestDirectNullableComponentCountsOriginalGrammar(t *testing.T) {
 
 func TestDirectNullableComponentCountsKeepExcludedRoles(t *testing.T) {
 	for _, body := range []string{
-		`{"nullable":true,"allOf":[{"properties":{"value":{"type":"string"}}}],"minProperties":0}`,
-		`{"type":["object","null"],"properties":{"value":{"type":"string"}},"allOf":[{}],"minProperties":0}`,
 		`{"allOf":[{"nullable":true,"properties":{"value":{"type":"string"}}}],"minProperties":0}`,
-		`{"nullable":true,"allOf":[{"nullable":false,"minProperties":0,"properties":{"value":{"type":"string"}}}]}`,
 		`{"nullable":true,"properties":{},"minProperties":0}`,
 		`{"nullable":true,"type":"object","minProperties":0}`,
 		`{"nullable":true,"properties":{"pin":{"const":"fixed"}},"minProperties":0}`,
 		`{"$ref":"#/components/schemas/Target","nullable":true,"minProperties":0}`,
-		`{"allOf":[{"$ref":"#/components/schemas/Target"}],"nullable":true,"minProperties":0}`,
 		`{"nullable":true,"oneOf":[{"properties":{"value":{"type":"string"}}}],"minProperties":0}`,
 	} {
 		input := schemas(`{"Record":` + body + `,"Target":{"properties":{"value":{"type":"string"}}}}`)

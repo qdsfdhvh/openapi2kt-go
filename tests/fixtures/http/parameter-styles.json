@@ -1,0 +1,479 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Choice": {
+        "type": "string",
+        "enum": [
+          "ready/value",
+          "done"
+        ]
+      },
+      "DeepEnums": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Choice",
+          "nullable": true
+        }
+      },
+      "DeepAlias": {
+        "$ref": "#/components/schemas/DeepEnums",
+        "nullable": true
+      },
+      "Code": {
+        "type": "string",
+        "x-kotlin-value-class": true
+      }
+    }
+  },
+  "paths": {
+    "/labelscalar/{value}": {
+      "get": {
+        "operationId": "labelscalar",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "label",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/labelscalarExploded/{value}": {
+      "get": {
+        "operationId": "labelscalarExploded",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "label",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/labelarray/{value}": {
+      "get": {
+        "operationId": "labelarray",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "label",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Choice",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/labelarrayExploded/{value}": {
+      "get": {
+        "operationId": "labelarrayExploded",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "label",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Choice",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/matrixscalar/{value}": {
+      "get": {
+        "operationId": "matrixscalar",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "matrix",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/matrixscalarExploded/{value}": {
+      "get": {
+        "operationId": "matrixscalarExploded",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "matrix",
+            "explode": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/matrixarray/{value}": {
+      "get": {
+        "operationId": "matrixarray",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "matrix",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Choice",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/matrixarrayExploded/{value}": {
+      "get": {
+        "operationId": "matrixarrayExploded",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "matrix",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Choice",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/dictionary": {
+      "get": {
+        "operationId": "dictionary",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/labelmap/{value}": {
+      "get": {
+        "operationId": "labelmap",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "label",
+            "explode": false,
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/components/schemas/Choice",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/labelmapExploded/{value}": {
+      "get": {
+        "operationId": "labelmapExploded",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "label",
+            "explode": true,
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/components/schemas/Choice",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/matrixmap/{value}": {
+      "get": {
+        "operationId": "matrixmap",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "matrix",
+            "explode": false,
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/components/schemas/Choice",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/matrixmapExploded/{value}": {
+      "get": {
+        "operationId": "matrixmapExploded",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "path",
+            "required": true,
+            "style": "matrix",
+            "explode": true,
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/components/schemas/Choice",
+                "nullable": true
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/deepStrings": {
+      "get": {
+        "operationId": "deepStrings",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "style": "deepObject",
+            "schema": {
+              "additionalProperties": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/deepEnums": {
+      "get": {
+        "operationId": "deepEnums",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "style": "deepObject",
+            "schema": {
+              "$ref": "#/components/schemas/DeepAlias"
+            },
+            "required": true,
+            "explode": true
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/deepCodes": {
+      "get": {
+        "operationId": "deepCodes",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "style": "deepObject",
+            "schema": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/Code",
+                "nullable": true
+              }
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/deepNumbers": {
+      "get": {
+        "operationId": "deepNumbers",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "style": "deepObject",
+            "schema": {
+              "additionalProperties": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/deepBooleans": {
+      "get": {
+        "operationId": "deepBooleans",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "style": "deepObject",
+            "schema": {
+              "additionalProperties": {
+                "type": "boolean"
+              }
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/deepWatch": {
+      "get": {
+        "operationId": "deepWatch",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "style": "deepObject",
+            "schema": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/Choice",
+                "nullable": true
+              }
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
