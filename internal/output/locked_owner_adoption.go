@@ -77,7 +77,7 @@ func readLockedAdoptionInventory(root string, owners []string, split bool, addit
 	if e := inspectRecovery(canonical); e != nil {
 		return empty, e
 	}
-	identity, err := os.Stat(canonical)
+	identity, err := captureRootIdentity(canonical)
 	if os.IsNotExist(err) {
 		return empty, lockedAdoptionInvalid()
 	}

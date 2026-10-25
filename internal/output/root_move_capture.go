@@ -71,6 +71,24 @@ func validateRootMoveCapture(s RootMoveState, kotlinLimit int, invalid *diagnost
 	return m, nil
 }
 
+// Stat through a handle so Windows captures the file ID immediately rather than
+// resolving a saved path lazily when os.SameFile is called after a replacement.
+func captureRootIdentity(root string) (os.FileInfo, error) {
+	f, err := os.Open(root)
+	if err != nil {
+		return nil, err
+	}
+	info, err := f.Stat()
+	closeErr := f.Close()
+	if err != nil {
+		return nil, err
+	}
+	if closeErr != nil {
+		return nil, closeErr
+	}
+	return info, nil
+}
+
 // Resolve once for IO, then recheck the declared binding and physical identity
 // before inputs. A changed ancestor cannot redirect the captured file reads.
 func readMetadataRootCapture(root string, stale *diagnostic.Diagnostic) (RootMoveState, os.FileInfo, *diagnostic.Diagnostic) {
@@ -78,7 +96,7 @@ func readMetadataRootCapture(root string, stale *diagnostic.Diagnostic) (RootMov
 	if e != nil {
 		return RootMoveState{}, nil, e
 	}
-	identity, err := os.Stat(canonical)
+	identity, err := captureRootIdentity(canonical)
 	if err != nil {
 		return RootMoveState{}, nil, ioFailure()
 	}

@@ -280,7 +280,7 @@ func TestRootMoveMergeBothSideCAS(t *testing.T) {
 					put(t, filepath.Join(root, ownerNameLockFile(owner)), []byte("edited"))
 					code = "E_NAME_LOCK_MODIFIED"
 				case "mode":
-					if e := os.Chmod(path, 0600); e != nil {
+					if e := os.Chmod(path, 0444); e != nil {
 						t.Fatal(e)
 					}
 				case "mtime":

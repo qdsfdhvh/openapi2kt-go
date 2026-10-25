@@ -24,7 +24,7 @@ func TestRootMoveSharedMergeProfilesKeepOriginalTargetAttributes(t *testing.T) {
 							if f.Content != g.Content {
 								t.Fatal("bad shared fixture")
 							}
-							if reflect.DeepEqual(a[f.Path], b[f.Path]) {
+							if reflect.DeepEqual(a[filepath.FromSlash(f.Path)], b[filepath.FromSlash(f.Path)]) {
 								t.Fatal("fixture must vary source and target attributes")
 							}
 							shared[f.Path] = true
@@ -60,25 +60,25 @@ func TestRootMoveSharedMergeProfilesKeepOriginalTargetAttributes(t *testing.T) {
 					}
 					sourceAfter, targetAfter := snapshot(t, src), snapshot(t, dst)
 					for path := range target.Entries {
-						if path != manifestName && !reflect.DeepEqual(b[path], targetAfter[path]) {
+						if path != manifestName && !reflect.DeepEqual(b[filepath.FromSlash(path)], targetAfter[filepath.FromSlash(path)]) {
 							t.Fatal("shared merge rewrote original target", path)
 						}
 					}
 					for name, paths := range s.Owners {
 						if owner != "" && name != owner {
 							for _, path := range paths {
-								if !reflect.DeepEqual(a[path], sourceAfter[path]) {
+								if !reflect.DeepEqual(a[filepath.FromSlash(path)], sourceAfter[filepath.FromSlash(path)]) {
 									t.Fatal("source peer changed", path)
 								}
 							}
 							continue
 						}
 						for _, path := range paths {
-							want := a[path]
+							want := a[filepath.FromSlash(path)]
 							if shared[path] {
-								want = b[path]
+								want = b[filepath.FromSlash(path)]
 							}
-							if !reflect.DeepEqual(want, targetAfter[path]) {
+							if !reflect.DeepEqual(want, targetAfter[filepath.FromSlash(path)]) {
 								t.Fatal("wrong shared/new target attribute authority", path)
 							}
 						}
@@ -216,7 +216,7 @@ func TestRootMoveSharedMergeBothSideCAS(t *testing.T) {
 					put(t, filepath.Join(root, ownerNameLockFile(owner)), []byte("edited"))
 					code = "E_NAME_LOCK_MODIFIED"
 				case "mode":
-					if e := os.Chmod(path, 0600); e != nil {
+					if e := os.Chmod(path, 0444); e != nil {
 						t.Fatal(e)
 					}
 				case "mtime":
