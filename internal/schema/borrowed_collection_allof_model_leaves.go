@@ -35,8 +35,13 @@ type borrowedAllOfLeafUse struct {
 }
 
 func (a *analyzer) admitBorrowedAllOfModel(target *resolvedSchema, source string) bool {
+	admitted, _ := a.admitBorrowedAllOfModelBudget(target, source, nil)
+	return admitted
+}
+
+func (a *analyzer) admitBorrowedAllOfModelBudget(target *resolvedSchema, source string, budget *tupleAllOfSourceBudget) (bool, *diagnostic.Diagnostic) {
 	if !composedModelCandidate(target.Schema) {
-		return false
+		return false, nil
 	}
 	bound := false
 	if target.Catalog != nil {
@@ -45,16 +50,30 @@ func (a *analyzer) admitBorrowedAllOfModel(target *resolvedSchema, source string
 		bound = a.bindInternalModel(target, source)
 	}
 	if !bound {
-		return false
+		return false, nil
 	}
 	if a.borrowedAllOfLeaves == nil {
 		a.borrowedAllOfLeaves = map[*document.Value]*borrowedAllOfLeafUse{}
 	}
 	if old := a.borrowedAllOfLeaves[target.Schema]; old != nil {
+		if budget != nil && !budget.Seen[target.Schema] {
+			if err := budget.charge(0, len(old.Bytes), source); err != nil {
+				return false, err
+			}
+			for _, node := range old.Nodes {
+				if err := budget.charge(1+len(node.Members)+len(node.Items), 0, source); err != nil {
+					return false, err
+				}
+			}
+			if err := budget.charge(len(old.Refs), 0, source); err != nil {
+				return false, err
+			}
+			budget.Seen[target.Schema] = true
+		}
 		if source < old.Source {
 			old.Source = source
 		}
-		return true
+		return true, nil
 	}
 	owner := target.SourceCatalog
 	if owner == nil && target.Deferred != nil {
@@ -69,25 +88,35 @@ func (a *analyzer) admitBorrowedAllOfModel(target *resolvedSchema, source string
 		owner = a.componentsByOriginalSchema(target.Schema)
 	}
 	if owner == nil {
-		return false
+		return false, nil
 	}
 	bytes, _ := target.Schema.MarshalJSON()
+	if err := budget.charge(0, len(bytes), source); err != nil {
+		return false, err
+	}
 	use := &borrowedAllOfLeafUse{Owner: owner, OwnerSchema: owner.Schema, Schema: target.Schema, Pointer: target.Pointer, Source: source, Bytes: string(bytes)}
-	nodes, refs, err := a.borrowedAllOfSource(target.Schema, target.Pointer)
+	nodes, refs, err := a.borrowedAllOfSourceBudget(target.Schema, target.Pointer, source, budget)
 	if err != nil {
-		return false
+		return false, err
 	}
 	use.Nodes, use.Refs = nodes, refs
 	if a.nominalsLinked {
 		use.Name, use.Final = a.physicalDTOName(target.Schema), true
 	}
 	a.borrowedAllOfLeaves[target.Schema] = use
-	return true
+	if budget != nil {
+		budget.Seen[target.Schema] = true
+	}
+	return true, nil
 }
 
 // Retain original semantic node identities. Descriptive metadata stays opaque;
 // only allOf shape refs follow catalog targets, never nominal property refs.
 func (a *analyzer) borrowedAllOfSource(v *document.Value, pointer string) ([]borrowedAllOfNode, []borrowedAllOfShapeRef, *diagnostic.Diagnostic) {
+	return a.borrowedAllOfSourceBudget(v, pointer, pointer, nil)
+}
+
+func (a *analyzer) borrowedAllOfSourceBudget(v *document.Value, pointer, source string, budget originalSourceCaptureBudget) ([]borrowedAllOfNode, []borrowedAllOfShapeRef, *diagnostic.Diagnostic) {
 	nodes := []borrowedAllOfNode{}
 	refs := []borrowedAllOfShapeRef{}
 	seen := map[*document.Value]bool{}
@@ -103,6 +132,11 @@ func (a *analyzer) borrowedAllOfSource(v *document.Value, pointer string) ([]bor
 			return diagnostic.At("E_SCHEMA_LIMIT", "Original allOf source exceeds the supported work budget.", p)
 		}
 		seen[v] = true
+		if budget != nil {
+			if err := budget.charge(1+len(v.Members())+len(v.Items()), 0, source); err != nil {
+				return err
+			}
+		}
 		nodes = append(nodes, borrowedAllOfNode{v, append([]document.Member{}, v.Members()...), append([]*document.Value{}, v.Items()...)})
 		if role == "shape" && has(v, "$ref") {
 			reference := text(get(v, "$ref"))
@@ -125,6 +159,11 @@ func (a *analyzer) borrowedAllOfSource(v *document.Value, pointer string) ([]bor
 					return schemaReferenceUnsupported(p)
 				}
 				aliases[chain] = true
+				if budget != nil {
+					if err := budget.charge(1, 0, source); err != nil {
+						return err
+					}
+				}
 				refs = append(refs, borrowedAllOfShapeRef{chain, chain.Schema, chain.Pointer, chain.Reference, chain.AliasHeight})
 				if chain.Reference == "" {
 					break

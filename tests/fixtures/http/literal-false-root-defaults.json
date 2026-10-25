@@ -1,0 +1,146 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LiteralFalseRootDefaults",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "OptionalOnly": {
+        "properties": {
+          "blocked": false
+        },
+        "default": {}
+      },
+      "Mixed": {
+        "properties": {
+          "blocked": false,
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "kotlin": false,
+          "kotlinx": false,
+          "org": false,
+          "serializer": false,
+          "OpenapiKtEncodeDefaultMode": false,
+          "OpenapiKtTypeUseSerializer": false
+        },
+        "default": {
+          "labels": [
+            "seed"
+          ]
+        }
+      },
+      "RootNullable": {
+        "type": "object",
+        "nullable": true,
+        "required": [
+          "blocked"
+        ],
+        "properties": {
+          "blocked": false
+        },
+        "default": null
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Mixed"
+      },
+      "Consumer": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Mixed"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/mixed": {
+      "post": {
+        "tags": [
+          "objects"
+        ],
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Mixed"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mixed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/first": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "first",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    },
+    "/second": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "second",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    }
+  }
+}

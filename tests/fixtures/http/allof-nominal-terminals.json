@@ -1205,7 +1205,7 @@
                   "id"
                 ]
               },
-              {
+              {"nullable": true,
                 "properties": {
                   "more": {
                     "type": "string"

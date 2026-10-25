@@ -99,6 +99,7 @@ type Property struct {
 	DefaultNull    bool
 	Default        string // Validated Kotlin initializer; absent when empty.
 	Validation     *PrimitiveValidation
+	OmitDefault    bool `json:",omitempty"`
 }
 
 type Constant struct {
@@ -171,6 +172,16 @@ type ValueAlias struct {
 func (m *ValueAlias) Name() string { return m.ClassName }
 func (*ValueAlias) declaration()   {}
 
+// FalseValue has no instances. Its private-constructor Kotlin class retains an
+// actual nominal serializer which rejects every non-null JSON value.
+type FalseValue struct {
+	ClassName        string
+	AbsentSerializer bool `json:",omitempty"`
+}
+
+func (m *FalseValue) Name() string { return m.ClassName }
+func (*FalseValue) declaration()   {}
+
 type component struct {
 	Wire, Name, Scalar, Pointer string
 	Schema                      *document.Value
@@ -212,6 +223,7 @@ type component struct {
 	// BooleanRoot is an admitted 3.1 literal true named JSON value, never a
 	// nominal DTO or a relaxation of arbitrary schema object slots.
 	BooleanRoot bool
+	FalseRoot   bool
 	// RecursiveJSON retains an exact connected complete JSON-kind cover graph.
 	// Its finite original source height is cached separately from its carrier.
 	RecursiveJSON    bool
@@ -221,12 +233,14 @@ type component struct {
 }
 
 type analyzer struct {
-	options     Options
-	root        *document.Value
-	components  map[string]*component
-	warnings    []diagnostic.Diagnostic
-	usage       UsageContext
-	fieldUnions FieldUnionPolicy
+	objectDefaultGraphUses *[]objectDefaultGraphUse
+	structuralUniqueUses   *[]structuralUniqueUse
+	options                Options
+	root                   *document.Value
+	components             map[string]*component
+	warnings               []diagnostic.Diagnostic
+	usage                  UsageContext
+	fieldUnions            FieldUnionPolicy
 	// Diagnostic provenance stays outside semantic IR/declaration equality.
 	emissionHints     EmissionHints
 	operationRoles    map[string]string
@@ -244,10 +258,26 @@ type analyzer struct {
 	internalModelUses   map[string]string
 	// Discovery only; final hierarchy declarations authorize nullable alias
 	// bindings. Original nodes remain distinct from physical classifier names.
-	hierarchySources map[*document.Value]bool
-	hierarchyOrigins map[*Hierarchy]nominalOrigin
-	modelOrigins     map[*Model]*document.Value
-	modelPointers    map[*Model]string
+	hierarchySources             map[*document.Value]bool
+	hierarchyOrigins             map[*Hierarchy]nominalOrigin
+	modelOrigins                 map[*Model]*document.Value
+	modelPointers                map[*Model]string
+	modelDiagnosticPointers      map[*Model]string
+	enumDiagnosticOrigins        map[*StringEnum]nominalOrigin
+	directionalModelSources      map[*Model]directionalModelSource
+	dtoUniqueSources             map[*document.Value]*dtoUniqueSource
+	dtoReferenceDeclarations     map[*component]Declaration
+	dtoReferenceDeclarationTypes map[*component]string
+	dtoReferenceEnums            map[*document.Value]*StringEnum
+	dtoReferenceEnumNames        map[*StringEnum]string
+	dtoReferenceFinalEnums       map[*StringEnum]int
+	dtoReferenceFinalEnumNames   map[*StringEnum]string
+	dtoReferenceFinalEnumSources map[*document.Value]int
+	dtoReferenceGetterTypes      map[*Model]map[string][]namedCollectionSourceType
+	dtoAllOfGetters              map[*Model]map[string]dtoAllOfGetterSnapshot
+	dtoUniqueCaptures            *dtoUniqueCaptureBudget
+	dtoUniqueUses                *[]dtoUniqueUse
+	dtoUniqueKeys                *dtoUniqueDefaultKeys
 	// Original inline object field roots in the direct DTO object default role.
 	// The shared object type planner must ignore their own annotation, which the
 	// dedicated default planner validates instead.
@@ -276,50 +306,82 @@ type analyzer struct {
 	// copy so it cannot leak into sibling roles.
 	objectDefaultPlainDTOMember bool
 
-	declarationOwners            map[Declaration]*component
-	unionOrigins                 map[Declaration]nominalOrigin
-	enumOrigins                  map[Declaration]nominalOrigin
-	valueClassOrigins            map[Declaration]nominalOrigin
-	temporalOrigins              map[Declaration]temporalOrigin
-	temporalUses                 map[*component]string
-	nativeEnumOrigins            map[*component]*nativeEnumOrigin
-	nativeEnumUses               map[*component]string
-	builtinOrigins               map[Declaration]builtinOrigin
-	builtinUses                  map[*component]string
-	namedCollectionOrigins       map[Declaration]namedCollectionOrigin
-	namedCollectionUses          map[*component]string
-	recursiveCoverOrigins        map[Declaration]recursiveCoverOrigin
-	recursiveCoverUses           map[*component]string
-	rawTrueOrigins               map[Declaration]rawTrueOrigin
-	rawTrueUses                  map[*component]string
-	callerNativeOrigins          map[Declaration]callerNativeOrigin
-	callerNativeUses             map[*component]string
-	bytesOrigins                 map[Declaration]bytesOrigin
-	bytesUses                    map[*component]string
-	bigintOrigins                map[Declaration]bigintOrigin
-	bigintUses                   map[*component]string
-	borrowedScalars              map[*document.Value]*borrowedScalarSource
-	borrowedRoots                map[Declaration]borrowedRootOrigin
-	borrowedCollections          map[*document.Value]*borrowedCollectionSource
-	borrowedCollectionRoots      map[Declaration]borrowedCollectionRoot
-	borrowedDTOLeaves            map[*document.Value]*borrowedDTOLeafUse
-	borrowedEnumLeaves           map[*document.Value]*borrowedEnumLeafUse
-	borrowedValueClassLeaves     map[*component]*borrowedValueClassLeafUse
-	borrowedAllOfLeaves          map[*document.Value]*borrowedAllOfLeafUse
-	borrowedUnionLeaves          map[*document.Value]*borrowedUnionLeafUse
-	borrowedHierarchyLeaves      map[*document.Value]*borrowedHierarchyLeafUse
-	borrowedBuiltinLeaves        map[*component]*borrowedBuiltinLeafUse
-	borrowedTemporalLeaves       map[*component]*borrowedTemporalLeafUse
-	borrowedBigintLeaves         map[*component]*borrowedBigintLeafUse
-	borrowedBytesLeaves          map[*component]*borrowedBytesLeafUse
-	borrowedCallerNativeLeaves   map[*component]*borrowedCallerNativeLeafUse
-	borrowedRawTrueLeaves        map[*component]*borrowedRawTrueLeafUse
-	borrowedRecursiveCoverLeaves map[*component]*borrowedRecursiveCoverLeafUse
-	borrowedEnumAliasVisit       func(*component, int) *diagnostic.Diagnostic
-	borrowedDTOAliasEdges        map[*component]*borrowedDTOAliasEdge
-	deferredNominals             map[*document.Value]*deferredNominal
-	referencedDefaults           *[]referencedFieldDefault
-	nominalsLinked               bool
+	declarationOwners              map[Declaration]*component
+	unionOrigins                   map[Declaration]nominalOrigin
+	enumOrigins                    map[Declaration]nominalOrigin
+	valueClassOrigins              map[Declaration]nominalOrigin
+	temporalOrigins                map[Declaration]temporalOrigin
+	temporalUses                   map[*component]string
+	nativeEnumOrigins              map[*component]*nativeEnumOrigin
+	nativeEnumUses                 map[*component]string
+	builtinOrigins                 map[Declaration]builtinOrigin
+	builtinUses                    map[*component]string
+	namedCollectionOrigins         map[Declaration]namedCollectionOrigin
+	namedCollectionUses            map[*component]string
+	recursiveCoverOrigins          map[Declaration]recursiveCoverOrigin
+	recursiveCoverUses             map[*component]string
+	rawTrueOrigins                 map[Declaration]rawTrueOrigin
+	rawTrueUses                    map[*component]string
+	callerNativeOrigins            map[Declaration]callerNativeOrigin
+	callerNativeUses               map[*component]string
+	bytesOrigins                   map[Declaration]bytesOrigin
+	bytesUses                      map[*component]string
+	bigintOrigins                  map[Declaration]bigintOrigin
+	bigintUses                     map[*component]string
+	borrowedScalars                map[*document.Value]*borrowedScalarSource
+	borrowedRoots                  map[Declaration]borrowedRootOrigin
+	borrowedCollections            map[*document.Value]*borrowedCollectionSource
+	borrowedCollectionRoots        map[Declaration]borrowedCollectionRoot
+	borrowedDTOLeaves              map[*document.Value]*borrowedDTOLeafUse
+	borrowedEnumLeaves             map[*document.Value]*borrowedEnumLeafUse
+	borrowedValueClassLeaves       map[*component]*borrowedValueClassLeafUse
+	borrowedAllOfLeaves            map[*document.Value]*borrowedAllOfLeafUse
+	borrowedCollectionPlanning     bool
+	tupleAllOfSources              *tupleAllOfSourceBudget
+	tupleNativeSources             *tupleNativeSourceRegistry
+	falseRootSources               *falseRootSourceRegistry
+	falseValueOrigins              map[*FalseValue]falseValueOrigin
+	falseAliasOrigins              map[*ValueAlias]falseAliasOrigin
+	falseAliasFactories            map[*ValueAlias]falseCollectionFactoryOrigin
+	falseAbsentUses                map[*component]bool
+	falseFieldOrigins              map[*Model]falseFieldOrigin
+	literalFalseFieldOrigins       map[*Model]literalFalseFieldOrigin
+	literalFalseCollectionPlanning *literalFalseCollectionPlanning
+	literalFalseFieldUses          map[*Model]string
+	literalFalseObjectDefaultUses  map[*Model]bool
+	literalFalseObjectFactories    map[*Model]falseCollectionFactoryOrigin
+	falseObjectDefaultUses         map[*Model]bool
+	falseDTOFieldDefaultScope      *falseDTOFieldDefaultScope
+	falseDTOFieldDefaults          map[falseDTOFieldDefaultKey]falseDTOFieldDefaultOrigin
+	falseDTOFieldDefaultUses       map[falseDTOFieldDefaultKey]string
+	falseDTOConsumerSources        map[*Model][]borrowedAllOfNode
+	falseDTOOwnerDefaultScope      *falseDTOOwnerDefaultEdge
+	falseDTOOwnerDefaults          map[*Model]*falseDTOOwnerDefaultOrigin
+	falseDTOOwnerDefaultUses       map[falseDTOFieldDefaultKey]string
+	falseDTOOwnerAliasSources      map[*component][]borrowedAllOfNode
+	falseObjectFactories           map[*Model]falseCollectionFactoryOrigin
+	falseCollectionPlanning        *falseCollectionSource
+	falseInlineCollectionPlanning  *falseInlineCollectionSource
+	falseInlineCollectionOrigins   map[*Model]falseInlineCollectionOrigin
+	falseInlineCollectionUses      map[*Model]string
+	falseCollectionDefaultPlanning *falseCollectionDefaultSource
+	falseCollectionFactories       map[*ValueAlias]falseCollectionFactoryOrigin
+	falseCollectionOrigins         map[*ValueAlias]falseCollectionOrigin
+	intersectionCaptures           *intersectionCaptureBudget
+	borrowedUnionLeaves            map[*document.Value]*borrowedUnionLeafUse
+	borrowedHierarchyLeaves        map[*document.Value]*borrowedHierarchyLeafUse
+	borrowedBuiltinLeaves          map[*component]*borrowedBuiltinLeafUse
+	borrowedTemporalLeaves         map[*component]*borrowedTemporalLeafUse
+	borrowedBigintLeaves           map[*component]*borrowedBigintLeafUse
+	borrowedBytesLeaves            map[*component]*borrowedBytesLeafUse
+	borrowedCallerNativeLeaves     map[*component]*borrowedCallerNativeLeafUse
+	borrowedRawTrueLeaves          map[*component]*borrowedRawTrueLeafUse
+	borrowedRecursiveCoverLeaves   map[*component]*borrowedRecursiveCoverLeafUse
+	borrowedEnumAliasVisit         func(*component, int) *diagnostic.Diagnostic
+	borrowedDTOAliasEdges          map[*component]*borrowedDTOAliasEdge
+	deferredNominals               map[*document.Value]*deferredNominal
+	referencedDefaults             *[]referencedFieldDefault
+	nominalsLinked                 bool
 }
 
 func (a *analyzer) warn(code, message, pointer string) {

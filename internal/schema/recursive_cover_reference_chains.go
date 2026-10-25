@@ -3,6 +3,7 @@ package schema
 import (
 	"openapi-kt/internal/diagnostic"
 	"openapi-kt/internal/document"
+	"slices"
 	"sort"
 	"strconv"
 
@@ -13,6 +14,8 @@ import (
 // grants cover authority. Incoming reference hops remain a separate segment.
 type recursiveCoverSourceNode struct {
 	Pointer, SourceBytes string
+	Members              []document.Member
+	Items                []*document.Value
 }
 type recursiveCoverOrigin struct {
 	Owner   *component
@@ -33,9 +36,14 @@ func (a *analyzer) recursiveCoverSnapshot(c *component) (map[*document.Value]rec
 		return nil, 0, false
 	}
 	nodes := map[*document.Value]recursiveCoverSourceNode{}
+	valid := true
 	record := func(node *document.Value, pointer string) {
 		bytes, _ := node.MarshalJSON()
-		nodes[node] = recursiveCoverSourceNode{pointer, string(bytes)}
+		members := append([]document.Member{}, node.Members()...)
+		for _, member := range members {
+			valid = valid && get(node, member.Name) == member.Value
+		}
+		nodes[node] = recursiveCoverSourceNode{pointer, string(bytes), members, append([]*document.Value{}, node.Items()...)}
 	}
 	queue := []jsonCoverEdge{{c.Schema, c.Pointer}}
 	for len(queue) > 0 {
@@ -65,15 +73,21 @@ func (a *analyzer) recursiveCoverSnapshot(c *component) (map[*document.Value]rec
 					if child := get(branch, key); child != nil {
 						record(child, naming.Pointer(p, key))
 						record(get(child, "$ref"), naming.Pointer(naming.Pointer(p, key), "$ref"))
+						if intent := get(child, "nullable"); intent != nil {
+							record(intent, naming.Pointer(naming.Pointer(p, key), "nullable"))
+						}
 					}
 				}
 			}
 		} else {
 			record(get(edge.schema, "$ref"), naming.Pointer(edge.pointer, "$ref"))
+			if intent := get(edge.schema, "nullable"); intent != nil {
+				record(intent, naming.Pointer(edge.pointer, "nullable"))
+			}
 		}
 		queue = append(queue, edges...)
 	}
-	return nodes, height, true
+	return nodes, height, valid
 }
 
 func (a *analyzer) recordRecursiveCoverOrigin(d Declaration, c *component) {
@@ -92,7 +106,7 @@ func (a *analyzer) recursiveCoverSourceMatches(origin recursiveCoverOrigin) bool
 		return false
 	}
 	for node, source := range origin.Nodes {
-		if current, ok := nodes[node]; !ok || current != source {
+		if current, ok := nodes[node]; !ok || current.Pointer != source.Pointer || current.SourceBytes != source.SourceBytes || !slices.Equal(current.Members, source.Members) || !slices.Equal(current.Items, source.Items) {
 			return false
 		}
 	}

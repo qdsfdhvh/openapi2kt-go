@@ -3,6 +3,7 @@ package cli_test
 import (
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"openapi-kt/internal/testutil"
@@ -57,10 +58,27 @@ func TestBooleanValueNativeLifecycle(t *testing.T) {
 				p.change(t, func(doc map[string]any) {
 					schemas(doc)["Holder"].(map[string]any)["properties"].(map[string]any)["value"] = false
 				})
+				// Keep the historical literal-false input as an explicit positive
+				// graduation; nested owner roles remain rejected below.
+				result(t, p.generate(t, flags...), 0)
+				holder := string(read(t, filepath.Join(p.Output, "org/example/catalog/models/HolderDto.kt")))
+				if !strings.Contains(holder, "public sealed class FalseValue private constructor()") || !strings.Contains(holder, "HolderDto.FalseValue") {
+					t.Fatal("original false field lost actual nested codec")
+				}
+				before = snapshot(t, p.Output)
+				result(t, p.generate(t, append(append([]string{}, flags...), "--check")...), 0)
+				result(t, invoke(t, "", validate...), 0)
+				warningDenied(t, p.generate(t, append(append([]string{}, flags...), "--deny-warnings")...))
+				if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+					t.Fatal("graduated check/warning denial mutation")
+				}
+				p.change(t, func(doc map[string]any) {
+					schemas(doc)["Holder"].(map[string]any)["properties"].(map[string]any)["value"] = map[string]any{"properties": map[string]any{"blocked": false}}
+				})
 				for _, extra := range [][]string{nil, {"--check"}, {"--deny-warnings"}} {
 					args := append(append([]string{}, flags...), extra...)
 					failed := fails(t, p.generate(t, args...), 1, "E_SCHEMA_INVALID")
-					if failed.Diagnostics[0].Pointer == nil || *failed.Diagnostics[0].Pointer != "/components/schemas/Holder/properties/value" {
+					if failed.Diagnostics[0].Pointer == nil || *failed.Diagnostics[0].Pointer != "/components/schemas/Holder/properties/value/properties/blocked" {
 						t.Fatal(failed)
 					}
 					if !reflect.DeepEqual(before, snapshot(t, p.Output)) {

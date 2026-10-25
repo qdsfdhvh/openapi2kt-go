@@ -61,6 +61,11 @@ type GenerationRequest struct {
 	Options    GenerationOptions
 	// PreviousNameLock is nil for a fresh lock; nonnil state is strictly validated.
 	PreviousNameLock []byte
+	// ProjectPreviousNameLock is an explicit migration-planning mode. Retain
+	// original allocations for current origins, including singleton groups,
+	// without allocating new locked shapes. Callers must separately verify whole
+	// ownership/file/occurrence coverage before committing projected metadata.
+	ProjectPreviousNameLock bool
 }
 
 // GeneratedFile has a validated slash-separated relative output path.

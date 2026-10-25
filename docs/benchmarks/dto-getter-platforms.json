@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "scope": "four fixed synthetic model inputs; direct DTO scalar, enum and scalar const-body mapped getters",
+  "generator_source_sha256": "bab9515198677de6251324c1eaa00eebb3a707a0fc563874e5f043d3f79cbe75",
+  "inputs": [
+    {
+      "path": "tests/fixtures/catalog.json",
+      "sha256": "dcd9cfbb841b10b15425860fc4320f1f3b1d1a630f7e134832c7db4409e98a46"
+    },
+    {
+      "path": "tests/fixtures/platform/model-increments.json",
+      "sha256": "57b70d2e28b2c3689d079b41f2a066fcb30d578084ee077f78c303d81d95806f"
+    },
+    {
+      "path": "tests/fixtures/platform/roadmap-increments.json",
+      "sha256": "6b9d7c067d5c9406c6650d3f1bc0f9f50e4bc9151a5fc7f24db56f04a9dc6280"
+    },
+    {
+      "path": "tests/fixtures/platform/dto-getters.json",
+      "sha256": "9af7bb894443fc50cc5b0c7f269099b76fabe9dcda35bf639e80db296b3fe017"
+    }
+  ],
+  "consumers": [
+    {
+      "path": "samples/kotlin-platform-smoke/src/commonMain/kotlin/org/example/platform/DTOGetterContracts.kt",
+      "sha256": "20256b0f2d7d04881af5d4164c8548140c6d8dd4427a3ea0ed233a0f55dc97a6"
+    },
+    {
+      "path": "samples/kotlin-platform-smoke/src/commonMain/kotlin/org/example/platform/ModelIncrementContracts.kt",
+      "sha256": "973dc809e72b121f96dc42b25c1279fc3b4f193aa486cd54fd73db971dbf8f79"
+    },
+    {
+      "path": "samples/kotlin-platform-smoke/src/commonMain/kotlin/org/example/platform/PlatformContracts.kt",
+      "sha256": "e5d838c7d30a84ee3fce4e097ff9c2537056d64adc7d9dfb9cb5cff3a7f2570d"
+    },
+    {
+      "path": "samples/kotlin-platform-smoke/src/commonMain/kotlin/org/example/platform/RoadmapIncrementContracts.kt",
+      "sha256": "e147aeab95a2c4ce81bc8fe225662d7574e76b79d339d5f736767bb27c26e492"
+    }
+  ],
+  "toolchain": {
+    "go": "1.27.2",
+    "kotlin": "2.4.10",
+    "serialization": "1.11.0",
+    "gradle": "9.5.1",
+    "jdk": "Zulu 21.0.12.1",
+    "node": "26.10.0",
+    "native": "macosArm64; Xcode 27.2 Beta 3",
+    "android": "AGP 8.13.2; compileSdk 36; minSdk 23; AAR only"
+  },
+  "profiles": [
+    {
+      "target": "jvm",
+      "model_style": "data_class",
+      "result": "passed",
+      "evidence": "runtime",
+      "json_configurations": 4,
+      "input_check_count": 4,
+      "generated_inventory_files": 37,
+      "generated_inventory_sha256": "4deeeb0f60209028a896d3a9a06a3bacd8ce687c8f5eacb9423bead1a6618b9b"
+    },
+    {
+      "target": "jvm",
+      "model_style": "plain_class",
+      "result": "passed",
+      "evidence": "runtime",
+      "json_configurations": 4,
+      "input_check_count": 4,
+      "generated_inventory_files": 37,
+      "generated_inventory_sha256": "01d0d6355cb7c25bfdffadaaccf1ffee4d5df7c77aaa671281bd6b4f2cedd495"
+    },
+    {
+      "target": "metadata",
+      "model_style": "data_class",
+      "result": "passed",
+      "evidence": "compile only",
+      "json_configurations": 0,
+      "input_check_count": 4,
+      "generated_inventory_files": 37,
+      "generated_inventory_sha256": "4deeeb0f60209028a896d3a9a06a3bacd8ce687c8f5eacb9423bead1a6618b9b"
+    },
+    {
+      "target": "metadata",
+      "model_style": "plain_class",
+      "result": "passed",
+      "evidence": "compile only",
+      "json_configurations": 0,
+      "input_check_count": 4,
+      "generated_inventory_files": 37,
+      "generated_inventory_sha256": "01d0d6355cb7c25bfdffadaaccf1ffee4d5df7c77aaa671281bd6b4f2cedd495"
+    },
+    {
+      "target": "js",
+      "model_style": "data_class",
+      "result": "passed",
+      "evidence": "runtime",
+      "json_configurations": 4,
+      "input_check_count": 4,
+      "generated_inventory_files": 37,
+      "generated_inventory_sha256": "4deeeb0f60209028a896d3a9a06a3bacd8ce687c8f5eacb9423bead1a6618b9b"
+    },
+    {
+      "target": "js",
+      "model_style": "plain_class",
+      "result": "passed",
+      "evidence": "runtime",
+      "json_configurations": 4,
+      "input_check_count": 4,
+      "generated_inventory_files": 37,
+      "generated_inventory_sha256": "01d0d6355cb7c25bfdffadaaccf1ffee4d5df7c77aaa671281bd6b4f2cedd495"
+    },
+    {
+      "target": "native",
+      "model_style": "data_class",
+      "result": "passed",
+      "evidence": "runtime",
+      "json_configurations": 4,
+      "input_check_count": 4,
+      "generated_inventory_files": 37,
+      "generated_inventory_sha256": "4deeeb0f60209028a896d3a9a06a3bacd8ce687c8f5eacb9423bead1a6618b9b"
+    },
+    {
+      "target": "native",
+      "model_style": "plain_class",
+      "result": "passed",
+      "evidence": "runtime",
+      "json_configurations": 4,
+      "input_check_count": 4,
+      "generated_inventory_files": 37,
+      "generated_inventory_sha256": "01d0d6355cb7c25bfdffadaaccf1ffee4d5df7c77aaa671281bd6b4f2cedd495"
+    },
+    {
+      "target": "android",
+      "model_style": "data_class",
+      "result": "passed",
+      "evidence": "compile only",
+      "json_configurations": 0,
+      "input_check_count": 4,
+      "generated_inventory_files": 37,
+      "generated_inventory_sha256": "4deeeb0f60209028a896d3a9a06a3bacd8ce687c8f5eacb9423bead1a6618b9b"
+    },
+    {
+      "target": "android",
+      "model_style": "plain_class",
+      "result": "passed",
+      "evidence": "compile only",
+      "json_configurations": 0,
+      "input_check_count": 4,
+      "generated_inventory_files": 37,
+      "generated_inventory_sha256": "01d0d6355cb7c25bfdffadaaccf1ffee4d5df7c77aaa671281bd6b4f2cedd495"
+    }
+  ],
+  "limits": [
+    "No Android device/runtime result for this fourth input",
+    "No full independent feature, HTTP/SSE engine or other host matrix",
+    "No minimum dependency or intermediate-version support claim"
+  ]
+}

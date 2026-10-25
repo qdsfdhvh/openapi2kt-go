@@ -1,0 +1,449 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ObjectDefaultGraphs",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Text": {
+        "type": "string",
+        "nullable": true
+      },
+      "TextMap": {
+        "type": "object",
+        "nullable": true,
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Text"
+        }
+      },
+      "Rows": {
+        "type": "array",
+        "nullable": true,
+        "items": {
+          "$ref": "#/components/schemas/TextMap"
+        }
+      },
+      "RowsAlias": {
+        "$ref": "#/components/schemas/Rows"
+      },
+      "Time": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "TimeMap": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Time"
+        }
+      },
+      "TimeRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/TimeMap"
+        }
+      },
+      "Mode": {
+        "type": "string",
+        "enum": [
+          "a",
+          "b"
+        ]
+      },
+      "ModeMap": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Mode"
+        }
+      },
+      "ModeRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ModeMap"
+        }
+      },
+      "Node": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "flag": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "NodeMap": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Node"
+        }
+      },
+      "NodeRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/NodeMap"
+        }
+      },
+      "AllNode": {
+        "allOf": [
+          {
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          },
+          {
+            "properties": {
+              "count": {
+                "type": "integer",
+                "default": 2
+              }
+            }
+          }
+        ]
+      },
+      "AllMap": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/AllNode"
+        }
+      },
+      "AllRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AllMap"
+        }
+      },
+      "Hops": {
+        "properties": {
+          "alias": {
+            "$ref": "#/components/schemas/RowsAlias"
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Hops/properties/alias"
+      },
+      "Config": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/RowsAlias"
+          },
+          "bridge": {
+            "$ref": "#/components/schemas/Bridge"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/RowsAlias",
+            "nullable": false
+          },
+          "times": {
+            "$ref": "#/components/schemas/TimeRows"
+          },
+          "modes": {
+            "$ref": "#/components/schemas/ModeRows"
+          },
+          "nodes": {
+            "$ref": "#/components/schemas/NodeRows"
+          },
+          "composed": {
+            "$ref": "#/components/schemas/AllRows"
+          },
+          "inlineRows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TextMap"
+            }
+          }
+        },
+        "default": {
+          "rows": [
+            {
+              "z": "last",
+              "a": "first",
+              "nil": null
+            },
+            null
+          ],
+          "bridge": null,
+          "narrow": [],
+          "times": [
+            {
+              "at": "2026-01-02T05:04:05+02:00"
+            }
+          ],
+          "modes": [
+            {
+              "first": "a"
+            }
+          ],
+          "nodes": [
+            {
+              "one": {
+                "name": "named",
+                "flag": true
+              }
+            }
+          ],
+          "composed": [
+            {
+              "one": {
+                "label": "merged",
+                "count": 5
+              }
+            }
+          ],
+          "inlineRows": [
+            {
+              "a": "inline"
+            }
+          ]
+        }
+      },
+      "Holder": {
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "cfg": {
+            "properties": {
+              "rows": {
+                "$ref": "#/components/schemas/RowsAlias"
+              },
+              "bridge": {
+                "$ref": "#/components/schemas/Bridge"
+              },
+              "narrow": {
+                "$ref": "#/components/schemas/RowsAlias",
+                "nullable": false
+              },
+              "times": {
+                "$ref": "#/components/schemas/TimeRows"
+              },
+              "modes": {
+                "$ref": "#/components/schemas/ModeRows"
+              },
+              "nodes": {
+                "$ref": "#/components/schemas/NodeRows"
+              },
+              "composed": {
+                "$ref": "#/components/schemas/AllRows"
+              },
+              "inlineRows": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TextMap"
+                }
+              }
+            },
+            "default": {
+              "rows": [
+                {
+                  "z": "last",
+                  "a": "first",
+                  "nil": null
+                },
+                null
+              ],
+              "bridge": null,
+              "narrow": [],
+              "times": [
+                {
+                  "at": "2026-01-02T05:04:05+02:00"
+                }
+              ],
+              "modes": [
+                {
+                  "first": "a"
+                }
+              ],
+              "nodes": [
+                {
+                  "one": {
+                    "name": "named",
+                    "flag": true
+                  }
+                }
+              ],
+              "composed": [
+                {
+                  "one": {
+                    "label": "merged",
+                    "count": 5
+                  }
+                }
+              ],
+              "inlineRows": [
+                {
+                  "a": "inline"
+                }
+              ]
+            }
+          },
+          "target": {
+            "$ref": "#/components/schemas/Config"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "cfg": {
+                    "properties": {
+                      "rows": {
+                        "$ref": "#/components/schemas/RowsAlias"
+                      },
+                      "bridge": {
+                        "$ref": "#/components/schemas/Bridge"
+                      },
+                      "narrow": {
+                        "$ref": "#/components/schemas/RowsAlias",
+                        "nullable": false
+                      },
+                      "times": {
+                        "$ref": "#/components/schemas/TimeRows"
+                      },
+                      "modes": {
+                        "$ref": "#/components/schemas/ModeRows"
+                      },
+                      "nodes": {
+                        "$ref": "#/components/schemas/NodeRows"
+                      },
+                      "composed": {
+                        "$ref": "#/components/schemas/AllRows"
+                      },
+                      "inlineRows": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/TextMap"
+                        }
+                      }
+                    },
+                    "default": {
+                      "rows": [
+                        {
+                          "z": "last",
+                          "a": "first",
+                          "nil": null
+                        },
+                        null
+                      ],
+                      "bridge": null,
+                      "narrow": [],
+                      "times": [
+                        {
+                          "at": "2026-01-02T05:04:05+02:00"
+                        }
+                      ],
+                      "modes": [
+                        {
+                          "first": "a"
+                        }
+                      ],
+                      "nodes": [
+                        {
+                          "one": {
+                            "name": "named",
+                            "flag": true
+                          }
+                        }
+                      ],
+                      "composed": [
+                        {
+                          "one": {
+                            "label": "merged",
+                            "count": 5
+                          }
+                        }
+                      ],
+                      "inlineRows": [
+                        {
+                          "a": "inline"
+                        }
+                      ]
+                    },
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

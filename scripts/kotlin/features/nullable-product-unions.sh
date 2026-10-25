@@ -20,14 +20,22 @@ d=json.loads(Path('tests/fixtures/http/nullable-product-unions.json').read_text(
 def add_checks(v):
     if isinstance(v,dict):
         if v.get('type')=='string':v['minLength']=2
-        for value in list(v.values()):add_checks(value)
+        for key,value in list(v.items()):
+            # Common-field bounds remain a separate D05 contract; exercise
+            # retained ordinary/variant fields without dropping that guard.
+            if key != 'label':add_checks(value)
     elif isinstance(v,list):
         for value in v:add_checks(value)
-if checked:add_checks(d)
+if checked:
+    add_checks(d)
+    d['components']['schemas']['JointHolder']['properties']['rawValues']['uniqueItems']=True
 (p/'input.json').write_text(json.dumps(d,indent=2)+'\n')
 def choice(n):return {'oneOf':[{'properties':{'kind':{'const':'k'+str(i)}}} for i in range(n)]}
 limits={'openapi':'3.1.0','components':{'schemas':{'Wide':{'nullable':True,'allOf':[choice(239)]},'Small':{'nullable':True,'allOf':[choice(2)]},'Hops':{'properties':{}}}}}
 schemas=limits['components']['schemas'];ref='#/components/schemas/'
+schemas['Small'].pop('nullable')
+schemas['Small']['allOf'][0]['nullable']=True
+schemas['JointWide']={'allOf':[{'nullable':True,'properties':{'p'+str(i):{'type':'boolean'} for i in range(start,start+120)},'required':['p'+str(i) for i in range(start,start+120)]} for start in [0,120]]}
 for i in range(45):schemas['Hops']['properties']['h'+str(i)]={'$ref':ref+('Small' if i==0 else 'Hops/properties/h'+str(i-1)),'nullable':False}
 schemas['Near']={'properties':{'value':{'$ref':ref+'Hops/properties/h44','nullable':False}},'required':['value']}
 (p/'limits.json').write_text(json.dumps(limits,indent=2)+'\n')
@@ -39,6 +47,7 @@ PYINPUT
 from pathlib import Path
 import sys
 p=Path(sys.argv[1]);checked=sys.argv[3]=='on'
+wide=','.join('p'+str(i)+'=false' for i in range(240))
 copy='' if sys.argv[2]=='plain_class' else '''check(org.example.nullableproducts.models.ProductDto.A("old").copy(id="next").id=="next")'''
 (p/'src/main/kotlin/org/example/contracts/Main.kt').write_text('''package org.example.contracts
 import kotlinx.coroutines.runBlocking
@@ -50,6 +59,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 fun main()=runBlocking {
     '''+copy+'''
+    check(!org.example.nullableproductlimits.models.JointWideDto('''+wide+''').p239)
     val codec=Json
     check(codec.decodeFromString<org.example.nullableproductlimits.models.WideDto>("null") === org.example.nullableproductlimits.models.NullWideDto)
     val input=JsonObject(mapOf("kind" to JsonPrimitive("k238")))

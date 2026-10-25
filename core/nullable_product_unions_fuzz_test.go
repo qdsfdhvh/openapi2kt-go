@@ -11,6 +11,8 @@ import (
 func FuzzNullableProductUnions(f *testing.F) {
 	f.Add(schemas(`{"Product":` + nullableProductSource(`"nullable":true,`) + `}`))
 	f.Add(fieldDoc(nullableProductSource(`"type":["object","null"],`)))
+	f.Add(schemas(`{"Product":` + intersectionProduct(true, true) + `,"Alias":{"$ref":"#/components/schemas/Product","nullable":false}}`))
+	f.Add(fieldDoc(intersectionProduct(true, false)))
 	f.Fuzz(func(t *testing.T, input []byte) {
 		if len(input) > 16384 {
 			return

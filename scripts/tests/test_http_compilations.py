@@ -93,6 +93,75 @@ class HTTPCompilationTests(unittest.TestCase):
             self.assertIn('"-Xfriend-paths="', build)
             self.assertIn('httpInternalFriends[name].orEmpty()', build)
 
+    def test_custom_package_import_alias_and_qualified_provider_precede_the_client(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            sources = {
+                'build/generated/a/Client.kt': 'package shadows.example\nimport shadows.example.api.ShadowsApi as API\nclass Client(val api: API)',
+                'build/generated/b/ShadowsApi.kt': 'package shadows.example.api\nclass ShadowsApi(val result: custom.provider.Result)',
+                'build/generated/z/Result.kt': 'package custom.provider\nclass Result',
+                'src/main/kotlin/org/example/contracts/HttpContracts.kt': 'package org.example.contracts\nfun main() {}',
+            }
+            for name, text in sources.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(text)
+            (root / 'build.gradle.kts').write_text('// declared build\n')
+            previous = compilations.TARGET_BYTES
+            try:
+                compilations.TARGET_BYTES = 1
+                inventory = compilations.partition(root)
+            finally:
+                compilations.TARGET_BYTES = previous
+            libraries = [paths for name, paths in inventory.items() if 'Library' in name]
+            self.assertEqual(libraries, [['build/generated/z/Result.kt'], ['build/generated/b/ShadowsApi.kt'], ['build/generated/a/Client.kt']])
+
+    def test_custom_package_quoted_factory_dependencies_are_retained(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            sources = {
+                'build/generated/a/Use.kt': 'package consumer.example\nimport factory.example.`Seed default` as seedDefault\nfun use(): String = seedDefault()',
+                'build/generated/b/Local.kt': 'package factory.example\nfun local(): String = `Seed default`()',
+                'build/generated/z/Factory.kt': 'package factory.example\nfun `Seed default`(): String = "seed"',
+                'src/main/kotlin/org/example/contracts/HttpContracts.kt': 'package org.example.contracts\nfun main() {}',
+            }
+            for name, text in sources.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(text)
+            (root / 'build.gradle.kts').write_text('// declared build\n')
+            previous = compilations.TARGET_BYTES
+            try:
+                compilations.TARGET_BYTES = 1
+                inventory = compilations.partition(root)
+            finally:
+                compilations.TARGET_BYTES = previous
+            owners = {path: index for index, (name, paths) in enumerate(inventory.items()) if 'Library' in name for path in paths}
+            self.assertLess(owners['build/generated/z/Factory.kt'], owners['build/generated/a/Use.kt'])
+            self.assertLess(owners['build/generated/z/Factory.kt'], owners['build/generated/b/Local.kt'])
+
+    def test_custom_qualified_sealed_family_stays_in_one_compilation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            sources = {
+                'build/generated/a/Child.kt': 'package custom.family\nclass Child() : custom.family.Base()',
+                'build/generated/z/Base.kt': 'package custom.family\nsealed class Base',
+                'src/main/kotlin/org/example/contracts/HttpContracts.kt': 'package org.example.contracts\nfun main() {}',
+            }
+            for name, text in sources.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(text)
+            (root / 'build.gradle.kts').write_text('// declared build\n')
+            previous = compilations.TARGET_BYTES
+            try:
+                compilations.TARGET_BYTES = 1
+                inventory = compilations.partition(root)
+            finally:
+                compilations.TARGET_BYTES = previous
+            libraries = [paths for name, paths in inventory.items() if 'Library' in name]
+            self.assertEqual(libraries, [['build/generated/a/Child.kt', 'build/generated/z/Base.kt']])
+
     def test_recursive_components_keep_their_original_dependency_order(self):
         edges = {'a': {'b'}, 'b': {'a', 'provider'}, 'provider': set(), 'client': {'a'}}
         self.assertEqual(compilations.dependency_components(edges), [['provider'], ['a', 'b'], ['client']])

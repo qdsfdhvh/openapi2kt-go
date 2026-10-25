@@ -214,6 +214,8 @@ func (a *analyzer) walkShapeMembers(v *document.Value, pointer string, depth int
 	}
 	positions := map[string]int{}
 	if members, ok := v.Get("allOf"); ok && !ownOnly {
+		memberNullable := true
+		ownNullable := result.Nullable
 		location := naming.Pointer(pointer, "allOf")
 		if members.Kind() != document.Array || len(members.Items()) == 0 {
 			return nil, invalid("allOf must be a non-empty schema array.", location)
@@ -242,22 +244,12 @@ func (a *analyzer) walkShapeMembers(v *document.Value, pointer string, depth int
 				if !ok {
 					return nil, invalid("$ref must be a string.", p)
 				}
-				declared, e := a.resolveDeclared(reference, p)
+				component, steps, intent, e := a.resolveIntersectionMember(reference, p, depth)
 				if e != nil {
-					return nil, e
-				}
-				if declared.InternalModelTarget != nil {
-					return nil, schemaReferenceUnsupported(p)
-				}
-				if declared.NullableDTO || declared.NullableEnum || declared.NullableValueClass || declared.NullableTemporal || declared.NullableBigint || declared.NullableBytes || declared.NullableCallerNative || declared.NullableRaw || declared.NullablePrimitive || declared.NullableNativeEnum || declared.BindingTarget != nil && (declared.BindingTarget.NullableDTO || declared.BindingTarget.NullableEnum || declared.BindingTarget.NullableValueClass || declared.BindingTarget.NullableTemporal || declared.BindingTarget.NullableBigint || declared.BindingTarget.NullableBytes || declared.BindingTarget.NullableCallerNative || declared.BindingTarget.NullableRaw || declared.BindingTarget.NullablePrimitive || declared.BindingTarget.NullableNativeEnum) {
-					return nil, unsupported(naming.Pointer(p, "$ref"))
-				}
-				component, aliasSteps := declared, 0
-				if declared.BindingTarget != nil {
-					if declared.BindingNullable != nil && *declared.BindingNullable && !collectionAliasSchema(declared.BindingTarget.Schema) {
+					if e.Code == "E_SCHEMA_UNSUPPORTED" {
 						return nil, unsupported(naming.Pointer(p, "$ref"))
 					}
-					component, aliasSteps = declared.BindingTarget, declared.AliasHeight
+					return nil, e
 				}
 				if slices.Contains(stack, component.Pointer) {
 					if hasObjectCounts(v) {
@@ -265,9 +257,14 @@ func (a *analyzer) walkShapeMembers(v *document.Value, pointer string, depth int
 					}
 					return nil, diagnostic.At("E_REF_CYCLE", "Object allOf reference expansion is cyclic.", naming.Pointer(p, "$ref"))
 				}
-				part, err = a.walkShape(component.Schema, component.Pointer, depth+1+aliasSteps, append(stack, component.Pointer), budget, counts)
+				part, err = a.walkShape(component.Schema, component.Pointer, depth+steps, append(stack, component.Pointer), budget, counts)
 				if err == nil {
-					part.Nullable = nil // reference annotations do not describe this type
+					if own := nullableOverride(member); own != nil {
+						intent = own
+					}
+					if intent != nil {
+						part.Nullable = intent
+					}
 				}
 			} else {
 				properties := get(member, "properties")
@@ -277,9 +274,7 @@ func (a *analyzer) walkShapeMembers(v *document.Value, pointer string, depth int
 			if err != nil {
 				return nil, err
 			}
-			if result.Nullable == nil {
-				result.Nullable = part.Nullable
-			}
+			memberNullable = memberNullable && part.Nullable != nil && *part.Nullable
 			for _, wire := range part.RequiredOrder {
 				if !result.Required[wire] {
 					result.Required[wire] = true
@@ -296,6 +291,9 @@ func (a *analyzer) walkShapeMembers(v *document.Value, pointer string, depth int
 					return nil, err
 				}
 			}
+		}
+		if ownNullable == nil {
+			result.Nullable = &memberNullable
 		}
 		result.Compositions = append(result.Compositions, location)
 	}

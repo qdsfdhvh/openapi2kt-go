@@ -68,7 +68,7 @@ func TestInternalAllOfDefaultNullability(t *testing.T) {
 	for _, intent := range []string{"", `,"nullable":true`, `,"nullable":false`} {
 		// Member-derived nullability is a retained internal Model property.
 		target := strings.TrimSuffix(internalAllOfDefaultTarget, "}") + intent + `}`
-		target = strings.Replace(target, `"allOf":[{`, `"allOf":[{"nullable":true,`, 1)
+		target = nullableAllOfMembers(t, target)
 		for _, reference := range []string{"Owner/properties/node", "Alias", "Bridge"} {
 			for _, consumer := range []string{"", `,"nullable":true`, `,"nullable":false`} {
 				for _, checked := range []bool{false, true} {

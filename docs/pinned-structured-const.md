@@ -1,0 +1,22 @@
+# Structured const data in object unions and hierarchies
+
+Object-union variants and hierarchy leaves support object/array `const` **data fields** using the existing [structured body contract](structured-const-fields.md). This includes original direct fields, inherited allOf winners and already-supported component references, aliases and annotation-only reference wrappers. Typed discriminator fields retain their String/enum contract; an object or array cannot become a discriminator literal.
+
+```json
+{"oneOf":[
+  {"properties":{"tag":{"const":"one"},"payload":{"const":{"literal":true}}}},
+  {"properties":{"tag":{"const":"two"},"payload":{"const":{"literal":false}}}}
+]}
+```
+
+Each variant has a non-null `JsonObject` body property initialized from its declared literal. Array literals similarly use `JsonArray`. The property has no constructor/copy argument and always encodes. Missing JSON uses that literal; explicit null and other JSON kinds fail its codec. An alternative value of the same JSON kind decodes and re-encodes intact. `nullable` on a body declaration or its referenced value root does not make this body property nullable. Root/value positions retain their separate [nullable value contract](nullable-structured-const.md).
+
+A variant with structured body state and no constructor fields is a parameterless serializable **class**, including with `data_class`; use `Choice.One()`. Scalar/tag-only variants retain their fixed-wire singleton behavior. Variants with constructor fields retain the selected Data/Plain constructor; Data retains its copy API and Plain its existing equality methods. Common getters keep the supported union projection; Unknown retains raw JSON and its existing nullable/default/throwing common getters. Hierarchy leaves retain their actual mapped enum tag type.
+
+A structured data wire is excluded from scalar tag selection, variant literal naming and compound predicates, including when another branch pins that wire to a scalar. It is also excluded from inferred hierarchy discriminator promotion. Scalar tags and exclusive required-key presence continue to select branches. An untagged standalone root retains sealed polymorphism with class discriminator and subtype serial names; structured literal contents do not supply that name. A structured data property named `type` cannot use that wire as a class discriminator. A root or hierarchy intermediate without another pinned scalar or exclusive required-key selector therefore uses raw Unknown content decoding; known variant instances still encode their body data. Such a raw-only content codec can preserve any JSON value, including null, while a tag-reading codec retains its object classifier policy. No exact literal membership or oneOf match-count validation is introduced.
+
+Original source nodes, reference hops and diagnostic Pointers remain authoritative. `W_CONST_STRUCTURED_APPROXIMATION` points to the actual `/const`; referencing a declaration does not invent a consumer `/const`. Literal object keys such as `$ref`, `type` or `enum` are data. Unsupported default/format/native/value-class/constraint/sibling schemas remain checked, including overridden contributions. Discarded extra-key literals and overridden pinned fields have a separate [source-validation contract](discarded-structured-const.md) and acquire no body/value state. Existing source, expansion, JSON, serialization-member and JVM limits remain.
+
+Migration: these pinned data bodies were previously rejected; their original negative inputs are retained as explicit acceptance contracts. Previously accepted generated APIs and wire behavior are preserved. Newly accepted schemas emit approximation warnings and can fail a warnings-as-errors policy. Serialized body members still count toward the 240-member limit. Independent boundary tests do not establish Cartesian maxima or platform/minimum-dependency support.
+
+Run `bash scripts/test.sh feature pinned-structured-const` for fresh Data/Plain × validation, four JSON settings, optimized name-lock replay, a 240-member variant, controlled HTTP and fragmented live SSE. See the [fixture](../tests/fixtures/http/pinned-structured-const.json), [core contracts](../core/pinned_structured_const_contracts_test.go), [original cases](../core/pinned_structured_const_test.go), [native preservation](../internal/cli/pinned_structured_const_process_test.go) and [consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/PinnedStructuredConstContracts.kt).

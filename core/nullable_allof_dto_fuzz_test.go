@@ -10,6 +10,8 @@ import (
 
 func FuzzNullableAllOfDTO(f *testing.F) {
 	f.Add(schemas(`{"Value":{"nullable":true,"allOf":[{"properties":{"id":{"type":"string","minLength":2}},"required":["id"]},{"properties":{"child":{"$ref":"#/components/schemas/Value"}}}]},"Alias":{"$ref":"#/components/schemas/Value"}}`))
+	f.Add(schemas(`{"Value":{"allOf":[` + intersectionObject(true, "left") + `,` + intersectionObject(true, "right") + `]},"Alias":{"$ref":"#/components/schemas/Value"}}`))
+	f.Add(fieldDoc(`{"allOf":[` + intersectionObject(true, "left") + `,` + intersectionObject(false, "right") + `]}`))
 	f.Fuzz(func(t *testing.T, input []byte) {
 		if len(input) > 16384 {
 			return

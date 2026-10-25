@@ -1,0 +1,240 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Value": {
+        "$ref": "#/components/schemas/Owner/allOf/0/properties/payload"
+      },
+      "Hops": {
+        "properties": {
+          "first": {
+            "$ref": "#/components/schemas/Owner/allOf/0/properties/payload"
+          },
+          "second": {
+            "$ref": "#/components/schemas/Hops/properties/first"
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Hops/properties/second"
+      },
+      "Consumer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Bridge"
+          },
+          {
+            "properties": {
+              "extra": {
+                "type": "string",
+                "default": "extra"
+              }
+            },
+            "nullable": true
+          }
+        ]
+      },
+      "Owner": {
+        "allOf": [
+          {
+            "properties": {
+              "payload": {
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "default": "base"
+                  },
+                  "node": {
+                    "properties": {
+                      "count": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "count"
+                    ]
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "ready",
+                      "done"
+                    ],
+                    "default": "ready"
+                  },
+                  "next": {
+                    "$ref": "#/components/schemas/Owner/allOf/0/properties/payload",
+                    "nullable": true
+                  }
+                },
+                "nullable": true
+              }
+            }
+          },
+          {
+            "properties": {
+              "ownerExtra": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "DirectConsumer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Owner/allOf/0/properties/payload"
+          },
+          {
+            "properties": {
+              "direct": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "UnionOwner": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "holder"
+              },
+              "payload": {
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "default": "union"
+                  },
+                  "next": {
+                    "$ref": "#/components/schemas/UnionOwner/oneOf/0/properties/payload",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "other"
+              },
+              "other": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      },
+      "UnionValue": {
+        "$ref": "#/components/schemas/UnionOwner/oneOf/0/properties/payload"
+      },
+      "UnionBridge": {
+        "$ref": "#/components/schemas/UnionOwner/oneOf/0/properties/payload"
+      },
+      "UnionConsumer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UnionBridge"
+          },
+          {
+            "properties": {
+              "unionExtra": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Consumer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Consumer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/Consumer",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "post": {
+        "operationId": "watch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Consumer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Consumer"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

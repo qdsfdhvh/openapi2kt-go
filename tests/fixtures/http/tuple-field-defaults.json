@@ -1,0 +1,372 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Primitive Array Defaults"
+  },
+  "components": {
+    "schemas": {
+      "Holder": {
+        "properties": {
+          "required": {
+            "type": "array",
+            "default": [
+              "annotation"
+            ],
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "kotlin": {
+            "type": "string"
+          },
+          "kotlinx": {
+            "type": "string"
+          },
+          "names": {
+            "type": "array",
+            "default": [
+              "quote \" and $value",
+              "line\nnext"
+            ],
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "longs": {
+            "type": "array",
+            "default": [
+              -9223372036854775808,
+              9223372036854775807
+            ],
+            "prefixItems": [
+              {
+                "type": "integer",
+                "format": "int64"
+              },
+              {
+                "type": "integer",
+                "format": "int64"
+              }
+            ]
+          },
+          "floats": {
+            "type": "array",
+            "default": [
+              1.25,
+              null
+            ],
+            "prefixItems": [
+              {
+                "type": "number",
+                "format": "float",
+                "nullable": true
+              },
+              {
+                "type": "number",
+                "format": "float",
+                "nullable": true
+              }
+            ]
+          },
+          "flags": {
+            "type": "array",
+            "nullable": true,
+            "default": null,
+            "prefixItems": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "empty": {
+            "type": "array",
+            "default": [],
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "dates": {
+            "type": "array",
+            "default": [
+              "2024-02-29"
+            ],
+            "prefixItems": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string",
+                "format": "date"
+              }
+            ]
+          },
+          "times": {
+            "type": "array",
+            "default": [
+              "2024-02-29T12:34:56.123456789+02:30",
+              null
+            ],
+            "prefixItems": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            ]
+          },
+          "emptyDates": {
+            "type": "array",
+            "default": [],
+            "prefixItems": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string",
+                "format": "date"
+              }
+            ]
+          },
+          "timeEdges": {
+            "type": "array",
+            "default": [
+              "2024-02-29T12:34:56.100Z",
+              "2024-02-29T12:34:56+18:00",
+              "2024-02-29T12:34:56-18:00",
+              "2024-02-29T12:34:56-00:00",
+              "0000-01-01T00:00:00Z"
+            ],
+            "prefixItems": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "string",
+                "format": "date-time"
+              }
+            ]
+          },
+          "nullDates": {
+            "type": "array",
+            "nullable": true,
+            "default": null,
+            "prefixItems": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string",
+                "format": "date"
+              }
+            ]
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "RequiredTemporal": {
+        "properties": {
+          "dates": {
+            "type": "array",
+            "default": [
+              "2024-02-29"
+            ],
+            "prefixItems": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string",
+                "format": "date"
+              }
+            ]
+          },
+          "times": {
+            "type": "array",
+            "nullable": true,
+            "default": null,
+            "prefixItems": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "string",
+                "format": "date-time"
+              }
+            ]
+          }
+        },
+        "required": [
+          "dates",
+          "times"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "values": {
+                    "type": "array",
+                    "nullable": true,
+                    "default": [
+                      1,
+                      2
+                    ],
+                    "prefixItems": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ]
+                  },
+                  "dates": {
+                    "type": "array",
+                    "nullable": true,
+                    "default": [
+                      "2024-02-29",
+                      null
+                    ],
+                    "prefixItems": [
+                      {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                      },
+                      {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                      }
+                    ]
+                  },
+                  "required": {
+                    "type": "array",
+                    "nullable": true,
+                    "default": [
+                      "annotation"
+                    ],
+                    "prefixItems": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "holder"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

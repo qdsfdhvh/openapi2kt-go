@@ -2,7 +2,7 @@
 
 This consumer checks a freshly generated synthetic catalog on a selected target. It is an additional portability probe, not the complete model/HTTP/SSE feature matrix and not a minimum-dependency guarantee.
 
-Use an installed Go 1.27.2 toolchain, Gradle 9.3.1 and JDK 21. Select existing executables with `GO`, `GOFMT` and `GRADLE`; make the matching Go executable available on `PATH` for subprocess tests. A Go shim that relies on automatic toolchain switching does not suffice when `GOTOOLCHAIN=local` is required.
+Use an installed Go 1.27.2 toolchain, Gradle 9.5.1 and JDK 21. Select existing executables with `GO`, `GOFMT` and `GRADLE`; make the matching Go executable available on `PATH` for subprocess tests. A Go shim that relies on automatic toolchain switching does not suffice when `GOTOOLCHAIN=local` is required.
 
 ```bash
 bash scripts/kotlin/platforms.sh jvm
@@ -38,3 +38,66 @@ The preparation command accepts the same target names, compiles a small syntheti
 The earlier catalog-only probe passed the fixed Kotlin 2.4.10 / serialization 1.11.0 / Gradle 9.3.1 combination in both `data_class` and `plain_class`: JVM on JDK 21, JS/Node and macOS ARM64 Native execution, common metadata compilation, and Android AAR assembly with AGP 8.13.2 / SDK 36. These results establish this consumer profile only; Android device execution, other Native hosts, full platform feature matrices and minimum-version combinations remain unverified.
 
 The expanded two-input probe requires its own execution evidence and does not inherit those historical results. The runtime assertions exercise required scalar fields, nullable collection elements, recursive nullable model references, nested objects and raw JSON retention, plus winning allOf defaults/retained validation, byte-tree wire/fresh instances/factories, and canonical self-alias assignment/serde/descriptors. They do not establish HTTP engines, SSE cancellation, directional operation DTOs, all supported model roles, Android device behavior or other Native targets. Android runtime acceptance requires a separately executed real-device consumer. Full JVM feature acceptance remains `bash scripts/test.sh all`.
+
+The expanded catalog + model-increments probe has also passed with Kotlin 2.4.10 / serialization 1.11.0 / Gradle 9.5.1 on macOS ARM64, in Data and Plain styles: JVM/JDK21 and JS/Node runtime, common metadata compilation, macOS ARM64 Native runtime, and Android AAR assembly (AGP8.13.2/SDK36). Native execution used an installed Xcode27.2 toolchain selected by a process-local `DEVELOPER_DIR`; no global Xcode selection is required by the generator. Dependency preparation was explicit and each acceptance run was offline. These results cover the two probe inputs and their four Json configurations; they do not establish all feature roles, Android device runtime or minimum versions.
+
+
+The runner also preserves a third synthetic input,
+[roadmap-increments.json](../../tests/fixtures/platform/roadmap-increments.json),
+using validation and combined dedup/hoist/merge/lock options in its own package.
+Its [common consumer](src/commonMain/kotlin/org/example/platform/RoadmapIncrementContracts.kt)
+checks actual allOf constructor tuples and nominal recursion, independent
+component/alias factories without default inheritance, open String-enum tuples,
+scalar tuple field defaults/counts, structural List/Map uniqueness and preserved
+primitive-union root/wrapper/Null aliases. The first two inputs and all their
+assertions remain. The additional source directory is compiled by both the KMP
+and Android builds.
+
+This three-input profile passed Kotlin2.4.10/serialization1.11.0/Gradle9.5.1 on
+macOS ARM64 in Data and Plain styles: actual JVM/JDK21, JS/Node and macOS ARM64
+Native runtime with four Json configurations, common metadata compilation and
+Android AAR assembly with AGP8.13.2/SDK36. Runs were offline against explicitly
+prepared caches; Native used a process-local installed Xcode27.2 selection.
+Android assembly has no device runtime assertions. These exact inputs and
+options do not establish every model/HTTP/SSE role, other hosts/engines or minimum
+dependency versions. Those remain independent acceptance work.
+
+With the [JVM-name correction](../../docs/jvm-names.md), the same three-input Data/Plain profile also passed min SDK23 test APK DEX compilation and headless instrumentation on a physical Android API34 device. Both test packages were removed after execution. No Activity was launched and the test manifests contained no permissions, services, providers or receivers. This is actual API34 runtime evidence, separate from min SDK23 DEX compilation and Android AAR assembly; actual API23 runtime and full model/HTTP/engine matrices remain unverified.
+
+### Headless Android device execution
+
+Select an authorized connected device explicitly with `ANDROID_SERIAL`, and set
+`ANDROID_HOME` (or `ANDROID_SDK_ROOT`) to an existing SDK. The `android-device`
+target freshly generates/checks the current four inputs, builds a min SDK23 test
+APK offline, audits its final manifest, runs the common assertions without
+launching an Activity, and uninstalls only the package installed by that run.
+It refuses to replace a preexisting probe package. The selected device must
+already be authorized for adb; this command does not change device settings.
+
+```bash
+ANDROID_SERIAL=YOUR_DEVICE bash scripts/kotlin/platforms.sh android-device
+ANDROID_SERIAL=YOUR_DEVICE bash scripts/kotlin/platforms.sh android-device plain_class
+```
+
+The SDK must already contain `platform-tools/adb` and
+`cmdline-tools/latest/bin/apkanalyzer`; `ADB` and `ANDROID_APKANALYZER` can select
+other installed executables. If the offline AGP aapt2 artifact is unavailable,
+`ANDROID_AAPT2` can select an already installed SDK `aapt2` binary. Nothing is
+downloaded automatically. An unavailable device, missing cache, failed contract
+or failed cleanup fails the command. APK hashes, actual device API and raw
+instrumentation output are saved beside the APK in the ignored workspace;
+device serials are not included in the result JSON. The test APK's package must
+not have permissions or Activity/service/provider/receiver components. DEX
+compilation for min SDK23 and runtime on the selected API are separate results;
+this runner does not imply coverage of every API or feature/HTTP engine.
+
+
+The runner now also generates [dto-getters.json](../../tests/fixtures/platform/dto-getters.json)
+in a fourth source root. Its common consumer checks direct DTO scalar/enum/const
+getters, constructor defaults, actual decoded body values, nullable, floating
+zero/non-finite values and UUID/Instant equality. The exact four-input Data/Plain
+profile passed JVM/JS/macOS ARM64 Native runtime and metadata/Android AAR
+compilation with the [recorded fixed versions and inventories](../../docs/platform-dto-getters.md).
+The fourth input has no device runtime result; the earlier three-input API34
+result remains historical. Full feature/HTTP/engine/minimum-version acceptance
+is separate.

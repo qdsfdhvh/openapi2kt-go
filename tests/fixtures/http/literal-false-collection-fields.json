@@ -1,0 +1,170 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LiteralFalseCollections",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Holder": {
+        "required": [
+          "rows",
+          "nullable"
+        ],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": false
+          },
+          "optional": {
+            "type": "array",
+            "items": false
+          },
+          "nullable": {
+            "type": "array",
+            "items": false,
+            "nullable": true
+          },
+          "mapping": {
+            "additionalProperties": {
+              "type": "array",
+              "items": false,
+              "nullable": true
+            }
+          },
+          "nested": {
+            "type": "array",
+            "items": {
+              "additionalProperties": {
+                "type": "array",
+                "items": false
+              }
+            }
+          },
+          "blocked": false,
+          "falseValue": {
+            "type": "string"
+          },
+          "kotlinx": {
+            "type": "array",
+            "items": false
+          },
+          "org": {
+            "type": "array",
+            "items": false
+          }
+        }
+      },
+      "OnlyContainers": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": false
+          }
+        }
+      },
+      "RootNullable": {
+        "type": "object",
+        "nullable": true,
+        "required": [
+          "rows"
+        ],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": false
+          }
+        }
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Holder"
+      }
+    }
+  },
+  "paths": {
+    "/collections": {
+      "post": {
+        "tags": [
+          "objects"
+        ],
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/first": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "first",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    },
+    "/second": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "second",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    }
+  }
+}

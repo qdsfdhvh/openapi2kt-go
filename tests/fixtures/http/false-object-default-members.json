@@ -1,0 +1,121 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FalseObjectDefaults",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Blocked": false,
+      "Maybe": {
+        "$ref": "#/components/schemas/Blocked",
+        "nullable": true,
+        "default": null
+      },
+      "OptionalOnly": {
+        "properties": {
+          "blocked": {
+            "$ref": "#/components/schemas/Blocked"
+          }
+        },
+        "default": {}
+      },
+      "Mixed": {
+        "properties": {
+          "maybe": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "blocked": {
+            "$ref": "#/components/schemas/Blocked"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "maybe": null,
+          "label": "synthetic"
+        }
+      },
+      "Nullable": {
+        "required": [
+          "description"
+        ],
+        "properties": {
+          "description": {
+            "$ref": "#/components/schemas/Maybe"
+          }
+        },
+        "default": {
+          "description": null
+        }
+      },
+      "Required": {
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Maybe",
+            "default": null
+          }
+        },
+        "default": {
+          "value": null
+        }
+      },
+      "RootNullable": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "blocked": {
+            "$ref": "#/components/schemas/Blocked"
+          }
+        },
+        "default": null
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Nullable"
+      },
+      "Consumer": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Nullable"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/required": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "objects"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Required"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Required"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

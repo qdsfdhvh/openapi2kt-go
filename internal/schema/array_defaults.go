@@ -29,7 +29,7 @@ func (a *analyzer) primitiveArrayDefault(v *document.Value, name, pointer string
 	if err := depthCheck(depth, pointer); err != nil {
 		return TypeRef{}, "", err
 	}
-	if err := checkKeys(v, a.collectionKeys([]string{"type", "nullable", "items", "default"}), pointer); err != nil {
+	if err := checkKeys(v, a.collectionKeys([]string{"type", "nullable", "items", "prefixItems", "default"}), pointer); err != nil {
 		return TypeRef{}, "", err
 	}
 	kind, nullable, err := schemaType(v, pointer)
@@ -41,6 +41,20 @@ func (a *analyzer) primitiveArrayDefault(v *document.Value, name, pointer string
 	}
 	item := get(v, "items")
 	itemPointer := naming.Pointer(pointer, "items")
+	positional := has(v, "prefixItems")
+	if positional {
+		decision, err := a.arrayItemsOwnDefault(v, pointer, depth, true)
+		if err != nil {
+			return TypeRef{}, "", err
+		}
+		if decision.Projection != nil {
+			return TypeRef{}, "", unsupported(naming.Pointer(pointer, "prefixItems"))
+		}
+		item, itemPointer = decision.Selected, decision.Pointer
+		if has(item, "$ref") {
+			return TypeRef{}, "", unsupported(naming.Pointer(pointer, "prefixItems"))
+		}
+	}
 	element, err := a.collectionDefaultElement(item, name+"Inner", itemPointer, nested, used, depth+1)
 	if err != nil {
 		return TypeRef{}, "", err
@@ -61,6 +75,12 @@ func (a *analyzer) primitiveArrayDefault(v *document.Value, name, pointer string
 	}
 	value := get(v, "default")
 	at := naming.Pointer(pointer, "default")
+	if positional {
+		work, bytes := 0, 0
+		if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
+			return TypeRef{}, "", err
+		}
+	}
 	if value.Kind() == document.Null {
 		if !nullable {
 			return TypeRef{}, "", invalid("A null array default requires explicit schema nullability.", at)
@@ -124,6 +144,9 @@ func (a *analyzer) primitiveArrayDefault(v *document.Value, name, pointer string
 		}
 	}
 	encoded := "[" + strings.Join(members, ",") + "]"
+	if positional && len(encoded) > maxNestedDefaultBytes {
+		return TypeRef{}, "", diagnostic.At("E_MODEL_LIMIT", "Canonical tuple field default exceeds the supported 32 KiB JSON byte limit.", at)
+	}
 	// A JVM method name cannot contain dots, including in a backtick identifier.
 	if leaf.Kind == Named {
 		return ty, "`openapi-kt default enum array`(" + naming.Literal(encoded) + ")", nil

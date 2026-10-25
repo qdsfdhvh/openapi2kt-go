@@ -1,0 +1,389 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Row": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "on",
+              "off"
+            ],
+            "default": "on"
+          },
+          "flag": {
+            "type": "boolean",
+            "enum": [
+              false,
+              true
+            ],
+            "default": true
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Rows": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "on",
+                "off"
+              ],
+              "default": "on"
+            },
+            "flag": {
+              "type": "boolean",
+              "enum": [
+                false,
+                true
+              ],
+              "default": true
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        "default": [
+          {
+            "value": "root",
+            "mode": "off",
+            "flag": false
+          }
+        ]
+      },
+      "Maps": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "on",
+                "off"
+              ],
+              "default": "on"
+            },
+            "flag": {
+              "type": "boolean",
+              "enum": [
+                false,
+                true
+              ],
+              "default": true
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        "default": {
+          "a/~": {
+            "value": "map"
+          }
+        }
+      },
+      "Mixed": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "on",
+                    "off"
+                  ],
+                  "default": "on"
+                },
+                "flag": {
+                  "type": "boolean",
+                  "enum": [
+                    false,
+                    true
+                  ],
+                  "default": true
+                }
+              },
+              "required": [
+                "value"
+              ]
+            }
+          }
+        },
+        "default": [
+          {
+            "z": [
+              {
+                "value": "mixed"
+              }
+            ],
+            "a": []
+          }
+        ]
+      },
+      "NamedRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Row"
+        },
+        "default": [
+          {
+            "value": "named"
+          }
+        ]
+      },
+      "AllOfRows": {
+        "type": "array",
+        "items": {
+          "allOf": [
+            {
+              "properties": {
+                "a": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "properties": {
+                "b": {
+                  "type": "integer"
+                }
+              }
+            }
+          ]
+        },
+        "default": [
+          {
+            "a": "allof",
+            "b": 2
+          }
+        ]
+      },
+      "NullableRows": {
+        "type": "array",
+        "nullable": true,
+        "items": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "on",
+                "off"
+              ],
+              "default": "on"
+            },
+            "flag": {
+              "type": "boolean",
+              "enum": [
+                false,
+                true
+              ],
+              "default": true
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "nullable": true
+        },
+        "default": [
+          null,
+          {
+            "value": "nullable"
+          }
+        ]
+      },
+      "NullRows": {
+        "type": "array",
+        "nullable": true,
+        "items": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "on",
+                "off"
+              ],
+              "default": "on"
+            },
+            "flag": {
+              "type": "boolean",
+              "enum": [
+                false,
+                true
+              ],
+              "default": true
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        "default": null
+      },
+      "WrappedRows": {
+        "$ref": "#/components/schemas/Rows",
+        "default": [
+          {
+            "value": "wrapper"
+          }
+        ]
+      },
+      "NullableAliasRows": {
+        "$ref": "#/components/schemas/Rows",
+        "nullable": true,
+        "default": null
+      },
+      "NarrowRows": {
+        "$ref": "#/components/schemas/NullableAliasRows",
+        "nullable": false,
+        "default": []
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "requiredRows": {
+            "$ref": "#/components/schemas/Rows"
+          }
+        },
+        "required": [
+          "requiredRows"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "tags": [
+          "collections"
+        ],
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rows"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rows"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "post": {
+        "tags": [
+          "collections"
+        ],
+        "operationId": "watch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rows"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "rows"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Rows"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "tags": [
+          "collections"
+        ],
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rows": {
+                    "$ref": "#/components/schemas/Rows",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "host": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "binary_sha256": "dfa61a8f445afb6d2ce976767455502606c225034be6bddd963f4fbe301d8d73",
+  "go": "1.27.2 -trimpath",
+  "kotlin": "2.4.10",
+  "serialization": "1.11.0",
+  "gradle": "9.5.1",
+  "runtime": "JDK21 / JVM17 bytecode",
+  "cache": "warm OS/dependency caches; no flush; offline/no build cache/rerun tasks; no agent builds concurrently",
+  "measurement": "clean generation includes process/input/core/commit; Kotlin includes fresh single-use Gradle startup/compilation/jar; Kotlin memory not measured; no end-to-end speed guarantee",
+  "workloads": {
+    "repeated": {
+      "input_sha256": "f5e999f5b27ee6aa814e2f0b2338f666b369a31e671e502d35f897e0a01f7f4e",
+      "input_bytes": 13247,
+      "roots": 120,
+      "generator": {
+        "baseline": {
+          "seconds": {
+            "samples": [
+              0.023785540950484574,
+              0.023708916967734694,
+              0.02345870900899172,
+              0.023856709012761712,
+              0.024028500076383352,
+              0.02428183297161013,
+              0.02407050004694611
+            ],
+            "median": 0.023856709012761712,
+            "min": 0.02345870900899172,
+            "max": 0.02428183297161013
+          },
+          "source_bytes": 621120,
+          "source_files": 120,
+          "source_sha256": "f39992919434c0116464798fa5175a3612dd69398da1c8119ff30c8419af7912"
+        },
+        "merged": {
+          "seconds": {
+            "samples": [
+              0.023110124981030822,
+              0.023323957924731076,
+              0.023579792003147304,
+              0.023065416025929153,
+              0.023031832999549806,
+              0.022625082987360656,
+              0.023542999988421798
+            ],
+            "median": 0.023110124981030822,
+            "min": 0.022625082987360656,
+            "max": 0.023579792003147304
+          },
+          "source_bytes": 57179,
+          "source_files": 120,
+          "source_sha256": "2c1a08ff4b1b9d3aa52319ef460ebbb2583e83f3e2fa849ba9e2b5a3f20a0fdc"
+        }
+      },
+      "kotlin": {
+        "baseline": {
+          "seconds": {
+            "samples": [
+              10.765609791968018,
+              10.810831582988612,
+              10.969568166066892
+            ],
+            "median": 10.810831582988612,
+            "min": 10.765609791968018,
+            "max": 10.969568166066892
+          },
+          "jar_bytes": [
+            2330932,
+            2330932,
+            2330932
+          ],
+          "class_files": [
+            1800,
+            1800,
+            1800
+          ],
+          "jar_sha256": [
+            "b02a3a14dd5c51cd556ad5bd75f130ad311c5ed84753f596a51cc583db3b95ff",
+            "b02a3a14dd5c51cd556ad5bd75f130ad311c5ed84753f596a51cc583db3b95ff",
+            "b02a3a14dd5c51cd556ad5bd75f130ad311c5ed84753f596a51cc583db3b95ff"
+          ]
+        },
+        "merged": {
+          "seconds": {
+            "samples": [
+              5.689265582943335,
+              5.785385999944992,
+              5.746338916011155
+            ],
+            "median": 5.746338916011155,
+            "min": 5.689265582943335,
+            "max": 5.785385999944992
+          },
+          "jar_bytes": [
+            88254,
+            88254,
+            88254
+          ],
+          "class_files": [
+            134,
+            134,
+            134
+          ],
+          "jar_sha256": [
+            "b0a9eec82be7dd77c349f7ed62ab8c309f54074e00f2f128612c2eb5028fa24d",
+            "b0a9eec82be7dd77c349f7ed62ab8c309f54074e00f2f128612c2eb5028fa24d",
+            "b0a9eec82be7dd77c349f7ed62ab8c309f54074e00f2f128612c2eb5028fa24d"
+          ]
+        }
+      }
+    },
+    "unique": {
+      "input_sha256": "804313884130a7886b188baac2a183392571de529ba201eef4fcda37526b76c9",
+      "input_bytes": 11411,
+      "roots": 120,
+      "generator": {
+        "baseline": {
+          "seconds": {
+            "samples": [
+              0.02563895797356963,
+              0.025071166921406984,
+              0.024724708986468613,
+              0.02574387495405972,
+              0.02543212508317083,
+              0.02570987504441291,
+              0.024250916903838515
+            ],
+            "median": 0.02543212508317083,
+            "min": 0.024250916903838515,
+            "max": 0.02574387495405972
+          },
+          "source_bytes": 600240,
+          "source_files": 120,
+          "source_sha256": "ce0e36b1c114b8cd3eafbaae55adbbc356670b86c0edba8af2c1d9c4035e19fb"
+        },
+        "merged": {
+          "seconds": {
+            "samples": [
+              0.025227833073586226,
+              0.02589762501884252,
+              0.02432566590141505,
+              0.024218000005930662,
+              0.026401415932923555,
+              0.026003750041127205,
+              0.027478208066895604
+            ],
+            "median": 0.02589762501884252,
+            "min": 0.024218000005930662,
+            "max": 0.027478208066895604
+          },
+          "source_bytes": 600240,
+          "source_files": 120,
+          "source_sha256": "ce0e36b1c114b8cd3eafbaae55adbbc356670b86c0edba8af2c1d9c4035e19fb"
+        }
+      },
+      "kotlin": {
+        "baseline": {
+          "seconds": {
+            "samples": [
+              10.613714749924839,
+              10.525979791069403,
+              10.651291999965906
+            ],
+            "median": 10.613714749924839,
+            "min": 10.525979791069403,
+            "max": 10.651291999965906
+          },
+          "jar_bytes": [
+            2119551,
+            2119551,
+            2119551
+          ],
+          "class_files": [
+            1632,
+            1632,
+            1632
+          ],
+          "jar_sha256": [
+            "94aac07a17eb81970f774ec5ed6febf71bcdee11799a27763ee70e9801520ea3",
+            "94aac07a17eb81970f774ec5ed6febf71bcdee11799a27763ee70e9801520ea3",
+            "94aac07a17eb81970f774ec5ed6febf71bcdee11799a27763ee70e9801520ea3"
+          ]
+        },
+        "merged": {
+          "seconds": {
+            "samples": [
+              10.88812512496952,
+              10.725115125067532,
+              10.55744224996306
+            ],
+            "median": 10.725115125067532,
+            "min": 10.55744224996306,
+            "max": 10.88812512496952
+          },
+          "jar_bytes": [
+            2119551,
+            2119551,
+            2119551
+          ],
+          "class_files": [
+            1632,
+            1632,
+            1632
+          ],
+          "jar_sha256": [
+            "94aac07a17eb81970f774ec5ed6febf71bcdee11799a27763ee70e9801520ea3",
+            "94aac07a17eb81970f774ec5ed6febf71bcdee11799a27763ee70e9801520ea3",
+            "94aac07a17eb81970f774ec5ed6febf71bcdee11799a27763ee70e9801520ea3"
+          ]
+        }
+      }
+    }
+  },
+  "workload_definition": {
+    "roots": 120,
+    "names": "R000 through R119",
+    "openapi": "3.1.0",
+    "package": "org.example.measured",
+    "suffix": "Dto",
+    "style": "data_class",
+    "validation": false,
+    "repeated": "every root has oneOf [string, integer, number, boolean] in that order and nullable:false",
+    "unique": "iterate permutations of [string, integer, number, boolean] for lengths 2,3,4; for each permutation emit nullable:false then true; 120 distinct ordered signatures",
+    "source_bytes": "compact JSON envelope openapi/components/schemas, insertion-ordered fields oneOf then nullable, plus final LF",
+    "cli": "generate --input INPUT --output FRESH --package-name org.example.measured --model-name-suffix Dto --diagnostic-format=json, optionally --merge-identical-models",
+    "cli_warmups_per_mode": 2,
+    "cli_samples_per_mode": 7,
+    "kotlin_warmups_per_mode": 1,
+    "kotlin_samples_per_mode": 3,
+    "order": "baseline/merged alternates each iteration",
+    "kotlin_template": "samples/kotlin-http-smoke/build.gradle.kts and settings.gradle.kts; only generated sources; JVM17; in-process compiler; max-workers1; jar --offline --no-daemon --no-build-cache --rerun-tasks",
+    "checks": "all manifest-owned paths/hashes and source determinism each CLI sample; unique modes byte-identical; jar class count/byte length stable per mode; reported jar hashes retained"
+  }
+}

@@ -49,7 +49,7 @@ func TestNullableObjectReferenceMembersOriginalGrammarAndIntersections(t *testin
 	}
 	input := schemas(`{"Value":{"nullable":true,"properties":{"id":{"type":"string"}}},"Choice":{"allOf":[{"$ref":"#/components/schemas/Value","nullable":false},{"properties":{"ok":{"type":"boolean"}}}]}}`)
 	got, err := core.GenerateWithDiagnostics(request(input, "Dto"))
-	if err == nil || len(got.Artifacts.Files) != 0 {
-		t.Fatal("ordinary nullable intersection widened", got, err)
+	if err != nil || !strings.Contains(source(t, got, "ChoiceDto"), "public data class ChoiceDto") {
+		t.Fatal("original nullable intersection did not graduate", err)
 	}
 }

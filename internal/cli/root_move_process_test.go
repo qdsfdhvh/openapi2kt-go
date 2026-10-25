@@ -106,7 +106,7 @@ func TestRootMoveNativeFullSharedInventoryAndFailClosedSelection(t *testing.T) {
 		run := append(append([]string(nil), args...), "--move-output-from", src, "--output", dst)
 		// Full inventory output override is the explicit move binding, not emission options.
 		before := snapshot(t, src)
-		fails(t, invoke(t, base, append(run, "--spec=alpha")...), 2, "E_USAGE")
+		fails(t, invoke(t, base, append(run, "--spec=alpha")...), 1, "E_CONFIG_RUNTIME_ROOTS")
 		full := read(t, cfg)
 		cut := strings.Index(string(full), "[[specs]]\nname=\"beta\"")
 		put(t, cfg, full[:cut])

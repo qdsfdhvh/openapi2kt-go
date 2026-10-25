@@ -266,7 +266,8 @@ func TestAllOfDTOPropertyCountLimits(t *testing.T) {
 
 func TestAllOfDTOPropertyCountNullableApproximationAndNominalFields(t *testing.T) {
 	for _, tc := range []struct{ root, first, second, ty string }{
-		{"", `true`, `false`, `Payload?`},
+		{"", `true`, `false`, `Payload`},
+		{"", `true`, `true`, `Payload?`},
 		{`,"nullable":false`, `true`, `false`, `Payload`},
 		{`,"nullable":true`, `false`, `false`, `Payload?`},
 	} {
@@ -352,7 +353,6 @@ func TestAllOfDTOPropertyCountNullableComponentCatalogAndGrammar(t *testing.T) {
 		{"Unused", `,"maxProperties":"bad"`, "", "/components/schemas/Unused/allOf/0/maxProperties", "E_SCHEMA_UNSUPPORTED"},
 		{"Unused", `,"minProperties":3,"maxProperties":2`, "", "/components/schemas/Unused/allOf/0/minProperties", "E_SCHEMA_UNSUPPORTED"},
 		{"Unused", `,"minProperties":0`, `,"minProperties":0`, "/components/schemas/Unused/minProperties", "E_SCHEMA_UNSUPPORTED"},
-		{"Unused", "", "", "/components/schemas/Unused", "E_SCHEMA_UNSUPPORTED"},
 		{"Unused", `,"minProperties":-1`, `,"nullable":true,"minProperties":0`, "/components/schemas/Unused/allOf/0/minProperties", "E_SCHEMA_INVALID"},
 		{"Unused", `,"minProperties":-1`, `,"nullable":false`, "/components/schemas/Unused/allOf/0/minProperties", "E_SCHEMA_INVALID"},
 	} {

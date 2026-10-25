@@ -125,6 +125,28 @@ func (a *analyzer) primitiveElementType(v *document.Value, pointer string, depth
 }
 
 func (a *analyzer) collectionElementType(v *document.Value, name, pointer string, nested *[]Declaration, used map[string]bool, depth int) (TypeRef, *diagnostic.Diagnostic) {
+	if ty, err := a.literalFalseCollectionElementType(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
+	if ty, err := a.falseCollectionElementType(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
+	if a.borrowedCollectionPlanning && enumNominalCandidate(v) {
+		target, err := a.lookupSchemaReference("#"+pointer, pointer)
+		if err != nil {
+			return TypeRef{}, err
+		}
+		if target.Catalog != nil || target.Schema != v || !a.admitBorrowedNominalLeaf(target, pointer) {
+			return TypeRef{}, schemaReferenceUnsupported(pointer)
+		}
+		// There is no new ref edge here: depth already includes the original
+		// inline element. Its retained nominal declaration supplies the codec.
+		return a.referenceType(target, nil, depth-1, pointer)
+	}
 	// A borrowed container retains raw/true source authority before planning.
 	// Use its transparent backing here so dictionaries preserve JsonObject
 	// projection and nullable/raw aliases do not become nominal barriers.

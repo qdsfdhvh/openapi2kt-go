@@ -54,7 +54,7 @@ func TestInlineAllOfCollectionPresenceAndNullability(t *testing.T) {
 		carrierDefaultFailure(t, inlineAllOfCollectionDocument(strings.Replace(nilField, `,"nullable":true`, "", 1)), checked, "E_SCHEMA_INVALID", "/components/schemas/Holder/properties/v/default")
 		// Effective element null intent may come from an allOf member, without
 		// making the outer container nullable. Root false narrows the element.
-		element := strings.Replace(referencedAllOfCollectionItem, `"allOf":[{`, `"allOf":[{"nullable":true,`, 1)
+		element := nullableAllOfMembers(t, referencedAllOfCollectionItem)
 		for _, value := range []string{"[]", "[null]", `[{"name":"a"}]`} {
 			doc := inlineAllOfCollectionDocument(`{"type":"array","items":` + element + `,"default":` + value + `}`)
 			r.Document = doc
@@ -91,6 +91,10 @@ func TestInlineAllOfCollectionDiagnosticsAndBoundaries(t *testing.T) {
 		} {
 			r := request(inlineAllOfCollectionDocument(`{"type":"array","items":`+element+`,"default":[]}`), "Dto")
 			r.Options.Validation = checked
+			if checked && element == allOfOverrideDuplicateName {
+				allOfDefaultOverridePositive(t, r)
+				continue
+			}
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("empty annotation admitted excluded source/constructor", element, err)
 			}

@@ -14,7 +14,8 @@ type CollectionValidation struct {
 	Minimum, Maximum       *int64
 	MinimumKey, MaximumKey string
 	Unique                 bool
-	UniqueJSON             bool // Exact JSON-value keys; distinct from native scalar equality.
+	UniqueJSON             bool          // Exact JSON-value keys; distinct from native scalar equality.
+	UniqueDTO              *DTOUniqueKey `json:",omitempty"`
 }
 
 var collectionBoundKeys = []string{"minItems", "maxItems", "minProperties", "maxProperties", "uniqueItems"}
@@ -27,6 +28,10 @@ func (a *analyzer) collectionKeys(base []string) []string {
 }
 
 func (a *analyzer) checkedCollection(ty TypeRef, v *document.Value, pointer string) (TypeRef, *diagnostic.Diagnostic) {
+	return a.checkedCollectionRole(ty, v, pointer, false)
+}
+
+func (a *analyzer) checkedCollectionRole(ty TypeRef, v *document.Value, pointer string, defaultDTO bool) (TypeRef, *diagnostic.Diagnostic) {
 	var checks *CollectionValidation
 	for _, key := range collectionBoundKeys {
 		if !has(v, key) {
@@ -51,7 +56,16 @@ func (a *analyzer) checkedCollection(ty TypeRef, v *document.Value, pointer stri
 			enumValues := uniqueStringEnumType(*ty.Element) && a.uniqueStringEnumSource(get(v, "items"), pointer+"/items", 0)
 			nativeEnumValues := uniqueNativeEnumType(*ty.Element) && a.uniqueNativeEnumSource(get(v, "items"), pointer+"/items", 0)
 			mapValues := uniqueMapType(*ty.Element) && a.uniqueMapSource(get(v, "items"), pointer+"/items")
-			if !jsonValues && !enumValues && !nativeEnumValues && !mapValues && (!uniqueScalarType(*ty.Element) || !a.uniqueScalarSource(get(v, "items"), pointer+"/items", 0)) {
+			structuralValues := a.structuralUniqueSource(get(v, "items"), pointer+"/items", 0, map[*document.Value]bool{}, true)
+			var dto *dtoUniqueSource
+			if !jsonValues && !enumValues && !nativeEnumValues && !mapValues && !structuralValues && !uniqueScalarType(*ty.Element) {
+				var failure *diagnostic.Diagnostic
+				dto, failure = a.dtoUniqueSource(get(v, "items"), pointer+"/items", pointer+"/uniqueItems")
+				if failure != nil {
+					return TypeRef{}, failure
+				}
+			}
+			if dto == nil && !jsonValues && !enumValues && !nativeEnumValues && !mapValues && !structuralValues && (!uniqueScalarType(*ty.Element) || !a.uniqueScalarSource(get(v, "items"), pointer+"/items", 0)) {
 				return TypeRef{}, unsupported(pointer + "/" + key)
 			}
 			if checks == nil {
@@ -59,6 +73,16 @@ func (a *analyzer) checkedCollection(ty TypeRef, v *document.Value, pointer stri
 			}
 			checks.UniqueJSON = jsonValues
 			checks.Unique = !jsonValues
+			if dto != nil {
+				checks.UniqueDTO = dto.Key
+				*a.dtoUniqueUses = append(*a.dtoUniqueUses, dtoUniqueUse{Element: ty.Element, Source: dto, Pointer: pointer + "/uniqueItems", DefaultOnly: defaultDTO})
+			}
+			if structuralValues && !mapValues {
+				if a.structuralUniqueUses == nil {
+					a.structuralUniqueUses = &[]structuralUniqueUse{}
+				}
+				*a.structuralUniqueUses = append(*a.structuralUniqueUses, structuralUniqueUse{ty.Element, pointer + "/" + key, get(v, "items"), pointer + "/items"})
+			}
 			continue
 		}
 		count, ok := integerLiteral(get(v, key))

@@ -42,7 +42,7 @@ Previously rejected root-alias nullable keys now generate aliases. Existing acce
 
 ## Limits and migration
 
-- `false` roots and unused false schemas remain rejected with their original `E_SCHEMA_INVALID`/Pointer; they are never deleted or treated as JSON/object values.
+- [Literal false named component roots and pure aliases](false-component-roots.md) have a separate uninhabited type/serializer contract. Other false source roles retain their refusal boundaries; no false schema is deleted or treated as an unconstrained JSON/object value.
 - OpenAPI 3.0 Boolean roots remain rejected. Existing Boolean `additionalProperties` behavior is unchanged.
 - Pure root aliases have the separate nullable intent profile above. Nullable keys do not turn a true root into a structural object definition or widen other root-binding grammars.
 - Internal Boolean reference targets, Boolean union branches/hierarchy/allOf shape borrowing and general Boolean composition remain unsupported. A true root is not a structural object definition merely because its Kotlin representation can carry an object value.
@@ -56,3 +56,9 @@ Previously rejected root-alias nullable keys now generate aliases. Existing acce
 [BooleanRootContracts.kt](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/BooleanRootContracts.kt) covers reified canonical/alias codecs, all JSON kinds, JsonNull, DTO construction, list/map/Patch, controlled JSON HTTP and fragmented still-open SSE close/failure/reuse/coldness. `bash scripts/test.sh feature boolean-root` generates fresh Data/Plain × validation off/on projects, each with four Json configurations; Data projects also check `copy`. The full HTTP smoke invokes the consumer.
 
 This profile does not complete F08/F04, general Boolean-schema validation, optimizer combinations, minimum-toolchain, Android/KMP, all-platform or first-version delivery.
+
+## Literal false component roots
+
+[Literal false roots](false-component-roots.md) have a separate uninhabited nominal class/serializer contract for OpenAPI 3.1 named components and pure aliases. Nullable aliases follow existing nearest carrier intent; all non-null values reject. [Ordinary named reference fields](false-reference-fields.md) have a separate absence/null policy. This grants no inline literal-false value/container/HTTP/default/composition role, and true-root behavior remains as described above.
+
+[Named collections with false-reference leaves](false-collection-references.md) extend F10/D06/E05 with finite original List/typed Map roots, actual nominal leaf codecs, empty-container and nullable-leaf semantics, existing referenced DTO/JSON HTTP consumers, immutable source/export/backing/cached-height authority and source48/work16384/checked16/JVM240 limits. Inline/literal-false/default/tuple/composed/internal/discarded-extra-key and direct false HTTP-root roles remain separate; broader plan/platform/final acceptance stays open.

@@ -9,7 +9,7 @@ import (
 	"openapi-kt/internal/naming"
 )
 
-func (a *analyzer) fieldConstant(v *document.Value, name, wire, pointer string, depth int, ordinary bool) (*Constant, *diagnostic.Diagnostic) {
+func (a *analyzer) fieldConstant(v *document.Value, name, wire, pointer string, depth int, ordinary, structuredBody bool) (*Constant, *diagnostic.Diagnostic) {
 	// The subsequent value planner owns depth and the single source warning.
 	// A literal true cannot be a const declaration or acquire a DTO identity.
 	if a.booleanTrueValue(v) {
@@ -19,7 +19,7 @@ func (a *analyzer) fieldConstant(v *document.Value, name, wire, pointer string, 
 		return nil, err
 	}
 	if has(v, "const") {
-		return constantProfile(name, wire, v, pointer, depth, ordinary)
+		return constantProfile(name, wire, v, pointer, depth, ordinary || structuredBody)
 	}
 	if ordinary && has(v, "$ref") && has(v, "default") {
 		return nil, nil // The field-default planner owns this narrowly scoped role.
@@ -61,7 +61,7 @@ func (a *analyzer) fieldConstant(v *document.Value, name, wire, pointer string, 
 		if err := depthCheck(depth+steps, reference.Pointer); err != nil {
 			return nil, err
 		}
-		return constantProfile(name, wire, component.Schema, component.Pointer, depth+steps, ordinary)
+		return constantProfile(name, wire, component.Schema, component.Pointer, depth+steps, ordinary || structuredBody)
 	}
 	return nil, nil
 }
@@ -74,6 +74,9 @@ func (a *analyzer) buildModel(name string, v *document.Value, pointer string, de
 	}
 	model, err := context.buildModelPlan(name, v, pointer, depth, nil, false, nil, true)
 	a.warnings = context.warnings
+	// A first false source may initialize this registry inside the model's
+	// context. Keep its cumulative budget shared with later model contexts.
+	a.falseRootSources = context.falseRootSources
 	return model, err
 }
 
@@ -141,7 +144,9 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 			return nil, err
 		}
 		if has(f.Schema, "const") {
-			if _, err := constantProfile("validation", f.Wire, f.Schema, f.Pointer, f.Depth, ordinary); err != nil {
+			// Validate original discarded declarations without constructing
+			// structured initializers that cannot enter this model.
+			if err := validateDiscardedConstant(f.Schema, f.Pointer, f.Depth); err != nil {
 				return nil, err
 			}
 		} else if has(f.Schema, "default") {
@@ -196,6 +201,10 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 	usedProperties := map[string]bool{}
 	usedNested := map[string]bool{strings.ToLower(name): true, "companion": true, "serializer": true}
 	slots := 0
+	var falseFields []falseFieldPlan
+	var literalFalsePlans []literalFalseFieldPlan
+	var literalFalseValue *FalseValue
+	var falseInlineCollections []falseInlineCollectionPlan
 	// Generated mapping bodies occupy real serialized slots and normalized
 	// names, but never become source fields or satisfy source required entries.
 	var generated []Constant
@@ -230,7 +239,14 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 			return nil, diagnostic.At("E_NAME_COLLISION", "Property names collide after normalization.", f.Pointer)
 		}
 		usedProperties[strings.ToLower(property)] = true
-		value, err := a.fieldConstant(f.Schema, property, f.Wire, f.Pointer, f.Depth, ordinary)
+		literalFalse := a.literalFalseField(f, v, pointer, ordinary, common, typed)
+		var value *Constant
+		if !literalFalse {
+			// Pinned models share the body-default grammar, but mapped
+			// discriminator fields must retain the scalar const boundary.
+			_, mapped := typed[f.Wire]
+			value, err = a.fieldConstant(f.Schema, property, f.Wire, f.Pointer, f.Depth, ordinary, !mapped)
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -280,12 +296,55 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 		}
 		var ty TypeRef
 		var validation *PrimitiveValidation
-		kind, _, kindErr := schemaType(f.Schema, f.Pointer)
+		kind := ""
+		var kindErr *diagnostic.Diagnostic
+		if !literalFalse {
+			kind, _, kindErr = schemaType(f.Schema, f.Pointer)
+		}
 		if kindErr != nil {
 			return nil, kindErr
 		}
 		checkedNativeEnum := a.options.Validation && has(f.Schema, "enum") && (kind == "integer" || kind == "number" || kind == "boolean")
-		if checkedNativeEnum {
+		falseType, falseRoot, falseErr := a.falseReferenceFieldType(f, v, pointer, ordinary, common, typed)
+		if falseErr != nil {
+			return nil, falseErr
+		}
+		inlineFalse := a.falseInlineCollectionFieldSource(f, v, pointer, ordinary, common, typed)
+		literalCollection := a.literalFalseCollectionFieldSource(f, v, pointer, ordinary, common, typed)
+		inlineInitializer, inlineEncoded := "", ""
+		if literalFalse || literalCollection != nil {
+			if err := depthCheck(f.Depth, f.Pointer); err != nil {
+				return nil, err
+			}
+			if literalFalseValue == nil {
+				literalFalseValue, err = a.literalFalseHelper(model, shape.Fields, usedNested, f.Pointer)
+				if err != nil {
+					return nil, err
+				}
+			}
+			if literalFalse {
+				ty = TypeRef{Kind: Named, Name: a.options.PackageName + ".models." + model.ClassName + "." + literalFalseValue.ClassName}
+			} else {
+				context := *a
+				context.literalFalseCollectionPlanning = &literalFalseCollectionPlanning{Source: *literalCollection, Field: f, Owner: a.componentsByOriginalSchema(v), Model: model, Helper: literalFalseValue}
+				if literalCollection.OwnDefault {
+					ty, inlineInitializer, inlineEncoded, err = context.literalFalseCollectionDefault(f, nestedName)
+				} else {
+					ty, validation, err = context.modelPropertyType(f.Schema, nestedName, f.Pointer, nested, used, f.Depth)
+				}
+				a.warnings = context.warnings
+			}
+		} else if falseRoot != nil {
+			ty = falseType
+		} else if inlineFalse != nil {
+			validationContext := *a
+			validationContext.falseInlineCollectionPlanning = inlineFalse
+			if inlineFalse.OwnDefault {
+				ty, inlineInitializer, inlineEncoded, err = validationContext.falseInlineCollectionDefault(f, *inlineFalse, nestedName)
+			} else {
+				ty, validation, err = validationContext.modelPropertyType(f.Schema, nestedName, f.Pointer, nested, used, f.Depth)
+			}
+		} else if checkedNativeEnum {
 			ty, validation, err = a.nativeEnumFieldType(f, has(f.Schema, "default"))
 		} else if has(f.Schema, "default") && has(f.Schema, "enum") {
 			ty, err = a.enumDefaultType(f, nestedName, nested, used)
@@ -304,7 +363,7 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 			validation = aggregate
 		}
 		serializer := ""
-		if !has(f.Schema, "default") {
+		if !has(f.Schema, "default") && falseRoot == nil && !literalFalse {
 			serializer, err = a.fieldSerializer(f.Schema, f.Pointer, f.Depth)
 			if err != nil {
 				return nil, err
@@ -378,18 +437,58 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 				ty = withFieldSerializer(ty, serializer)
 			}
 		}
+		omitDefault := (falseRoot != nil || literalFalse) && !shape.Required[f.Wire] && !explicitNullable
+		if omitDefault {
+			if literalFalse {
+				literalFalseValue.AbsentSerializer = true
+				ty.Serializer = a.options.PackageName + ".models." + model.ClassName + "." + literalFalseValue.ClassName + "." + falseAbsentSerializerName(literalFalseValue.ClassName)
+			} else {
+				ty.Serializer = a.useFalseAbsentSerializer(falseRoot)
+			}
+		}
 		slots += ty.Slots()
 		if slots > MaxMembers {
 			return nil, diagnostic.At("E_MODEL_LIMIT", "Model exceeds the supported JVM constructor size; split it into smaller objects.", pointer)
 		}
-		initializer, err := a.modelDefault(f, ty, shape.Required[f.Wire])
-		if err != nil {
-			return nil, err
+		initializer := ""
+		if literalCollection != nil && literalCollection.OwnDefault {
+			if !shape.Required[f.Wire] {
+				initializer = inlineInitializer
+			}
+		} else if inlineFalse != nil && inlineFalse.OwnDefault {
+			if !shape.Required[f.Wire] {
+				initializer = inlineInitializer
+			}
+		} else if falseRoot != nil && has(f.Schema, "default") {
+			// The original nullable false field has already validated its
+			// only possible literal. Required parameters keep no initializer.
+			if !shape.Required[f.Wire] {
+				initializer = "null"
+			}
+		} else {
+			initializer, err = a.modelDefault(f, ty, shape.Required[f.Wire])
+			if err != nil {
+				return nil, err
+			}
 		}
-		if has(f.Schema, "default") && a.deferredFieldDefault(f.Schema) {
+		if falseRoot == nil && inlineFalse == nil && !(literalCollection != nil && literalCollection.OwnDefault) && has(f.Schema, "default") && a.deferredFieldDefault(f.Schema) {
 			*a.referencedDefaults = append(*a.referencedDefaults, referencedFieldDefault{Field: f, Type: annotationType, Model: model, Index: len(model.Properties)})
 		}
-		model.Properties = append(model.Properties, Property{Name: property, WireName: f.Wire, Type: ty, DefaultNull: defaultNull, Default: initializer, Validation: validation})
+		if literalFalse || literalCollection != nil {
+			plan := literalFalseFieldPlan{Index: len(model.Properties), Field: f}
+			if literalCollection != nil {
+				plan.Collection = *literalCollection
+				plan.Encoded = inlineEncoded
+			}
+			literalFalsePlans = append(literalFalsePlans, plan)
+		}
+		if falseRoot != nil {
+			falseFields = append(falseFields, falseFieldPlan{len(model.Properties), f, falseRoot})
+		}
+		if inlineFalse != nil {
+			falseInlineCollections = append(falseInlineCollections, falseInlineCollectionPlan{len(model.Properties), f, *inlineFalse, inlineEncoded})
+		}
+		model.Properties = append(model.Properties, Property{Name: property, WireName: f.Wire, Type: ty, DefaultNull: defaultNull, Default: initializer, Validation: validation, OmitDefault: omitDefault})
 	}
 	if len(model.Properties) == 0 {
 		model.Properties = nil // Preserve the original empty-plan representation.
@@ -404,6 +503,29 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 	}
 	if a.modelPointers != nil {
 		a.modelPointers[model] = pointer
+	}
+	if a.modelDiagnosticPointers != nil {
+		a.modelDiagnosticPointers[model] = pointer
+	}
+	if a.directionalModelSources != nil && ordinary && len(common) == 0 && len(typed) == 0 && composedModelCandidate(v) && !a.hierarchySources[v] {
+		// Keep the already validated winning source fields outside semantic IR.
+		// Directional planning must not re-expand a source graph after binding.
+		a.directionalModelSources[model] = directionalModelSource{Schema: v, Pointer: pointer, Fields: shape.Fields, Required: shape.Required}
+	}
+	if len(literalFalsePlans) != 0 {
+		if err := a.recordLiteralFalseFields(model, v, pointer, literalFalseValue, literalFalsePlans); err != nil {
+			return nil, err
+		}
+	}
+	if len(falseInlineCollections) != 0 {
+		if err := a.recordFalseInlineCollectionOrigin(model, v, pointer, falseInlineCollections); err != nil {
+			return nil, err
+		}
+	}
+	if len(falseFields) != 0 {
+		if err := a.recordFalseFieldOrigin(model, v, pointer, falseFields); err != nil {
+			return nil, err
+		}
 	}
 	return model, nil
 }

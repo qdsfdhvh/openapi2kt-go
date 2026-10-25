@@ -101,7 +101,7 @@ func TestFloatingUniqueBudgets(t *testing.T) {
 }
 
 func TestFloatingUniqueSourceExclusionsAndNoop(t *testing.T) {
-	for _, leaf := range []string{`{"type":"number","const":1}`, `{"type":"string","x-native-type":"kotlin.Double"}`, `{"type":"string","x-native-type":"kotlin.Float"}`, `{"type":"array","items":{"type":"number"}}`} {
+	for _, leaf := range []string{`{"type":"number","const":1}`, `{"type":"string","x-native-type":"kotlin.Double"}`, `{"type":"string","x-native-type":"kotlin.Float"}`} {
 		rq := request(fieldDoc(`{"type":"array","uniqueItems":true,"items":`+leaf+`}`), "Dto")
 		rq.Options.Validation = true
 		if got, err := core.GenerateWithDiagnostics(rq); err == nil || len(got.Artifacts.Files) != 0 {

@@ -74,7 +74,7 @@ func EmitClient(client *schema.Client, rootPackage string) []File {
 			fmt.Fprintf(&out, "        return this@%s.client.request(%s) {\n", group.Name, urlExpression(group.Name, op))
 			fmt.Fprintf(&out, "            this.method = %s(%s)\n", namespaces.httpMethodConstructor(op), naming.Literal(strings.ToUpper(op.Method)))
 			if op.Body != nil {
-				fmt.Fprintf(&out, "            contentType(%s.Application.Json)\n            setBody(input)\n", namespaces.contentTypeReference(op))
+				emitRequestBody(op, namespaces, 3, &out)
 			}
 			for _, p := range op.Parameters {
 				if p.Location != "path" {
@@ -101,7 +101,10 @@ func EmitClient(client *schema.Client, rootPackage string) []File {
 		if groupHasJSONUnique(group) {
 			emitJSONUniqueHelper(&out)
 		}
-		files = append(files, File{Path: strings.ReplaceAll(apiPackage, ".", "/") + "/" + group.Name + ".kt", Content: out.String()})
+		if groupUsesUnique(group, structuralUniqueElement) {
+			emitStructuralUniqueHelper(&out)
+		}
+		files = append(files, File{Path: strings.ReplaceAll(apiPackage, ".", "/") + "/" + group.Name + ".kt", Content: jvmFunctionNames(out.String())})
 	}
 	var out strings.Builder
 	imports, constructors := planClientNamespaceImports(client, apiPackage)
@@ -126,6 +129,46 @@ func EmitClient(client *schema.Client, rootPackage string) []File {
 	return files
 }
 
+// HTTP and cold SSE share exactly one selected request-body wire policy.
+func emitRequestBody(op schema.Operation, namespaces namespacePlan, level int, out *strings.Builder) {
+	indent := strings.Repeat("    ", level)
+	if !op.Body.Required && (op.Body.RawMedia != "" || op.Body.FormFields != nil) {
+		fmt.Fprintf(out, "%sif (input != null) {\n", indent)
+		defer fmt.Fprintf(out, "%s}\n", indent)
+		indent += "    "
+	}
+	if op.Body.RawMedia != "" {
+		fmt.Fprintf(out, "%scontentType(%s.parse(%s))\n%ssetBody(input)\n", indent, namespaces.contentTypeReference(op), naming.Literal(op.Body.RawMedia), indent)
+		return
+	}
+	if op.Body.FormFields == nil {
+		fmt.Fprintf(out, "%scontentType(%s.Application.Json)\n%ssetBody(input)\n", indent, namespaces.contentTypeReference(op), indent)
+		return
+	}
+	fmt.Fprintf(out, "%ssetBody(%s(%s.build {\n", indent, namespaces.formAlias, namespaces.paramsAlias)
+	for _, field := range op.Body.FormFields {
+		value := "input." + naming.CodeName(field.Name)
+		if field.Type.Kind == schema.Nullable {
+			mapped := formFieldText(field.Type.WithoutRootNull(), "it")
+			fmt.Fprintf(out, "%s    %s?.let { this.append(%s, %s) }\n", indent, value, naming.Literal(field.WireName), mapped)
+			continue
+		}
+		value = formFieldText(field.Type, value)
+		fmt.Fprintf(out, "%s    this.append(%s, %s)\n", indent, naming.Literal(field.WireName), value)
+	}
+	fmt.Fprintf(out, "%s}))\n", indent)
+}
+
+func formFieldText(ty schema.TypeRef, value string) string {
+	if ty.Kind == schema.Named {
+		return value + ".serialName" // The form planner admits only retained String enums.
+	}
+	if ty.Name != "kotlin.String" {
+		return value + ".toString()"
+	}
+	return value
+}
+
 func safeKdoc(text string) string {
 	text = strings.ReplaceAll(text, "/*", "/ *")
 	text = strings.ReplaceAll(text, "*/", "* /")
@@ -135,7 +178,7 @@ func safeKdoc(text string) string {
 }
 
 func serverDefaultName(identity string) string {
-	return "`openapi-kt server " + identity + "`"
+	return "`openapi-kt-server-" + identity + "`"
 }
 
 // Each immutable URL owns one content-addressed file. Equal defaults can share

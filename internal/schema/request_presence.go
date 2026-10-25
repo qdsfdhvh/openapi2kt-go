@@ -73,13 +73,14 @@ func (a *analyzer) requestNullable(v *document.Value, pointer string) (bool, *di
 				return *override, nil
 			}
 			if target.Catalog == nil || target.CollectionBinding || target.NullableBinding {
-				if target.ModelName != "" || target.Deferred != nil {
+				if target.ModelName != "" || target.Deferred != nil || target.Catalog != nil && target.Catalog.NullableDTO {
 					return a.nominalSourceNullable(target)
 				}
 				return target.effectiveNullable()
 			}
 			return true, nil // Intrinsically nullable array, absent wrapper override.
 		}
+		return false, nil // Preserve named scalar/nominal annotation-only wrapper policy.
 	}
 	if has(v, "$ref") {
 		component, err := a.resolveSchema(text(get(v, "$ref")), pointer)
@@ -87,7 +88,7 @@ func (a *analyzer) requestNullable(v *document.Value, pointer string) (bool, *di
 			return false, err
 		}
 		if component.Catalog == nil || component.CollectionBinding || component.NullableBinding {
-			if component.ModelName != "" || component.Deferred != nil {
+			if component.ModelName != "" || component.Deferred != nil || component.Catalog != nil && component.Catalog.NullableDTO {
 				return a.nominalSourceNullable(component)
 			}
 			return component.effectiveNullable()
@@ -97,6 +98,9 @@ func (a *analyzer) requestNullable(v *document.Value, pointer string) (bool, *di
 	_, nullable, err := schemaType(v, pointer)
 	if err != nil {
 		return false, err
+	}
+	if has(v, "allOf") {
+		return a.compositionNullable(v, pointer, 0, &compositionBudget{remaining: 16384, enabled: true}, map[*document.Value]bool{})
 	}
 	union, err := a.readUnion(v, pointer)
 	if err != nil {

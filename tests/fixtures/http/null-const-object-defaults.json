@@ -1,0 +1,260 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Item": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fixed": {
+            "const": null
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Combined": {
+        "allOf": [
+          {
+            "properties": {
+              "fixed": {
+                "type": "null",
+                "const": null
+              }
+            }
+          },
+          {
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ]
+          }
+        ]
+      },
+      "Seed": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fixed": {
+            "const": null
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "default": {
+          "id": "seed",
+          "fixed": null
+        }
+      },
+      "SeedAlias": {
+        "$ref": "#/components/schemas/Seed",
+        "default": {
+          "id": "alias",
+          "fixed": null
+        }
+      },
+      "Holder": {
+        "properties": {
+          "inline": {
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "fixed": {
+                "const": null
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "default": {
+              "id": "inline",
+              "fixed": null
+            }
+          },
+          "named": {
+            "$ref": "#/components/schemas/Item",
+            "default": {
+              "id": "named",
+              "fixed": null
+            }
+          },
+          "combined": {
+            "$ref": "#/components/schemas/Combined",
+            "default": {
+              "id": "combined",
+              "fixed": null
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "default": [
+              {
+                "id": "row",
+                "fixed": null
+              }
+            ]
+          },
+          "tree": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "fixed": {
+                    "const": null
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            },
+            "default": {
+              "one": [
+                {
+                  "id": "tree",
+                  "fixed": null
+                }
+              ]
+            }
+          },
+          "only": {
+            "properties": {
+              "fixed": {
+                "const": null,
+                "nullable": true
+              }
+            },
+            "default": {
+              "fixed": null
+            }
+          }
+        }
+      },
+      "RequiredHolder": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Item",
+            "default": {
+              "id": "required",
+              "fixed": null
+            }
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "NoInheritHolder": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Seed"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "post": {
+        "operationId": "watch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/Holder",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

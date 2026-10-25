@@ -99,7 +99,7 @@ private object DTOCountNonJsonDecoder : AbstractDecoder() {
 }
 
 suspend fun dtoPropertyCountContracts() {
-    dtoVerify(KotlinVersion.CURRENT.toString() == "2.4.10", "declared cached Kotlin")
+    dtoVerify(KotlinVersion.CURRENT.toString() == System.getProperty("openapiKt.expectedKotlin", "2.4.10"), "declared Kotlin profile")
     val descriptor = RecordDto.serializer().descriptor
     dtoVerify(descriptor === RecordDto.generatedSerializer().descriptor, "automatic descriptor identity")
     dtoVerify((0 until descriptor.elementsCount).map(descriptor::getElementName) == listOf("id", "optional", "kind"), "descriptor declaration order")

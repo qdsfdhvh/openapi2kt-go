@@ -27,7 +27,12 @@ func emitTypeChecks(t schema.TypeRef, receiver, label string, indent int, out *s
 		fmt.Fprintf(out, "%s%s.let { value ->\n", pad, receiver)
 		emitCollectionChecks(t.Collection, "value", label, indent+1, out)
 		if t.Collection.Unique {
-			if mapUniqueElement(*t.Element) {
+			if t.Collection.UniqueDTO != nil {
+				fmt.Fprintf(out, "%s    val keys = value.map { item -> %s }\n", pad, dtoUniqueKey(*t.Element, t.Collection.UniqueDTO, "item"))
+				fmt.Fprintf(out, "%s    require(keys.toSet().size == keys.size) { \"Field value contains duplicate entries for uniqueItems.\" }\n", pad)
+			} else if structuralUniqueElement(*t.Element) {
+				fmt.Fprintf(out, "%s    %s(value.map { item -> %s })\n", pad, structuralUniqueHelperName, structuralUniqueKey(*t.Element, "item", 0))
+			} else if mapUniqueElement(*t.Element) {
 				fmt.Fprintf(out, "%s    %s(value)\n", pad, mapUniqueHelperName)
 			} else if floatingUniqueElement(*t.Element) {
 				fmt.Fprintf(out, "%s    %s(value)\n", pad, floatingUniqueHelperName)
@@ -115,7 +120,17 @@ const mapUniqueHelperName = "`openapi-kt unique map items`"
 const floatingUniqueHelperName = "`openapi-kt unique floating items`"
 
 func mapUniqueElement(t schema.TypeRef) bool {
-	return t.WithoutRootNull().Kind == schema.Map
+	for t.Kind == schema.Nullable || t.Kind == schema.Named && t.Element != nil {
+		t = *t.Element
+	}
+	if t.Kind != schema.Map || t.Element == nil {
+		return false
+	}
+	leaf := *t.Element
+	for leaf.Kind == schema.Nullable || leaf.Kind == schema.Named && leaf.Element != nil {
+		leaf = *leaf.Element
+	}
+	return leaf.Kind == schema.Scalar && leaf.Name != "kotlin.Float" && leaf.Name != "kotlin.Double"
 }
 
 func floatingUniqueElement(t schema.TypeRef) bool {

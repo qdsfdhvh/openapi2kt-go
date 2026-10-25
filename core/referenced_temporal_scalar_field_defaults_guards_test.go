@@ -103,7 +103,6 @@ func TestReferencedTemporalScalarFieldDefaultsSourceRolesRemainExcluded(t *testi
 		for _, holder := range []string{
 			`{"properties":{"v":{"allOf":[{"$ref":"#/components/schemas/Day"}],"default":"2024-02-29"}}}`,
 			`{"properties":{"v":{"oneOf":[{"$ref":"#/components/schemas/Day"},{"type":"null"}],"default":null}}}`,
-			`{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Day"},"default":[]}}}`,
 		} {
 			r := request(schemas(`{"Day":{"type":"string","format":"date"},"Holder":`+holder+`}`), "Dto")
 			r.Options.Validation = checked

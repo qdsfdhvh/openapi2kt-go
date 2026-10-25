@@ -58,6 +58,9 @@ func GenerateWithPhaseObserver(request GenerationRequest, observer GenerationPha
 	if failure != nil {
 		return GenerationReport{}, Diagnostics{*failure}
 	}
+	if request.ProjectPreviousNameLock && (!request.Options.LockHoistedNames || request.PreviousNameLock == nil) {
+		return GenerationReport{}, Diagnostics{*diagnostic.New("E_OPTIONS", "Name-lock projection requires explicit previous locked state.")}
+	}
 	var lock *schema.HoistedNameLock
 	if request.Options.LockHoistedNames {
 		var failure *diagnostic.Diagnostic
@@ -85,7 +88,13 @@ func GenerateWithPhaseObserver(request GenerationRequest, observer GenerationPha
 	}
 	if request.Options.HoistSharedShapes {
 		if lock != nil {
-			if failure := schema.HoistOperationModelsLocked(plan, request.Options.PackageName, request.Options.QualifyHoistedNames, lock); failure != nil {
+			var failure *diagnostic.Diagnostic
+			if request.ProjectPreviousNameLock {
+				failure = schema.HoistOperationModelsLockedProjection(plan, request.Options.PackageName, request.Options.QualifyHoistedNames, lock)
+			} else {
+				failure = schema.HoistOperationModelsLocked(plan, request.Options.PackageName, request.Options.QualifyHoistedNames, lock)
+			}
+			if failure != nil {
 				return GenerationReport{}, Diagnostics{*failure}
 			}
 		} else {
@@ -100,6 +109,12 @@ func GenerateWithPhaseObserver(request GenerationRequest, observer GenerationPha
 	}
 	if request.Options.ModelStyle == PlainClass {
 		schema.UsePlainClasses(plan)
+	}
+	if failure := schema.CheckRetainedDataCopySignatureLimits(plan, request.Options.PackageName); failure != nil {
+		return GenerationReport{}, Diagnostics{*failure}
+	}
+	if failure := schema.CheckRetainedEnumJVMNameLimits(plan); failure != nil {
+		return GenerationReport{}, Diagnostics{*failure}
 	}
 	phases.begin(PhaseEmit)
 	files := kotlin.Emit(plan.Models, request.Options.PackageName, plan.EmissionHints)

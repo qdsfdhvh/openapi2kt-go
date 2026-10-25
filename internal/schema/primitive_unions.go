@@ -41,6 +41,17 @@ type PrimitiveUnion struct {
 func (m *PrimitiveUnion) Name() string { return m.ClassName }
 func (*PrimitiveUnion) declaration()   {}
 
+// PrimitiveUnionAlias keeps a merged root and its public sibling wrapper names
+// in their original Kotlin file. It owns no replacement codecs or declarations.
+type PrimitiveUnionAlias struct {
+	ClassName, Canonical string
+	Kinds                []PrimitiveKind
+	NullVariant          bool
+}
+
+func (m *PrimitiveUnionAlias) Name() string { return m.ClassName }
+func (*PrimitiveUnionAlias) declaration()   {}
+
 func (a *analyzer) resolveUnionBranch(branch unionBranch, depth int) (*document.Value, string, int, *diagnostic.Diagnostic) {
 	v, p := branch.Schema, branch.Pointer
 	if target, admitted, err := a.nullableObjectReferenceMember(branch, depth); admitted || err != nil {

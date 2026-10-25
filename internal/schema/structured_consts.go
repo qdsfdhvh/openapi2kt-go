@@ -8,21 +8,13 @@ import (
 	"openapi-kt/internal/naming"
 )
 
-// Only ordinary DTO body planning enables this profile. The literal's object
+// DTO and non-discriminator pinned body planning enable this profile. The literal's object
 // keys are data, never schema keywords or references; its original tree stays
 // borrowed and the JSON loader's independent container budget remains in force.
 func structuredFieldConstant(name, wire string, schema, value *document.Value, kind, pointer string) (*Constant, *diagnostic.Diagnostic) {
-	for _, key := range []string{"format", "x-native-type"} {
-		if has(schema, key) {
-			return nil, unsupported(naming.Pointer(pointer, key))
-		}
-	}
-	actual, scalar, helper := "object", "kotlinx.serialization.json.JsonObject", "`openapi-kt object const`"
-	if value.Kind() == document.Array {
-		actual, scalar, helper = "array", "kotlinx.serialization.json.JsonArray", "`openapi-kt array const`"
-	}
-	if kind != "" && kind != actual {
-		return nil, invalid("A structured const must match its declared JSON type.", naming.Pointer(pointer, "const"))
+	scalar, helper, failure := structuredConstantShape(schema, value, kind, pointer)
+	if failure != nil {
+		return nil, failure
 	}
 	encoded, err := value.MarshalJSON()
 	if err != nil {
@@ -74,4 +66,47 @@ func structuredConstBinding(c *component) bool {
 
 func structuredConstant(c Constant) bool {
 	return c.Type.Kind == Scalar && (c.Type.Name == "kotlinx.serialization.json.JsonObject" && strings.HasPrefix(c.Initializer, "`openapi-kt object const`(") || c.Type.Name == "kotlinx.serialization.json.JsonArray" && strings.HasPrefix(c.Initializer, "`openapi-kt array const`("))
+}
+
+// The loader already validates the complete literal JSON tree and its budgets.
+// This checks schema/type compatibility without encoding an unused expression.
+func structuredConstantShape(schema, value *document.Value, kind, pointer string) (string, string, *diagnostic.Diagnostic) {
+	for _, key := range []string{"format", "x-native-type"} {
+		if has(schema, key) {
+			return "", "", unsupported(naming.Pointer(pointer, key))
+		}
+	}
+	actual, scalar, helper := "object", "kotlinx.serialization.json.JsonObject", "`openapi-kt object const`"
+	if value.Kind() == document.Array {
+		actual, scalar, helper = "array", "kotlinx.serialization.json.JsonArray", "`openapi-kt array const`"
+	}
+	if kind != "" && kind != actual {
+		return "", "", invalid("A structured const must match its declared JSON type.", naming.Pointer(pointer, "const"))
+	}
+	return scalar, helper, nil
+}
+
+func validateDiscardedConstant(v *document.Value, pointer string, depth int) *diagnostic.Diagnostic {
+	if !structuredLiteral(v) {
+		_, err := constantProfile("validation", "field", v, pointer, depth, true)
+		return err
+	}
+	kind, value, err := constantDeclaration(v, pointer, depth)
+	if err != nil {
+		return err
+	}
+	_, _, err = structuredConstantShape(v, value, kind, pointer)
+	return err
+}
+
+func validateDiscardedStructuredValue(v *document.Value, pointer string, depth int) *diagnostic.Diagnostic {
+	if err := depthCheck(depth, pointer); err != nil {
+		return err
+	}
+	// Value projection checks nullable/type before const keys. Preserve its
+	// diagnostic precedence independently of the body contribution grammar.
+	if _, _, err := schemaType(v, pointer); err != nil {
+		return err
+	}
+	return validateDiscardedConstant(v, pointer, depth)
 }

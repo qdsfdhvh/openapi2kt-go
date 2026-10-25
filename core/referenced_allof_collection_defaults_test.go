@@ -99,6 +99,10 @@ func TestReferencedAllOfCollectionDiagnosticsAndExclusions(t *testing.T) {
 		} {
 			r := request([]byte(strings.ReplaceAll(string(referencedAllOfCollectionDocument(`{"$ref":"#/components/schemas/Rows","default":[]}`)), referencedAllOfCollectionItem, target)), "Dto")
 			r.Options.Validation = checked
+			if checked && target == allOfOverrideDuplicateName {
+				allOfDefaultOverridePositive(t, r)
+				continue
+			}
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("empty collection default authorized excluded allOf source", err)
 			}

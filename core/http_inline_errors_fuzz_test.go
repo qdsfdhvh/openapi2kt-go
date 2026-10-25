@@ -11,6 +11,7 @@ import (
 func FuzzHTTPInlineErrors(f *testing.F) {
 	f.Add(httpDoc(`{"responses":{"204":{},"400":{"content":{"application/json":{"schema":{"properties":{"message":{"type":"string"}}}}}}}}`))
 	f.Add(httpDoc(`{"responses":{"default":{"content":{"application/json":{"schema":{"type":["object","null"],"properties":{"message":{"type":"string"}}}}}}}}`))
+	f.Add(httpDoc(`{"responses":{"204":{},"400":{"content":{"application/json":{"schema":{"allOf":[{"properties":{"message":{"type":"string"}}}]}}}},"401":{"content":{"application/json":{"schema":{"type":"array","items":{"properties":{"message":{"type":"string"}}}}}}}}}`))
 	f.Fuzz(func(t *testing.T, input []byte) {
 		if len(input) > 16384 {
 			return

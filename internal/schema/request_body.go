@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"mime"
 	"openapi-kt/internal/diagnostic"
 	"openapi-kt/internal/document"
 	"openapi-kt/internal/naming"
@@ -12,6 +13,14 @@ type RequestBody struct {
 	Type     TypeRef
 	Required bool
 	Models   []Declaration
+	// FormFields are selected-only, flat scalar properties of the retained
+	// request DTO. JSON requests leave this nil, including discarded form media.
+	// Optional nullable property values omit their form key when absent.
+	FormFields []Property
+	// RawMedia retains the selected raw scalar media spelling and parameters.
+	// A non-null builtin payload delegates byte/charset IO to Ktor; an optional
+	// body uses parameter null only for absence, never as a raw wire null.
+	RawMedia string
 }
 
 func (a *analyzer) requestBody(v *document.Value, pointer, owner string) (*RequestBody, *diagnostic.Diagnostic) {
@@ -38,17 +47,31 @@ func (a *analyzer) requestBody(v *document.Value, pointer, owner string) (*Reque
 		return nil, err
 	}
 	media := jsonMedia(content)
+	form := false
+	if media == "" {
+		media = formRequestMedia(content)
+		form = media != ""
+	}
+	raw := media == ""
+	if raw {
+		media = rawValueMedia(content)
+	}
 	if media == "" {
 		return nil, operationUnsupported(pointer + "/content")
 	}
 	var selected TypeRef
 	var selectedModels []Declaration
+	var selectedSchema *document.Value
+	var selectedPointer string
 	for _, entry := range httpMembers(content) {
 		p := naming.Pointer(pointer+"/content", entry.Name)
 		if err := operationKeys(entry.Value, []string{"schema", "example", "examples"}, p); err != nil {
 			return nil, err
 		}
 		s := get(entry.Value, "schema")
+		if entry.Name == media {
+			selectedSchema, selectedPointer = s, p+"/schema"
+		}
 		// A literal true JSON root is a value, not a structural request DTO.
 		if ty, err := a.booleanValueType(s, p+"/schema", 0); err != nil {
 			return nil, err
@@ -132,8 +155,25 @@ func (a *analyzer) requestBody(v *document.Value, pointer, owner string) (*Reque
 			selected, selectedModels = ty, declarations
 		}
 	}
-	if !required {
-		selected = selected.Null()
+	body := &RequestBody{Type: selected, Required: required, Models: selectedModels}
+	if raw {
+		if _, _, err := mime.ParseMediaType(media); err != nil {
+			return nil, operationUnsupported(naming.Pointer(pointer+"/content", media))
+		}
+		if selected.Kind == Nullable || !rawValueType(media, selected) {
+			return nil, operationUnsupported(selectedPointer)
+		}
+		body.RawMedia = media
 	}
-	return &RequestBody{Type: selected, Required: required, Models: selectedModels}, nil
+	if form {
+		fields, err := formRequestFields(selectedSchema, selectedPointer, selectedModels)
+		if err != nil {
+			return nil, err
+		}
+		body.FormFields = fields
+	}
+	if !required {
+		body.Type = body.Type.Null()
+	}
+	return body, nil
 }

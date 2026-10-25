@@ -1,0 +1,35 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FalseComponentRoots",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Blocked": false,
+      "Peer": false,
+      "Record": false,
+      "Serializer": false,
+      "Serializer2": false,
+      "Companion": false,
+      "Alias": {
+        "$ref": "#/components/schemas/Blocked"
+      },
+      "Nullable": {
+        "$ref": "#/components/schemas/Alias",
+        "nullable": true
+      },
+      "Inherited": {
+        "$ref": "#/components/schemas/Nullable"
+      },
+      "Narrow": {
+        "$ref": "#/components/schemas/Inherited",
+        "nullable": false
+      },
+      "Again": {
+        "$ref": "#/components/schemas/Narrow",
+        "nullable": true
+      }
+    }
+  }
+}

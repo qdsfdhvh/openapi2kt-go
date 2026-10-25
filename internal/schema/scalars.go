@@ -117,18 +117,27 @@ func constant(name, wire string, v *document.Value, pointer string, depth int) (
 	return constantProfile(name, wire, v, pointer, depth, false)
 }
 
-func constantProfile(name, wire string, v *document.Value, pointer string, depth int, structuredField bool) (*Constant, *diagnostic.Diagnostic) {
+// constantDeclaration validates source syntax before any initializer is built.
+// Its ordering also governs discarded body contributions.
+func constantDeclaration(v *document.Value, pointer string, depth int) (string, *document.Value, *diagnostic.Diagnostic) {
 	if err := depthCheck(depth, pointer); err != nil {
-		return nil, err
+		return "", nil, err
 	}
 	if err := checkKeys(v, []string{"type", "nullable", "format", "const", "x-native-type"}, pointer); err != nil {
-		return nil, err
+		return "", nil, err
 	}
 	kind, _, err := schemaType(v, pointer)
 	if err != nil {
+		return "", nil, err
+	}
+	return kind, get(v, "const"), nil
+}
+
+func constantProfile(name, wire string, v *document.Value, pointer string, depth int, structuredField bool) (*Constant, *diagnostic.Diagnostic) {
+	kind, value, err := constantDeclaration(v, pointer, depth)
+	if err != nil {
 		return nil, err
 	}
-	value := get(v, "const")
 	location := naming.Pointer(pointer, "const")
 	if structuredField && (value.Kind() == document.Object || value.Kind() == document.Array) {
 		return structuredFieldConstant(name, wire, v, value, kind, pointer)
@@ -232,7 +241,7 @@ func nativeIdentity(v *document.Value) string {
 
 func (a *analyzer) nativeEnum(kind string, v *document.Value, pointer string) (string, *diagnostic.Diagnostic) {
 	if kind == "null" {
-		return nullOnlyEnumType(v, pointer)
+		return nullOnlyEnumProfile(v, pointer, a != nil && a.componentDefaultSchemas[v])
 	}
 	// A component root's own `default` is validated by the factory planner; the
 	// shared type plan borrows the same node and must not reject the annotation.

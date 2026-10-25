@@ -30,6 +30,9 @@ func (a *analyzer) recordEnumOrigin(d *StringEnum, v *document.Value, p string, 
 	if a.enumOrigins != nil {
 		a.enumOrigins[d] = nominalOrigin{v, p, nullable}
 	}
+	if a.enumDiagnosticOrigins != nil {
+		a.enumDiagnosticOrigins[d] = nominalOrigin{v, p, nullable}
+	}
 }
 
 // This carrier retains lexical catalog/source identity before declarations are
@@ -239,6 +242,21 @@ func (a *analyzer) linkNominalDeclarations(hierarchy map[string]*Hierarchy, decl
 		if a.referencedDefaults != nil {
 			for i := range *a.referencedDefaults {
 				linkType(&(*a.referencedDefaults)[i].Type)
+			}
+		}
+		// DTO collection-reference proofs retain the original typed planner's
+		// deferred enum leaf too. Resolve only its existing source binding,
+		// through the same unique retained declaration used by actual fields.
+		for _, src := range a.dtoUniqueSources {
+			for _, proof := range src.ReferenceFields {
+				if proof.Collection && proof.EnumSchema != nil {
+					linkType(&proof.CollectionType)
+				}
+				if proof.Collection {
+					for _, owner := range proof.Owners {
+						linkType(&owner.OriginalType)
+					}
+				}
 			}
 		}
 		a.nominalsLinked = true

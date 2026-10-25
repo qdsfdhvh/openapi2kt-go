@@ -54,6 +54,14 @@ func TestStructuredConstValueWarningsKeepActualSourcesAndDiscardedGrammar(t *tes
 		`{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"payload":{"const":{}}}},{"properties":{"tag":{"const":"two"}}}]}}`,
 	} {
 		got, err := core.GenerateWithDiagnostics(request(schemas(input), "Dto"))
+		if strings.Contains(input, `"Choice":`) {
+			assertPinnedStructuredConstGraduation(t, got, err)
+			continue
+		}
+		if strings.Contains(input, `"additionalProperties":{"const":`) {
+			assertDiscardedStructuredConstGraduation(t, got, err)
+			continue
+		}
 		if err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 			t.Fatal("Structured value permission erased source or entered pinned/discarded body", input, err)
 		}

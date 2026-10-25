@@ -24,6 +24,10 @@ type Plan struct {
 	operationOrigins map[string][]string
 	// Generated optimizer aliases are typed edges, unlike caller code spellings.
 	ownedAliases map[*ScalarAlias]string
+	// Diagnostic-only provenance survives final style/shape transformations.
+	// It is outside declaration equality, persisted identity and permissions.
+	modelDiagnosticPointers map[*Model]string
+	enumDiagnosticOrigins   map[*StringEnum]nominalOrigin
 }
 
 func (p *Plan) ownedAlias(name, target string) *ScalarAlias {

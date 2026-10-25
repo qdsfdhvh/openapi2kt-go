@@ -104,7 +104,7 @@
         "type": "array",
         "items": {"allOf": [
           {"nullable": true, "properties": {"name": {"type": "string"}}, "required": ["name"]},
-          {"properties": {"age": {"type": "integer", "default": 7}}}
+          {"nullable": true, "properties": {"age": {"type": "integer", "default": 7}}}
         ]}
       },
       "BareAllRequired": {

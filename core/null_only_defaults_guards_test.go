@@ -68,10 +68,8 @@ func TestNullOnlyDefaultOriginalGrammarAndUnrepresentableValues(t *testing.T) {
 	}
 }
 
-func TestNullOnlyDefaultsDoNotAuthorizeRootsOrCollectionLeaves(t *testing.T) {
+func TestNullOnlyDefaultsDoNotAuthorizeCollectionLeaves(t *testing.T) {
 	for _, input := range []string{
-		`{"Value":{"type":"null","default":null}}`,
-		`{"Value":{"type":"null","enum":[null],"default":null}}`,
 		`{"Holder":{"properties":{"values":{"type":"array","items":{"type":"null","default":null}}}}}`,
 		`{"Holder":{"properties":{"values":{"additionalProperties":{"enum":[null],"default":null}}}}}`,
 		`{"Holder":{"properties":{"value":{"type":"string"}},"additionalProperties":{"enum":[null],"default":null}}}`,

@@ -129,8 +129,6 @@ func TestMapSpecialUniqueExcludedSources(t *testing.T) {
 		`{"type":"string","format":"uuid","const":"550e8400-e29b-41d4-a716-446655440000"}`,
 		`{"type":"string","x-native-type":"kotlin.time.Instant"}`,
 		`{"type":"string","format":"uuid","x-kotlin-value-class":true}`,
-		`{"$ref":"#/components/schemas/Id"}`,
-		`{"anyOf":[{"type":"string","format":"date"},{"type":"null"}]}`,
 	} {
 		rq := request(schemas(`{"Id":{"type":"string","format":"uuid"},"Holder":{"properties":{"v":{"type":"array","uniqueItems":true,"items":{"type":"object","additionalProperties":`+leaf+`}}}}}`), "Dto")
 		rq.Options.Validation = true

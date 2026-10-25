@@ -186,7 +186,7 @@
                 "type": "object",
                 "additionalProperties": {"allOf": [
                   {"nullable": true, "properties": {"label": {"type": "string"}}, "required": ["label"]},
-                  {"properties": {"count": {"type": "integer", "default": 2}}}
+                  {"nullable": true, "properties": {"count": {"type": "integer", "default": 2}}}
                 ]},
                 "default": {"none": null, "value": {"label": "map member"}}
               },
@@ -527,7 +527,7 @@
       "OwnedCfg": {"properties": {"node": {
         "allOf": [
           {"nullable": true, "properties": {"label": {"type": "string"}}, "required": ["label"]},
-          {"properties": {
+          {"nullable": true, "properties": {
             "count": {"type": "integer", "default": 2},
             "child": {"properties": {"flag": {"type": "boolean"}}, "default": {"flag": true}}
           }}

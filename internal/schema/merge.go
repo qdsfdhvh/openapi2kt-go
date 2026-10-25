@@ -42,7 +42,10 @@ func MergeIdenticalModels(plan *Plan, pkg string, components map[Declaration]boo
 			if a, ok := d.(*ScalarAlias); ok && plan.ownedAliases[a] != "" {
 				aliases[full] = plan.ownedAliases[a]
 			}
-			if !dedupEligible(d) {
+			if a, ok := d.(*PrimitiveUnionAlias); ok {
+				aliases[full] = a.Canonical
+			}
+			if !mergeEligible(d) {
 				continue
 			}
 			priority := 1
@@ -162,7 +165,11 @@ func MergeIdenticalModels(plan *Plan, pkg string, components map[Declaration]boo
 		}
 		if previous := canonical[r.key]; previous != nil {
 			plan.EmissionHints.transferEquivalent(previous.d, r.d)
-			replacement[r.d] = plan.ownedAlias(r.d.Name(), previous.full)
+			if union, ok := r.d.(*PrimitiveUnion); ok {
+				replacement[r.d] = &PrimitiveUnionAlias{ClassName: union.ClassName, Canonical: previous.full, Kinds: append([]PrimitiveKind(nil), union.Kinds...), NullVariant: union.NullVariant}
+			} else {
+				replacement[r.d] = plan.ownedAlias(r.d.Name(), previous.full)
+			}
 			names := map[string]string{}
 			dedupOwnedNames(r.d, r.d.Name(), previous.full, r.pkg, names)
 			for name, target := range names {
@@ -209,6 +216,15 @@ func MergeIdenticalModels(plan *Plan, pkg string, components map[Declaration]boo
 			renameMethods(&plan.Client.Groups[i])
 		}
 	}
+}
+
+// Only merge expands eligibility here; operation deduplication and hoisting keep
+// their previous ordinary-tree contract and name-lock shape domain.
+func mergeEligible(d Declaration) bool {
+	if union, ok := d.(*PrimitiveUnion); ok {
+		return union.Object == nil
+	}
+	return dedupEligible(d)
 }
 
 // walkTypedMerge visits typed private IR once per physical pointer. It does not
@@ -279,6 +295,18 @@ func mergeOpaqueOwners(plan *Plan, roots []*mergeRoot) map[string]bool {
 	byToken := map[string][]string{}
 	for _, r := range roots {
 		byToken[r.d.Name()] = append(byToken[r.d.Name()], r.full)
+		if u, ok := r.d.(*PrimitiveUnion); ok {
+			byToken[u.ClassName+"Serializer"] = append(byToken[u.ClassName+"Serializer"], r.full)
+			for _, kind := range u.Kinds {
+				name := kind.Prefix() + u.ClassName
+				byToken[name] = append(byToken[name], r.full)
+				byToken[name+"Serializer"] = append(byToken[name+"Serializer"], r.full)
+			}
+			if u.NullVariant {
+				byToken["Null"+u.ClassName] = append(byToken["Null"+u.ClassName], r.full)
+				byToken["Null"+u.ClassName+"Serializer"] = append(byToken["Null"+u.ClassName+"Serializer"], r.full)
+			}
+		}
 	}
 	add := func(code string) {
 		for _, token := range strings.FieldsFunc(code, func(r rune) bool { return r != '_' && !unicode.IsLetter(r) && !unicode.IsDigit(r) }) {

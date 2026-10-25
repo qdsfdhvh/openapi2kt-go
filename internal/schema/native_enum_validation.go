@@ -81,7 +81,11 @@ func (a *analyzer) nativeEnumFieldType(f field, fieldDefault bool) (TypeRef, *Pr
 }
 
 func (a *analyzer) nativeEnumValueType(v *document.Value, pointer string, depth int) (TypeRef, *diagnostic.Diagnostic) {
-	ty, checks, err := a.nativeEnumFieldType(field{Schema: v, Pointer: pointer, Depth: depth}, false)
+	return a.nativeEnumValueTypeOwnDefault(v, pointer, depth, false)
+}
+
+func (a *analyzer) nativeEnumValueTypeOwnDefault(v *document.Value, pointer string, depth int, ownDefault bool) (TypeRef, *diagnostic.Diagnostic) {
+	ty, checks, err := a.nativeEnumFieldType(field{Schema: v, Pointer: pointer, Depth: depth}, ownDefault)
 	if err != nil {
 		return TypeRef{}, err
 	}

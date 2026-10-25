@@ -18,6 +18,8 @@ type HierarchyTagRule struct {
 	Child   string
 }
 type Hierarchy struct {
+	// Type data without scalar selectors must not use a conflicting class discriminator.
+	RawOnly                     bool
 	Plain                       bool
 	ClassName, Parent, TagField string
 	Enums                       []*StringEnum
@@ -35,7 +37,7 @@ type Hierarchy struct {
 func (n *Hierarchy) Name() string { return n.ClassName }
 func (*Hierarchy) declaration()   {}
 func (n *Hierarchy) Content() bool {
-	return n.Leaf == nil && (n.TagField != "" || len(n.TagCombinations) != 0)
+	return n.Leaf == nil && (n.RawOnly || n.TagField != "" || len(n.TagCombinations) != 0)
 }
 
 type typedLeafField struct {
@@ -63,12 +65,13 @@ type hierarchyBranches struct {
 	Edges          []hierarchyEdge
 }
 type hierarchyPlanner struct {
-	a       *analyzer
-	graph   map[string]*hierarchyBranches
-	shapes  map[string]*shape
-	parents map[string]string
-	heights map[string]int
-	work    int
+	typeData map[string]bool // Bottom-up facts from original leaf fields, not inferred tags.
+	a        *analyzer
+	graph    map[string]*hierarchyBranches
+	shapes   map[string]*shape
+	parents  map[string]string
+	heights  map[string]int
+	work     int
 }
 
 func hierarchyError(code, pointer string) *diagnostic.Diagnostic {
@@ -142,6 +145,18 @@ func (p *hierarchyPlanner) visit(key string, depth int, stack []string, pointer 
 		}
 		if shape.Nullable != nil && *shape.Nullable && !c.NullableHierarchy {
 			return unsupported(c.Pointer)
+		}
+		if f := shapeField(shape, "type"); f != nil {
+			c, err := p.a.fieldConstant(f.Schema, "validation", f.Wire, f.Pointer, f.Depth, false, true)
+			if err != nil {
+				return err
+			}
+			if c != nil && structuredConstant(*c) {
+				if p.typeData == nil {
+					p.typeData = map[string]bool{}
+				}
+				p.typeData[key] = true
+			}
 		}
 		p.shapes[key] = shape
 		p.heights[key] = 1
@@ -331,6 +346,12 @@ func (p *hierarchyPlanner) visit(key string, depth int, stack []string, pointer 
 			return unsupported(mapping.Pointer)
 		}
 	}
+	for _, edge := range node.Edges {
+		if p.typeData[edge.Key] {
+			p.typeData[key] = true
+			break
+		}
+	}
 	p.graph[key] = node
 	p.heights[key] = height
 	return nil
@@ -487,6 +508,20 @@ func (p *hierarchyPlanner) implicit(key string) ([]hierarchyInfo, *diagnostic.Di
 		if !present {
 			continue
 		}
+		// JSON body data cannot become an inferred string discriminator,
+		// including when another leaf gives the same wire a scalar pin.
+		structured := false
+		for _, edge := range node.Edges {
+			f := shapeField(p.shapes[edge.Key], field.Wire)
+			c, err := p.a.fieldConstant(f.Schema, "validation", f.Wire, f.Pointer, f.Depth, false, true)
+			if err != nil {
+				return nil, err
+			}
+			structured = structured || c != nil && structuredConstant(*c)
+		}
+		if structured {
+			continue
+		}
 		info, err := p.info(key, field.Wire)
 		if err != nil {
 			return nil, err
@@ -578,6 +613,7 @@ func (p *hierarchyPlanner) build(key string, context map[string]hierarchyInfo, p
 				return err
 			}
 		}
+		result.RawOnly = len(ownInfos) == 0 && p.typeData[key]
 		for i := range ownInfos {
 			own := &ownInfos[i]
 			name, err := naming.PropertyName(own.Wire, c.Pointer)
@@ -625,7 +661,7 @@ func (p *hierarchyPlanner) build(key string, context map[string]hierarchyInfo, p
 			return err
 		}
 		result.Fields = fields
-		if len(ownInfos) != 0 {
+		if len(ownInfos) != 0 || result.RawOnly {
 			for _, own := range ownInfos {
 				if _, inherited := context[own.Wire]; !inherited {
 					property, err := hierarchyProperty(own)
@@ -644,7 +680,7 @@ func (p *hierarchyPlanner) build(key string, context map[string]hierarchyInfo, p
 				if err := p.compoundTags(node, ownInfos, result); err != nil {
 					return err
 				}
-			} else {
+			} else if len(ownInfos) == 1 {
 				own := ownInfos[0]
 				result.TagField = own.Wire
 				seen := map[string]bool{}
@@ -741,7 +777,7 @@ func (p *hierarchyPlanner) build(key string, context map[string]hierarchyInfo, p
 		if err != nil {
 			return err
 		}
-		if !parentCustom && len(model.Properties) == 0 && len(model.Constants) > 0 {
+		if !parentCustom && len(model.Properties) == 0 && len(model.Constants) > 0 && !slices.ContainsFunc(model.Constants, structuredConstant) {
 			return unsupported(c.Pointer)
 		}
 		if !parentCustom {

@@ -19,7 +19,7 @@ func referencedInlineAllOfDocument(field string) []byte {
 func TestReferencedInlineAllOfNullableAndSuppression(t *testing.T) {
 	for _, checked := range []bool{false, true} {
 		field := `{"$ref":"#/components/schemas/Rows","default":[null,{"name":"a"}]}`
-		nullableLeaf := strings.Replace(referencedAllOfCollectionItem, `{"properties":{"name"`, `{"nullable":true,"properties":{"name"`, 1)
+		nullableLeaf := nullableAllOfMembers(t, referencedAllOfCollectionItem)
 		input := []byte(strings.ReplaceAll(string(referencedInlineAllOfDocument(field)), referencedAllOfCollectionItem, nullableLeaf))
 		r := request(input, "Dto")
 		r.Options.Validation = checked
@@ -92,6 +92,10 @@ func TestReferencedInlineAllOfDiagnosticsBudgetsAndExclusions(t *testing.T) {
 		} {
 			r := request([]byte(strings.ReplaceAll(string(referencedInlineAllOfDocument(`{"$ref":"#/components/schemas/Rows","default":[]}`)), referencedAllOfCollectionItem, target)), "Dto")
 			r.Options.Validation = checked
+			if checked && target == allOfOverrideDuplicateName {
+				allOfDefaultOverridePositive(t, r)
+				continue
+			}
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("empty default authorized excluded allOf source", err)
 			}

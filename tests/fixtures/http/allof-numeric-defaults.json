@@ -1,0 +1,2868 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Lower": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "default": -5,
+            "minimum": -10
+          }
+        }
+      },
+      "Upper": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "default": 5,
+            "maximum": 10
+          }
+        }
+      },
+      "Record": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Lower"
+          },
+          {
+            "$ref": "#/components/schemas/Upper"
+          }
+        ]
+      },
+      "Factory": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Lower"
+          },
+          {
+            "$ref": "#/components/schemas/Upper"
+          }
+        ],
+        "default": {
+          "value": 0
+        }
+      },
+      "NullableFactory": {
+        "$ref": "#/components/schemas/Factory",
+        "nullable": true,
+        "default": null
+      },
+      "NarrowFactory": {
+        "$ref": "#/components/schemas/NullableFactory",
+        "nullable": false,
+        "default": {
+          "value": 5
+        }
+      },
+      "NullableValues": {
+        "allOf": [
+          {
+            "properties": {
+              "value": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "default": -5,
+                "minimum": -10
+              }
+            }
+          },
+          {
+            "properties": {
+              "value": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "default": 5,
+                "maximum": 10
+              }
+            }
+          }
+        ],
+        "default": {
+          "value": null
+        }
+      },
+      "Holder": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Record",
+            "default": {
+              "value": 0
+            }
+          },
+          "inline": {
+            "allOf": [
+              {
+                "properties": {
+                  "value": {
+                    "type": "integer",
+                    "default": -5,
+                    "minimum": -10
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "value": {
+                    "type": "integer",
+                    "default": 5,
+                    "maximum": 10
+                  }
+                }
+              }
+            ],
+            "default": {
+              "value": 0
+            }
+          },
+          "cfg": {
+            "properties": {
+              "node": {
+                "allOf": [
+                  {
+                    "properties": {
+                      "value": {
+                        "type": "integer",
+                        "default": -5,
+                        "minimum": -10
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "value": {
+                        "type": "integer",
+                        "default": 5,
+                        "maximum": 10
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "default": {
+              "node": {
+                "value": 0
+              }
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "properties": {
+                    "value": {
+                      "type": "integer",
+                      "default": -5,
+                      "minimum": -10
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "value": {
+                      "type": "integer",
+                      "default": 5,
+                      "maximum": 10
+                    }
+                  }
+                }
+              ]
+            },
+            "default": [
+              {
+                "value": 0
+              }
+            ]
+          },
+          "maps": {
+            "type": "object",
+            "additionalProperties": {
+              "allOf": [
+                {
+                  "properties": {
+                    "value": {
+                      "type": "integer",
+                      "default": -5,
+                      "minimum": -10
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "value": {
+                      "type": "integer",
+                      "default": 5,
+                      "maximum": 10
+                    }
+                  }
+                }
+              ]
+            },
+            "default": {
+              "k": {
+                "value": 5
+              }
+            }
+          },
+          "empty": {
+            "$ref": "#/components/schemas/Record",
+            "default": {}
+          },
+          "required": {
+            "$ref": "#/components/schemas/Record",
+            "default": {
+              "value": 0
+            }
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "Wide": {
+        "allOf": [
+          {
+            "properties": {
+              "p0": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p1": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p2": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p3": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p4": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p5": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p6": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p7": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p8": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p9": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p10": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p11": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p12": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p13": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p14": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p15": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p16": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p17": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p18": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p19": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p20": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p21": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p22": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p23": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p24": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p25": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p26": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p27": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p28": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p29": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p30": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p31": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p32": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p33": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p34": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p35": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p36": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p37": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p38": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p39": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p40": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p41": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p42": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p43": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p44": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p45": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p46": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p47": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p48": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p49": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p50": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p51": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p52": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p53": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p54": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p55": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p56": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p57": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p58": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p59": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p60": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p61": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p62": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p63": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p64": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p65": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p66": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p67": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p68": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p69": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p70": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p71": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p72": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p73": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p74": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p75": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p76": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p77": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p78": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p79": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p80": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p81": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p82": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p83": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p84": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p85": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p86": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p87": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p88": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p89": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p90": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p91": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p92": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p93": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p94": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p95": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p96": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p97": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p98": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p99": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p100": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p101": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p102": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p103": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p104": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p105": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p106": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p107": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p108": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p109": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p110": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p111": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p112": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p113": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p114": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p115": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p116": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p117": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p118": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p119": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p120": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p121": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p122": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p123": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p124": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p125": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p126": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p127": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p128": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p129": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p130": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p131": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p132": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p133": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p134": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p135": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p136": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p137": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p138": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p139": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p140": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p141": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p142": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p143": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p144": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p145": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p146": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p147": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p148": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p149": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p150": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p151": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p152": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p153": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p154": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p155": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p156": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p157": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p158": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p159": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p160": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p161": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p162": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p163": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p164": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p165": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p166": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p167": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p168": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p169": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p170": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p171": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p172": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p173": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p174": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p175": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p176": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p177": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p178": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p179": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p180": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p181": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p182": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p183": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p184": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p185": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p186": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p187": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p188": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p189": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p190": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p191": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p192": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p193": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p194": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p195": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p196": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p197": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p198": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p199": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p200": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p201": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p202": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p203": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p204": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p205": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p206": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p207": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p208": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p209": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p210": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p211": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p212": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p213": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p214": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p215": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p216": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p217": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p218": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p219": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p220": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p221": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p222": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p223": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p224": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p225": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p226": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p227": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p228": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p229": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p230": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p231": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p232": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p233": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p234": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p235": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p236": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p237": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p238": {
+                "type": "integer",
+                "minimum": -10
+              },
+              "p239": {
+                "type": "integer",
+                "minimum": -10
+              }
+            }
+          },
+          {
+            "properties": {
+              "p0": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p1": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p2": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p3": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p4": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p5": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p6": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p7": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p8": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p9": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p10": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p11": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p12": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p13": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p14": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p15": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p16": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p17": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p18": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p19": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p20": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p21": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p22": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p23": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p24": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p25": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p26": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p27": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p28": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p29": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p30": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p31": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p32": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p33": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p34": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p35": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p36": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p37": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p38": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p39": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p40": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p41": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p42": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p43": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p44": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p45": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p46": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p47": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p48": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p49": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p50": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p51": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p52": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p53": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p54": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p55": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p56": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p57": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p58": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p59": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p60": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p61": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p62": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p63": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p64": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p65": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p66": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p67": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p68": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p69": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p70": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p71": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p72": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p73": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p74": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p75": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p76": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p77": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p78": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p79": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p80": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p81": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p82": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p83": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p84": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p85": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p86": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p87": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p88": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p89": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p90": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p91": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p92": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p93": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p94": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p95": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p96": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p97": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p98": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p99": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p100": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p101": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p102": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p103": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p104": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p105": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p106": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p107": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p108": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p109": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p110": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p111": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p112": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p113": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p114": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p115": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p116": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p117": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p118": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p119": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p120": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p121": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p122": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p123": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p124": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p125": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p126": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p127": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p128": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p129": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p130": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p131": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p132": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p133": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p134": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p135": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p136": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p137": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p138": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p139": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p140": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p141": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p142": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p143": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p144": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p145": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p146": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p147": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p148": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p149": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p150": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p151": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p152": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p153": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p154": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p155": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p156": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p157": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p158": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p159": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p160": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p161": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p162": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p163": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p164": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p165": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p166": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p167": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p168": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p169": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p170": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p171": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p172": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p173": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p174": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p175": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p176": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p177": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p178": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p179": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p180": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p181": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p182": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p183": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p184": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p185": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p186": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p187": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p188": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p189": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p190": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p191": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p192": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p193": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p194": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p195": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p196": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p197": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p198": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p199": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p200": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p201": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p202": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p203": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p204": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p205": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p206": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p207": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p208": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p209": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p210": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p211": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p212": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p213": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p214": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p215": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p216": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p217": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p218": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p219": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p220": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p221": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p222": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p223": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p224": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p225": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p226": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p227": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p228": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p229": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p230": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p231": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p232": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p233": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p234": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p235": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p236": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p237": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p238": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              },
+              "p239": {
+                "type": "integer",
+                "default": 5,
+                "maximum": 10
+              }
+            }
+          }
+        ],
+        "default": {
+          "p0": 0,
+          "p1": 0,
+          "p2": 0,
+          "p3": 0,
+          "p4": 0,
+          "p5": 0,
+          "p6": 0,
+          "p7": 0,
+          "p8": 0,
+          "p9": 0,
+          "p10": 0,
+          "p11": 0,
+          "p12": 0,
+          "p13": 0,
+          "p14": 0,
+          "p15": 0,
+          "p16": 0,
+          "p17": 0,
+          "p18": 0,
+          "p19": 0,
+          "p20": 0,
+          "p21": 0,
+          "p22": 0,
+          "p23": 0,
+          "p24": 0,
+          "p25": 0,
+          "p26": 0,
+          "p27": 0,
+          "p28": 0,
+          "p29": 0,
+          "p30": 0,
+          "p31": 0,
+          "p32": 0,
+          "p33": 0,
+          "p34": 0,
+          "p35": 0,
+          "p36": 0,
+          "p37": 0,
+          "p38": 0,
+          "p39": 0,
+          "p40": 0,
+          "p41": 0,
+          "p42": 0,
+          "p43": 0,
+          "p44": 0,
+          "p45": 0,
+          "p46": 0,
+          "p47": 0,
+          "p48": 0,
+          "p49": 0,
+          "p50": 0,
+          "p51": 0,
+          "p52": 0,
+          "p53": 0,
+          "p54": 0,
+          "p55": 0,
+          "p56": 0,
+          "p57": 0,
+          "p58": 0,
+          "p59": 0,
+          "p60": 0,
+          "p61": 0,
+          "p62": 0,
+          "p63": 0,
+          "p64": 0,
+          "p65": 0,
+          "p66": 0,
+          "p67": 0,
+          "p68": 0,
+          "p69": 0,
+          "p70": 0,
+          "p71": 0,
+          "p72": 0,
+          "p73": 0,
+          "p74": 0,
+          "p75": 0,
+          "p76": 0,
+          "p77": 0,
+          "p78": 0,
+          "p79": 0,
+          "p80": 0,
+          "p81": 0,
+          "p82": 0,
+          "p83": 0,
+          "p84": 0,
+          "p85": 0,
+          "p86": 0,
+          "p87": 0,
+          "p88": 0,
+          "p89": 0,
+          "p90": 0,
+          "p91": 0,
+          "p92": 0,
+          "p93": 0,
+          "p94": 0,
+          "p95": 0,
+          "p96": 0,
+          "p97": 0,
+          "p98": 0,
+          "p99": 0,
+          "p100": 0,
+          "p101": 0,
+          "p102": 0,
+          "p103": 0,
+          "p104": 0,
+          "p105": 0,
+          "p106": 0,
+          "p107": 0,
+          "p108": 0,
+          "p109": 0,
+          "p110": 0,
+          "p111": 0,
+          "p112": 0,
+          "p113": 0,
+          "p114": 0,
+          "p115": 0,
+          "p116": 0,
+          "p117": 0,
+          "p118": 0,
+          "p119": 0,
+          "p120": 0,
+          "p121": 0,
+          "p122": 0,
+          "p123": 0,
+          "p124": 0,
+          "p125": 0,
+          "p126": 0,
+          "p127": 0,
+          "p128": 0,
+          "p129": 0,
+          "p130": 0,
+          "p131": 0,
+          "p132": 0,
+          "p133": 0,
+          "p134": 0,
+          "p135": 0,
+          "p136": 0,
+          "p137": 0,
+          "p138": 0,
+          "p139": 0,
+          "p140": 0,
+          "p141": 0,
+          "p142": 0,
+          "p143": 0,
+          "p144": 0,
+          "p145": 0,
+          "p146": 0,
+          "p147": 0,
+          "p148": 0,
+          "p149": 0,
+          "p150": 0,
+          "p151": 0,
+          "p152": 0,
+          "p153": 0,
+          "p154": 0,
+          "p155": 0,
+          "p156": 0,
+          "p157": 0,
+          "p158": 0,
+          "p159": 0,
+          "p160": 0,
+          "p161": 0,
+          "p162": 0,
+          "p163": 0,
+          "p164": 0,
+          "p165": 0,
+          "p166": 0,
+          "p167": 0,
+          "p168": 0,
+          "p169": 0,
+          "p170": 0,
+          "p171": 0,
+          "p172": 0,
+          "p173": 0,
+          "p174": 0,
+          "p175": 0,
+          "p176": 0,
+          "p177": 0,
+          "p178": 0,
+          "p179": 0,
+          "p180": 0,
+          "p181": 0,
+          "p182": 0,
+          "p183": 0,
+          "p184": 0,
+          "p185": 0,
+          "p186": 0,
+          "p187": 0,
+          "p188": 0,
+          "p189": 0,
+          "p190": 0,
+          "p191": 0,
+          "p192": 0,
+          "p193": 0,
+          "p194": 0,
+          "p195": 0,
+          "p196": 0,
+          "p197": 0,
+          "p198": 0,
+          "p199": 0,
+          "p200": 0,
+          "p201": 0,
+          "p202": 0,
+          "p203": 0,
+          "p204": 0,
+          "p205": 0,
+          "p206": 0,
+          "p207": 0,
+          "p208": 0,
+          "p209": 0,
+          "p210": 0,
+          "p211": 0,
+          "p212": 0,
+          "p213": 0,
+          "p214": 0,
+          "p215": 0,
+          "p216": 0,
+          "p217": 0,
+          "p218": 0,
+          "p219": 0,
+          "p220": 0,
+          "p221": 0,
+          "p222": 0,
+          "p223": 0,
+          "p224": 0,
+          "p225": 0,
+          "p226": 0,
+          "p227": 0,
+          "p228": 0,
+          "p229": 0,
+          "p230": 0,
+          "p231": 0,
+          "p232": 0,
+          "p233": 0,
+          "p234": 0,
+          "p235": 0,
+          "p236": 0,
+          "p237": 0,
+          "p238": 0,
+          "p239": 0
+        }
+      },
+      "Numbers": {
+        "allOf": [
+          {
+            "properties": {
+              "intValue": {
+                "type": "integer",
+                "format": "int32",
+                "minimum": -2147483648
+              },
+              "longValue": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": -9223372036854775808
+              },
+              "floatValue": {
+                "type": "number",
+                "format": "float",
+                "minimum": 16777217
+              },
+              "doubleValue": {
+                "type": "number",
+                "format": "double",
+                "minimum": 9007199254740993
+              },
+              "zero": {
+                "type": "number",
+                "format": "double",
+                "minimum": -1
+              }
+            }
+          },
+          {
+            "properties": {
+              "intValue": {
+                "type": "integer",
+                "format": "int32",
+                "maximum": 2147483647,
+                "default": -2147483648
+              },
+              "longValue": {
+                "type": "integer",
+                "format": "int64",
+                "maximum": 9223372036854775807,
+                "default": -9223372036854775808
+              },
+              "floatValue": {
+                "type": "number",
+                "format": "float",
+                "maximum": 16777220,
+                "default": 16777216
+              },
+              "doubleValue": {
+                "type": "number",
+                "format": "double",
+                "maximum": 9007199254741000,
+                "default": 9007199254740992
+              },
+              "zero": {
+                "type": "number",
+                "format": "double",
+                "maximum": 1,
+                "default": -0.0
+              }
+            }
+          }
+        ],
+        "default": {
+          "intValue": -2147483648,
+          "longValue": -9223372036854775808,
+          "floatValue": 16777216,
+          "doubleValue": 9007199254740992,
+          "zero": -0.0
+        }
+      },
+      "Strict": {
+        "allOf": [
+          {
+            "properties": {
+              "value": {
+                "type": "integer",
+                "minimum": -10,
+                "exclusiveMinimum": -9,
+                "multipleOf": 3
+              }
+            }
+          },
+          {
+            "properties": {
+              "value": {
+                "type": "integer",
+                "maximum": 10,
+                "exclusiveMaximum": 9,
+                "default": 0
+              }
+            }
+          }
+        ],
+        "default": {
+          "value": 3
+        }
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "strings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "post": {
+        "operationId": "watch",
+        "tags": [
+          "strings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "tags": [
+          "strings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "allOf": [
+                      {
+                        "properties": {
+                          "value": {
+                            "type": "integer",
+                            "default": -5,
+                            "minimum": -10
+                          }
+                        }
+                      },
+                      {
+                        "properties": {
+                          "value": {
+                            "type": "integer",
+                            "default": 5,
+                            "maximum": 10
+                          }
+                        }
+                      }
+                    ],
+                    "nullable": true,
+                    "default": {
+                      "value": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

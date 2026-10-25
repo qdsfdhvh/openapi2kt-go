@@ -75,7 +75,6 @@ func TestSchemaInternalCollectionPointerGrammarAndSources(t *testing.T) {
 		{`{"type":"array","items":{"type":"string","const":"ok"}}`, "E_REF_UNSUPPORTED", use},
 		{`{"type":"array","items":{"type":"string","format":"date"}}`, "E_REF_UNSUPPORTED", use},
 		{`{"type":"array","items":{"type":"null"}}`, "E_REF_UNSUPPORTED", use},
-		{`{"type":"array","items":{"type":"array","items":{"type":"integer"}},"uniqueItems":true}`, "E_SCHEMA_UNSUPPORTED", at + "/uniqueItems"},
 		{`{"type":"array","items":{"type":"integer"},"uniqueItems":"no"}`, "E_SCHEMA_INVALID", at + "/uniqueItems"},
 		{`{"type":"array","items":{"$ref":"#/components/schemas/Source/properties/leaf"}}`, "E_REF_UNSUPPORTED", at + "/items"},
 		{`{"type":"array","items":{"$ref":"#/components/schemas/Source"}}`, "E_REF_UNSUPPORTED", at + "/items"},
@@ -85,13 +84,17 @@ func TestSchemaInternalCollectionPointerGrammarAndSources(t *testing.T) {
 				borrowedDTOGraduation(t, pointerDoc(tc.target, pointerRef("Source/properties/leaf")), "org.example.models.models.SourceDto")
 				return
 			}
+			if tc.target == `{"type":"array","items":{"type":"string","enum":["ok"]}}` {
+				borrowedEnumGraduation(t, pointerDoc(tc.target, pointerRef("Source/properties/leaf")), "org.example.models.models.SourceDto.LeafInner")
+				return
+			}
 			aliasFailure(t, pointerDoc(tc.target, pointerRef("Source/properties/leaf")), tc.code, tc.pointer)
 		})
 	}
 	failure(t, pointerDoc(`{"type":"array","minItems":1,"items":{"type":"string"}}`, pointerRef("Source/properties/leaf")), "E_SCHEMA_UNSUPPORTED", at+"/minItems")
 	// False uniqueness is no enforcing check, not permission for invalid children.
 	aggregationReport(t, pointerDoc(`{"type":"array","items":{"type":"number"},"uniqueItems":false}`, pointerRef("Source/properties/leaf")))
-	aliasFailure(t, pointerDoc(`{"type":"array","items":{"type":"string","enum":["ok"]},"uniqueItems":false}`, pointerRef("Source/properties/leaf")), "E_REF_UNSUPPORTED", use)
+	aggregationReport(t, pointerDoc(`{"type":"array","items":{"type":"string","enum":["ok"]},"uniqueItems":false}`, pointerRef("Source/properties/leaf")))
 }
 
 func TestSchemaInternalCollectionPointerDepthAndSlots(t *testing.T) {

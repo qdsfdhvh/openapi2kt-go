@@ -43,7 +43,11 @@ func TestEnumNominalOwnerAndSourceGuards(t *testing.T) {
 			aliasFailure(t, late, "E_REF_UNSUPPORTED", "/paths/~1enum/get/responses/200/content/application~1json/schema")
 		}
 	}
-	aliasFailure(t, schemas(`{"Owner":{"properties":{"state":{"enum":["a",null]}}},"Alias":{"$ref":"#/components/schemas/Owner/properties/state"}}`), "E_SCHEMA_INVALID", "/components/schemas/Owner/properties/state/enum/1")
+	for _, checked := range []bool{false, true} {
+		// The original typeless vocabulary now supplies nullable intent;
+		// its physical owner and explicit-false refusal remain authoritative.
+		implicitStringEnumGraduation(t, schemas(`{"Owner":{"properties":{"state":{"enum":["a",null]}}},"Alias":{"$ref":"#/components/schemas/Owner/properties/state"}}`), checked)
+	}
 	aliasFailure(t, schemas(`{"Alias":{"$ref":"#/components/schemas/Owner/properties/hop"},"Owner":{"properties":{"hop":{"$ref":"#/components/schemas/Alias"}}}}`), "E_REF_CYCLE", "/components/schemas/Alias/$ref")
 }
 

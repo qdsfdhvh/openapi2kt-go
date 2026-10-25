@@ -89,7 +89,12 @@ func TestInternalCollectionAllOfMemberDiagnosticsAndGuards(t *testing.T) {
 	} {
 		input := string(internalCollectionMembers(rows, `{"$ref":"#/components/schemas/Alias"}`, `{}`))
 		input = strings.Replace(input, `"Owner":{"properties":{`, `"Owner":{"properties":{"node":`+allOfObjectMember+`,"other":`+collection+`,`, 1)
-		if got, err := core.GenerateWithDiagnostics(request([]byte(input), "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
+		got, err := core.GenerateWithDiagnostics(request([]byte(input), "Dto"))
+		if strings.Contains(rows, "Owner/properties/other") {
+			if err != nil || len(got.Artifacts.Files) == 0 {
+				t.Fatal("original finite internal container did not graduate", err)
+			}
+		} else if err == nil || len(got.Artifacts.Files) != 0 {
 			t.Fatal("excluded leaf/container expanded", rows, err)
 		}
 	}

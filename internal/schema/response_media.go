@@ -6,9 +6,9 @@ import (
 	"openapi-kt/internal/document"
 )
 
-// Raw response media are fallbacks after the established JSON/SSE preference.
+// Raw scalar media are fallbacks after each context's JSON/SSE/form preference.
 // An exact media spelling wins over parameter/case variants of the same kind.
-func rawResponseMedia(content *document.Value) string {
+func rawValueMedia(content *document.Value) string {
 	best, priority := "", 4
 	for _, member := range httpMembers(content) {
 		rank := 4
@@ -32,7 +32,7 @@ func rawResponseMedia(content *document.Value) string {
 	return best
 }
 
-func rawResponseType(media string, ty TypeRef) bool {
+func rawValueType(media string, ty TypeRef) bool {
 	value := bare(ty)
 	base := strings.ToLower(strings.TrimSpace(strings.SplitN(media, ";", 2)[0]))
 	switch base {

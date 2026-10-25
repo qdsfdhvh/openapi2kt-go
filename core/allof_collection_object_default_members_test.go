@@ -51,7 +51,7 @@ func TestAllOfCollectionObjectDefaultMemberNullability(t *testing.T) {
 				for _, narrow := range []bool{false, true} {
 					leaf := allOfObjectMember
 					if elementNull {
-						leaf = strings.Replace(leaf, `"allOf":[{`, `"allOf":[{"nullable":true,`, 1)
+						leaf = nullableAllOfMembers(t, leaf)
 					}
 					if narrow {
 						leaf = strings.Replace(leaf, `{"allOf":`, `{"nullable":false,"allOf":`, 1)
@@ -97,6 +97,10 @@ func TestAllOfCollectionObjectDefaultMemberGuards(t *testing.T) {
 			input := carrierDefaultDocument(allOfMemberField(`{"type":"array","nullable":true,"items":`+leaf+`}`, value), false)
 			r := request(input, "Dto")
 			r.Options.Validation = true
+			if leaf == allOfOverrideDuplicateA {
+				allOfDefaultOverridePositive(t, r)
+				continue
+			}
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
 				t.Fatal("excluded source admitted", leaf, value, err)
 			}

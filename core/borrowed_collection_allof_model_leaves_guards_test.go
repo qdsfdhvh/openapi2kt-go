@@ -27,7 +27,7 @@ func TestBorrowedCollectionAllOfModelLeavesExcludedPhysicalOwnersAndNullable(t *
 		}
 	}
 	for _, checked := range []bool{false, true} {
-		doc := schemas(`{"Owner":{"properties":{"leaf":{"allOf":[{"properties":{"id":{"type":"string"}},"required":["id"],"nullable":true},{"properties":{"label":{"type":"string"}}}]}}},"LeafAlias":{"$ref":"#/components/schemas/Owner/properties/leaf"},"Source":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/LeafAlias"}}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/rows"},"Narrow":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/LeafAlias","nullable":false}}}}}`)
+		doc := schemas(`{"Owner":{"properties":{"leaf":{"allOf":[{"properties":{"id":{"type":"string"}},"required":["id"],"nullable":true},{"nullable":true,"properties":{"label":{"type":"string"}}}]}}},"LeafAlias":{"$ref":"#/components/schemas/Owner/properties/leaf"},"Source":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/LeafAlias"}}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/rows"},"Narrow":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/LeafAlias","nullable":false}}}}}`)
 		rq := request(doc, "Dto")
 		rq.Options.Validation = checked
 		got, err := core.GenerateWithDiagnostics(rq)

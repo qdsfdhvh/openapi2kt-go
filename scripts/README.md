@@ -171,7 +171,7 @@ bash scripts/test.sh --list
 
 Hosted CI first runs the three-host Go format/vet/test/race gate. After it passes, native generation/package checks and separate Ubuntu Kotlin/JVM jobs run. The Kotlin matrix executes fresh `models`, full `http`, and the selected Data/Plain × validation profiles (`directional-models` and `raw-response-media`). It pins JDK 21 and Gradle 9.3.1 and prepares declared Kotlin dependencies explicitly before the existing offline test commands. CI configuration is not evidence that a particular remote run passed; historical generation-only runs do not acquire Kotlin evidence retroactively.
 
-`bash scripts/kotlin/prepare-dependencies.sh` is an explicit online development/CI preparation command. It copies the declared HTTP consumer build into an ignored scratch project and compiles/runs a small serialization/datetime/Ktor MockEngine probe, warming compiler and runtime dependencies. It does not read an OpenAPI document or perform a real HTTP request. `--offline` verifies preparation against an existing cache; missing dependencies fail. Generation and `scripts/test.sh` never invoke preparation automatically. Platform consumers use the separate `bash scripts/kotlin/prepare-platform-dependencies.sh TARGET [--offline]` for their declared target dependencies; `scripts/kotlin/platforms.sh` remains an offline fresh two-input probe. Android SDK installation stays separate. The local `unit` command still runs both Go and Python checks.
+`bash scripts/kotlin/prepare-dependencies.sh` is an explicit online development/CI preparation command. It copies the declared HTTP consumer build into an ignored scratch project and compiles/runs a small serialization/datetime/Ktor MockEngine probe, warming compiler and runtime dependencies. It does not read an OpenAPI document or perform a real HTTP request. `--offline` verifies preparation against an existing cache; missing dependencies fail. Generation and `scripts/test.sh` never invoke preparation automatically. Platform consumers use the separate `bash scripts/kotlin/prepare-platform-dependencies.sh TARGET [--offline]` for their declared target dependencies; `scripts/kotlin/platforms.sh` remains an offline fresh four-input probe. Android SDK installation stays separate. The local `unit` command still runs both Go and Python checks.
 
 The complete HTTP runner generates/checks every existing fixture before compiling. `kotlin/http_compilations.py` then assigns every generated/provider/consumer Kotlin source exactly once to sequential Gradle compilations, retaining recursive type components and shared internal test helpers. The original `HttpContractsKt` registry runs with all compiled outputs on its classpath. `build/http-compilations/inventory.json` in the fresh project records the complete assignment, and preparation-only mode builds the same compilation plan. Packing uses a source-size target; an indivisible large width/depth probe stays intact even above that target. No schema cap, fixture, runtime assertion or compiler heap setting is relaxed. This avoids compiling the entire independent fixture corpus in a single compiler invocation; it is not a product performance or maximum-input memory guarantee.
 
@@ -199,3 +199,143 @@ python3 scripts/perf/spec_inventory.py --help
 ```
 
 Old flat `scripts/kotlin-*-smoke.sh` entry points moved into `kotlin/` and `kotlin/features/`; use `test.sh` for routine checks. Coverage, fixture inputs, Kotlin dependencies and resource caps are unchanged. See [release instructions](../docs/releases.md) and [publication checks](../docs/publication.md).
+
+`bash scripts/test.sh feature object-default-graphs` 验证 [object-default member 集合引用图](../docs/object-default-graphs.md)：Data/Plain × validation、四 Json、默认实例/工厂隔离、Patch、HTTP/live SSE、optimized/name-lock 以及独立 width240/depth15 探针。`http` 也直接注册该消费者。
+
+`bash scripts/test.sh feature inline-error-roots` 验证 [shared-model JSON error roots](../docs/inline-errors.md#shared-model-error-roots)：Data/Plain × validation、四 Json、allOf/union/enum/typed List/Map/const/primitive/null/true/temporal、errorBody 重复读取、取消身份、优化命名锁和 240 字段错误 DTO。完整 `http` 也注册该消费者。
+
+`bash scripts/test.sh feature tuple-references` 验证 [builtin scalar tuple refs](../docs/primitive-tuples.md#referenced-builtin-scalar-members-and-tails)：保留原 primitive fixture，独立Data/Plain × validation、四 Json、Patch、typed/mixed/tail、nullable、temporal失败与HTTP/live SSE取消/复用；完整 `http` 注册该独立消费者。
+
+`bash scripts/test.sh feature split-locked-adoption` verifies real distinct-owner file subsets whose union preserves the original locked Kotlin tree, metadata-only adoption/check/validate/v4 replay and ordinary configuration check. Fresh Data/Plain × validation off/on projects also compile singleton projections and run four Json configurations, descriptors, defaults, open enums and controlled HTTP. The `http` suite includes this consumer; PREPARE_ONLY does not execute Kotlin.
+
+`bash scripts/test.sh feature tuple-enum-references` compiles/runs fresh Data/Plain × validation profiles with named/internal String enum tuple references, all optimization options plus locking, four Json settings, 240 fields, open/nullable vocabularies, required/Patch, controlled HTTP and live SSE/cancellation. `http` includes the same consumer. PREPARE_ONLY prepares files without Kotlin execution.
+
+`bash scripts/test.sh feature merge-primitive-unions` compiles/runs Data/Plain × validation profiles with unmerged, merge-only and all-option locked packages. It verifies root/sibling wrapper/null aliases, canonical descriptors/equality, four Json settings, overload routes and live SSE error/cancellation/reuse; locks are compared before/after enabling merge. `http` includes the same consumer; PREPARE_ONLY is preparation only.
+
+`bash scripts/test.sh feature tuple-dto-references` compiles/runs Data/Plain × validation with actual existing DTO tuple references, baseline/all-option packages and nonempty locks, 240 fields, four Json settings, fresh original defaults, checks/counts, nullable/internal/self-recursive types, Patch and controlled HTTP/live SSE/error/cancellation/reuse. Full `http` includes the same consumer; PREPARE_ONLY executes no Kotlin.
+
+`bash scripts/test.sh feature form-request-media` compiles fresh Data/Plain × validation baseline and dedup/hoist/merge/lock outputs for [required scalar form requests](../docs/form-request-media.md), including a 240-field DTO, four Json settings, exact UTF-8 form bytes, JSON priority, namespace aliases, callback body replacement and fragmented SSE close/cancellation/reuse. The complete `http` registry executes the same consumer. Other targets and broader media remain separate.
+
+`bash scripts/test.sh feature tuple-allof-references` exercises [allOf constructor tuple refs](../docs/primitive-tuples.md#referenced-allof-constructor-members-and-tails) in Data/Plain × validation, baseline/allopts/nonemptylocks, width240 and fourJson, retaining original defaults/open enums/checks/actual source owners/nominal recursion/Patch/HTTP/fragmented SSE close/cancel/reuse. Go contracts separately cover cumulative16384 source node/edge/ref and8MiB snapshot-byte accounting, repeated-target reuse and old non-tuple roles. Full `http` invokes the same consumer; PREPARE_ONLY and other targets remain separate.
+
+`bash scripts/test.sh feature tuple-target-defaults` covers [independent target/alias default factories consumed by tuple refs](../docs/tuple-target-defaults.md), with Data/Plain × validation, baseline/allopts/nonemptylocks,240fields/fourJson, original factory values and fresh helpers, no inheritance, required decode failures, temporal/open-enum codecs, typed HTTP/Patch/fragmented SSE close/cancel/reuse. Full `http` invokes the same consumer. Source guards/native strict-default failures and bounded fuzz are separate; PREPARE_ONLY/platform claims remain separate.
+
+`bash scripts/test.sh feature raw-request-media` verifies [required raw String/ByteArray requests](../docs/raw-request-media.md) with fresh Data/Plain × validation and baseline/allopts/lock outputs, fourJson, exact UTF-8/ISO-8859-1 and signed/empty bytes, JSON/form/raw priority, namespace aliases, callback override, validation preflight and fragmented SSE close/error/cancel/reuse. Full `http` registry invokes the same consumer; other platforms remain separate.
+
+`bash scripts/test.sh feature tuple-field-defaults` verifies [scalar tuple own-field defaults](../docs/tuple-field-defaults.md), fresh Data/Plain × validation, baseline/allopts/lock,240fields/fourJson, independent helpers/nullable/temporal/required/Patch and HTTP/fragmented SSE. Validation profiles use explicit scalar items tails for the existing uniqueItems source policy; prefix-only enforcing uniqueness remains a Go negative. Node/byte/source and native failure preservation are separate; full `http` invokes the consumer and other targets remain open.
+
+`bash scripts/kotlin/platforms.sh TARGET [data_class|plain_class]` retains the original catalog/model-increments consumers and adds [roadmap-increments](../samples/kotlin-platform-smoke/README.md) under validation+combined options. Its exact three-input Data/Plain profile passed fixed-version JVM/JS/Native runtime, metadata and Android AAR compilation; Android device/HTTPengine/fullfeature/minimumversion acceptance remain separate.
+
+`bash scripts/kotlin/platforms.sh android-device [data_class|plain_class]` uses an explicitly selected `ANDROID_SERIAL` to run the current four-input common model consumer without an Activity. It audits the final min SDK23 APK manifest, refuses installed-package replacement, checks raw instrumentation results and removes the package installed this run. See [prerequisites and evidence scope](../samples/kotlin-platform-smoke/README.md#headless-android-device-execution). Offline SDK tools can be selected with `ANDROID_HOME`, `ADB`, `ANDROID_APKANALYZER` and `ANDROID_AAPT2`.
+
+`python3 scripts/cli/host_probe.py --binary PATH --report REPORT.json [--compare OTHER.json]` executes a supplied local CLI against ten fixed JSON/YAML inputs in Data/Plain × validation profiles. It checks reports/bytes, file/stdin, no-op attributes, validation and invalid-input preservation; original structural-default validation-off rejections remain explicit. See [host requirements, recorded architecture details and evidence scope](../docs/cli-host-probes.md).
+
+`bash scripts/test.sh feature composed-member-defaults` verifies Cartesian selected-constructor enum-own defaults and numeric initializer selection in four fresh Data/Plain × validation profiles, including optimized/locked output, HTTP, live SSE and Patch.
+
+`bash scripts/test.sh feature allof-string-defaults` checks outer defaults over retained repeated plain String constraints: validation-on Data/Plain, baseline plus optimized/locked output, four Json configurations, width240, HTTP/Patch and live SSE.
+
+`bash scripts/test.sh feature object-collection-factories` checks ordinary DTO collection root and wrapper factories in four Data/Plain × validation profiles, optimized/locked output, four Json configurations, width240/depth15 and typed HTTP/Patch/live SSE.
+
+`bash scripts/test.sh feature unformatted-native-factories` checks unformatted Int/Double native enum root and alias factories in four profiles, four Json configurations, optimized/locked output, 240 members/slots, nullable controls and HTTP/Patch/live SSE.
+
+`bash scripts/test.sh feature allof-numeric-defaults` verifies validation-on Data/Plain numeric allOf outer factories, baseline/optimized locked output, four Json configurations, Long precision/mapped IEEE/negative zero, width240, HTTP/Patch and fragmented UTF-8 SSE.
+
+`bash scripts/test.sh feature tuple-root-defaults` checks direct scalar tuple component/alias factories in Data/Plain×validation, baseline/optimized locked output, four Json settings, temporal/Uuid/Long/IEEE, 240 fields, count/unique controls and HTTP/Patch/fragmented SSE.
+
+`bash scripts/test.sh feature optional-form-fields` verifies optional flat form key omission versus empty/false/zero, independent body absence, Data/Plain×validation, optimized/locked output, four Json settings, 240 optional fields and HTTP/live SSE wire/validation/callback/cancellation.
+
+`bash scripts/test.sh feature floating-form-fields` verifies required/optional Float/Double form text, negative zero/IEEE, opt-in checked bounds, body absence, Data/Plain×validation, optimized/locked output, 120Double/JVM240slots and HTTP/live UTF-8 SSE.
+
+`bash scripts/test.sh feature enum-form-fields` verifies required/optional retained String/native enum forms, serialName/openness/mapped checks, Data/Plain×validation, optimized owner bindings, four Json settings, raw240 vocabularies and HTTP/live UTF-8 SSE.
+
+`bash scripts/test.sh feature wide-deep-validation` checks 200×16 and240×12 List<Int> models with factories and repeated HTTP shapes in Data/Plain×all8 dedup/hoist/merge combinations. It retains all source via128KiB compilation inventory partitions, in-process Kotlin and existing heaps; asserts four Json settings/copy/distinct checks/HTTP/live SSE. Generic-signature feasibility and maximum Cartesian/cross-platform resources remain separate.
+
+`bash scripts/test.sh feature standard-form-fields` verifies required/optional UUID/date/Instant form text, canonicalization, opt-in UUID checks, body absence, Data/Plain×validation, combined optimized/locked output, 240 mixed fields and HTTP/live UTF-8 SSE.
+
+`bash scripts/test.sh feature allof-uuid-defaults` verifies validation-enabled UUID outer defaults with retained canonical-text constraints, original annotation/source identity, aliases/nested/list/map/required/Patch, Data/Plain baseline and optimized/locked output, four Json settings, 240 fields and HTTP/live SSE.
+
+`bash scripts/test.sh feature jvm-signature-limits` verifies Data/Plain203×List16 baseline and combined optimization, fourJson/Data-copy/field202 validation, deterministic checks and204×16 rejection with old-output preservation under existing heap limits.
+
+`bash scripts/test.sh feature jvm-copy-signatures` verifies feasible short-package Data and long-package Plain203×List16, baseline/combined optimization, fourJson/Data-copy/final-field checks, and structured long-package Data rejection. Native/source regressions cover original Pointers, all eight optimization combinations and old-output preservation.
+
+`bash scripts/test.sh feature bridge-intersections` verifies finite internal root bridges to direct named ordinary DTO allOf operands, source/owner identity, Data/Plain×validation/baseline+allopts/locks, fourJson/defaults/nested DTO+enum/recursion/required/Patch/HTTP/SSE and239+1 constructor slots. Source/native probes enforce original cached depth/catalog/AST and failure preservation.
+
+`bash scripts/test.sh feature nullable-bridge-intersections` verifies actual named ordinary target/alias/member null intent, Data/Plain×validation/baseline+allopts/locks, fourJson/defaults/nested types/recursion/Patch/HTTP-null/SSE-null/close/reuse and240 constructor slots. Source tests preserve exact original-node work charges before/after alias binding; core/native tests retain roles, Pointers and old output.
+
+`bash scripts/test.sh feature internal-dto-intersections` verifies direct/finite-chain/root-bridge actual lexical DTO allOf operands, Data/Plain×validation with nullable/non-null baseline+allopts/locks, original owned recursion/nested defaults, fourJson/Patch/HTTP/SSE and239+1 slots. Source tests enforce exact shared16384work/8MiB capture boundaries, overlap charges, original AST/catalog/owners and missing/copy rejection.
+
+`bash scripts/test.sh feature composed-dto-intersections` verifies unique actual ordinary nested DTOs under allOf/union owners, Data/Plain×validation with nullable/non-null baseline+allopts/locks, fourJson/canonical recursion/nested defaults/Patch/HTTP/SSE and239+1 slots. Source/core/native tests enforce actual owner/capture/cache identity, ambiguity/variant-root/hierarchy exclusions, original Pointers and old-output preservation.
+
+`bash scripts/test.sh feature hierarchy-dto-intersections` verifies actual plain named-leaf nested DTO allOf, Data/Plain×validation with nullable/non-null baseline+allopts/locks, fourJson/canonical recursion/defaults/Patch/HTTP/SSE, no parent-kind leakage and239+1 slots. Source/core/native tests retain original owner/AST/Pointers/capture, reject missing/foreign/root/common/inline/composed-leaf roles and preserve old output.
+
+`bash scripts/test.sh feature composed-leaf-intersections` verifies unique original nested ordinary DTO operands under named composed hierarchy leaves with fresh Kotlin API/JSON/Patch/HTTP/SSE profiles.
+
+`bash scripts/test.sh feature allof-target-intersections` verifies nested ordinary allOf operands under direct ordinary object owners with fresh Kotlin API/JSON/Patch/HTTP/SSE profiles.
+
+`bash scripts/test.sh feature composed-target-owners` verifies four original lexical owner roles with sixteen fresh Kotlin API/JSON/Patch/HTTP/SSE profiles and combined optimized/locked outputs.
+
+`bash scripts/test.sh feature allof-directional-models` verifies ordinary allOf request/response projection with fresh Kotlin call sites, four Json settings, Patch/recursion/optimized HTTP/SSE and a240-field request constructor.
+
+`bash scripts/test.sh feature dto-unique` verifies mapped scalar-field DTO uniqueness, constructor-aware defaults, named/inline/nullable keys, baseline/optimized locks, HTTP/SSE/Patch and independent240×240 Kotlin/resource profiles.
+
+`bash scripts/test.sh feature dto-enum-unique` verifies the [direct enum-field DTO uniqueness profile](../docs/dto-enum-unique.md) in fresh Data/Plain baseline/validation and combined optimized/locked projects, including wide getters, defaults, JSON, Patch, HTTP and SSE.
+
+`bash scripts/test.sh feature dto-const-unique` verifies [scalar const-body DTO uniqueness](../docs/dto-const-unique.md), including decoded actual body values, constructor defaults, wide serialized fields, JSON/Patch/HTTP/SSE and optimized/locked Data/Plain profiles.
+
+The [four-input DTO getter platform probe](../docs/platform-dto-getters.md) adds direct DTO scalar/enum/const getters and records Data/Plain JVM/JS/Native runtime separately from metadata/Android AAR compilation. The fourth input has no device runtime evidence.
+
+`bash scripts/test.sh feature dto-null-unique` checks [direct JsonNull DTO getters](../docs/dto-null-unique.md) in fresh Data/Plain baseline/validation and optimized/locked profiles, including actual null states, defaults, wide getters, Patch/HTTP/SSE and strict codec failure.
+
+`bash scripts/test.sh feature dto-collection-unique` checks [inline scalar collection DTO getters](../docs/dto-collection-unique.md) in Data/Plain baseline/validation and optimized/locked output, with actual240 List constructor fields×240 referring arrays and an independent total16-edge key traversal. Defaults/Map-order/Float/UUID/Instant, JSON/Patch/HTTP/SSE and exact work/depth/source/native/fuzz checks retain separate evidence scopes.
+
+The complete HTTP compilation inventory resolves dependencies against declared source symbols across package roots, including import aliases and quoted factory identifiers. It retains sealed families in one compilation, assigns every source exactly once and keeps the runtime registry intact; synthetic `org.example` package spelling is not a dependency boundary.
+
+`bash scripts/test.sh feature null-const-object-defaults` checks [null const object-default members](../docs/null-const-object-defaults.md) in Data/Plain validation off/on and optimized/locked profiles, including fresh trees/factories/no inheritance/required/Patch, HTTP/SSE and an independent240-serialized-field input. Source/value budgets, native failures and bounded fuzz retain separate checks.
+
+`bash scripts/test.sh feature split-locked-adoption` also exercises explicit-donor owner additions to an existing version4 inventory in every Data/Plain validation profile. Read-only reports, retained peer memberships/raw locks, file bytes/modes/mtimes, exact replay and ordinary configuration checks precede compilation/runtime assertions on the same Kotlin consumers.
+
+`bash scripts/test.sh feature dto-builtin-collection-reference-unique` verifies named/internal/bridge builtin List/Map getters through fresh Data/Plain validation controls, optimized locks, 240×240 width, independent full checked depth, four Json settings and actual Patch/HTTP/SSE consumers. Original-source/type/check/default/mapped-key and native failure regressions live beside the implementation.
+
+`bash scripts/test.sh feature dto-special-collection-reference-unique` extends the DTO collection reference profile to existing UUID/date/date-time leaves. It checks mapped default/equality semantics, actual named/internal/bridge sources, 240×240 UUID width, independent full Instant checked depth, Data/Plain validation controls, optimized locks, four Json settings and real Patch/HTTP/SSE consumers.
+
+`bash scripts/test.sh feature dto-native-collection-reference-unique` verifies Int/Long/Float/Double/Boolean collection reference keys through fresh Data/Plain validation controls, native membership/default checks, original aliases/borrowed bridges, optimized locks, 240×240 width, independent checked depth, four Json settings and actual Patch/HTTP/SSE consumers. Existing unchecked borrowed-native refusal stays covered.
+
+`bash scripts/test.sh feature dto-string-collection-reference-unique` verifies original plain String enum collection references, strict defaults, actual lexical enum ownership, named/internal/bridge/nullable paths, Data/Plain validation controls, merged enum classifiers, optimized locks, 240×240 width, depth16, four Json settings, Patch, HTTP and fragmented SSE.
+
+`bash scripts/test.sh feature dto-collection-reference-leaves-unique` verifies scalar/plain enum references below ordinary DTO collection getter trees, inline/named/internal/bridge paths, original getter/check/source identity, strict own defaults, Data/Plain validation controls, actual merged enum classifiers, optimized locks, 240×240 width, depth16, four Json settings, Patch, HTTP and fragmented SSE.
+
+`bash scripts/test.sh feature dto-allof-unique` verifies actual ordinary allOf constructors and inherited scalar/enum/const/reference-collection getters, original field/required/default and aggregate-check authority, Data/Plain validation controls, actual merged enums, optimized locks, allOf240×240 width/depth16, four Json settings, Patch, HTTP and fragmented SSE.
+
+`bash scripts/test.sh feature allof-default-overrides` verifies validation-on Data/Plain ×base/optimized locked output for original homogeneous overrides with no earlier bounds, strict own/winning annotations, actual240-field factories, String/UUID/numeric/nullable/alias values, four Json settings, Patch, HTTP and fragmented SSE. Unchecked groups retain their tested refusal boundary.
+
+`bash scripts/test.sh feature tuple-native-enum-references` runs validation-on Data/Plain projects with base and optimized locked outputs, original native5/alias/nullable/mixed/tail codecs, exact Long/Float mapping, independent factories, four Json settings, 240 fields, Patch and controlled HTTP/live SSE. Unchecked refusal controls are separate; PREPARE_ONLY does not compile or execute Kotlin.
+
+`bash scripts/test.sh feature nullable-recursive-cover-edges` compiles/runs Data/Plain × validation off/on, baseline/optimized locked mutual covers, nullable graph aliases, four Json settings, JsonNull/240fields/optional unique checks, required/Patch and controlled HTTP/live SSE. PREPARE_ONLY is preparation only.
+
+`bash scripts/test.sh feature false-component-roots` runs Data/Plain × validation off/on, unsuffixed and optimized/locked Dto variants, strict root/alias JSON-kind refusal, nullable alias null behavior, distinct descriptors and Serializer/Companion names. The complete HTTP route executes the standalone codec consumer; false HTTP roots are not admitted.
+
+`bash scripts/test.sh feature literal-false-fields` verifies literal Boolean false DTO fields, strict absence, reserved annotation names and 240-field JVM probes.
+
+`bash scripts/test.sh feature false-nominal-signatures` runs fresh known false-class descriptor controls for Data/Plain, including copy, strict absence and optimized output.
+
+`bash scripts/test.sh feature literal-false-root-defaults` checks root-owned literal-false DTO default factories, strict member refusal, fresh state, nullable owners, controlled HTTP and 240-field/32KiB JVM probes.
+
+`bash scripts/test.sh feature literal-false-dto-field-defaults` checks actual consuming-field defaults with literal/ref false target members, independent factories, required/count policy and fresh JVM resource probes.
+
+`bash scripts/test.sh feature literal-false-collection-fields` checks actual array literal-false leaves in inline DTO collections, ordinary container presence, empty-container API/wire, original corpus and independent JVM resource probes.
+
+`bash scripts/test.sh feature literal-false-collection-defaults` checks own outer literals, typed fresh initializers, required/nullable policy, complete metadata-named JSON data, HTTP and independent 240-field/32KiB JVM probes.
+
+`bash scripts/test.sh feature false-generic-signatures` compiles baseline/optimized optional and required Data/Plain models at actual false-class generic signature boundaries, runs constructor/copy and four Json wire profiles, and rejects adjacent impossible inputs.
+
+`bash scripts/test.sh feature literal-false-collection-root-defaults` checks component-own typed factories, independent field defaults, required/null policy, complete JSON literal identity, HTTP and independent 240-field/15-container/near32KiB probes.
+
+`bash scripts/test.sh feature literal-false-collection-dto-field-defaults` checks consuming DTO own annotations, independent target factories/counts, required/nullable policy, complete literal identity, HTTP and independent 240-field/15-container/near32KiB probes.
+
+`bash scripts/test.sh feature false-dto-owner-root-defaults` checks direct root-member DTO factories, independent target factories in either naming order, required/nullable/count policy, complete source/literal identity, HTTP and independent 240-field/15-container/exact32KiB probes.
+
+`bash scripts/test.sh feature false-dto-owner-alias-defaults` checks pure alias root-member factories, nearest nullable/field overrides, immutable path/cache proof, shared capture budgets, HTTP and independent 240-field/15-container/46-alias/exact32KiB probes.
+
+`bash scripts/test.sh feature pinned-structured-const` covers structured data bodies in union/hierarchy variants, same-kind state, scalar tags, references/inheritance/composition, optimized locks, 240 members and fresh Data/Plain × validation HTTP/live SSE with four JSON settings.
+
+`bash scripts/test.sh feature discarded-structured-const` covers source-only validation of ignored extra-key and overridden pinned literals, original diagnostics, strict/ignored keys, actual body/dictionary controls, optimized locks, 240-member constructors and four-profile HTTP/live SSE contracts.

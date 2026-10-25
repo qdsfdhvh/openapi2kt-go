@@ -112,10 +112,18 @@ func TestDirectionalDroppedFieldsStillValidate(t *testing.T) {
 	failure(t, input, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Account/properties/password/format")
 }
 
-func TestDirectionalCompositionRejectsRatherThanLeaks(t *testing.T) {
+func TestDirectionalCompositionProjectsRatherThanLeaks(t *testing.T) {
 	input := directionalDoc(`"id":{"type":"string"},"password":{"type":"string","writeOnly":true},"name":{"type":"string"}`)
 	input = []byte(strings.Replace(string(input), `"Account":{"type":"object",`, `"Account":{"allOf":[{"properties":{"token":{"type":"string","writeOnly":true}}}],"type":"object",`, 1))
-	failure(t, input, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Account/properties/password/writeOnly")
+	got := report(t, input, "Dto")
+	response := source(t, got, "SaveAccountPublicResponseDto")
+	if strings.Contains(response, "password") || strings.Contains(response, "token") {
+		t.Fatal("originalallOf hiddenfields leaked", response)
+	}
+	if !strings.Contains(source(t, got, "AccountDto"), "token: kotlin.String? = null") {
+		t.Fatal("sharedallOf component lost originalfield")
+	}
+
 }
 
 func TestDirectionalObjectCountsRemainExplicitlyUnsupported(t *testing.T) {

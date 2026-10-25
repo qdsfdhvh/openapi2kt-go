@@ -17,6 +17,7 @@ type lockedAdoptionLock struct {
 	Symbols      []nameLockSymbol       `json:"symbols"`
 }
 type lockedOwnerAdoptionReport struct {
+	FromOwner            string             `json:"from_owner,omitempty"`
 	Owner                string             `json:"owner"`
 	BeforeVersion        uint32             `json:"before_version"`
 	AfterVersion         uint32             `json:"after_version"`
@@ -25,11 +26,21 @@ type lockedOwnerAdoptionReport struct {
 	Files                []ownerRenameFile  `json:"files"`
 	NameLock             lockedAdoptionLock `json:"name_lock"`
 	Impact               string             `json:"impact"`
+	SourceSymbols        []nameLockSymbol   `json:"source_symbols,omitempty"`
 }
 
 func adoptionSHA256(data []byte) string { h := sha256.Sum256(data); return hex.EncodeToString(h[:]) }
 
 func executeLockedOwnerAdoption(args arguments, cfg config.Config, settings map[string]arguments, timer *metricCollector) (int, report) {
+	if args.retainLockedOwner != "" {
+		return executeRetainedLockedAdoption(args, cfg, settings, timer)
+	}
+	if args.adoptLockedOwnerFrom != "" {
+		return executeExistingLockedAdoption(args, cfg, settings, timer)
+	}
+	if args.spec == "" {
+		return executeSplitLockedAdoption(args, cfg, settings, timer)
+	}
 	if len(cfg.Specs) != 1 || args.spec == "" || cfg.Specs[0].Name != args.spec || !settings[args.spec].lockHoistedNames {
 		return 4, failed("E_LOCKED_OWNER_ADOPTION_INVALID", "Locked ownership adoption requires one configured locked spec and its explicit --spec selection.")
 	}
@@ -45,9 +56,9 @@ func executeLockedOwnerAdoption(args arguments, cfg config.Config, settings map[
 		return code, report{Status: "error", Files: []string{}, Diagnostics: diagnostics, Spec: args.spec}
 	}
 	timer.plannedConfig(map[string]output.OwnerUpdate{a.output: {Generated: map[string]core.GenerationArtifacts{args.spec: generated.Artifacts}}})
-	if args.denyWarnings {
+	if a.denyWarnings {
 		end := timer.phase("warning_policy")
-		denied := deniedWarnings(generated.Warnings, args.allowWarnings)
+		denied := deniedWarnings(generated.Warnings, a.allowWarnings)
 		end()
 		if len(denied) != 0 {
 			return 1, report{Status: "error", Files: []string{}, Diagnostics: denied, Warnings: generated.Warnings}

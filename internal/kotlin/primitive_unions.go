@@ -74,6 +74,20 @@ func emitPrimitiveUnion(model *schema.PrimitiveUnion, indent int, owner string, 
 	fmt.Fprintf(out, "%s        else -> throw kotlinx.serialization.SerializationException(\"Unexpected JSON kind for a primitive union.\")\n%s    }\n%s}\n", pad, pad, pad)
 }
 
+func emitPrimitiveUnionAlias(alias *schema.PrimitiveUnionAlias, out *strings.Builder) {
+	owner, name := "", alias.Canonical
+	if index := strings.LastIndexByte(name, '.'); index >= 0 {
+		owner, name = name[:index+1], name[index+1:]
+	}
+	fmt.Fprintf(out, "public typealias %s = %s\n", alias.ClassName, alias.Canonical)
+	if alias.NullVariant {
+		fmt.Fprintf(out, "public typealias Null%s = %sNull%s\n", alias.ClassName, owner, name)
+	}
+	for _, kind := range alias.Kinds {
+		fmt.Fprintf(out, "public typealias %s%s = %s%s%s\n", kind.Prefix(), alias.ClassName, owner, kind.Prefix(), name)
+	}
+}
+
 func unknownDefault(ty schema.TypeRef) string {
 	switch ty.Kind {
 	case schema.Nullable:

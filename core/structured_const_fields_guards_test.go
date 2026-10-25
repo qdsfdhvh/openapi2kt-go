@@ -52,6 +52,14 @@ func TestStructuredConstFieldsDoNotAuthorizeUnionPinsOrDiscardedLiterals(t *test
 			r := request(schemas(input), "Dto")
 			r.Options.Validation = validation
 			got, err := core.GenerateWithDiagnostics(r)
+			if strings.Contains(input, `"Choice":`) {
+				assertPinnedStructuredConstGraduation(t, got, err)
+				continue
+			}
+			if strings.Contains(input, `"additionalProperties":{"const":`) {
+				assertDiscardedStructuredConstGraduation(t, got, err)
+				continue
+			}
 			if err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("Ordinary body permission leaked to another role", input, validation, err)
 			}

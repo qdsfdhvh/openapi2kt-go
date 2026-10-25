@@ -1,0 +1,267 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TupleEnums",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Choice": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "done"
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Choice",
+        "nullable": true
+      },
+      "Other": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "done"
+        ]
+      },
+      "MaybeChoice": {
+        "type": "string",
+        "nullable": true,
+        "enum": [
+          "ready",
+          "null",
+          null
+        ]
+      },
+      "Owner": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "on",
+              "off"
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Owner/properties/mode",
+        "nullable": false
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Choice"
+          },
+          {
+            "$ref": "#/components/schemas/Alias",
+            "nullable": false
+          }
+        ]
+      },
+      "MaybeRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/MaybeChoice"
+          },
+          {
+            "$ref": "#/components/schemas/MaybeChoice"
+          }
+        ]
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Choice"
+          },
+          {
+            "$ref": "#/components/schemas/Other"
+          }
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Choice"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "items": {
+          "$ref": "#/components/schemas/Alias",
+          "nullable": false
+        }
+      },
+      "ScalarTail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Choice"
+          }
+        ],
+        "items": {
+          "type": "integer"
+        }
+      },
+      "Internal": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Owner/properties/mode",
+            "nullable": false
+          },
+          {
+            "$ref": "#/components/schemas/Bridge"
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "maybe": {
+            "$ref": "#/components/schemas/MaybeRows"
+          },
+          "mixed": {
+            "$ref": "#/components/schemas/Mixed"
+          },
+          "tail": {
+            "$ref": "#/components/schemas/Tail"
+          },
+          "internal": {
+            "$ref": "#/components/schemas/Internal"
+          }
+        },
+        "required": [
+          "rows",
+          "maybe",
+          "mixed",
+          "tail",
+          "internal"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rows": {
+      "post": {
+        "operationId": "rows",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rows"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rows"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patchRows",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "values": {
+                    "$ref": "#/components/schemas/Rows",
+                    "nullable": true
+                  },
+                  "requiredNullable": {
+                    "$ref": "#/components/schemas/Rows",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "requiredNullable"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Rows"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

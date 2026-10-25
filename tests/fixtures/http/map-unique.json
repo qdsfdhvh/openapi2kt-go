@@ -245,6 +245,97 @@
               },
               null
             ]
+          },
+          "listRows": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "integer",
+                "nullable": true
+              }
+            },
+            "nullable": true
+          },
+          "mixedRows": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "additionalProperties": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                  "type": "string",
+                  "format": "date-time",
+                  "nullable": true
+                }
+              }
+            },
+            "nullable": true
+          },
+          "floatRows": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "format": "float"
+              }
+            },
+            "nullable": true
+          },
+          "doubleMaps": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "nullable": true
+          },
+          "enumRows": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/State"
+              }
+            },
+            "nullable": true
+          },
+          "aliasRows": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/Rows"
+            },
+            "nullable": true
+          },
+          "defaultListRows": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "default": [
+              [
+                1
+              ],
+              [
+                2
+              ]
+            ]
           }
         },
         "required": [
@@ -302,6 +393,50 @@
           },
           null
         ]
+      },
+      "State": {
+        "type": "string",
+        "enum": [
+          "a",
+          "b"
+        ]
+      },
+      "Rows": {
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "nullable": true
+        }
+      },
+      "DefaultStructural": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "default": [
+          [
+            1
+          ],
+          [
+            2
+          ]
+        ]
+      },
+      "StructuralLists": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "nullable": true
+          }
+        },
+        "nullable": true
       }
     }
   },
@@ -406,6 +541,79 @@
                       }
                     },
                     "nullable": true
+                  },
+                  "listRows": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "array",
+                      "nullable": true,
+                      "items": {
+                        "type": "integer",
+                        "nullable": true
+                      }
+                    },
+                    "nullable": true
+                  },
+                  "mixedRows": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": {
+                        "type": "array",
+                        "nullable": true,
+                        "items": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        }
+                      }
+                    },
+                    "nullable": true
+                  },
+                  "floatRows": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number",
+                        "format": "float"
+                      }
+                    },
+                    "nullable": true
+                  },
+                  "doubleMaps": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "number"
+                      }
+                    },
+                    "nullable": true
+                  },
+                  "enumRows": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/State"
+                      }
+                    },
+                    "nullable": true
+                  },
+                  "aliasRows": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "$ref": "#/components/schemas/Rows"
+                    },
+                    "nullable": true
                   }
                 }
               }
@@ -467,6 +675,32 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InstantValues"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/structural": {
+      "post": {
+        "operationId": "structural",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StructuralLists"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StructuralLists"
                 }
               }
             }

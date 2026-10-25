@@ -2,6 +2,7 @@ package core_test
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"openapi-kt/core"
@@ -36,6 +37,14 @@ func TestNullableStructuredConstRetainsPinnedAndDiscardedSourceRejections(t *tes
 		`{"Holder":{"allOf":[{"properties":{"value":{"type":"array","items":{"const":{},"nullable":true,"default":null}}}},{"properties":{"value":{"type":"string"}}}]}}`,
 	} {
 		got, err := core.GenerateWithDiagnostics(request(schemas(input), "Dto"))
+		if strings.Contains(input, `"Choice":`) {
+			assertPinnedStructuredConstGraduation(t, got, err)
+			continue
+		}
+		if strings.Contains(input, `"additionalProperties":{"const":`) {
+			assertDiscardedStructuredConstGraduation(t, got, err)
+			continue
+		}
 		if err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 			t.Fatal("Nullable value role leaked or discarded source stopped validating", input, err)
 		}

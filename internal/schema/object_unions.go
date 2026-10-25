@@ -155,6 +155,13 @@ func (a *analyzer) fieldPins(f *field) ([]string, *diagnostic.Diagnostic) {
 		return nil, err
 	}
 	if literal, ok := v.Get("const"); ok {
+		if structuredLiteral(v) {
+			// Validate the original declaration before excluding data from tags.
+			if _, err := a.fieldConstant(f.Schema, "validation", f.Wire, f.Pointer, f.Depth, false, true); err != nil {
+				return nil, err
+			}
+			return nil, nil
+		}
 		return []string{jsonPin(literal)}, nil
 	}
 	pins := []string{}
@@ -181,6 +188,11 @@ func (a *analyzer) commonType(f *field) (TypeRef, *diagnostic.Diagnostic) {
 	if has(f.Schema, "default") {
 		ty, _, err := a.modelDefaultType(*f, false, "Validation", nil, nil)
 		return ty, err
+	}
+	if c, err := a.fieldConstant(f.Schema, "validation", f.Wire, f.Pointer, f.Depth, false, true); err != nil {
+		return TypeRef{}, err
+	} else if c != nil && structuredConstant(*c) {
+		return c.Type, nil // Body constants ignore optional/nullable declarations.
 	}
 	if ty, dictionary, err := a.commonDictionaryType(f); dictionary || err != nil {
 		return ty, err
@@ -437,6 +449,16 @@ func (a *analyzer) objectUnionContext(union *unionView, name string, depth int, 
 		}
 		resolved = append(resolved, resolvedBranch{schema: v, pointer: p, depth: d, shape: shape})
 	}
+	structuredWires := map[string]bool{}
+	for _, branch := range resolved {
+		for _, f := range branch.shape.Fields {
+			c, err := a.fieldConstant(f.Schema, "validation", f.Wire, f.Pointer, f.Depth, false, true)
+			if err != nil {
+				return nil, err
+			}
+			structuredWires[f.Wire] = structuredWires[f.Wire] || c != nil && structuredConstant(*c)
+		}
+	}
 	common := make([]Property, 0)
 	for _, first := range resolved[0].shape.Fields {
 		present := true
@@ -512,6 +534,7 @@ func (a *analyzer) objectUnionContext(union *unionView, name string, depth int, 
 				}
 			}
 		}
+		wires = slices.DeleteFunc(wires, func(wire string) bool { return structuredWires[wire] })
 		tiers := map[string]int{}
 		for _, wire := range wires {
 			any, nonString := false, true
@@ -568,7 +591,9 @@ func (a *analyzer) objectUnionContext(union *unionView, name string, depth int, 
 	if tagField == "" {
 		tagField = "type"
 	}
-	dispatches := !standalone || commonProperty(common, "type") != nil || hasVarying
+	// A JSON data field named type must not conflict with the default
+	// sealed class discriminator. Without scalar tags it retains raw Unknown.
+	dispatches := !standalone || commonProperty(common, "type") != nil || structuredWires["type"] || hasVarying
 	namingCandidates, err := candidates(false)
 	if err != nil {
 		return nil, err
@@ -639,12 +664,12 @@ func (a *analyzer) objectUnionContext(union *unionView, name string, depth int, 
 		}
 		if standalone {
 			values = nil
-			if dispatches {
+			if dispatches && !structuredWires[tagField] {
 				values, err = a.fieldPins(shapeField(branch.shape, tagField))
 				if err != nil {
 					return nil, err
 				}
-				if len(values) == 0 && isRef {
+				if len(values) == 0 && isRef && !structuredWires["type"] {
 					values = []string{variant}
 				}
 			}
@@ -710,6 +735,9 @@ func (a *analyzer) objectUnionContext(union *unionView, name string, depth int, 
 		for index, branch := range resolved {
 			var matches []ObjectTagMatch
 			for _, f := range branch.shape.Fields {
+				if structuredWires[f.Wire] {
+					continue
+				}
 				pins, err := a.fieldPins(&f)
 				if err != nil {
 					return nil, err
@@ -734,7 +762,7 @@ func (a *analyzer) objectUnionContext(union *unionView, name string, depth int, 
 		for index, variant := range model.Variants {
 			serialName := variant.ClassName
 			for _, f := range resolved[index].shape.Fields {
-				if commonProperty(common, f.Wire) != nil {
+				if !structuredWires[f.Wire] && commonProperty(common, f.Wire) != nil {
 					v, _, err := a.actualField(&f)
 					if err != nil {
 						return nil, err
@@ -754,7 +782,7 @@ func (a *analyzer) objectUnionContext(union *unionView, name string, depth int, 
 		// This descriptor context remains deferred; do not import pending
 		// Rust CLASS-singleton behavior merely because code exists there.
 		for _, variant := range model.Variants {
-			if len(variant.Properties) == 0 && len(variant.Constants) > 0 {
+			if len(variant.Properties) == 0 && len(variant.Constants) > 0 && !slices.ContainsFunc(variant.Constants, structuredConstant) {
 				return nil, unsupported(union.Pointer)
 			}
 		}

@@ -135,17 +135,13 @@ func executeOwnerRename(args arguments, cfg config.Config, settings map[string]a
 		counts[a.output] = count
 	}
 	timer.plannedConfig(counts)
-	if args.denyWarnings {
-		end := timer.phase("warning_policy")
-		denied := deniedWarnings(all.Warnings, args.allowWarnings)
-		end()
-		if len(denied) != 0 {
-			all.Status = "error"
-			all.Diagnostics = denied
-			all.OwnerRenames = nil
-			return 1, all
-		}
+	if denied := configDeniedWarnings(all.Specs, settings, timer); len(denied) != 0 {
+		all.Status = "error"
+		all.Diagnostics = denied
+		all.OwnerRenames = nil
+		return 1, all
 	}
+
 	readonly := args.check || args.command == "validate"
 	phase := "commit"
 	if readonly {

@@ -20,7 +20,6 @@ func TestNullableAllOfDTOFinalConstructorAndShapeGuards(t *testing.T) {
 		`{"nullable":true,"allOf":[{"type":"object"}]}`,
 		`{"nullable":true,"allOf":[{"properties":{"pin":{"const":"fixed"}}}]}`,
 		`{"nullable":true,"allOf":[{"additionalProperties":{"type":"string"}}]}`,
-		`{"allOf":[{"nullable":true,"properties":{"id":{"type":"string"}}}]}`,
 	} {
 		for _, checked := range []bool{false, true} {
 			rq := request(schemas(`{"Value":`+body+`}`), "Dto")
@@ -29,15 +28,6 @@ func TestNullableAllOfDTOFinalConstructorAndShapeGuards(t *testing.T) {
 			if err == nil || len(got.Artifacts.Files) != 0 {
 				t.Fatal(body, checked, got, err)
 			}
-		}
-	}
-	value := `{"nullable":true,"allOf":[{"properties":{"id":{"type":"string"}},"required":["id"]}]}`
-	for _, tail := range []string{
-		`,"Other":{"allOf":[{"$ref":"#/components/schemas/Value","nullable":false},{"properties":{"more":{"type":"string"}}}]}`,
-	} {
-		got, err := core.GenerateWithDiagnostics(request(schemas(`{"Value":`+value+`,"False":{"$ref":"#/components/schemas/Value","nullable":false}`+tail+`}`), "Dto"))
-		if err == nil || len(got.Artifacts.Files) != 0 {
-			t.Fatal("nullable nominal shape erased", tail, got, err)
 		}
 	}
 	// Original discarded fields remain checked even if the last member wins.

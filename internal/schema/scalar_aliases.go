@@ -59,6 +59,7 @@ func (a *analyzer) resolveScalarAliases(schemas *document.Value) *diagnostic.Dia
 			canonical = target.ScalarTarget
 		}
 		jsonRoot := canonical.BooleanRoot || canonical.RecursiveJSON
+		emptyRoot := canonical.FalseRoot
 		hierarchy := a.hierarchySources[canonical.Schema]
 		kind, nullable, e := schemaType(canonical.Schema, canonical.Pointer)
 		if e != nil {
@@ -76,13 +77,13 @@ func (a *analyzer) resolveScalarAliases(schemas *document.Value) *diagnostic.Dia
 		nativeEnum := a.options.Validation && nativeEnumBinding(canonical)
 		primitive := canonical.NullablePrimitive || builtinPrimitiveBinding(canonical) && (ownNullable || target.BindingNullable != nil)
 		structured := structuredConstBinding(canonical)
-		if ownNullable && !collection && !ordinary && !plainEnum && !canonical.ValueClass && !temporal && !bigint && !bytes && !callerNative && !primitive && !nativeEnum && !structured && !jsonRoot && !hierarchy && !union {
+		if ownNullable && !collection && !ordinary && !plainEnum && !canonical.ValueClass && !temporal && !bigint && !bytes && !callerNative && !primitive && !nativeEnum && !structured && !jsonRoot && !emptyRoot && !hierarchy && !union {
 			return unsupported(c.Pointer)
 		}
 		special := canonical.ValueClass || has(canonical.Schema, "enum") || has(canonical.Schema, "const") || has(canonical.Schema, "x-native-type") || canonical.Scalar != "" && !slices.Contains([]string{"kotlin.String", "kotlin.uuid.Uuid", "kotlin.Boolean", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double"}, canonical.Scalar)
-		if ordinary || collection || special || union || primitive || jsonRoot || hierarchy {
+		if ordinary || collection || special || union || primitive || jsonRoot || emptyRoot || hierarchy {
 			c.BindingTarget = canonical
-			if collection || ordinary || plainEnum || canonical.ValueClass || temporal || bigint || bytes || callerNative || primitive || nativeEnum || structured || jsonRoot || hierarchy || union {
+			if collection || ordinary || plainEnum || canonical.ValueClass || temporal || bigint || bytes || callerNative || primitive || nativeEnum || structured || jsonRoot || emptyRoot || hierarchy || union {
 				c.BindingNullable = nullableOverride(c.Schema)
 				if c.BindingNullable == nil {
 					c.BindingNullable = target.BindingNullable

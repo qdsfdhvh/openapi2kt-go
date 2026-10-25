@@ -96,11 +96,12 @@ func TestLockedOwnerAdoptionNativeClosedSelectionAndNoFreshRoot(t *testing.T) {
 	for _, tail := range [][]string{{"--adopt-locked-owner"}, {"--adopt-locked-owner=true"}, {"--adopt-legacy"}, {"--reconcile"}, {"--rename-owner=x:catalog"}, {"--name-lock-action=reset"}, {"--name-lock-action=disable"}, {"--move-output-from=unused", "--output=unused"}} {
 		fails(t, invoke(t, base, append(append([]string(nil), common...), tail...)...), 2, "E_USAGE")
 	}
-	fails(t, invoke(t, base, "generate", "--config", cfg, "--adopt-locked-owner", "--diagnostic-format=json"), 2, "E_USAGE")
+	// Preserve the former no-spec input as the full-configuration readonly graduation.
+	result(t, invoke(t, base, "generate", "--config", cfg, "--adopt-locked-owner", "--check", "--diagnostic-format=json"), 3)
 	fails(t, invoke(t, base, "validate", "--input=unused", "--adopt-locked-owner", "--diagnostic-format=json"), 2, "E_USAGE")
 	for _, command := range []string{"generate", "validate"} {
 		out := invoke(t, base, command, "--help")
-		if out.Code != 0 || !bytes.Contains(out.Stdout, []byte("--adopt-locked-owner")) {
+		if out.Code != 0 || !bytes.Contains(out.Stdout, []byte("--adopt-locked-owner")) || !bytes.Contains(out.Stdout, []byte("full config split or one --spec")) {
 			t.Fatal("missing help")
 		}
 	}

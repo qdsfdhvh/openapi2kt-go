@@ -29,6 +29,10 @@ func TestInferredNullLiteralsPreserveExcludedGrammarAndOriginalFailures(t *testi
 		for _, validation := range []bool{false, true} {
 			r := request(fieldDoc(tc.field), "Dto")
 			r.Options.Validation = validation
+			if tc.field == `{"enum":[null,"text"]}` {
+				implicitStringEnumGraduation(t, fieldDoc(tc.field), validation)
+				continue
+			}
 			got, err := core.GenerateWithDiagnostics(r)
 			if err == nil {
 				t.Fatal("Excluded grammar was silently accepted", tc, validation)

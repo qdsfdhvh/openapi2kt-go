@@ -109,8 +109,13 @@ func TestReferencedCollectionAllOfMemberDiagnosticsAndGuards(t *testing.T) {
 		`{"type":"array","items":{"$ref":"#/components/schemas/OtherRows"}}`,
 	} {
 		extra := aliases + `"OtherRows":{"type":"array","items":{"$ref":"#/components/schemas/Target"}},`
-		if _, err := core.GenerateWithDiagnostics(request(collectionMemberDocument(allOfObjectMember, rows, extra, member, `{}`), "Dto")); err == nil {
-			t.Fatal("recursive/container reference expanded", rows)
+		got, err := core.GenerateWithDiagnostics(request(collectionMemberDocument(allOfObjectMember, rows, extra, member, `{}`), "Dto"))
+		if strings.Contains(rows, "OtherRows") {
+			if err != nil || len(got.Artifacts.Files) == 0 {
+				t.Fatal("original finite collection graph did not graduate", err)
+			}
+		} else if err == nil {
+			t.Fatal("recursive collection graph expanded", rows)
 		}
 	}
 	counted := strings.Replace(collection, `"type":"array"`, `"type":"array","minItems":1`, 1)
@@ -367,11 +372,10 @@ func TestObjectDefaultPlainDTOCollectionNestedContainers(t *testing.T) {
 			}
 		}
 	}
-	// A nested container whose leaf is an inter-container reference keeps its
-	// separate excluded role.
+	// Preserve the original inter-container reference as a positive graph case.
 	interContainer := schemas(`{"Item":` + item + `,"Inner":{"type":"array","items":{"$ref":"#/components/schemas/Item"}},"Outer":{"type":"array","items":{"$ref":"#/components/schemas/Inner"}},"Holder":{"properties":{"v":` + allOfMemberField(`{"$ref":"#/components/schemas/Outer"}`, `{"member":[[{"name":"a"}]]}`) + `}}}`)
-	if got, err := core.GenerateWithDiagnostics(request(interContainer, "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
-		t.Fatal("inter-container reference gained the nested member role", err)
+	if got, err := core.GenerateWithDiagnostics(request(interContainer, "Dto")); err != nil || len(got.Artifacts.Files) == 0 {
+		t.Fatal("original inter-container default did not graduate", err)
 	}
 }
 
@@ -414,8 +418,8 @@ func TestObjectDefaultReferencedScalarCollectionMembers(t *testing.T) {
 			}
 		})
 	}
-	// An internal mixed container reference keeps its separate excluded role.
-	if got, err := core.GenerateWithDiagnostics(request([]byte(`{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Mixed":{"type":"array","items":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Mixed"}},"default":{"member":[{"k":"2024-01-02T03:04:05Z"}]}}}}}}}`), "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
-		t.Fatal("internal mixed container gained the scalar collection member role", err)
+	// Preserve the original mixed temporal-container input as a graph positive.
+	if got, err := core.GenerateWithDiagnostics(request([]byte(`{"openapi":"3.1.0","components":{"schemas":{"Time":{"type":"string","format":"date-time"},"Mixed":{"type":"array","items":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Time"}}},"Holder":{"properties":{"v":{"properties":{"member":{"$ref":"#/components/schemas/Mixed"}},"default":{"member":[{"k":"2024-01-02T03:04:05Z"}]}}}}}}}`), "Dto")); err != nil || len(got.Artifacts.Files) == 0 {
+		t.Fatal("original mixed container default did not graduate", err)
 	}
 }

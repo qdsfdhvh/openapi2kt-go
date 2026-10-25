@@ -1,0 +1,188 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LiteralFalseFields",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Blocked": false,
+      "Optional": {
+        "properties": {
+          "blocked": false,
+          "other": false
+        }
+      },
+      "Mixed": {
+        "required": [
+          "required"
+        ],
+        "properties": {
+          "optional": false,
+          "required": false
+        }
+      },
+      "Required": {
+        "required": [
+          "blocked"
+        ],
+        "properties": {
+          "blocked": false
+        }
+      },
+      "Collision": {
+        "properties": {
+          "falseValue": {
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            }
+          },
+          "blocked": false
+        }
+      },
+      "FalseValue": {
+        "properties": {
+          "blocked": false
+        }
+      },
+      "NullableOwner": {
+        "nullable": true,
+        "properties": {
+          "blocked": false
+        }
+      },
+      "Reserved": {
+        "properties": {
+          "kotlin": false,
+          "kotlinx": false,
+          "serializer": false,
+          "absentSerializer": false,
+          "companion": false,
+          "org": false,
+          "OpenapiKtEncodeDefaultMode": false,
+          "OpenapiKtTypeUseSerializer": false,
+          "payloadText": {
+            "type": "string",
+            "default": "@kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER) @kotlinx.serialization.Serializable(with = org.example.Serializer::class)"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/values": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "values"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Optional"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Optional"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "post": {
+        "operationId": "shapeA",
+        "tags": [
+          "values"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "child": {
+                    "properties": {
+                      "value": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Optional"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "post": {
+        "operationId": "shapeB",
+        "tags": [
+          "values"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "child": {
+                    "properties": {
+                      "value": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Optional"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

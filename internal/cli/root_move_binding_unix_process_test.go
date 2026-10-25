@@ -40,7 +40,7 @@ func TestRootMoveNativeFullConfigCanonicalAncestorBinding(t *testing.T) {
 	}
 }
 
-func TestRootMoveNativeDisjointAndUnrelatedConfigFailBeforeInput(t *testing.T) {
+func TestRootMoveNativeDisjointMissingInputAndUnrelatedSource(t *testing.T) {
 	for _, mode := range []string{"disjoint", "unrelated"} {
 		base := t.TempDir()
 		names := []string{"alpha", "beta"}
@@ -56,7 +56,11 @@ func TestRootMoveNativeDisjointAndUnrelatedConfigFailBeforeInput(t *testing.T) {
 			source = filepath.Join(base, "other-source")
 		}
 		run := append(args, "--move-output-from", source, "--output", filepath.Join(base, "new"))
-		fails(t, invoke(t, base, run...), 4, "E_OUTPUT_ROOT_MOVE_INVALID")
+		code := "E_OUTPUT_ROOT_MOVE_INVALID"
+		if mode == "disjoint" {
+			code = "E_INPUT_IO"
+		} // This concrete source inventory is now admitted, but its own input remains required.
+		fails(t, invoke(t, base, run...), 4, code)
 	}
 }
 

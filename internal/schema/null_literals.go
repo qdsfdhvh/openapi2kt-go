@@ -36,8 +36,9 @@ func nullOnlyEnumType(v *document.Value, pointer string) (string, *diagnostic.Di
 	return nullOnlyEnumProfile(v, pointer, false)
 }
 
-// Only direct DTO default planning admits the annotation; roots and typed
-// collection/reference planners continue to use the strict profile above.
+// Explicitly scoped own-default planning admits the annotation: direct DTO
+// fields, shared default walks and marked component roots. Other typed roles
+// continue to use the strict profile above.
 func nullOnlyEnumProfile(v *document.Value, pointer string, fieldDefault bool) (string, *diagnostic.Diagnostic) {
 	location := naming.Pointer(pointer, "enum")
 	if text(get(v, "type")) != "null" && !inferredNullLiteral(v) {

@@ -11,7 +11,7 @@ Direct schemas and existing references use the shared operation resolver, origin
 
 Media selection keeps the existing JSON preference and then SSE. If neither exists, `text/plain` precedes `application/octet-stream`. Within each new media kind, exact spelling wins before case/parameter variants; equal-rank candidates use stable media-key ordering. Success status ordering is unchanged: the first body-bearing preferred success wins over an earlier bodyless status. `default` never becomes a success response.
 
-Every declared schema is still validated, including unselected statuses/media and excluded operations. The new builtin-type restriction applies only when the new media is selected; existing JSON-preferred documents retain their previous treatment of other valid media schemas. Request bodies and declared-error media selection keep their existing policies.
+Every declared schema is still validated, including unselected statuses/media and excluded operations. The new builtin-type restriction applies only when the new media is selected; existing JSON-preferred documents retain their previous treatment of other valid media schemas. Request bodies use their independent [form](form-request-media.md) and [raw scalar](raw-request-media.md) profiles; declared-error media selection keeps its existing policy.
 
 Nullable raw responses follow the already established Ktor contract: a body containing ASCII `null` returns the String `"null"` or those four bytes, rather than JSON null. An empty text body returns `""`. The generator installs no plugin, changes no Accept header, and does not add runtime content negotiation. The server and caller must agree on the selected representation. JSON bodies still require the caller's configured ContentNegotiation codec.
 

@@ -1,0 +1,389 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TupleDTO",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Item": {
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "default": 7
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "done"
+            ],
+            "default": "ready"
+          },
+          "child": {
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ],
+            "default": {
+              "label": "child"
+            }
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Other": {
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer",
+            "default": 7
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "done"
+            ],
+            "default": "ready"
+          },
+          "child": {
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ],
+            "default": {
+              "label": "child"
+            }
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Item",
+        "nullable": true
+      },
+      "Node": {
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "next": {
+            "$ref": "#/components/schemas/Node"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Owner": {
+        "properties": {
+          "node": {
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Owner/properties/node"
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Item"
+          },
+          {
+            "$ref": "#/components/schemas/Alias",
+            "nullable": false
+          }
+        ]
+      },
+      "MaybeRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Alias"
+          },
+          {
+            "$ref": "#/components/schemas/Item",
+            "nullable": true
+          }
+        ]
+      },
+      "MixedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Item"
+          },
+          {
+            "$ref": "#/components/schemas/Other"
+          }
+        ]
+      },
+      "TailRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Item"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "items": {
+          "$ref": "#/components/schemas/Alias",
+          "nullable": false
+        }
+      },
+      "ScalarTail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Item"
+          }
+        ],
+        "items": {
+          "type": "integer"
+        }
+      },
+      "InternalRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Owner/properties/node"
+          },
+          {
+            "$ref": "#/components/schemas/Bridge"
+          }
+        ]
+      },
+      "NodeRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Node"
+          },
+          {
+            "$ref": "#/components/schemas/Node"
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "maybe": {
+            "$ref": "#/components/schemas/MaybeRows"
+          },
+          "mixed": {
+            "$ref": "#/components/schemas/MixedRows"
+          },
+          "tail": {
+            "$ref": "#/components/schemas/TailRows"
+          },
+          "internal": {
+            "$ref": "#/components/schemas/InternalRows"
+          },
+          "nodes": {
+            "$ref": "#/components/schemas/NodeRows"
+          }
+        },
+        "required": [
+          "rows",
+          "maybe",
+          "mixed",
+          "tail",
+          "internal",
+          "nodes"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rows": {
+      "post": {
+        "operationId": "rows",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rows"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rows"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patchRows",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "values": {
+                    "$ref": "#/components/schemas/Rows",
+                    "nullable": true
+                  },
+                  "requiredNullable": {
+                    "$ref": "#/components/schemas/Rows",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "requiredNullable"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Rows"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/share-a": {
+      "get": {
+        "operationId": "sharea",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "rows": {
+                      "$ref": "#/components/schemas/Rows"
+                    }
+                  },
+                  "required": [
+                    "rows"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/share-b": {
+      "get": {
+        "operationId": "shareb",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "rows": {
+                      "$ref": "#/components/schemas/Rows"
+                    }
+                  },
+                  "required": [
+                    "rows"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

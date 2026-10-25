@@ -1,0 +1,448 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Item": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fixed": {
+            "const": null
+          },
+          "requiredNull": {
+            "type": "null"
+          },
+          "optionalNull": {
+            "enum": [
+              null
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "id",
+          "requiredNull"
+        ]
+      },
+      "Combined": {
+        "allOf": [
+          {
+            "properties": {
+              "fixed": {
+                "type": "null",
+                "const": null
+              }
+            }
+          },
+          {
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "requiredNull": {
+                "type": "null"
+              },
+              "optionalNull": {
+                "enum": [
+                  null
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "id",
+              "requiredNull"
+            ]
+          }
+        ]
+      },
+      "Seed": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fixed": {
+            "const": null
+          },
+          "requiredNull": {
+            "type": "null"
+          },
+          "optionalNull": {
+            "enum": [
+              null
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "id",
+          "requiredNull"
+        ],
+        "default": {
+          "id": "seed",
+          "fixed": null,
+          "requiredNull": null
+        }
+      },
+      "SeedAlias": {
+        "$ref": "#/components/schemas/Seed",
+        "default": {
+          "id": "alias",
+          "fixed": null,
+          "requiredNull": null
+        }
+      },
+      "Holder": {
+        "properties": {
+          "inline": {
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "fixed": {
+                "const": null
+              },
+              "requiredNull": {
+                "type": "null"
+              },
+              "optionalNull": {
+                "enum": [
+                  null
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "id",
+              "requiredNull"
+            ],
+            "default": {
+              "id": "inline",
+              "fixed": null,
+              "requiredNull": null
+            }
+          },
+          "named": {
+            "$ref": "#/components/schemas/Item",
+            "default": {
+              "id": "named",
+              "fixed": null,
+              "requiredNull": null
+            }
+          },
+          "combined": {
+            "$ref": "#/components/schemas/Combined",
+            "default": {
+              "id": "combined",
+              "fixed": null,
+              "requiredNull": null
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "default": [
+              {
+                "id": "row",
+                "fixed": null,
+                "requiredNull": null
+              }
+            ]
+          },
+          "tree": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "fixed": {
+                    "const": null
+                  },
+                  "requiredNull": {
+                    "type": "null"
+                  },
+                  "optionalNull": {
+                    "enum": [
+                      null
+                    ],
+                    "default": null
+                  }
+                },
+                "required": [
+                  "id",
+                  "requiredNull"
+                ]
+              }
+            },
+            "default": {
+              "one": [
+                {
+                  "id": "tree",
+                  "fixed": null,
+                  "requiredNull": null
+                }
+              ]
+            }
+          },
+          "only": {
+            "properties": {
+              "fixed": {
+                "const": null,
+                "nullable": true
+              }
+            },
+            "default": {
+              "fixed": null
+            }
+          },
+          "nulls": {
+            "type": "array",
+            "items": {
+              "type": "null"
+            },
+            "default": [
+              null,
+              null
+            ]
+          },
+          "enumNulls": {
+            "type": "array",
+            "items": {
+              "enum": [
+                null
+              ],
+              "nullable": true
+            },
+            "default": [
+              null,
+              null
+            ]
+          },
+          "nullTree": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "null",
+                "enum": [
+                  null
+                ]
+              }
+            },
+            "default": {
+              "one": [
+                null,
+                null
+              ]
+            }
+          }
+        }
+      },
+      "RequiredHolder": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Item",
+            "default": {
+              "id": "required",
+              "fixed": null,
+              "requiredNull": null
+            }
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "NoInheritHolder": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Seed"
+          },
+          "rows": {
+            "$ref": "#/components/schemas/NullRows"
+          },
+          "scalarNull": {
+            "$ref": "#/components/schemas/NullValue"
+          },
+          "enumScalarNull": {
+            "$ref": "#/components/schemas/NullEnumAlias"
+          },
+          "noOwnAlias": {
+            "$ref": "#/components/schemas/NoOwnNullAlias"
+          }
+        }
+      },
+      "NullRows": {
+        "type": "array",
+        "items": {
+          "type": "null"
+        },
+        "default": [
+          null
+        ]
+      },
+      "NullRowsAlias": {
+        "$ref": "#/components/schemas/NullRows",
+        "default": [
+          null,
+          null
+        ]
+      },
+      "NullEnumRows": {
+        "type": "array",
+        "items": {
+          "enum": [
+            null
+          ],
+          "nullable": true
+        },
+        "default": [
+          null
+        ]
+      },
+      "NullTree": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "type": "null"
+          }
+        },
+        "default": {
+          "one": [
+            null
+          ]
+        }
+      },
+      "NullValue": {
+        "type": "null",
+        "default": null
+      },
+      "NullEnumValue": {
+        "enum": [
+          null
+        ],
+        "default": null
+      },
+      "NullValueMiddle": {
+        "$ref": "#/components/schemas/NullValue",
+        "default": null
+      },
+      "NullValueAlias": {
+        "$ref": "#/components/schemas/NullValueMiddle",
+        "default": null
+      },
+      "NullEnumAlias": {
+        "$ref": "#/components/schemas/NullEnumValue",
+        "default": null
+      },
+      "NoOwnNullAlias": {
+        "$ref": "#/components/schemas/NullValue"
+      },
+      "RequiredNullHolder": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/NullValue"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "post": {
+        "operationId": "watch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/Holder",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

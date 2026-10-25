@@ -15,7 +15,17 @@ import (
 // returns neither declarations nor warnings; no consumer can emit partial files.
 func Analyze(root *document.Value, options Options) (*Plan, []diagnostic.Diagnostic, *diagnostic.Diagnostic) {
 	referencedDefaults := []referencedFieldDefault{}
+	structuralUniqueUses := []structuralUniqueUse{}
+	objectDefaultGraphUses := []objectDefaultGraphUse{}
 	a := &analyzer{referencedDefaults: &referencedDefaults, emissionHints: EmissionHints{}, options: options, root: root, components: map[string]*component{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}}
+	// HTTP-only documents can bypass component preparation. Share diagnostic
+	// locations before request/response contexts copy the analyzer; this grants
+	// no schema-origin or annotation permission.
+	a.modelPointers = map[*Model]string{}
+	a.modelDiagnosticPointers = map[*Model]string{}
+	a.enumDiagnosticOrigins = map[*StringEnum]nominalOrigin{}
+	a.structuralUniqueUses = &structuralUniqueUses
+	a.objectDefaultGraphUses = &objectDefaultGraphUses
 	declarations, err := a.analyze(root)
 	if err != nil {
 		return nil, nil, err
@@ -30,11 +40,14 @@ func Analyze(root *document.Value, options Options) (*Plan, []diagnostic.Diagnos
 	if err := a.aliasConsumerDepth(); err != nil {
 		return nil, nil, err
 	}
-	plan := &Plan{Models: declarations, Client: client, EmissionHints: a.emissionHints, operationRoles: a.operationRoles, operationOrigins: a.operationOrigins}
+	plan := &Plan{Models: declarations, Client: client, EmissionHints: a.emissionHints, operationRoles: a.operationRoles, operationOrigins: a.operationOrigins, modelDiagnosticPointers: a.modelDiagnosticPointers, enumDiagnosticOrigins: a.enumDiagnosticOrigins}
 	if err := a.validationDepth(plan); err != nil {
 		return nil, nil, err
 	}
 	if err := a.planReferencedFieldDefaults(); err != nil {
+		return nil, nil, err
+	}
+	if err := a.validateFalseDTOFieldDefaults(declarations); err != nil {
 		return nil, nil, err
 	}
 	if err := a.directionalModels(plan); err != nil {
@@ -46,13 +59,29 @@ func Analyze(root *document.Value, options Options) (*Plan, []diagnostic.Diagnos
 	if err := a.scalarRuntime(plan); err != nil {
 		return nil, nil, err
 	}
+	if err := a.validateStructuralUniqueUses(); err != nil {
+		return nil, nil, err
+	}
+	if err := a.validateDTOUniqueUses(plan); err != nil {
+		return nil, nil, err
+	}
+	if err := a.validateObjectDefaultGraphUses(); err != nil {
+		return nil, nil, err
+	}
 	if err := a.runtimeCollisions(plan); err != nil {
+		return nil, nil, err
+	}
+	if err := a.certainJVMSignatureOverflow(plan); err != nil {
 		return nil, nil, err
 	}
 	return plan, a.warnings, nil
 }
 
 func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Diagnostic) {
+	a.initDTOUnique()
+	if a.directionalModelSources == nil {
+		a.directionalModelSources = map[*Model]directionalModelSource{}
+	}
 	version := text(get(root, "openapi"))
 	parts := strings.Split(version, ".")
 	valid := len(parts) == 3 && parts[0] == "3" && (parts[1] == "0" || parts[1] == "1") && parts[2] != ""
@@ -129,7 +158,8 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 		v, wire := entry.Value, entry.Name
 		pointer := naming.Pointer("/components/schemas", wire)
 		booleanRoot := a.booleanTrueValue(v)
-		if !booleanRoot {
+		falseRoot := a.booleanFalseRoot(v)
+		if !booleanRoot && !falseRoot {
 			if err := object(v, pointer); err != nil {
 				return nil, err
 			}
@@ -146,6 +176,8 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 			switch {
 			case booleanRoot:
 				kind = "boolean_raw"
+			case falseRoot:
+				kind = "boolean_false"
 			case has(v, "$ref"):
 				kind = "scalar_ref"
 			case has(v, "allOf"):
@@ -197,7 +229,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 			if reference == "" {
 				return nil, diagnostic.At("E_REF_UNSUPPORTED", "Only local named component references are supported.", pointer+"/$ref")
 			}
-		} else if booleanRoot {
+		} else if booleanRoot || falseRoot {
 			// A literal root has no object keywords/scalar constraints. Preserve
 			// its original node and explicit JSON role, not a fabricated Model.
 		} else if has(v, "x-kotlin-value-class") {
@@ -222,7 +254,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 				return nil, unsupported(pointer)
 			}
 			if kind == "null" && has(v, "enum") {
-				scalar, err = nullOnlyEnumType(v, pointer)
+				scalar, err = nullOnlyEnumProfile(v, pointer, a.componentDefaultSchemas[v])
 			} else if (kind == "integer" || kind == "number" || kind == "boolean") && has(v, "enum") {
 				scalar, err = scalarMapping(kind, v, pointer)
 			} else if kind != "object" && kind != "array" && kind != "union" && !has(v, "enum") {
@@ -255,6 +287,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 			a.validationSources[validation] = pointer
 		}
 		a.components[wire] = &component{Wire: wire, Name: name, Scalar: scalar, Pointer: pointer, Schema: v, ValueClass: valueClass, Validation: validation, Reference: reference, NullableDTO: nullableDTO, NullableEnum: nullableEnum, NullableNativeEnum: nullableNativeEnum, NullableValueClass: nullableValueClass, NullableTemporal: nullableTemporal, NullableBigint: nullableBigint, NullableBytes: nullableBytes, NullableCallerNative: nullableCallerNative, NullableRaw: nullableRaw, NullablePrimitive: nullablePrimitive, NullableStructuredConst: nullableStructuredConst, BooleanRoot: booleanRoot, RecursiveJSON: recursiveJSON != 0}
+		a.components[wire].FalseRoot = falseRoot
 		if booleanRoot {
 			a.components[wire].AliasType = TypeRef{Kind: JSON}
 		} else if recursiveJSON != 0 {
@@ -313,6 +346,31 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	a.borrowedEnumLeaves = map[*document.Value]*borrowedEnumLeafUse{}
 	a.borrowedValueClassLeaves = map[*component]*borrowedValueClassLeafUse{}
 	a.borrowedAllOfLeaves = map[*document.Value]*borrowedAllOfLeafUse{}
+	a.tupleAllOfSources = &tupleAllOfSourceBudget{Seen: map[*document.Value]bool{}}
+	a.tupleNativeSources = &tupleNativeSourceRegistry{}
+	a.falseRootSources = nil
+	a.falseValueOrigins = map[*FalseValue]falseValueOrigin{}
+	a.falseAliasOrigins = map[*ValueAlias]falseAliasOrigin{}
+	a.falseAliasFactories = map[*ValueAlias]falseCollectionFactoryOrigin{}
+	a.falseAbsentUses = map[*component]bool{}
+	a.falseFieldOrigins = map[*Model]falseFieldOrigin{}
+	a.literalFalseFieldOrigins = map[*Model]literalFalseFieldOrigin{}
+	a.literalFalseFieldUses = map[*Model]string{}
+	a.literalFalseObjectDefaultUses = map[*Model]bool{}
+	a.literalFalseObjectFactories = map[*Model]falseCollectionFactoryOrigin{}
+	a.falseInlineCollectionOrigins = map[*Model]falseInlineCollectionOrigin{}
+	a.falseInlineCollectionUses = map[*Model]string{}
+	a.falseObjectDefaultUses = map[*Model]bool{}
+	a.falseObjectFactories = map[*Model]falseCollectionFactoryOrigin{}
+	a.falseDTOFieldDefaults = map[falseDTOFieldDefaultKey]falseDTOFieldDefaultOrigin{}
+	a.falseDTOFieldDefaultUses = map[falseDTOFieldDefaultKey]string{}
+	a.falseDTOConsumerSources = map[*Model][]borrowedAllOfNode{}
+	a.falseDTOOwnerDefaults = map[*Model]*falseDTOOwnerDefaultOrigin{}
+	a.falseDTOOwnerDefaultUses = map[falseDTOFieldDefaultKey]string{}
+	a.falseDTOOwnerAliasSources = map[*component][]borrowedAllOfNode{}
+	a.falseCollectionOrigins = map[*ValueAlias]falseCollectionOrigin{}
+	a.falseCollectionFactories = map[*ValueAlias]falseCollectionFactoryOrigin{}
+	a.intersectionCaptures = &intersectionCaptureBudget{Seen: map[*document.Value]bool{}}
 	a.borrowedUnionLeaves = map[*document.Value]*borrowedUnionLeafUse{}
 	a.borrowedHierarchyLeaves = map[*document.Value]*borrowedHierarchyLeafUse{}
 	a.borrowedBuiltinLeaves = map[*component]*borrowedBuiltinLeafUse{}
@@ -337,6 +395,15 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	}
 	if err := a.discoverHierarchySources(); err != nil {
 		return nil, err
+	}
+	for _, entry := range ordered {
+		c := a.components[entry.Name]
+		if c != nil && has(c.Schema, "allOf") && nullableDTOCandidate(c.Schema) && !a.hierarchySources[c.Schema] && !a.containsObjectCompositionUnion(c.Schema, 0, map[*document.Value]bool{}) {
+			value, err := a.compositionNullable(c.Schema, c.Pointer, 0, &compositionBudget{remaining: 16384, enabled: true}, map[*document.Value]bool{})
+			if err == nil && value {
+				c.NullableDTO = true
+			}
+		}
 	}
 	for _, c := range a.components {
 		// A retained allOf product follows the existing standalone union
@@ -388,6 +455,12 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 		component := a.components[entry.Name]
 		v, pointer := component.Schema, component.Pointer
 		switch {
+		case component.FalseRoot:
+			model := &FalseValue{ClassName: component.Name}
+			if err := a.recordFalseValueOrigin(model, component); err != nil {
+				return nil, err
+			}
+			declarations = append(declarations, model)
 		case component.RecursiveJSON:
 			a.warn("W_RECURSIVE_JSON_PROJECTION", "A complete recursive JSON-kind union uses JsonElement, including JsonNull, not a general schema or oneOf match-count validator.", pointer)
 			alias := &ValueAlias{ClassName: component.Name, Type: component.AliasType}
@@ -423,7 +496,13 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 				// traversal already counts one hop; retain the remaining work.
 				ty.SchemaSteps = component.AliasHeight - 1
 			}
-			declarations = append(declarations, &ValueAlias{ClassName: component.Name, Type: ty})
+			alias := &ValueAlias{ClassName: component.Name, Type: ty}
+			if component.BindingTarget.FalseRoot {
+				if err := a.recordFalseAliasOrigin(alias, component); err != nil {
+					return nil, err
+				}
+			}
+			declarations = append(declarations, alias)
 		case component.ValueClass:
 			model := &PrimitiveValueClass{ClassName: component.Name, Scalar: component.Scalar, Validation: component.Validation}
 			a.valueClassOrigins[model] = nominalOrigin{v, pointer, component.NullableValueClass}
@@ -499,6 +578,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 				var peers []Declaration
 				context := *a
 				context.aliasPlanning = true
+				context.falseCollectionPlanning = a.falseCollectionRootSource(component)
 				ty, err := context.propertyType(v, component.Name, pointer, &peers, used, 0)
 				a.warnings = context.warnings
 				if err != nil {
@@ -510,6 +590,11 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 				}
 				alias := &ValueAlias{ClassName: component.Name, Type: ty}
 				a.recordNamedCollectionOrigin(alias, component)
+				if context.falseCollectionPlanning != nil {
+					if err := a.recordFalseCollectionOrigin(alias, *context.falseCollectionPlanning); err != nil {
+						return nil, err
+					}
+				}
 				declarations = append(declarations, alias)
 				declarations = append(declarations, peers...)
 				continue
@@ -607,6 +692,9 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	for _, entry := range ordered {
 		c := a.components[entry.Name]
 		if c.BindingTarget != nil && c.BindingNullable != nil && *c.BindingNullable && !collectionAliasSchema(c.BindingTarget.Schema) {
+			if _, ok := byName[c.BindingTarget.Name].(*FalseValue); ok && c.BindingTarget.FalseRoot {
+				continue
+			}
 			if _, ok := byName[c.BindingTarget.Name].(*Hierarchy); ok && a.hierarchySources[c.BindingTarget.Schema] {
 				continue
 			}
@@ -702,6 +790,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	a.finalizeBorrowedAllOfLeaves()
 	a.finalizeBorrowedUnionLeaves()
 	a.finalizeBorrowedHierarchyLeaves()
+	a.recordDTOReferenceDeclarations(declarations)
 	return declarations, nil
 }
 

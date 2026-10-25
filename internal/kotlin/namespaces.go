@@ -15,6 +15,8 @@ type namespacePlan struct {
 	methodAlias  string
 	contentAlias string
 	flowAlias    string
+	formAlias    string
+	paramsAlias  string
 	events       map[string]string
 }
 
@@ -78,6 +80,12 @@ func planNamespaceImports(group schema.APIGroup) namespacePlan {
 	allocate := func(base string) string { return allocateNamespaceAlias(used, base) }
 	var out strings.Builder
 	for _, op := range group.Operations {
+		if p.formAlias == "" && op.Body != nil && op.Body.FormFields != nil {
+			p.formAlias = allocate("OpenapiKtFormDataImport")
+			p.paramsAlias = allocate("OpenapiKtParametersImport")
+			out.WriteString("import io.ktor.client.request.forms.FormDataContent as " + p.formAlias + "\n")
+			out.WriteString("import io.ktor.http.Parameters as " + p.paramsAlias + "\n")
+		}
 		if p.methodAlias == "" && shadowsNamespace(op, "io") {
 			p.methodAlias = allocate("OpenapiKtHttpMethodImport")
 			out.WriteString("import io.ktor.http.HttpMethod as " + p.methodAlias + "\n")

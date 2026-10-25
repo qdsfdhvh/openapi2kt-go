@@ -187,6 +187,10 @@ func TestReferencedAllOfDefaultExclusions(t *testing.T) {
 		for _, checked := range []bool{false, true} {
 			r := request(referencedAllOfDocument(target, `{"$ref":"#/components/schemas/Value","default":{"label":"x"}}`), "Dto")
 			r.Options.Validation = checked
+			if checked && target == allOfOverrideDuplicateLabel {
+				allOfDefaultOverridePositive(t, r)
+				continue
+			}
 			report, err := core.GenerateWithDiagnostics(r)
 			if err == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
 				t.Fatal("excluded allOf target default leaked", target, err)

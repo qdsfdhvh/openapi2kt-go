@@ -51,7 +51,14 @@ func TestComposedNestedOwnersAmbiguousDiscardedAndScratchTargets(t *testing.T) {
 	for _, consumer := range []string{`{"allOf":[{"$ref":"#/components/schemas/Owner/allOf/0/properties/node"},{"properties":{"extra":{"type":"string"}}}]}`, `{"oneOf":[{"$ref":"#/components/schemas/Owner/allOf/0/properties/node"},{"properties":{"id":{"type":"string"}}}]}`} {
 		t.Run("shape"+consumer, func(t *testing.T) {
 			input := schemas(`{` + owner + `,"Consumer":` + consumer + `}`)
-			aliasFailure(t, input, "E_REF_UNSUPPORTED", "/components/schemas/Consumer/"+map[bool]string{true: "allOf/0", false: "oneOf/0"}[strings.HasPrefix(consumer, `{"allOf"`)])
+			if strings.HasPrefix(consumer, `{"allOf"`) {
+				r := report(t, input, "Dto")
+				if !strings.Contains(source(t, r, "ConsumerDto"), "id: kotlin.String? = null") {
+					t.Fatal("original nested composedallOf fields lost")
+				}
+			} else {
+				aliasFailure(t, input, "E_REF_UNSUPPORTED", "/components/schemas/Consumer/oneOf/0")
+			}
 		})
 	}
 }

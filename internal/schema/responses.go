@@ -131,7 +131,7 @@ func (a *analyzer) responseType(responses *document.Value, pointer, owner string
 			media = sseMedia(content)
 		}
 		if !isError && media == "" {
-			media = rawResponseMedia(content)
+			media = rawValueMedia(content)
 		}
 		if !isError && (media == "" || successRank(status) == 7) {
 			return TypeRef{}, operationUnsupported(p + "/content")
@@ -202,7 +202,7 @@ func (a *analyzer) responseType(responses *document.Value, pointer, owner string
 				return TypeRef{}, err
 			}
 			if entry.Name == media {
-				if !rawResponseType(entry.Name, ty) {
+				if !rawValueType(entry.Name, ty) {
 					return TypeRef{}, operationUnsupported(mp + "/schema")
 				}
 				types[status] = ty

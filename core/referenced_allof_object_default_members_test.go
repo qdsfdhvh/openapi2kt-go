@@ -61,6 +61,10 @@ func TestReferencedAllOfObjectDefaultMemberGuards(t *testing.T) {
 		for _, value := range []string{`{}`, `{"member":{}}`} {
 			r := request(referencedAllOfMemberDocument(target, member, value), "Dto")
 			r.Options.Validation = true
+			if target == allOfOverrideDuplicateA {
+				allOfDefaultOverridePositive(t, r)
+				continue
+			}
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
 				t.Fatal("excluded target admitted", target, value, err)
 			}

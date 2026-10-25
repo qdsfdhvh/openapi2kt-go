@@ -273,11 +273,18 @@ func TestComponentDefaultFactoryNativeEnumAuthority(t *testing.T) {
 	}
 }
 
-// An unformatted numeric enum component keeps its existing rejection; a
-// non-member value is rejected before rounding.
+// Native factory annotations still reject non-member values before rounding.
 func TestComponentDefaultFactoryNativeEnumExclusions(t *testing.T) {
+	// Retain the exact formerly unsupported unformatted input as a positive.
+	plan, _, failure := Analyze(loadComponentDocument(t, `{"S":{"type":"integer","enum":[1],"default":1}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true})
+	if failure != nil {
+		t.Fatal(failure)
+	}
+	alias, ok := componentDeclaration(plan.Models, "SDto").(*ScalarAlias)
+	if !ok || alias.Scalar != "kotlin.Int" || alias.ComponentDefault != "1" {
+		t.Fatal("unformatted factory lost shared Int mapping", alias)
+	}
 	for _, tc := range []struct{ name, schemas string }{
-		{"unformatted numeric enum", `{"S":{"type":"integer","enum":[1],"default":1}}`},
 		{"native non-member", `{"S":{"type":"integer","format":"int32","enum":[1,2],"default":9}}`},
 		{"boolean non-member", `{"S":{"type":"boolean","enum":[true],"default":false}}`},
 	} {

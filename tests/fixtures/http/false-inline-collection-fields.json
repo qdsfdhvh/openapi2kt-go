@@ -1,0 +1,86 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FalseInlineCollectionFields",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Blocked": false,
+      "Maybe": {
+        "$ref": "#/components/schemas/Blocked",
+        "nullable": true
+      },
+      "Narrow": {
+        "$ref": "#/components/schemas/Maybe",
+        "nullable": false
+      },
+      "Holder": {
+        "required": [
+          "rows",
+          "nullableRows"
+        ],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Blocked"
+            }
+          },
+          "nullableRows": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/Maybe"
+            }
+          },
+          "mapping": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Narrow"
+            }
+          },
+          "nested": {
+            "type": "array",
+            "items": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/Maybe"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/collections": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "collections"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

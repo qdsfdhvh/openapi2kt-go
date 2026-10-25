@@ -1,0 +1,113 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Split adoption synthetic",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "A": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "B": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "default": 7
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/a": {
+      "get": {
+        "operationId": "alpha",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "mode": {
+                      "type": "string",
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    },
+                    "nested": {
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "label"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "value"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/b": {
+      "get": {
+        "operationId": "beta",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "mode": {
+                      "type": "string",
+                      "enum": [
+                        "ready",
+                        "busy"
+                      ],
+                      "default": "ready"
+                    },
+                    "nested": {
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "label"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "value"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -172,8 +172,8 @@ func (a *analyzer) internalAllOfDefaultMemberSource(v *document.Value, pointer, 
 	return nil
 }
 
-// ordinaryAllOfDefaultNode borrows the shared ordinary object shape. Disjoint
-// contributions require no cross-contribution constraint/default aggregation;
+// ordinaryAllOfDefaultNode borrows the shared ordinary object shape. Repeated
+// plain primitive fields may reuse the retained ordinary primitive conjunction;
 // every child keeps its original schema node, pointer and source depth.
 func (a *analyzer) ordinaryAllOfDefaultNode(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	wrapper, err := parseReferenceWrapper(v, pointer, true)
@@ -188,12 +188,40 @@ func (a *analyzer) ordinaryAllOfDefaultNode(v *document.Value, pointer string, d
 	if err != nil {
 		return nil, err
 	}
-	if len(shape.Fields) == 0 || len(shape.Discarded) != 0 || len(shape.Additional) != 0 || !counted && len(shape.CountSources) != 0 {
+	if len(shape.Fields) == 0 || len(shape.Additional) != 0 || !counted && len(shape.CountSources) != 0 {
 		return nil, unsupported(naming.Pointer(pointer, "default"))
+	}
+	var aggregates map[string]allOfDefaultAggregate
+	if len(shape.Discarded) != 0 {
+		// New overlap work shares the enclosing default source budget; the
+		// existing disjoint walk and its exact boundaries stay unchanged.
+		a, err = a.objectDefaultStep(pointer)
+		if err != nil {
+			return nil, err
+		}
+		aggregates, err = a.allOfDefaultPrimitiveAggregates(v, pointer, shape)
+		if err != nil {
+			return nil, err
+		}
 	}
 	node, err := a.objectDefaultShapeNode(shape, pointer, true)
 	if err != nil {
 		return nil, err
+	}
+	for _, property := range node.objectFields {
+		if aggregate, exists := aggregates[property.wire]; exists {
+			nullable := property.node.ty.Kind == Nullable
+			ty := property.node.ty.WithoutRootNull()
+			if ty.Kind != Scalar || ty.Name != "kotlin.String" && ty.Name != "kotlin.uuid.Uuid" && aggregate.numeric == nil {
+				return nil, unsupported(naming.Pointer(pointer, "default"))
+			}
+			ty.Validation = aggregate.checks
+			property.node.numericAggregate = aggregate.numeric
+			if nullable {
+				ty = ty.Null()
+			}
+			property.node.ty = ty
+		}
 	}
 	if counted {
 		node.objectCounts, err = a.ordinaryObjectCounts(v, pointer, shape, true, true)

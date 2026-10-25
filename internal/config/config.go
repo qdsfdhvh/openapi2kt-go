@@ -40,7 +40,7 @@ func owner(name string) bool {
 }
 func knownSetting(key string) bool {
 	switch key {
-	case "config_version", "name", "input", "input_format", "output_dir", "package_name", "model_name_suffix", "api_client_name", "runtime_package", "model_style", "exclude_apis", "exclude_merge_models", "exclude_merge_model_patterns", "exclude_merge_model_suffixes", "validation", "deduplicate_models", "merge_identical_models", "hoist_shared_shapes", "qualify_hoisted_names", "lock_hoisted_names":
+	case "deny_warnings", "allow_warnings", "config_version", "name", "input", "input_format", "output_dir", "package_name", "model_name_suffix", "api_client_name", "runtime_package", "model_style", "exclude_apis", "exclude_merge_models", "exclude_merge_model_patterns", "exclude_merge_model_suffixes", "validation", "deduplicate_models", "merge_identical_models", "hoist_shared_shapes", "qualify_hoisted_names", "lock_hoisted_names":
 		return true
 	}
 	return false
@@ -92,9 +92,19 @@ func setting(key string, value any, spec bool) *diagnostic.Diagnostic {
 		if s != "auto" && s != "json" && s != "yaml" {
 			return problem("E_CONFIG_INVALID")
 		}
-	case "validation", "deduplicate_models", "merge_identical_models", "hoist_shared_shapes", "qualify_hoisted_names", "lock_hoisted_names":
+	case "deny_warnings", "validation", "deduplicate_models", "merge_identical_models", "hoist_shared_shapes", "qualify_hoisted_names", "lock_hoisted_names":
 		if _, ok := value.(bool); !ok {
 			return typeProblem("boolean")
+		}
+	case "allow_warnings":
+		codes, ok := value.([]string)
+		if !ok {
+			return typeProblem("string array")
+		}
+		for _, code := range codes {
+			if !diagnostic.WarningCode(code) {
+				return problem("E_CONFIG_INVALID")
+			}
 		}
 	case "exclude_apis", "exclude_merge_models", "exclude_merge_model_patterns", "exclude_merge_model_suffixes":
 		if _, ok := value.([]string); !ok {

@@ -75,6 +75,14 @@ func TestBorrowedCollectionEnumLeavesVocabularyGrammarAndExcludedRoles(t *testin
 	for _, node := range []string{`{"type":"string","enum":["ready",null]}`, `{"type":"string","enum":["ready","ready"]}`, `{"type":"string","enum":["ready"],"default":"ready"}`, `{"type":"integer","enum":[1,2]}`, `{"type":"string","enum":["ready"],"x-native-type":"org.example.State"}`, `{"type":"string","enum":["ready"],"format":"date"}`, `{"type":"string","x-kotlin-value-class":true}`, `{"oneOf":[{"type":"string"},{"type":"integer"}]}`} {
 		doc := schemas(`{"Source":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/State"}}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/rows"},"State":` + node + `}`)
 		got, err := core.GenerateWithDiagnostics(request(doc, "Dto"))
+		if node == `{"type":"string","enum":["ready"],"default":"ready"}` {
+			// Keep the exact former negative: the component's independently
+			// validated factory does not become a collection-element default.
+			if err != nil || !strings.Contains(source(t, got, "BridgeDto"), "kotlin.collections.List<org.example.models.models.StateDto>") {
+				t.Fatal("original owned enum factory source graduation", err)
+			}
+			continue
+		}
 		if node == `{"oneOf":[{"type":"string"},{"type":"integer"}]}` {
 			borrowedUnionGraduation(t, doc, "org.example.models.models.StateDto")
 			continue

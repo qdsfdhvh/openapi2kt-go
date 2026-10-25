@@ -209,7 +209,11 @@ func (a *analyzer) validateBorrowedEnumLeaves(ds []Declaration) *diagnostic.Diag
 		if use.Actual != nil && use.Origin != origin {
 			return schemaReferenceUnsupported(use.Source)
 		}
-		expected, invalid := buildStringEnum(actual.ClassName, use.Schema, use.Pointer)
+		var factorySource *analyzer
+		if a.componentDefaultSchemas[use.Schema] && a.componentRoot(use.Schema, use.Pointer) {
+			factorySource = a
+		}
+		expected, invalid := buildStringEnumKeysFor(actual.ClassName, use.Schema, use.Pointer, false, factorySource)
 		if invalid != nil {
 			return invalid
 		}

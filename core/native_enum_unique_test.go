@@ -97,7 +97,7 @@ func TestNativeEnumUniqueResourceBudgets(t *testing.T) {
 }
 
 func TestNativeEnumUniqueExclusionsNoDropAndNoop(t *testing.T) {
-	for _, leaf := range []string{`{"type":"integer","const":1}`, `{"type":"string","x-native-type":"kotlin.Int"}`, `{"type":"array","items":{"type":"integer","enum":[1]}}`} {
+	for _, leaf := range []string{`{"type":"integer","const":1}`, `{"type":"string","x-native-type":"kotlin.Int"}`} {
 		rq := request(fieldDoc(`{"type":"array","uniqueItems":true,"items":`+leaf+`}`), "Dto")
 		rq.Options.Validation = true
 		if got, err := core.GenerateWithDiagnostics(rq); err == nil || len(got.Artifacts.Files) != 0 {

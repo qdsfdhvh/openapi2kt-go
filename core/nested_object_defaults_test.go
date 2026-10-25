@@ -109,12 +109,11 @@ func TestObjectDefaultConstProperties(t *testing.T) {
 	}
 	for _, field := range []string{
 		`{"type":"object","properties":{"tag":{"type":"object","const":{"x":1}}},"default":{"tag":{"x":1}}}`,
-		`{"type":"object","properties":{"tag":{"const":null}},"default":{"tag":null}}`,
 	} {
 		r := request(schemas(`{"Holder":{"properties":{"value":`+field+`}}}`), "Dto")
 		r.Options.Validation = true
 		if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
-			t.Fatal("structured/null const admitted", field, err)
+			t.Fatal("structured const admitted", field, err)
 		}
 	}
 }

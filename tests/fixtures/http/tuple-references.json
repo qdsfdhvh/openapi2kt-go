@@ -1,0 +1,415 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PrimitiveTuple",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "StringTuple": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/TupleHops/properties/text"
+          },
+          {
+            "$ref": "#/components/schemas/TupleHops/properties/text"
+          }
+        ]
+      },
+      "LongTuple": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "type": "integer",
+            "format": "int64"
+          }
+        ]
+      },
+      "MixedTuple": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/TupleHops/properties/text"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
+      "PriorityTuple": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "integer"
+          }
+        ],
+        "items": {
+          "$ref": "#/components/schemas/TupleTextAlias"
+        }
+      },
+      "DateTuple": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/TupleHops/properties/date"
+          },
+          {
+            "$ref": "#/components/schemas/TupleHops/properties/date"
+          }
+        ]
+      },
+      "InstantTuple": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/TupleHops/properties/moment",
+            "nullable": true
+          },
+          {
+            "$ref": "#/components/schemas/TupleHops/properties/moment",
+            "nullable": true
+          }
+        ]
+      },
+      "MixedTemporalTuple": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/TupleHops/properties/date"
+          },
+          {
+            "$ref": "#/components/schemas/TupleHops/properties/moment",
+            "nullable": false
+          }
+        ]
+      },
+      "PriorityTemporalTuple": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/TupleHops/properties/moment",
+            "nullable": false
+          }
+        ],
+        "items": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "MaybeDates": {
+        "$ref": "#/components/schemas/DateTuple",
+        "nullable": true
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "strings": {
+            "$ref": "#/components/schemas/StringTuple"
+          },
+          "longs": {
+            "$ref": "#/components/schemas/LongTuple"
+          },
+          "mixed": {
+            "$ref": "#/components/schemas/MixedTuple"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/PriorityTuple"
+          },
+          "nullable": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "prefixItems": [
+              {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            ]
+          },
+          "mapping": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
+          },
+          "dates": {
+            "$ref": "#/components/schemas/MaybeDates"
+          },
+          "moments": {
+            "$ref": "#/components/schemas/InstantTuple",
+            "nullable": true
+          },
+          "mixedTime": {
+            "$ref": "#/components/schemas/MixedTemporalTuple",
+            "nullable": true
+          },
+          "datePriority": {
+            "$ref": "#/components/schemas/PriorityTemporalTuple",
+            "nullable": true
+          },
+          "temporalMap": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "$ref": "#/components/schemas/TupleHops/properties/date"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "strings",
+          "longs",
+          "mixed",
+          "priority",
+          "nullable",
+          "mapping"
+        ]
+      },
+      "TupleText": {
+        "type": "string",
+        "nullable": true
+      },
+      "TupleTextAlias": {
+        "$ref": "#/components/schemas/TupleText",
+        "nullable": false
+      },
+      "TupleDate": {
+        "type": "string",
+        "format": "date"
+      },
+      "TupleMoment": {
+        "type": "string",
+        "format": "date-time",
+        "nullable": true
+      },
+      "TupleHops": {
+        "properties": {
+          "text": {
+            "$ref": "#/components/schemas/TupleTextAlias"
+          },
+          "date": {
+            "$ref": "#/components/schemas/TupleDate"
+          },
+          "moment": {
+            "$ref": "#/components/schemas/TupleMoment"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "values": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "prefixItems": [
+                      {
+                        "type": "integer"
+                      }
+                    ]
+                  },
+                  "requiredNullable": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "prefixItems": [
+                      {
+                        "$ref": "#/components/schemas/TupleTextAlias"
+                      }
+                    ]
+                  },
+                  "dates": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "prefixItems": [
+                      {
+                        "$ref": "#/components/schemas/TupleDate"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "requiredNullable"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    },
+    "/dates": {
+      "post": {
+        "operationId": "dates",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "$ref": "#/components/schemas/TupleDate"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "$ref": "#/components/schemas/TupleDate"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/simple": {
+      "post": {
+        "operationId": "simple",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "number",
+                    "format": "double"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number",
+                      "format": "double"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

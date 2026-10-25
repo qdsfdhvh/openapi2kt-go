@@ -9,7 +9,7 @@ import (
 
 func TestAllOfNominalTerminalInheritedShapeNullAndFalse(t *testing.T) {
 	for _, annotate := range []string{"", `,"nullable":false`} {
-		node := `{"allOf":[{"nullable":true,"properties":{"id":{"type":"string"}},"required":["id"]},{"properties":{"more":{"type":"string"}}}]` + annotate + `}`
+		node := `{"allOf":[{"nullable":true,"properties":{"id":{"type":"string"}},"required":["id"]},{"nullable":true,"properties":{"more":{"type":"string"}}}]` + annotate + `}`
 		input := schemas(`{"Owner":{"properties":{"node":` + node + `}},"Alias":{"$ref":"#/components/schemas/Owner/properties/node"},"Maybe":{"$ref":"#/components/schemas/Alias"},"False":{"$ref":"#/components/schemas/Maybe","nullable":false},"Hops":{"properties":{"hop":{"$ref":"#/components/schemas/Owner/properties/node"}}},"Bridge":{"$ref":"#/components/schemas/Hops/properties/hop"},"Consumer":{"properties":{"direct":{"$ref":"#/components/schemas/Owner/properties/node"},"nested":{"$ref":"#/components/schemas/Hops/properties/hop"}},"required":["direct","nested"]}}`)
 		for _, checked := range []bool{false, true} {
 			req := request(input, "Dto")

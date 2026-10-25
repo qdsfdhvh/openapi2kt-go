@@ -27,7 +27,7 @@ Component root annotations use the separate [finite nested component factory con
 
 每个非 null default 叶必须是属于原始 enum 词表的 JSON String，两种 validation 设置均如此。未知 default 在原 member Pointer 拒绝；运行时仍可通过原 `Unrecognized` 或 `fromSerialName` 接收并回写未知 String。`--validation` 不会关闭 String enum 词表，也不会新增 native enum membership 检查。
 
-每层 List、Map 和 enum 叶的显式 nullable intent 独立。default 中的 null 需要对应 schema 节点显式 nullable；普通字段 optional 所产生的 Kotlin nullable view 本身不授权 null 注解。叶沿用[显式 nullable String null-member 语法](string-enum-null-members.md)：至多一个 null 且至少一个 String，保留原成员索引，null 计入 240 个 raw members 上限。JSON null 与词表中的 String `"null"` 保持区别。容器 nullable 不传给内层叶，内层 nullable 不创建 Patch。
+每层 List、Map 和 enum 叶的 nullable intent 独立。default 中的 null 需要对应 schema 节点具有 nullable intent；plain typeless String/null 叶可按[共享词表推断](implicit-string-enum-null.md)提供 intrinsic nullable，普通字段 optional 所产生的 Kotlin nullable view 本身不授权 null 注解。叶沿用 [String null-member 语法](string-enum-null-members.md)：至多一个 null 且至少一个 String，保留原成员索引，null 计入 240 个 raw members 上限。JSON null 与词表中的 String `"null"` 保持区别。容器 nullable 不传给内层叶，内层 nullable 不创建 Patch。
 
 required 字段，包括 required nullable 字段，完整验证注解后仍保留 required constructor 参数，没有 initializer。`explicitNulls=false` 保留 serializer 原有的 missing-required-null 推断。ordinary inline request 中 optional explicitly nullable 字段完整验证后仍为 `Patch.Absent`；缺失键不会变成默认更新。Patch.Null 和 Patch.Value 保留 bare JSON wire。见[请求 presence](request-presence.md)。
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"openapi-kt/core"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -23,6 +24,12 @@ func TestBooleanRootExcludedSources(t *testing.T) {
 			r := request(input, "Dto")
 			r.Options.Validation = checked
 			got, err := core.GenerateWithDiagnostics(r)
+			if value, ok := schemas["Unused"]; ok && value == false {
+				if err != nil || !strings.Contains(source(t, got, "UnusedDto"), "sealed class UnusedDto private constructor()") {
+					t.Fatal("original unused false root did not graduate", err)
+				}
+				continue
+			}
 			if err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("excluded admitted", schemas, checked, got, err)
 			}
@@ -30,11 +37,7 @@ func TestBooleanRootExcludedSources(t *testing.T) {
 			if !ok || len(ds) != 1 {
 				t.Fatal(err)
 			}
-			if _, ok := schemas["Unused"]; ok {
-				if ds[0].Code != "E_SCHEMA_INVALID" || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/Unused" {
-					t.Fatal("unused false original pointer lost", ds)
-				}
-			}
+
 		}
 	}
 	r := request([]byte(`{"openapi":"3.0.3","components":{"schemas":{"Any":true}}}`), "")

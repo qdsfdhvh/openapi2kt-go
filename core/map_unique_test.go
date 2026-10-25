@@ -23,16 +23,18 @@ func mapUniqueGraduation(t *testing.T, input []byte) {
 
 func TestMapUniqueExclusionsAndNoDrop(t *testing.T) {
 	for _, leaf := range []string{
-		`{"type":"number"}`, `{"type":"string","format":"byte"}`, `{"enum":["x"]}`,
+		`{"type":"string","format":"byte"}`,
 		`{"type":"string","const":"x"}`, `{"type":"string","x-native-type":"kotlin.String"}`,
-		`{"type":"array","items":{"type":"string"}}`, `{"additionalProperties":{"type":"string"}}`,
-		`{"$ref":"#/components/schemas/Value"}`,
 	} {
 		rq := request(schemas(`{"Value":{"type":"string"},"Holder":{"properties":{"v":{"type":"array","uniqueItems":true,"items":{"type":"object","additionalProperties":`+leaf+`}}}}}`), "Dto")
 		rq.Options.Validation = true
 		if got, err := core.GenerateWithDiagnostics(rq); err == nil || len(got.Artifacts.Files) != 0 {
 			t.Fatal("excluded Map value acquired equality", leaf, err)
 		}
+	}
+	// Keep the exact former negatives as opt-in structural graduations.
+	for _, leaf := range []string{`{"type":"number"}`, `{"type":"array","items":{"type":"string"}}`, `{"additionalProperties":{"type":"string"}}`, `{"$ref":"#/components/schemas/Value"}`} {
+		mapUniqueGraduation(t, schemas(`{"Value":{"type":"string"},"Holder":{"properties":{"v":{"type":"array","uniqueItems":true,"items":{"type":"object","additionalProperties":`+leaf+`}}}}}`))
 	}
 	shape := `{"type":"array","uniqueItems":true,"items":{"type":"object","additionalProperties":{"type":"string"}}}`
 	aliasFailure(t, schemas(`{"Holder":{"properties":{"v":{"type":"string"}},"additionalProperties":`+shape+`}}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Holder/additionalProperties/uniqueItems")

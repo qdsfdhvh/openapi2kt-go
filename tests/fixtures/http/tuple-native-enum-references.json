@@ -1,0 +1,3011 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TupleNativeEnumReferences",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Code": {
+        "type": "integer",
+        "format": "int32",
+        "enum": [
+          1,
+          2
+        ],
+        "default": 1
+      },
+      "LongCode": {
+        "type": "integer",
+        "format": "int64",
+        "enum": [
+          9007199254740993,
+          9007199254740996
+        ]
+      },
+      "FloatCode": {
+        "type": "number",
+        "format": "float",
+        "enum": [
+          0.1,
+          0.10000000149011612,
+          -0.0
+        ]
+      },
+      "DoubleCode": {
+        "type": "number",
+        "format": "double",
+        "enum": [
+          0.1,
+          -0.0,
+          2.5
+        ]
+      },
+      "BoolCode": {
+        "type": "boolean",
+        "enum": [
+          true,
+          false
+        ]
+      },
+      "OtherCode": {
+        "type": "integer",
+        "format": "int32",
+        "enum": [
+          1,
+          2
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Code",
+        "nullable": true
+      },
+      "Source": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "enum": [
+              3,
+              4
+            ]
+          },
+          "hop": {
+            "$ref": "#/components/schemas/Code"
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Source/properties/code"
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Code"
+          },
+          {
+            "$ref": "#/components/schemas/Code"
+          }
+        ]
+      },
+      "LongRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/LongCode"
+          },
+          {
+            "$ref": "#/components/schemas/LongCode"
+          }
+        ]
+      },
+      "FloatRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/FloatCode"
+          },
+          {
+            "$ref": "#/components/schemas/FloatCode"
+          }
+        ]
+      },
+      "DoubleRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/DoubleCode"
+          },
+          {
+            "$ref": "#/components/schemas/DoubleCode"
+          }
+        ]
+      },
+      "BoolRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/BoolCode"
+          },
+          {
+            "$ref": "#/components/schemas/BoolCode"
+          }
+        ]
+      },
+      "InternalRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Bridge"
+          },
+          {
+            "$ref": "#/components/schemas/Bridge"
+          }
+        ]
+      },
+      "NullableRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Alias"
+          },
+          {
+            "$ref": "#/components/schemas/Code",
+            "nullable": true
+          }
+        ]
+      },
+      "NarrowRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Alias",
+            "nullable": false
+          },
+          {
+            "$ref": "#/components/schemas/Code"
+          }
+        ]
+      },
+      "MixedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Code"
+          },
+          {
+            "type": "integer"
+          }
+        ]
+      },
+      "DifferentRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Code"
+          },
+          {
+            "$ref": "#/components/schemas/OtherCode"
+          }
+        ]
+      },
+      "TailRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/LongCode"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "items": {
+          "$ref": "#/components/schemas/Code"
+        }
+      },
+      "ScalarTailRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/BoolCode"
+          }
+        ],
+        "items": {
+          "type": "string"
+        }
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "nullableRows": {
+            "$ref": "#/components/schemas/NullableRows"
+          },
+          "longs": {
+            "$ref": "#/components/schemas/LongRows"
+          },
+          "floats": {
+            "$ref": "#/components/schemas/FloatRows"
+          },
+          "doubles": {
+            "$ref": "#/components/schemas/DoubleRows"
+          },
+          "flags": {
+            "$ref": "#/components/schemas/BoolRows"
+          },
+          "internals": {
+            "$ref": "#/components/schemas/InternalRows"
+          },
+          "mixed": {
+            "$ref": "#/components/schemas/MixedRows"
+          },
+          "tail": {
+            "$ref": "#/components/schemas/TailRows"
+          }
+        },
+        "required": [
+          "rows"
+        ]
+      },
+      "Wide": {
+        "properties": {
+          "v000": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v001": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v002": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v003": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v004": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v005": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v006": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v007": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v008": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v009": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v010": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v011": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v012": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v013": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v014": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v015": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v016": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v017": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v018": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v019": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v020": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v021": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v022": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v023": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v024": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v025": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v026": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v027": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v028": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v029": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v030": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v031": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v032": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v033": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v034": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v035": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v036": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v037": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v038": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v039": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v040": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v041": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v042": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v043": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v044": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v045": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v046": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v047": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v048": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v049": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v050": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v051": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v052": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v053": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v054": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v055": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v056": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v057": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v058": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v059": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v060": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v061": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v062": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v063": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v064": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v065": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v066": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v067": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v068": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v069": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v070": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v071": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v072": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v073": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v074": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v075": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v076": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v077": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v078": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v079": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v080": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v081": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v082": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v083": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v084": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v085": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v086": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v087": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v088": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v089": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v090": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v091": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v092": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v093": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v094": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v095": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v096": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v097": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v098": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v099": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v100": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v101": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v102": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v103": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v104": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v105": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v106": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v107": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v108": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v109": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v110": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v111": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v112": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v113": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v114": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v115": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v116": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v117": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v118": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v119": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v120": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v121": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v122": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v123": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v124": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v125": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v126": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v127": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v128": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v129": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v130": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v131": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v132": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v133": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v134": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v135": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v136": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v137": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v138": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v139": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v140": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v141": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v142": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v143": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v144": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v145": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v146": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v147": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v148": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v149": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v150": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v151": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v152": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v153": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v154": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v155": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v156": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v157": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v158": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v159": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v160": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v161": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v162": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v163": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v164": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v165": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v166": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v167": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v168": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v169": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v170": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v171": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v172": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v173": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v174": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v175": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v176": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v177": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v178": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v179": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v180": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v181": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v182": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v183": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v184": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v185": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v186": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v187": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v188": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v189": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v190": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v191": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v192": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v193": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v194": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v195": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v196": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v197": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v198": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v199": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v200": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v201": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v202": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v203": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v204": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v205": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v206": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v207": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v208": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v209": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v210": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v211": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v212": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v213": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v214": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v215": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v216": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v217": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v218": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v219": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v220": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v221": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v222": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v223": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v224": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v225": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v226": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v227": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v228": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v229": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v230": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v231": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v232": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v233": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v234": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v235": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v236": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v237": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v238": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          },
+          "v239": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Code"
+              },
+              {
+                "$ref": "#/components/schemas/Code"
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "tuples"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rows"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "tags": [
+          "tuples"
+        ],
+        "responses": {
+          "200": {
+            "description": "synthetic stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Rows"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patchRows",
+        "tags": [
+          "tuples"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rows": {
+                    "$ref": "#/components/schemas/Rows",
+                    "nullable": true
+                  },
+                  "nullableRows": {
+                    "$ref": "#/components/schemas/NullableRows"
+                  },
+                  "requiredNullable": {
+                    "$ref": "#/components/schemas/Rows",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "requiredNullable"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rows"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

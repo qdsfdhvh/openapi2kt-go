@@ -54,6 +54,12 @@ func TestRecursiveCoverReferenceChainsFirstHTTPUnionAndOriginalGraphGrammar(t *t
 			r := request(input, "Dto")
 			r.Options.Validation = checked
 			got, err := core.GenerateWithDiagnostics(r)
+			if tc.pointer == "/components/schemas/Other/oneOf/4/items/nullable" {
+				if err != nil || !strings.Contains(source(t, got, "ValueDto"), "kotlinx.serialization.json.JsonElement") {
+					t.Fatal("original descendant nullable edge rejected", err)
+				}
+				continue
+			}
 			if err == nil || len(got.Artifacts.Files) != 0 || err.(core.Diagnostics)[0].Pointer == nil || *err.(core.Diagnostics)[0].Pointer != tc.pointer {
 				t.Fatal("original descendant grammar lost", checked, tc, err)
 			}

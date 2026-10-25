@@ -67,7 +67,7 @@ func (a *analyzer) modelDefaultType(f field, ordinary bool, name string, nested 
 		ty, err := a.referencedDefaultType(f, ordinary)
 		return ty, nil, err
 	}
-	if a.inlineReferencedAllOfCollection(f.Schema) {
+	if a.inlineReferencedAllOfCollection(f.Schema) || a.inlineReferencedScalarCollection(f.Schema) {
 		return a.inlineReferencedAllOfDefaultType(f, ordinary, name, nested, used)
 	}
 	if has(f.Schema, "oneOf") || has(f.Schema, "anyOf") {

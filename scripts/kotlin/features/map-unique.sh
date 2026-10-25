@@ -30,14 +30,26 @@ if checked:
     spec={'openapi':'3.1.0','components':{'schemas':{'Wide':{'properties':{
         'p'+str(i):{'type':'array','uniqueItems':True,'items':{'type':'object','additionalProperties':{'type':'string', 'format':['uuid','date','date-time'][i%3]}}} for i in range(240)
     }}}}}
+    spec['components']['schemas']['StructuralWide']={'properties':{
+        'p'+str(i):{'type':'array','uniqueItems':True,'items':{'type':'array','items':{'type':'number','format':'float'}}} for i in range(240)
+    }}
+    deep={'type':'string'}
+    for _ in range(15):deep={'type':'array','items':deep}
+    spec['components']['schemas']['StructuralDeep']={'properties':{}}
+    # The outer checked array plus 15 child edges reaches the existing limit.
+    spec['components']['schemas']['StructuralDeep']['properties']['value']={'type':'array','uniqueItems':True,'items':deep}
     (p/'wide.json').write_text(json.dumps(spec)+'\n')
-    wide='org.example.mapwide.models.WideDto()'
+    wide='''org.example.mapwide.models.WideDto()
+    org.example.mapwide.models.StructuralDeepDto(emptyList())
+    org.example.mapwide.models.StructuralWideDto(p0 = listOf(listOf(1f), listOf(2f)))
+    check(runCatching { org.example.mapwide.models.StructuralWideDto(p239 = listOf(listOf(0f), listOf(-0f))) }.isFailure)'''
 copy=''
 if sys.argv[2]=='data_class':
     copy='''val id = mapOf("a" to "one")
     val original = HolderDto(listOf(id))
     val copied = runCatching { original.copy(directValues = listOf(id, id)) }
     check(copied.isFailure == '''+str(checked).lower()+''')
+    check(runCatching { original.copy(listRows = listOf(listOf(1), listOf(1))) }.isFailure == '''+str(checked).lower()+''')
     val instant = kotlin.time.Instant.parse("2026-01-02T03:04:05Z")
     check(runCatching { original.copy(instants = listOf(mapOf("a" to instant), mapOf("a" to instant))) }.isFailure == '''+str(checked).lower()+''')'''
 (p/'src/main/kotlin/org/example/contracts/Main.kt').write_text('''package org.example.contracts

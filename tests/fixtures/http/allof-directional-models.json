@@ -1,0 +1,243 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Account": {
+        "allOf": [
+          {
+            "properties": {
+              "id": {
+                "type": "string",
+                "readOnly": true
+              }
+            },
+            "required": [
+              "id"
+            ]
+          },
+          {
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string",
+                "writeOnly": true
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "paused"
+                ]
+              },
+              "note": {
+                "type": "string",
+                "nullable": true
+              },
+              "child": {
+                "$ref": "#/components/schemas/Account",
+                "nullable": true
+              },
+              "peers": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              },
+              "byName": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            },
+            "required": [
+              "name",
+              "password",
+              "mode"
+            ]
+          }
+        ]
+      },
+      "Accounts": {
+        "type": "array",
+        "nullable": true,
+        "items": {
+          "$ref": "#/components/schemas/Account"
+        }
+      },
+      "AccountsAlias": {
+        "$ref": "#/components/schemas/Accounts"
+      },
+      "Secret": {
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "properties": {
+          "password": {
+            "type": "string",
+            "writeOnly": true
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/aliases": {
+      "get": {
+        "operationId": "getAliases",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountsAlias"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account": {
+      "post": {
+        "operationId": "saveAccount",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Account"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/secret": {
+      "get": {
+        "operationId": "getSecret",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Secret"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "account"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Account"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "post": {
+        "operationId": "saveInline",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "password"
+                ],
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "writeOnly": true
+                  },
+                  "id": {
+                    "type": "string",
+                    "readOnly": true
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "account": {
+                    "$ref": "#/components/schemas/Account"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "password"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string",
+                      "writeOnly": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

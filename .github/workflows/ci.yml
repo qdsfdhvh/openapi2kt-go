@@ -104,6 +104,7 @@ jobs:
             models|http) bash scripts/test.sh "$KOTLIN_SUITE" ;;
             profiles)
               bash scripts/test.sh feature directional-models
+              bash scripts/test.sh feature form-request-media
               bash scripts/test.sh feature raw-response-media
               bash scripts/test.sh feature referenced-bytes-field-defaults
               bash scripts/test.sh feature nullable-component-defaults
