@@ -13,17 +13,19 @@ import (
 )
 
 type report struct {
-	OutputRootMigration  *rootMoveReport             `json:"output_root_migration,omitempty"`
-	LockedOwnerAdoptions []lockedOwnerAdoptionReport `json:"locked_owner_adoptions,omitempty"`
-	NameLockMigrations   []nameLockMigration         `json:"name_lock_migrations,omitempty"`
-	OwnerRenames         []ownerRenameReport         `json:"owner_renames,omitempty"`
-	Status               string                      `json:"status"`
-	Files                []string                    `json:"files"`
-	Diagnostics          core.Diagnostics            `json:"diagnostics"`
-	Warnings             core.Diagnostics            `json:"warnings,omitempty"`
-	Metrics              *executionMetrics           `json:"metrics,omitempty"`
-	Spec                 string                      `json:"spec,omitempty"`
-	Specs                []specReport                `json:"specs,omitempty"`
+	RetainedLockedAdoption  *retainedLockedAdoptionReport  `json:"retained_locked_adoption,omitempty"`
+	LockedOwnerReassignment *lockedOwnerReassignmentReport `json:"locked_owner_reassignment,omitempty"`
+	OutputRootMigration     *rootMoveReport                `json:"output_root_migration,omitempty"`
+	LockedOwnerAdoptions    []lockedOwnerAdoptionReport    `json:"locked_owner_adoptions,omitempty"`
+	NameLockMigrations      []nameLockMigration            `json:"name_lock_migrations,omitempty"`
+	OwnerRenames            []ownerRenameReport            `json:"owner_renames,omitempty"`
+	Status                  string                         `json:"status"`
+	Files                   []string                       `json:"files"`
+	Diagnostics             core.Diagnostics               `json:"diagnostics"`
+	Warnings                core.Diagnostics               `json:"warnings,omitempty"`
+	Metrics                 *executionMetrics              `json:"metrics,omitempty"`
+	Spec                    string                         `json:"spec,omitempty"`
+	Specs                   []specReport                   `json:"specs,omitempty"`
 }
 
 func failed(code, message string) report {
@@ -140,7 +142,19 @@ func printReport(jsonMode bool, result report, stdout, stderr io.Writer) {
 			}
 		}
 	}
+	if migration := result.RetainedLockedAdoption; migration != nil {
+		printRetainedLockedAdoption(stdout, *migration)
+	}
+	if migration := result.LockedOwnerReassignment; migration != nil {
+		printLockedOwnerReassignment(stdout, *migration)
+	}
 	for _, migration := range result.LockedOwnerAdoptions {
+		if migration.FromOwner != "" {
+			_, _ = fmt.Fprintf(stdout, "allocation donor %s\n", migration.FromOwner)
+		}
+		for _, symbol := range migration.SourceSymbols {
+			_, _ = fmt.Fprintf(stdout, "  source %s %s; descriptor=%s shape=%s occurrences=%s\n", symbol.Role, symbol.Classifier, symbol.Descriptor, symbol.Shape, strconv.Quote(fmt.Sprint(symbol.Occurrences)))
+		}
 		_, _ = fmt.Fprintf(stdout, "locked owner %s (manifest v%d -> v%d): %d unchanged Kotlin file(s)\nmanifest SHA256 %s -> %s\n%s\n", migration.Owner, migration.BeforeVersion, migration.AfterVersion, len(migration.Files), migration.ManifestBeforeSHA256, migration.ManifestAfterSHA256, migration.Impact)
 		for _, file := range migration.Files {
 			_, _ = fmt.Fprintf(stdout, "  %s: %s\n", file.Path, file.SHA256)

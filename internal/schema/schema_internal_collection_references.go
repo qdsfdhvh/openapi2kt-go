@@ -41,6 +41,16 @@ func (a *analyzer) admitInternalSchemaAt(v *document.Value, pointer, source stri
 	}
 	active[v] = true
 	defer delete(active, v)
+	if enumNominalCandidate(v) {
+		// Inline vocabulary leaves still belong to their original lexical
+		// declaration. Resolve that exact node instead of planning a new enum
+		// under the borrowed container's name.
+		target, err := a.lookupSchemaReference("#"+pointer, source)
+		if err == nil && target.Catalog == nil && target.Schema == v && a.admitBorrowedNominalLeaf(target, source) {
+			return nil
+		}
+		return schemaReferenceUnsupported(source)
+	}
 	if a.options.Validation && has(v, "enum") {
 		kind, _, err := schemaType(v, pointer)
 		if err != nil {

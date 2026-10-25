@@ -8,12 +8,8 @@ import (
 	"openapi-kt/core"
 )
 
-func TestNullableProductUnionsDoNotWidenIntersections(t *testing.T) {
+func TestNullableProductUnionsUnsupportedSourcesRemainRejected(t *testing.T) {
 	for _, value := range []string{
-		`{"allOf":[{"nullable":true,"oneOf":[{"properties":{"kind":{"const":"a"}}},{"properties":{"kind":{"const":"b"}}}]}]}`,
-		`{"nullable":true,"allOf":[{"oneOf":[{"nullable":true,"properties":{"id":{"type":"string"}}},{"properties":{"ok":{"type":"boolean"}}}]}]}`,
-		`{"nullable":true,"allOf":[{"oneOf":[{"properties":{"id":{"type":"string"}}},{"type":"null"}]}]}`,
-		`{"nullable":true,"allOf":[{"oneOf":[{"properties":{"id":{"type":"string"}}}]},{"nullable":true,"properties":{"name":{"type":"string"}}}]}`,
 		`{"nullable":true,"allOf":[{"oneOf":[{"properties":{"id":{"type":"string"}}}]},{"additionalProperties":{"type":"string"}}]}`,
 		`{"nullable":true,"allOf":[{"oneOf":[{"properties":{"id":{"type":"string","format":"unsupported"}}}]},{"properties":{"id":{"type":"string"}}}]}`,
 	} {

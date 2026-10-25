@@ -55,7 +55,14 @@ func (a *analyzer) inlineReferencedAllOfElement(v *document.Value) *document.Val
 }
 
 func (a *analyzer) deferredFieldDefault(v *document.Value) bool {
-	return has(v, "$ref") || a.inlineReferencedAllOfCollection(v)
+	return has(v, "$ref") || a.inlineReferencedAllOfCollection(v) || a.inlineReferencedScalarCollection(v)
+}
+
+// Route only an original inline finite container with a referenced scalar
+// terminal. The ordinary field, shared type planner and strict default walk
+// still authorize its actual type and original annotation.
+func (a *analyzer) inlineReferencedScalarCollection(v *document.Value) bool {
+	return !has(v, "$ref") && a.dtoUniqueBuiltinCollectionReferenceSource(v, "")
 }
 
 // Plan the original inline collection type without validating the value yet.

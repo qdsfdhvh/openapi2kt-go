@@ -99,6 +99,12 @@ func dedupView(d Declaration, names map[string]string, top bool) Declaration {
 			view.ClassName = "$root"
 		}
 		return &view
+	case *PrimitiveUnion:
+		view := *d
+		if top {
+			view.ClassName = "$root"
+		}
+		return &view
 	case *Model:
 		view := *d
 		if top {

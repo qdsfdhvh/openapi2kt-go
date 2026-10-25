@@ -14,7 +14,15 @@ import (
 type directionalDTO struct {
 	model    *Model
 	fields   map[string]field
+	required map[string]bool
 	eligible bool
+}
+
+type directionalModelSource struct {
+	Schema   *document.Value
+	Pointer  string
+	Fields   []field
+	Required map[string]bool
 }
 
 type directionalIndex struct {
@@ -45,6 +53,15 @@ func (a *analyzer) directionalModels(plan *Plan) *diagnostic.Diagnostic {
 					for _, member := range properties.Members() {
 						entry.fields[member.Name] = field{Wire: member.Name, Schema: member.Value, Pointer: naming.Pointer(pointer+"/properties", member.Name)}
 					}
+				}
+				if source, ok := a.directionalModelSources[d]; ok && source.Schema == original && source.Pointer == pointer &&
+					!a.hierarchySources[original] && !a.containsObjectCompositionUnion(original, 0, map[*document.Value]bool{}) {
+					entry.eligible = true
+					entry.fields = map[string]field{}
+					for _, f := range source.Fields {
+						entry.fields[f.Wire] = f
+					}
+					entry.required = source.Required
 				}
 			}
 			if !entry.eligible {
@@ -389,6 +406,9 @@ func (p *directionalProjector) projectModel(name string) (string, *diagnostic.Di
 	full := p.index.a.options.PackageName + ".api.models." + short
 	p.clones[name] = full // Install the nominal recursion barrier before children.
 	model := &Model{ClassName: short, Nullable: entry.model.Nullable, Directional: true}
+	if p.index.a.modelDiagnosticPointers != nil {
+		p.index.a.modelDiagnosticPointers[model] = p.index.a.modelPointers[entry.model]
+	}
 	p.models = append(p.models, model)
 	for _, property := range entry.model.Properties {
 		f := entry.fields[property.WireName]
@@ -444,6 +464,9 @@ func (p *directionalProjector) projectModel(name string) (string, *diagnostic.Di
 }
 
 func (p *directionalProjector) required(entry *directionalDTO, wire string) bool {
+	if entry.required != nil {
+		return entry.required[wire]
+	}
 	original := p.index.a.modelOrigins[entry.model]
 	required := get(original, "required")
 	if required == nil {

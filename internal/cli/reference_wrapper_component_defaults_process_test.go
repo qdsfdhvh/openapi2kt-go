@@ -1,6 +1,7 @@
 package cli_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"path/filepath"
 	"reflect"
@@ -53,7 +54,9 @@ func TestReferenceWrapperComponentDefaultsNativeParity(t *testing.T) {
 				} {
 					t.Run(tc.name, func(t *testing.T) {
 						var bad map[string]any
-						if err := json.Unmarshal(document, &bad); err != nil {
+						decoder := json.NewDecoder(bytes.NewReader(document))
+						decoder.UseNumber()
+						if err := decoder.Decode(&bad); err != nil {
 							t.Fatal(err)
 						}
 						schemas := bad["components"].(map[string]any)["schemas"].(map[string]any)

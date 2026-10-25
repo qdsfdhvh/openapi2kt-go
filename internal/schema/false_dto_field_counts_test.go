@@ -1,0 +1,153 @@
+package schema
+
+import (
+	"openapi-kt/internal/document"
+	"testing"
+)
+
+func TestFalseDTOFieldActualTargetCountAuthority(t *testing.T) {
+	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Blocked":false,"Target":{"minProperties":1,"properties":{"value":{"$ref":"#/components/schemas/Blocked","nullable":true}}},"Consumer":{"properties":{"target":{"$ref":"#/components/schemas/Target","default":{"value":null}}}}}}}`)
+	root, e := document.ParseObject(input, document.MaxDocumentBytes)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defaults := []referencedFieldDefault{}
+	a := analyzer{referencedDefaults: &defaults, root: root, options: Options{PackageName: "org.example.falsedtodefaults", Suffix: "Dto", Validation: true}, components: map[string]*component{}, emissionHints: EmissionHints{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}}
+	ds, err := a.analyze(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := a.validateInternalModels(ds); err != nil {
+		t.Fatal(err)
+	}
+	if err := a.planReferencedFieldDefaults(); err != nil {
+		t.Fatal(err)
+	}
+	if err := a.validateInternalModels(ds); err != nil {
+		t.Fatal(err)
+	}
+	var consumer *Model
+	for _, d := range ds {
+		if value, ok := d.(*Model); ok && value.ClassName == "ConsumerDto" {
+			consumer = value
+		}
+	}
+	if consumer == nil || len(consumer.Properties) != 1 || consumer.Properties[0].Default == "" {
+		t.Fatal("missing actual final field initializer")
+	}
+	var target *Model
+	for _, d := range ds {
+		if m, ok := d.(*Model); ok && m.ClassName == "TargetDto" {
+			target = m
+		}
+	}
+	if target == nil || target.PropertyCount == nil || target.PropertyCount.Minimum == nil {
+		t.Fatal("missing retained actual count serializer")
+	}
+	count := target.PropertyCount
+	target.PropertyCount = nil
+	if a.validateInternalModels(ds) == nil {
+		t.Error("removed actual target count authorized")
+	}
+	copyCount := *count
+	target.PropertyCount = &copyCount
+	if a.validateInternalModels(ds) == nil {
+		t.Error("copied actual target count authorized")
+	}
+	target.PropertyCount = count
+	oldMin := *count.Minimum
+	*count.Minimum = 0
+	if a.validateInternalModels(ds) == nil {
+		t.Error("mutated target count authorized")
+	}
+	*count.Minimum = oldMin
+	saved := consumer.Properties[0].Default
+	consumer.Properties[0].Default = ""
+	if a.validateInternalModels(ds) == nil {
+		t.Error("removed final consuming initializer authorized")
+	}
+	consumer.Properties[0].Default = saved
+	var key falseDTOFieldDefaultKey
+	for candidate := range a.falseDTOFieldDefaults {
+		key = candidate
+	}
+	proof := a.falseDTOFieldDefaults[key]
+	delete(a.falseDTOFieldDefaults, key)
+	if a.validateInternalModels(ds) == nil {
+		t.Error("missing actual field default proof authorized")
+	}
+	a.falseDTOFieldDefaults[key] = proof
+	savedType := consumer.Properties[0].Type
+	consumer.Properties[0].Type = TypeRef{Kind: Nullable, Element: &TypeRef{Kind: JSON}}
+	if a.validateInternalModels(ds) == nil {
+		t.Error("raw replacement consumer codec authorized")
+	}
+	consumer.Properties[0].Type = savedType
+	copied, e := document.ParseObject(input, document.MaxDocumentBytes)
+	if e != nil {
+		t.Fatal(e)
+	}
+	schema := get(get(a.modelOrigins[consumer], "properties"), "target")
+	copySchema := get(get(get(get(get(copied, "components"), "schemas"), "Consumer"), "properties"), "target")
+	for i, m := range schema.Members() {
+		if m.Name == "default" {
+			schema.Members()[i].Value = get(copySchema, "default")
+			if a.validateInternalModels(ds) == nil {
+				t.Error("same-byte original consumer default replaced")
+			}
+			schema.Members()[i] = m
+		}
+	}
+	without := []Declaration{}
+	for _, d := range ds {
+		if d != consumer {
+			without = append(without, d)
+		}
+	}
+	if a.validateInternalModels(without) == nil {
+		t.Error("missing actual consumer authorized")
+	}
+	copiedModel := *consumer
+	if a.validateInternalModels(append(without, &copiedModel)) == nil {
+		t.Error("same-byte copied consumer authorized")
+	}
+
+	for _, mutate := range []func(){
+
+		func() { consumer.Properties[0].DefaultNull = !consumer.Properties[0].DefaultNull },
+		func() { consumer.ClassName += "Changed" },
+		func() { proof.Scope.Target.Properties[0].Default = "null" },
+	} {
+		savedConsumer := *consumer
+		savedProps := append([]Property(nil), consumer.Properties...)
+		boundTarget := proof.Scope.Target
+		savedTarget := *boundTarget
+		savedTargetProps := append([]Property(nil), boundTarget.Properties...)
+		mutate()
+		if a.validateInternalModels(ds) == nil {
+			t.Error("actual declaration mutation authorized")
+		}
+		*consumer = savedConsumer
+		copy(consumer.Properties, savedProps)
+		*boundTarget = savedTarget
+		copy(boundTarget.Properties, savedTargetProps)
+	}
+	boundTarget := proof.Scope.Target
+	withoutTarget := []Declaration{}
+	for _, d := range ds {
+		if d != boundTarget {
+			withoutTarget = append(withoutTarget, d)
+		}
+	}
+	if a.validateInternalModels(withoutTarget) == nil {
+		t.Error("missing actual target authorized")
+	}
+	copiedTarget := *boundTarget
+	if a.validateInternalModels(append(withoutTarget, &copiedTarget)) == nil {
+		t.Error("copied target authorized")
+	}
+
+	if err := a.validateInternalModels(ds); err != nil {
+		t.Fatal(err)
+	}
+}

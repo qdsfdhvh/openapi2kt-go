@@ -10,16 +10,30 @@ import (
 // HoistOperationModels relocates only repeated eligible operation-root trees.
 // Work and diagnostics were fully checked by Analyze. No schema graph is walked.
 func HoistOperationModels(plan *Plan, packageName string, qualify bool) {
-	if err := hoistOperationModels(plan, packageName, qualify, nil); err != nil {
+	if err := hoistOperationModels(plan, packageName, qualify, nil, false); err != nil {
 		panic("unexpected unlocked hoisting error")
 	}
 }
 
 func HoistOperationModelsLocked(plan *Plan, packageName string, qualify bool, state *HoistedNameLock) *diagnostic.Diagnostic {
-	return hoistOperationModels(plan, packageName, qualify, state)
+	return hoistOperationModels(plan, packageName, qualify, state, false)
 }
-func hoistOperationModels(plan *Plan, packageName string, qualify bool, state *HoistedNameLock) *diagnostic.Diagnostic {
+
+// HoistOperationModelsLockedProjection retains only the original allocation
+// occurrences emitted by this explicit migration candidate. Ownership coverage
+// is a separate adapter barrier; ordinary generation remains strict.
+func HoistOperationModelsLockedProjection(plan *Plan, packageName string, qualify bool, state *HoistedNameLock) *diagnostic.Diagnostic {
+	if state == nil {
+		return nameLockError("E_NAME_LOCK_INVALID", "Name-lock projection requires explicit previous state.")
+	}
+	return hoistOperationModels(plan, packageName, qualify, state, true)
+}
+func hoistOperationModels(plan *Plan, packageName string, qualify bool, state *HoistedNameLock, project bool) *diagnostic.Diagnostic {
 	if plan.Client == nil {
+		if project && state != nil {
+			state.Entries = []NameLockEntry{}
+			return nil
+		}
 		if state != nil && len(state.Entries) != 0 {
 			return nameLockError("E_NAME_LOCK_REMOVED", "A locked occurrence is no longer present.")
 		}
@@ -54,14 +68,14 @@ func hoistOperationModels(plan *Plan, packageName string, qualify bool, state *H
 	if plan.BigintPackage == pkg {
 		used[strings.ToLower(bigintSerializerName)] = true
 	}
-	lockedNames, newEntries, err := prepareLockedHoist(plan, packageName, keys, groups, used, state)
+	lockedNames, newEntries, err := prepareLockedHoist(plan, packageName, keys, groups, used, state, project)
 	if err != nil {
 		return err
 	}
 	aliases := map[Declaration]Declaration{}
 	for _, key := range keys {
 		peers := groups[key]
-		if len(peers) < 2 {
+		if len(peers) < 2 && lockedNames[key] == "" {
 			continue
 		}
 		retained := peers[0]

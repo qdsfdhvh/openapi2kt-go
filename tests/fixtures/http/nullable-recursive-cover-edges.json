@@ -1,0 +1,1227 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NullableRecursiveCoverEdges",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "AChain": {
+        "$ref": "#/components/schemas/Middle"
+      },
+      "Holder": {
+        "type": "object",
+        "required": [
+          "value",
+          "chain",
+          "rows",
+          "mapping",
+          "nullable"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "chain": {
+            "$ref": "#/components/schemas/AChain"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AChain"
+            }
+          },
+          "mapping": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ZAny"
+              }
+            }
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/ZAny",
+            "nullable": true
+          },
+          "optional": {
+            "$ref": "#/components/schemas/AChain"
+          }
+        }
+      },
+      "Middle": {
+        "$ref": "#/components/schemas/ZAny"
+      },
+      "ZAny": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Through",
+              "nullable": false
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ZOther",
+              "nullable": true
+            }
+          }
+        ]
+      },
+      "ZOther": {
+        "anyOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Back",
+              "nullable": true
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ZAny",
+              "nullable": false
+            }
+          }
+        ]
+      },
+      "Through": {
+        "$ref": "#/components/schemas/ZOther",
+        "nullable": true
+      },
+      "Back": {
+        "$ref": "#/components/schemas/ZAny",
+        "nullable": false
+      },
+      "Wide": {
+        "properties": {
+          "v000": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v001": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v002": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v003": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v004": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v005": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v006": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v007": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v008": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v009": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v010": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v011": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v012": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v013": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v014": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v015": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v016": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v017": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v018": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v019": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v020": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v021": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v022": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v023": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v024": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v025": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v026": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v027": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v028": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v029": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v030": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v031": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v032": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v033": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v034": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v035": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v036": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v037": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v038": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v039": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v040": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v041": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v042": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v043": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v044": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v045": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v046": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v047": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v048": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v049": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v050": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v051": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v052": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v053": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v054": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v055": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v056": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v057": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v058": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v059": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v060": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v061": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v062": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v063": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v064": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v065": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v066": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v067": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v068": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v069": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v070": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v071": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v072": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v073": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v074": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v075": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v076": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v077": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v078": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v079": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v080": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v081": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v082": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v083": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v084": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v085": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v086": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v087": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v088": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v089": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v090": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v091": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v092": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v093": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v094": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v095": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v096": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v097": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v098": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v099": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v100": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v101": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v102": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v103": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v104": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v105": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v106": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v107": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v108": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v109": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v110": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v111": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v112": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v113": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v114": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v115": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v116": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v117": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v118": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v119": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v120": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v121": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v122": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v123": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v124": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v125": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v126": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v127": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v128": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v129": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v130": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v131": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v132": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v133": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v134": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v135": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v136": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v137": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v138": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v139": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v140": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v141": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v142": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v143": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v144": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v145": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v146": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v147": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v148": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v149": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v150": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v151": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v152": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v153": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v154": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v155": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v156": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v157": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v158": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v159": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v160": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v161": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v162": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v163": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v164": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v165": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v166": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v167": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v168": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v169": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v170": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v171": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v172": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v173": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v174": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v175": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v176": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v177": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v178": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v179": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v180": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v181": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v182": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v183": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v184": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v185": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v186": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v187": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v188": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v189": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v190": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v191": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v192": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v193": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v194": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v195": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v196": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v197": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v198": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v199": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v200": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v201": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v202": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v203": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v204": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v205": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v206": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v207": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v208": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v209": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v210": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v211": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v212": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v213": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v214": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v215": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v216": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v217": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v218": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v219": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v220": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v221": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v222": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v223": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v224": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v225": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v226": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v227": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v228": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v229": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v230": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v231": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v232": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v233": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v234": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v235": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v236": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v237": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v238": {
+            "$ref": "#/components/schemas/ZAny"
+          },
+          "v239": {
+            "$ref": "#/components/schemas/ZAny"
+          }
+        },
+        "required": [
+          "v000",
+          "v001",
+          "v002",
+          "v003",
+          "v004",
+          "v005",
+          "v006",
+          "v007",
+          "v008",
+          "v009",
+          "v010",
+          "v011",
+          "v012",
+          "v013",
+          "v014",
+          "v015",
+          "v016",
+          "v017",
+          "v018",
+          "v019",
+          "v020",
+          "v021",
+          "v022",
+          "v023",
+          "v024",
+          "v025",
+          "v026",
+          "v027",
+          "v028",
+          "v029",
+          "v030",
+          "v031",
+          "v032",
+          "v033",
+          "v034",
+          "v035",
+          "v036",
+          "v037",
+          "v038",
+          "v039",
+          "v040",
+          "v041",
+          "v042",
+          "v043",
+          "v044",
+          "v045",
+          "v046",
+          "v047",
+          "v048",
+          "v049",
+          "v050",
+          "v051",
+          "v052",
+          "v053",
+          "v054",
+          "v055",
+          "v056",
+          "v057",
+          "v058",
+          "v059",
+          "v060",
+          "v061",
+          "v062",
+          "v063",
+          "v064",
+          "v065",
+          "v066",
+          "v067",
+          "v068",
+          "v069",
+          "v070",
+          "v071",
+          "v072",
+          "v073",
+          "v074",
+          "v075",
+          "v076",
+          "v077",
+          "v078",
+          "v079",
+          "v080",
+          "v081",
+          "v082",
+          "v083",
+          "v084",
+          "v085",
+          "v086",
+          "v087",
+          "v088",
+          "v089",
+          "v090",
+          "v091",
+          "v092",
+          "v093",
+          "v094",
+          "v095",
+          "v096",
+          "v097",
+          "v098",
+          "v099",
+          "v100",
+          "v101",
+          "v102",
+          "v103",
+          "v104",
+          "v105",
+          "v106",
+          "v107",
+          "v108",
+          "v109",
+          "v110",
+          "v111",
+          "v112",
+          "v113",
+          "v114",
+          "v115",
+          "v116",
+          "v117",
+          "v118",
+          "v119",
+          "v120",
+          "v121",
+          "v122",
+          "v123",
+          "v124",
+          "v125",
+          "v126",
+          "v127",
+          "v128",
+          "v129",
+          "v130",
+          "v131",
+          "v132",
+          "v133",
+          "v134",
+          "v135",
+          "v136",
+          "v137",
+          "v138",
+          "v139",
+          "v140",
+          "v141",
+          "v142",
+          "v143",
+          "v144",
+          "v145",
+          "v146",
+          "v147",
+          "v148",
+          "v149",
+          "v150",
+          "v151",
+          "v152",
+          "v153",
+          "v154",
+          "v155",
+          "v156",
+          "v157",
+          "v158",
+          "v159",
+          "v160",
+          "v161",
+          "v162",
+          "v163",
+          "v164",
+          "v165",
+          "v166",
+          "v167",
+          "v168",
+          "v169",
+          "v170",
+          "v171",
+          "v172",
+          "v173",
+          "v174",
+          "v175",
+          "v176",
+          "v177",
+          "v178",
+          "v179",
+          "v180",
+          "v181",
+          "v182",
+          "v183",
+          "v184",
+          "v185",
+          "v186",
+          "v187",
+          "v188",
+          "v189",
+          "v190",
+          "v191",
+          "v192",
+          "v193",
+          "v194",
+          "v195",
+          "v196",
+          "v197",
+          "v198",
+          "v199",
+          "v200",
+          "v201",
+          "v202",
+          "v203",
+          "v204",
+          "v205",
+          "v206",
+          "v207",
+          "v208",
+          "v209",
+          "v210",
+          "v211",
+          "v212",
+          "v213",
+          "v214",
+          "v215",
+          "v216",
+          "v217",
+          "v218",
+          "v219",
+          "v220",
+          "v221",
+          "v222",
+          "v223",
+          "v224",
+          "v225",
+          "v226",
+          "v227",
+          "v228",
+          "v229",
+          "v230",
+          "v231",
+          "v232",
+          "v233",
+          "v234",
+          "v235",
+          "v236",
+          "v237",
+          "v238",
+          "v239"
+        ]
+      },
+      "UniqueHolder": {
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ZAny"
+            }
+          }
+        },
+        "required": [
+          "values"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/any": {
+      "post": {
+        "operationId": "any",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AChain"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZAny"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "post": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "requiredNullable"
+                ],
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/ZAny",
+                    "nullable": true
+                  },
+                  "requiredNullable": {
+                    "$ref": "#/components/schemas/AChain",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    },
+    "/watch": {
+      "get": {
+        "operationId": "watch",
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "event",
+                        "data"
+                      ],
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

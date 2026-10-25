@@ -52,7 +52,11 @@ func TestSchemaInternalDTOExcludedOwners(t *testing.T) {
 			t.Fatal("root/internal DTO graduation", flag, err)
 		}
 	}
-	aliasFailure(t, schemas(`{"Consumer":{"allOf":[`+pointerRef("Owner/properties/node")+`,{"properties":{"local":{"type":"string"}}}]},`+owner+`}`), "E_REF_UNSUPPORTED", "/components/schemas/Consumer/allOf/0")
+	// Preserve the exact former internal allOf refusal as an original-field positive.
+	internalIntersection := report(t, schemas(`{"Consumer":{"allOf":[`+pointerRef("Owner/properties/node")+`,{"properties":{"local":{"type":"string"}}}]},`+owner+`}`), "Dto")
+	if !strings.Contains(source(t, internalIntersection, "ConsumerDto"), "id: kotlin.String? = null") {
+		t.Fatal("original internal allOf fields lost")
+	}
 }
 
 func TestSchemaInternalDTOConsumerDepthAndNoDrop(t *testing.T) {

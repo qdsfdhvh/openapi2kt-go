@@ -1,13 +1,25 @@
 package schema
 
 import (
+	"strings"
 	"testing"
 
 	"openapi-kt/internal/document"
 )
 
 func TestStringEnumNullMembersBorrowedLeavesKeepOriginalNullNodeAndOwner(t *testing.T) {
+	for _, implicit := range []bool{false, true} {
+		t.Run(map[bool]string{false: "explicit", true: "implicit"}[implicit], func(t *testing.T) {
+			stringEnumNullMembersOriginalAuthority(t, implicit)
+		})
+	}
+}
+
+func stringEnumNullMembersOriginalAuthority(t *testing.T, implicit bool) {
 	input := []byte(`{"openapi":"3.1.0","components":{"schemas":{"State":{"type":["string","null"],"enum":[null,"ready","done"]},"Alias":{"$ref":"#/components/schemas/State"},"Owner":{"properties":{"state":{"type":["string","null"],"enum":["open",null,"closed"]}}},"Source":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Alias"}},"map":{"additionalProperties":{"$ref":"#/components/schemas/Owner/properties/state"}}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/rows"},"MapBridge":{"$ref":"#/components/schemas/Source/properties/map"}}}}`)
+	if implicit {
+		input = []byte(strings.ReplaceAll(string(input), `"type":["string","null"],`, ""))
+	}
 	root, err := document.Load(input, document.JSON, "")
 	if err != nil {
 		t.Fatal(err)
@@ -75,7 +87,8 @@ func TestStringEnumNullMembersBorrowedLeavesKeepOriginalNullNodeAndOwner(t *test
 		t.Fatal("same-byte vocabulary entry node replacement authorized")
 	}
 	enumArray.Items()[0] = entry
-	copied, err := document.Load([]byte(`{"type":["string","null"],"enum":[null,"ready","done"]}`), document.JSON, "")
+	originalJSON, _ := original.MarshalJSON()
+	copied, err := document.Load(originalJSON, document.JSON, "")
 	if err != nil {
 		t.Fatal(err)
 	}

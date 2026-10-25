@@ -39,7 +39,7 @@ func UsePlainClasses(plan *Plan) {
 			}
 		case *SSEEvents:
 			d.Plain = true
-		case *ScalarAlias, *ValueAlias, *PrimitiveValueClass:
+		case *ScalarAlias, *ValueAlias, *PrimitiveValueClass, *PrimitiveUnionAlias, *FalseValue:
 		default:
 			panic("unhandled model style declaration")
 		}

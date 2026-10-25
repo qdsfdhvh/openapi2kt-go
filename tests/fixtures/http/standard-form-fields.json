@@ -1,0 +1,247 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/submit": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "uuidValue": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "dateValue": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "optionalInstant": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "optionalUuid": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "class": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "it": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "uuidValue",
+                  "dateValue"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/optional": {
+      "post": {
+        "operationId": "optional",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "uuidValue": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "dateValue": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "optionalInstant": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "optionalUuid": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "class": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "it": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "uuidValue",
+                  "dateValue"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "post": {
+        "operationId": "events",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "uuidValue": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "dateValue": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "optionalInstant": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "optionalUuid": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "class": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "it": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "uuidValue",
+                  "dateValue"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "message"
+                    },
+                    "data": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/optional-events": {
+      "post": {
+        "operationId": "optionalEvents",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "uuidValue": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "dateValue": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "optionalInstant": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "optionalUuid": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "class": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "it": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "uuidValue",
+                  "dateValue"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "message"
+                    },
+                    "data": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

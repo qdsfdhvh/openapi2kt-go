@@ -100,12 +100,14 @@ func (a *analyzer) validateAdditionalProperties(v *document.Value, pointer strin
 		return nil
 	}
 	location := naming.Pointer(pointer, "additionalProperties")
-	// A discarded extra-key literal does not acquire the new typed value role.
+	// Validate the complete original literal, then retain only the existing
+	// extras projection warning: no body/default/helper/value role is exported.
 	if structuredLiteral(ap) {
-		if _, err := valueConstant("validation", "extra", ap, location, depth+1); err != nil {
+		if err := validateDiscardedStructuredValue(ap, location, depth+1); err != nil {
 			return err
 		}
-		return unsupported(naming.Pointer(location, "const"))
+		a.warnAdditionalProperties(location)
+		return nil
 	}
 	if _, ok := ap.Bool(); !ok {
 		if err := a.rejectValidationProjection(ap, location); err != nil {

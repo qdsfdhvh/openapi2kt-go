@@ -76,7 +76,7 @@ func emitSSEOperation(group schema.APIGroup, op schema.Operation, checks operati
 	emitOperationInputChecks(op, checks, 2, out)
 	fmt.Fprintf(out, "        this@%s.client.sse(\n            request = {\n                url.takeFrom(%s)\n                this.method = %s(%s)\n", group.Name, urlExpression(group.Name, op), namespaces.httpMethodConstructor(op), naming.Literal(strings.ToUpper(op.Method)))
 	if op.Body != nil {
-		fmt.Fprintf(out, "                contentType(%s.Application.Json)\n                setBody(input)\n", namespaces.contentTypeReference(op))
+		emitRequestBody(op, namespaces, 4, out)
 	}
 	for _, p := range op.Parameters {
 		if p.Location != "path" {

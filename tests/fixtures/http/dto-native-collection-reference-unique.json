@@ -1,0 +1,997 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Item": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "default": 0,
+            "enum": [
+              0,
+              1
+            ]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "weight": {
+            "type": "number",
+            "format": "float",
+            "default": 0,
+            "enum": [
+              0,
+              1
+            ]
+          },
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "instant": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "day": {
+            "type": "string",
+            "format": "date"
+          },
+          "flag": {
+            "type": "boolean",
+            "default": false,
+            "enum": [
+              false,
+              true
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "done"
+            ],
+            "default": "ready"
+          },
+          "kind": {
+            "const": "fixed"
+          },
+          "pinnedFlag": {
+            "type": "boolean",
+            "const": false
+          },
+          "pinnedNumber": {
+            "type": "number",
+            "const": -0.0
+          },
+          "requiredNull": {
+            "type": "null"
+          },
+          "optionalNull": {
+            "type": "null",
+            "nullable": true,
+            "default": null
+          },
+          "nullEnum": {
+            "enum": [
+              null
+            ],
+            "default": null
+          },
+          "fixedNull": {
+            "const": null
+          },
+          "typedFixedNull": {
+            "type": "null",
+            "const": null
+          },
+          "numbers": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "float",
+              "minimum": 0,
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "default": [
+              0,
+              1
+            ]
+          },
+          "lookup": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "float"
+            }
+          },
+          "batches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number",
+                "format": "float"
+              }
+            }
+          },
+          "instants": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "uuids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "nulls": {
+            "type": "array",
+            "items": {
+              "type": "null"
+            },
+            "default": [
+              null
+            ]
+          },
+          "enumNulls": {
+            "type": "array",
+            "items": {
+              "enum": [
+                null
+              ],
+              "nullable": true
+            },
+            "default": [
+              null
+            ]
+          },
+          "nullTree": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "null",
+                "enum": [
+                  null
+                ]
+              }
+            }
+          },
+          "nativeInts": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32",
+              "enum": [
+                0,
+                1
+              ],
+              "nullable": true
+            },
+            "default": [
+              0,
+              null
+            ]
+          },
+          "nativeLongs": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "default": [
+              0,
+              1
+            ]
+          },
+          "nativeFlags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean",
+              "enum": [
+                false,
+                true
+              ]
+            },
+            "default": {
+              "a": false,
+              "b": true
+            }
+          },
+          "nativeTree": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "format": "double",
+                "enum": [
+                  0,
+                  1
+                ]
+              }
+            }
+          },
+          "states": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ready",
+                "done"
+              ]
+            },
+            "default": [
+              "ready"
+            ]
+          },
+          "stateTree": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "ready",
+                  "done"
+                ],
+                "nullable": true
+              }
+            },
+            "default": {
+              "one": [
+                "ready",
+                null
+              ]
+            }
+          },
+          "refInt": {
+            "$ref": "#/components/schemas/RefIntAlias",
+            "nullable": false,
+            "default": 0
+          },
+          "refFloat": {
+            "$ref": "#/components/schemas/RefFloat",
+            "default": 0
+          },
+          "refUuid": {
+            "$ref": "#/components/schemas/RefUuid",
+            "default": "550E8400-E29B-41D4-A716-446655440000"
+          },
+          "refInstant": {
+            "$ref": "#/components/schemas/RefInstantAlias",
+            "default": "2024-01-01T00:00:00Z"
+          },
+          "refDay": {
+            "$ref": "#/components/schemas/RefDay"
+          },
+          "refFlag": {
+            "$ref": "#/components/schemas/RefFlag",
+            "default": false
+          },
+          "refText": {
+            "$ref": "#/components/schemas/RefText"
+          },
+          "refBorrow": {
+            "$ref": "#/components/schemas/BorrowOwner/properties/leaf~1~0",
+            "default": 1
+          },
+          "refBridge": {
+            "$ref": "#/components/schemas/RefBridge",
+            "nullable": false,
+            "default": 0
+          },
+          "refChain": {
+            "$ref": "#/components/schemas/RefChain",
+            "nullable": false,
+            "default": 0
+          },
+          "refRequired": {
+            "$ref": "#/components/schemas/RefInt",
+            "default": 0
+          },
+          "list": {
+            "$ref": "#/components/schemas/RefFloats",
+            "default": [
+              0,
+              1
+            ]
+          },
+          "map": {
+            "$ref": "#/components/schemas/RefIndex",
+            "default": {
+              "a": 0,
+              "b": 1
+            }
+          },
+          "deep": {
+            "$ref": "#/components/schemas/Deep",
+            "default": [
+              {
+                "a": [
+                  0,
+                  null
+                ]
+              }
+            ]
+          },
+          "requiredList": {
+            "$ref": "#/components/schemas/Alias",
+            "default": [
+              3
+            ]
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/NullableFloats",
+            "default": null
+          },
+          "nonNullView": {
+            "$ref": "#/components/schemas/NullableFloats",
+            "nullable": false,
+            "default": []
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/BorrowOwner/properties/a~1b"
+          },
+          "bridge": {
+            "$ref": "#/components/schemas/Bridge",
+            "default": [
+              true
+            ]
+          },
+          "specialUuid": {
+            "$ref": "#/components/schemas/SpecialUuids",
+            "default": [
+              "550E8400-E29B-41D4-A716-446655440000"
+            ]
+          },
+          "specialInstant": {
+            "$ref": "#/components/schemas/SpecialInstants",
+            "default": {
+              "t": "2024-01-01T00:00:00Z"
+            }
+          },
+          "specialDays": {
+            "$ref": "#/components/schemas/SpecialDays",
+            "default": [
+              "2024-02-29"
+            ]
+          },
+          "specialAlias": {
+            "$ref": "#/components/schemas/SpecialAlias",
+            "nullable": false,
+            "default": {
+              "t": "2024-01-01T00:00:00Z"
+            }
+          },
+          "specialBorrow": {
+            "$ref": "#/components/schemas/SpecialBorrowOwner/properties/u~1ids"
+          },
+          "specialBridge": {
+            "$ref": "#/components/schemas/SpecialBridge",
+            "default": []
+          },
+          "nativeRefInts": {
+            "$ref": "#/components/schemas/NativeRefInts",
+            "default": [
+              0
+            ]
+          },
+          "nativeRefLongs": {
+            "$ref": "#/components/schemas/NativeRefLongs",
+            "default": [
+              0
+            ]
+          },
+          "nativeRefFloats": {
+            "$ref": "#/components/schemas/NativeRefFloats",
+            "default": [
+              0
+            ]
+          },
+          "nativeRefDoubles": {
+            "$ref": "#/components/schemas/NativeRefDoubles",
+            "default": {
+              "a": 0,
+              "b": 1
+            }
+          },
+          "nativeRefFlags": {
+            "$ref": "#/components/schemas/NativeRefFlags",
+            "default": {
+              "a": true,
+              "b": true
+            }
+          },
+          "nativeRefBorrow": {
+            "$ref": "#/components/schemas/NativeBorrowOwner/properties/e~1nums"
+          },
+          "nativeRefBridge": {
+            "$ref": "#/components/schemas/NativeBridge",
+            "default": [
+              0
+            ]
+          },
+          "nativeRefAlias": {
+            "$ref": "#/components/schemas/NativeNullableAlias",
+            "nullable": false,
+            "default": [
+              0
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "requiredNull",
+          "refRequired",
+          "requiredList"
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "NullableHolder": {
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item",
+              "nullable": true
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "InlineHolder": {
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "ready",
+                    "done"
+                  ],
+                  "default": "ready"
+                },
+                "kind": {
+                  "const": "fixed"
+                },
+                "fixedNull": {
+                  "const": null
+                },
+                "requiredNull": {
+                  "type": "null"
+                },
+                "numbers": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "default": [
+                    0,
+                    1
+                  ]
+                },
+                "nulls": {
+                  "type": "array",
+                  "items": {
+                    "type": "null"
+                  },
+                  "default": [
+                    null
+                  ]
+                },
+                "nativeInts": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "nullable": true
+                  },
+                  "default": [
+                    0,
+                    null
+                  ]
+                },
+                "states": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "ready",
+                      "done"
+                    ]
+                  },
+                  "default": [
+                    "ready"
+                  ]
+                },
+                "refRequired": {
+                  "$ref": "#/components/schemas/RefInt",
+                  "default": 0
+                },
+                "refInt": {
+                  "$ref": "#/components/schemas/RefIntAlias",
+                  "nullable": false,
+                  "default": 0
+                },
+                "list": {
+                  "$ref": "#/components/schemas/RefFloats",
+                  "default": [
+                    0,
+                    1
+                  ]
+                },
+                "map": {
+                  "$ref": "#/components/schemas/RefIndex",
+                  "default": {
+                    "a": 0,
+                    "b": 1
+                  }
+                },
+                "deep": {
+                  "$ref": "#/components/schemas/Deep",
+                  "default": [
+                    {
+                      "a": [
+                        0,
+                        null
+                      ]
+                    }
+                  ]
+                },
+                "requiredList": {
+                  "$ref": "#/components/schemas/Alias",
+                  "default": [
+                    3
+                  ]
+                },
+                "nullable": {
+                  "$ref": "#/components/schemas/NullableFloats",
+                  "default": null
+                },
+                "nonNullView": {
+                  "$ref": "#/components/schemas/NullableFloats",
+                  "nullable": false,
+                  "default": []
+                },
+                "borrowed": {
+                  "$ref": "#/components/schemas/BorrowOwner/properties/a~1b"
+                },
+                "bridge": {
+                  "$ref": "#/components/schemas/Bridge",
+                  "default": [
+                    true
+                  ]
+                },
+                "specialUuid": {
+                  "$ref": "#/components/schemas/SpecialUuids",
+                  "default": [
+                    "550E8400-E29B-41D4-A716-446655440000"
+                  ]
+                },
+                "specialInstant": {
+                  "$ref": "#/components/schemas/SpecialInstants",
+                  "default": {
+                    "t": "2024-01-01T00:00:00Z"
+                  }
+                },
+                "specialDays": {
+                  "$ref": "#/components/schemas/SpecialDays",
+                  "default": [
+                    "2024-02-29"
+                  ]
+                },
+                "specialAlias": {
+                  "$ref": "#/components/schemas/SpecialAlias",
+                  "nullable": false,
+                  "default": {
+                    "t": "2024-01-01T00:00:00Z"
+                  }
+                },
+                "specialBorrow": {
+                  "$ref": "#/components/schemas/SpecialBorrowOwner/properties/u~1ids"
+                },
+                "specialBridge": {
+                  "$ref": "#/components/schemas/SpecialBridge",
+                  "default": []
+                },
+                "nativeRefInts": {
+                  "$ref": "#/components/schemas/NativeRefInts",
+                  "default": [
+                    0
+                  ]
+                },
+                "nativeRefLongs": {
+                  "$ref": "#/components/schemas/NativeRefLongs",
+                  "default": [
+                    0
+                  ]
+                },
+                "nativeRefFloats": {
+                  "$ref": "#/components/schemas/NativeRefFloats",
+                  "default": [
+                    0
+                  ]
+                },
+                "nativeRefDoubles": {
+                  "$ref": "#/components/schemas/NativeRefDoubles",
+                  "default": {
+                    "a": 0,
+                    "b": 1
+                  }
+                },
+                "nativeRefFlags": {
+                  "$ref": "#/components/schemas/NativeRefFlags",
+                  "default": {
+                    "a": true,
+                    "b": true
+                  }
+                },
+                "nativeRefBorrow": {
+                  "$ref": "#/components/schemas/NativeBorrowOwner/properties/e~1nums"
+                },
+                "nativeRefBridge": {
+                  "$ref": "#/components/schemas/NativeBridge",
+                  "default": [
+                    0
+                  ]
+                },
+                "nativeRefAlias": {
+                  "$ref": "#/components/schemas/NativeNullableAlias",
+                  "nullable": false,
+                  "default": [
+                    0
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "requiredNull",
+                "refRequired",
+                "requiredList"
+              ]
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "RefInt": {
+        "type": "integer",
+        "format": "int32",
+        "minimum": 0
+      },
+      "RefIntAlias": {
+        "$ref": "#/components/schemas/RefInt",
+        "nullable": true
+      },
+      "RefFloat": {
+        "type": "number",
+        "format": "float"
+      },
+      "RefUuid": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "RefInstant": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "RefInstantAlias": {
+        "$ref": "#/components/schemas/RefInstant"
+      },
+      "RefDay": {
+        "type": "string",
+        "format": "date"
+      },
+      "RefFlag": {
+        "type": "boolean"
+      },
+      "RefText": {
+        "type": "string",
+        "default": "source"
+      },
+      "BorrowOwner": {
+        "properties": {
+          "leaf/~": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "hop": {
+            "$ref": "#/components/schemas/RefInt"
+          },
+          "a/b": {
+            "type": "array",
+            "items": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "RefBridge": {
+        "$ref": "#/components/schemas/BorrowOwner/properties/leaf~1~0",
+        "nullable": true
+      },
+      "RefChain": {
+        "$ref": "#/components/schemas/BorrowOwner/properties/hop",
+        "nullable": true
+      },
+      "RefFloats": {
+        "type": "array",
+        "items": {
+          "type": "number",
+          "format": "float",
+          "minimum": 0
+        }
+      },
+      "RefIndex": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "number",
+          "format": "float"
+        }
+      },
+      "Deep": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "nullable": true
+            }
+          }
+        }
+      },
+      "NullableFloats": {
+        "type": "array",
+        "items": {
+          "type": "number",
+          "format": "float"
+        },
+        "nullable": true
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/RefFloats"
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/BorrowOwner/properties/a~1b"
+      },
+      "SpecialUuids": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "SpecialInstants": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "SpecialDays": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "date",
+          "nullable": true
+        }
+      },
+      "SpecialAlias": {
+        "$ref": "#/components/schemas/SpecialInstants",
+        "nullable": true
+      },
+      "SpecialBorrowOwner": {
+        "properties": {
+          "u/ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "SpecialBridge": {
+        "$ref": "#/components/schemas/SpecialBorrowOwner/properties/u~1ids"
+      },
+      "NativeRefInts": {
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
+      "NativeRefLongs": {
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "format": "int64",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
+      "NativeRefFloats": {
+        "type": "array",
+        "items": {
+          "type": "number",
+          "format": "float",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
+      "NativeRefDoubles": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "number",
+          "format": "double",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
+      "NativeRefFlags": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "boolean",
+          "enum": [
+            true
+          ]
+        }
+      },
+      "NativeBorrowOwner": {
+        "properties": {
+          "e/nums": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "float",
+              "enum": [
+                0,
+                1
+              ]
+            }
+          }
+        }
+      },
+      "NativeBridge": {
+        "$ref": "#/components/schemas/NativeBorrowOwner/properties/e~1nums"
+      },
+      "NativeNullableAlias": {
+        "$ref": "#/components/schemas/NativeRefFloats",
+        "nullable": true
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "post": {
+        "operationId": "watch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/Holder",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

@@ -48,7 +48,14 @@ func TestNativeEnumConsumersRetainCheckedCollectionDepthAndAliasSourceWork(t *te
 }
 
 func TestNativeEnumConsumersKeepUnsupportedAnnotationsAndAliasCycle(t *testing.T) {
-	for _, body := range []string{`{"type":"integer","enum":[1],"default":1}`, `{"type":"integer","enum":[null]}`, `{"type":"integer","enum":[1],"x-native-type":"bigint"}`} {
+	// The exact formerly unsupported unformatted root now owns a factory.
+	factory := request(schemas(`{"Code":{"type":"integer","enum":[1],"default":1}}`), "Dto")
+	factory.Options.Validation = true
+	factoryOutput, factoryErr := core.GenerateWithDiagnostics(factory)
+	if factoryErr != nil || !strings.Contains(source(t, factoryOutput, "CodeDto"), "public fun `CodeDto default`") {
+		t.Fatal("unformatted root factory lost", factoryErr)
+	}
+	for _, body := range []string{`{"type":"integer","enum":[null]}`, `{"type":"integer","enum":[1],"x-native-type":"bigint"}`} {
 		r := request(schemas(`{"Code":`+body+`}`), "Dto")
 		r.Options.Validation = true
 		got, err := core.GenerateWithDiagnostics(r)

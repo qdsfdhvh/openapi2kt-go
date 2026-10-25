@@ -20,7 +20,6 @@ func TestCollectionUniqueGrammarAndEquality(t *testing.T) {
 		}
 	}
 	for _, leaf := range []string{
-		`{"type":"array","items":{"type":"string"}}`,
 		`{"type":"object","properties":{"v":{"type":"string"}}}`,
 		`{"type":"integer","const":1}`,
 		`{"type":"string","format":"byte"}`,
@@ -30,8 +29,13 @@ func TestCollectionUniqueGrammarAndEquality(t *testing.T) {
 		if strings.Contains(leaf, "x-kotlin-value-class") {
 			continue
 		}
+		if strings.Contains(leaf, `"properties":{"v"`) {
+			dtoUniqueGraduation(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":`+leaf+`}`))
+			continue
+		}
 		aliasFailure(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":`+leaf+`}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Record/properties/value/uniqueItems")
 	}
+	mapUniqueGraduation(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":{"type":"array","items":{"type":"string"}}}`))
 	mapUniqueGraduation(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":{"type":"object","additionalProperties":{"type":"string"}}}`))
 	for _, leaf := range []string{`{"type":"number"}`, `{"type":"number","format":"float"}`} {
 		floatingUniqueGraduation(t, fieldDoc(`{"type":"array","uniqueItems":true,"items":`+leaf+`}`))

@@ -14,6 +14,11 @@ func (a *analyzer) booleanTrueValue(v *document.Value) bool {
 	return ok && flag && strings.HasPrefix(text(get(a.root, "openapi")), "3.1.")
 }
 
+func (a *analyzer) booleanFalseRoot(v *document.Value) bool {
+	flag, ok := v.Bool()
+	return ok && !flag && strings.HasPrefix(text(get(a.root, "openapi")), "3.1.")
+}
+
 func (a *analyzer) booleanValueType(v *document.Value, pointer string, depth int) (*TypeRef, *diagnostic.Diagnostic) {
 	if !a.booleanTrueValue(v) {
 		return nil, nil

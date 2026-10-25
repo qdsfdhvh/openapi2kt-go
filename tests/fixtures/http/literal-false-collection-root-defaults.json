@@ -1,0 +1,229 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LiteralFalseCollectionRootDefaults",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Holder": {
+        "required": [
+          "required",
+          "requiredNull"
+        ],
+        "properties": {
+          "optional": {
+            "type": "array",
+            "items": false,
+            "default": []
+          },
+          "required": {
+            "type": "array",
+            "items": false,
+            "default": []
+          },
+          "nullable": {
+            "type": "array",
+            "items": false,
+            "nullable": true,
+            "default": null
+          },
+          "requiredNull": {
+            "type": "array",
+            "items": false,
+            "nullable": true,
+            "default": null
+          },
+          "mapping": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "array",
+                "items": false,
+                "nullable": true
+              }
+            },
+            "default": {
+              "description": {
+                "description": null
+              },
+              "empty": {
+                "empty": []
+              }
+            }
+          },
+          "nested": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": false
+            },
+            "default": [
+              []
+            ]
+          },
+          "blocked": false,
+          "falseValue": {
+            "type": "string"
+          },
+          "kotlinx": {
+            "type": "array",
+            "items": false,
+            "default": []
+          },
+          "org": {
+            "type": "array",
+            "items": false,
+            "default": []
+          }
+        },
+        "default": {
+          "required": [],
+          "requiredNull": null,
+          "optional": [],
+          "mapping": {
+            "description": {
+              "description": null
+            }
+          },
+          "nested": [
+            []
+          ],
+          "falseValue": "seed"
+        }
+      },
+      "Only": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": false,
+            "default": []
+          }
+        },
+        "default": {}
+      },
+      "NoFieldDefault": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": false
+          }
+        },
+        "default": {
+          "rows": []
+        }
+      },
+      "NullableField": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "nullable": true,
+            "items": false
+          }
+        },
+        "default": {
+          "rows": null
+        }
+      },
+      "RootNullable": {
+        "type": "object",
+        "nullable": true,
+        "required": [
+          "rows"
+        ],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": false
+          }
+        },
+        "default": null
+      }
+    }
+  },
+  "paths": {
+    "/defaults": {
+      "post": {
+        "tags": [
+          "objects"
+        ],
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/first": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "first",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    },
+    "/second": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "second",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    }
+  }
+}

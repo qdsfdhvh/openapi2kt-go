@@ -1,0 +1,444 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Discarded structured const sources"
+  },
+  "components": {
+    "schemas": {
+      "Extra": {
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "const": {
+            "$ref": "literal data",
+            "type": "data",
+            "enum": [
+              null
+            ]
+          }
+        }
+      },
+      "ExtraArray": {
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "const": [
+            null,
+            {
+              "literal": true
+            }
+          ],
+          "nullable": true
+        }
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "properties": {
+                  "payload": {
+                    "const": {
+                      "discarded": true
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "tag": {
+                    "const": "one"
+                  },
+                  "payload": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": {
+                  "const": []
+                }
+              }
+            ]
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "two"
+              },
+              "payload": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": {
+              "const": {}
+            }
+          }
+        ]
+      },
+      "Singleton": {
+        "oneOf": [
+          {
+            "properties": {
+              "tag": {
+                "const": "one"
+              }
+            },
+            "additionalProperties": {
+              "const": {}
+            }
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "two"
+              }
+            },
+            "additionalProperties": {
+              "const": []
+            }
+          }
+        ]
+      },
+      "Alpha": {
+        "allOf": [
+          {
+            "properties": {
+              "value": {
+                "const": [
+                  {
+                    "type": "data"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": {
+              "const": {
+                "inherited": true
+              }
+            }
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "one"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "Beta": {
+        "properties": {
+          "tag": {
+            "const": "two"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "const": [],
+          "nullable": true
+        }
+      },
+      "Root": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Alpha"
+          },
+          {
+            "$ref": "#/components/schemas/Beta"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "tag",
+          "mapping": {
+            "one": "Alpha",
+            "two": "Beta"
+          }
+        }
+      },
+      "Body": {
+        "properties": {
+          "payload": {
+            "const": {
+              "kept": true
+            }
+          }
+        },
+        "additionalProperties": {
+          "const": []
+        }
+      },
+      "Dictionary": {
+        "additionalProperties": {
+          "const": {
+            "value": true
+          }
+        }
+      },
+      "Containers": {
+        "properties": {
+          "extra": {
+            "$ref": "#/components/schemas/Extra"
+          },
+          "choice": {
+            "$ref": "#/components/schemas/Choice"
+          },
+          "root": {
+            "$ref": "#/components/schemas/Root"
+          }
+        }
+      },
+      "NullableExtra": {
+        "$ref": "#/components/schemas/Extra",
+        "nullable": true
+      },
+      "RequiredChoice": {
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "properties": {
+                  "payload": {
+                    "const": {},
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "payload"
+                ]
+              },
+              {
+                "properties": {
+                  "payload": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "const": "one"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "two"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/extra": {
+      "post": {
+        "operationId": "sendExtra",
+        "tags": [
+          "discarded"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Extra"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Extra"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/choice": {
+      "post": {
+        "operationId": "sendChoice",
+        "tags": [
+          "discarded"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Choice"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Choice"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/root": {
+      "post": {
+        "operationId": "sendRoot",
+        "tags": [
+          "discarded"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Root"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Root"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "tags": [
+          "discarded"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "choice"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Choice"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/left": {
+      "get": {
+        "operationId": "getLeft",
+        "tags": [
+          "discarded"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": {
+                    "const": {
+                      "ignored": "Left"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/right": {
+      "get": {
+        "operationId": "getRight",
+        "tags": [
+          "discarded"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": {
+                    "const": {
+                      "ignored": "Right"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "post": {
+        "operationId": "sendInline",
+        "tags": [
+          "discarded"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": {
+                  "const": []
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

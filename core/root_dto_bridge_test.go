@@ -209,7 +209,11 @@ func TestRootDTOBridgeCycleAndExcludedTargets(t *testing.T) {
 		aliasFailure(t, input, "E_REF_UNSUPPORTED", "/components/schemas/Alias/$ref")
 	}
 	base := `"Alias":{"$ref":"#/components/schemas/Owner/properties/hop"},"Owner":{"properties":{"hop":{"$ref":"#/components/schemas/Node"}}},"Node":{"properties":{"id":{"type":"string"}}}`
-	aliasFailure(t, schemas(`{`+base+`,"Consumer":{"allOf":[{"$ref":"#/components/schemas/Alias"},{"properties":{"extra":{"type":"string"}}}]}}`), "E_REF_UNSUPPORTED", "/components/schemas/Consumer/allOf/0")
+	// Retain the exact former shape refusal as an explicit named-terminal bridge positive.
+	accepted := report(t, schemas(`{`+base+`,"Consumer":{"allOf":[{"$ref":"#/components/schemas/Alias"},{"properties":{"extra":{"type":"string"}}}]}}`), "Dto")
+	if !strings.Contains(source(t, accepted, "ConsumerDto"), "id: kotlin.String? = null") {
+		t.Fatal("original bridge intersection lost real named fields")
+	}
 	// Original input graduates only to its actual ordinary DTO leaf.
 	borrowedDTOGraduation(t, schemas(`{`+base+`,"Owner2":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Alias"}}}},"Consumer":{"properties":{"v":{"$ref":"#/components/schemas/Owner2/properties/rows"}}}}`), "org.example.models.models.NodeDto")
 	aliasFailure(t, schemas(`{"Alias":{"$ref":"#/components/schemas/Owner/properties/hop"},"Owner":{"properties":{"hop":{"$ref":"#/components/schemas/Node"}}},"Node":{"properties":{"id":{"$ref":"#/components/schemas/Literal"}}},"Literal":{"type":"string","const":"fixed"}}`), "E_REF_UNSUPPORTED", "/components/schemas/Alias/$ref")

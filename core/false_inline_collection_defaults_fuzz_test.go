@@ -1,0 +1,54 @@
+package core_test
+
+import (
+	"bytes"
+	"fmt"
+	"reflect"
+	"strings"
+	"testing"
+
+	"openapi-kt/core"
+)
+
+func FuzzFalseInlineCollectionDefaults(f *testing.F) {
+	f.Add(uint8(1), true, false)
+	f.Add(uint8(47), false, true)
+	f.Fuzz(func(t *testing.T, raw uint8, nullable, tail bool) {
+		count := int(raw%50) + 1
+		entries := []string{`"Choice":false`}
+		previous := "Choice"
+		for i := 0; i < count; i++ {
+			name := fmt.Sprintf("A%02d", i)
+			entries = append(entries, `"`+name+`":{"$ref":"#/components/schemas/`+previous+`","nullable":false}`)
+			previous = name
+		}
+		intent := ""
+		if nullable {
+			intent = `,"nullable":true`
+		}
+		entries = append(entries, `"Alias":{"$ref":"#/components/schemas/`+previous+`"`+intent+`}`)
+		entries = append(entries, `"Holder":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Alias"},"default":[]}}}`)
+		input := schemas(`{` + strings.Join(entries, ",") + `}`)
+		original := bytes.Clone(input)
+		rq := request(input, "Dto")
+		rq.Options.Validation = tail
+		if nullable {
+			rq.Options.ModelStyle = core.PlainClass
+		}
+		first, err := core.GenerateWithDiagnostics(rq)
+		if count <= 43 && err != nil {
+			t.Fatal("bounded inline false collection refused", err)
+		}
+		if count >= 47 && err == nil {
+			t.Fatal("inline field source alias budget erased")
+		}
+
+		second, retry := core.GenerateWithDiagnostics(rq)
+		if !bytes.Equal(input, original) || !reflect.DeepEqual(first, second) || !reflect.DeepEqual(err, retry) {
+			t.Fatal("false collection reference source mutation or nondeterminism", err, retry)
+		}
+		if err != nil && !reflect.DeepEqual(first, core.GenerationReport{}) {
+			t.Fatal("partial false collection reference failure output")
+		}
+	})
+}

@@ -25,6 +25,9 @@ type RootMoveState struct {
 	Owners    map[string][]string
 	NameLocks map[string][]byte
 	Entries   map[string]rootMoveEntry
+	// MergeTarget captures complete existing target ownership before input reads.
+	// A nil target retains the original empty-destination contract.
+	MergeTarget *RootMoveState
 }
 type rootMoveEntry struct {
 	Data       []byte
@@ -37,6 +40,12 @@ func rootMoveInvalid() *diagnostic.Diagnostic {
 
 // ReadRootMoveState never acquires locks, creates directories or repairs state.
 func ReadRootMoveState(root string) (RootMoveState, *diagnostic.Diagnostic) {
+	return readRootMoveState(root, -1)
+}
+
+// A nonnegative limit bounds actual cumulative Kotlin reads for metadata-only
+// lifecycle actions. Ordinary root moves retain their existing per-file limit.
+func readRootMoveState(root string, kotlinLimit int64) (RootMoveState, *diagnostic.Diagnostic) {
 	s := RootMoveState{}
 	canonical, e := canonicalRoot(root)
 	if e != nil {
@@ -86,7 +95,11 @@ func ReadRootMoveState(root string) (RootMoveState, *diagnostic.Diagnostic) {
 		if e := inspectParentsWithCache(root, path, checked); e != nil {
 			return RootMoveState{}, e
 		}
-		data, exists, e := readRegular(filepath.Join(root, filepath.FromSlash(path)))
+		limit := int64(maxFileBytes)
+		if kotlinLimit >= 0 {
+			limit = kotlinLimit
+		}
+		data, exists, e := readRegularLimited(filepath.Join(root, filepath.FromSlash(path)), limit)
 		if e != nil {
 			return RootMoveState{}, e
 		}
@@ -95,6 +108,9 @@ func ReadRootMoveState(root string) (RootMoveState, *diagnostic.Diagnostic) {
 		}
 		if digest(data) != m.Files[path] {
 			return RootMoveState{}, fail("E_OUTPUT_MODIFIED", "Restore modified manifest-owned Kotlin before moving output.")
+		}
+		if kotlinLimit >= 0 {
+			kotlinLimit -= int64(len(data))
 		}
 		if e := add(path, data); e != nil {
 			return RootMoveState{}, e
@@ -184,7 +200,7 @@ func inspectMoveTarget(root string, s RootMoveState) *diagnostic.Diagnostic {
 type rootMoveBinding struct{ raw, canonical string }
 
 // BindRootMoveTarget captures target and config ancestor bindings before input
-// generation, and verifies the target's initial empty ownership boundary.
+// generation, and verifies empty or compatible named target ownership.
 // declared is empty for direct commands. No filesystem entry is created.
 func BindRootMoveTarget(s RootMoveState, target, declared string) (RootMoveState, *diagnostic.Diagnostic) {
 	dst, e := canonicalRoot(target)
@@ -202,10 +218,13 @@ func BindRootMoveTarget(s RootMoveState, target, declared string) (RootMoveState
 		}
 		s.bindings = append(s.bindings, rootMoveBinding{declared, root})
 	}
+	s.MergeTarget = nil
 	if dst != s.root {
-		if e := inspectMoveTarget(dst, s); e != nil {
+		target, e := bindRootMoveMergeTarget(dst, s)
+		if e != nil {
 			return RootMoveState{}, e
 		}
+		s.MergeTarget = target
 	}
 	return s, nil
 }
@@ -231,6 +250,10 @@ func MoveOutputRoot(source, target string, previous RootMoveState, check bool) (
 	return moveOutputRoot(source, target, previous, check, nil)
 }
 func moveOutputRoot(source, target string, previous RootMoveState, check bool, before func(int, string, int, string) error) (bool, *diagnostic.Diagnostic) {
+	return moveOutputSelection(source, target, previous, nil, check, before)
+}
+
+func moveOutputSelection(source, target string, previous RootMoveState, owners []string, check bool, before func(int, string, int, string) error) (bool, *diagnostic.Diagnostic) {
 	if e := checkRootMoveBindings(previous.bindings); e != nil {
 		return false, e
 	}
@@ -272,7 +295,8 @@ func moveOutputRoot(source, target string, previous RootMoveState, check bool, b
 			return nil, e
 		}
 		expected := previous
-		expected.bindings = nil // Root bindings are checked separately above.
+		expected.bindings = nil    // Root bindings are checked separately above.
+		expected.MergeTarget = nil // Target state is checked independently below.
 		if !bytes.Equal(state.Manifest, expected.Manifest) || !reflect.DeepEqual(state, expected) {
 			return nil, fail("E_OUTPUT_ROOT_MOVE_STALE", "Source ownership, code, metadata or file attributes changed after planning; review the current state before moving again.")
 		}
@@ -280,27 +304,60 @@ func moveOutputRoot(source, target string, previous RootMoveState, check bool, b
 		if identity {
 			return p, nil
 		}
-		if e := inspectMoveTarget(dst, state); e != nil {
+		selected, retained, e := splitRootMoveOwners(state, owners)
+		if e != nil {
 			return nil, e
+		}
+		manifestBytes := selected.Manifest
+		if previous.MergeTarget == nil {
+			if e := inspectMoveTarget(dst, selected); e != nil {
+				return nil, e
+			}
+		} else {
+			targetState, e := ReadRootMoveState(dst)
+			if e != nil {
+				return nil, e
+			}
+			if !reflect.DeepEqual(targetState, *previous.MergeTarget) {
+				return nil, fail("E_OUTPUT_ROOT_MOVE_STALE", "Target ownership, code, metadata or file attributes changed after planning; review both roots before moving again.")
+			}
+			manifestBytes, e = mergeRootMoveManifest(selected, targetState)
+			if e != nil {
+				return nil, e
+			}
 		}
 		p.Changed = true
 		if root == src {
 			for _, path := range sortedKeys(state.Entries) {
 				if path != manifestName {
-					p.Removals = append(p.Removals, path)
+					if _, keep := retained.Entries[path]; !keep {
+						p.Removals = append(p.Removals, path)
+					}
 				}
 			}
-			p.RemoveManifest = true
+			if retained.Entries == nil {
+				p.RemoveManifest = true
+			} else {
+				p.ManifestBytes = retained.Manifest
+			}
 		} else {
 			p.Attributes = map[string]fileAttributes{}
-			for _, path := range sortedKeys(state.Entries) {
-				entry := state.Entries[path]
-				p.Attributes[path] = entry.Attributes
+			for _, path := range sortedKeys(selected.Entries) {
+				entry := selected.Entries[path]
+				if previous.MergeTarget != nil && strings.HasSuffix(path, ".kt") {
+					if _, shared := previous.MergeTarget.Entries[path]; shared {
+						continue // Retain original target bytes, modes and mtimes.
+					}
+				}
 				if path != manifestName {
+					p.Attributes[path] = entry.Attributes
 					p.Writes[path] = entry.Data
 				}
 			}
-			p.ManifestBytes = state.Manifest
+			if previous.MergeTarget == nil {
+				p.Attributes[manifestName] = selected.Entries[manifestName].Attributes
+			}
+			p.ManifestBytes = manifestBytes
 		}
 		return p, nil
 	}

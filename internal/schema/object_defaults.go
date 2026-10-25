@@ -183,8 +183,21 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 	if kind != "object" {
 		return nil, unsupported(naming.Pointer(pointer, "type"))
 	}
+	counted := a.componentDefaultCounts(v, pointer)
+	if !counted {
+		counted, err = a.falseDTOFieldCounts(v, pointer)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if !counted {
+		counted, err = a.falseDTOOwnerCounts(v, pointer)
+		if err != nil {
+			return nil, err
+		}
+	}
 	keys := []string{"type", "nullable", "properties", "required"}
-	if a.componentDefaultCounts(v, pointer) {
+	if counted {
 		keys = append(keys, "minProperties", "maxProperties")
 	}
 	if allowOwnDefault {
@@ -204,7 +217,7 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 		return nil, err
 	}
 	node := &nestedDefaultNode{schema: v, pointer: pointer, ty: TypeRef{Kind: JSON}, object: true}
-	if a.componentDefaultCounts(v, pointer) {
+	if counted {
 		checked, err := a.checkedCollection(TypeRef{Kind: JSONObject}, v, pointer)
 		if err != nil {
 			return nil, err
@@ -241,6 +254,14 @@ func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, 
 	if err != nil {
 		return nil, err
 	}
+	if node, err := a.literalFalseObjectDefaultNode(v, pointer, depth); err != nil {
+		return nil, err
+	} else if node != nil {
+		return node, nil
+	}
+	if (a.objectDefaultCollectionGraph(v, depth) || a.inlineReferencedScalarCollection(v)) && !a.referencedCollectionAllOfMember(v) {
+		return a.objectDefaultGraphNode(v, pointer, depth, allowOwnDefault, map[*document.Value]bool{})
+	}
 	switch {
 	case has(v, "$ref"):
 		// A referenced plain object property borrows its resolved target; the
@@ -261,6 +282,11 @@ func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, 
 	case a.objectDefaultCandidate(v):
 		return a.objectDefaultNode(v, pointer, depth, allowOwnDefault)
 	default:
+		// Enum annotations gain only this ordinary property's own
+		// role; selected union-variant members retain their separate boundary.
+		if has(v, "enum") && has(v, "default") && !allowOwnDefault {
+			return nil, unsupported(naming.Pointer(pointer, "default"))
+		}
 		return a.nestedDefaultSchema(v, "Validation", pointer, nil, nil, depth, true)
 	}
 }
@@ -269,6 +295,12 @@ func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, 
 // their borrowed source nodes and pointers; no declarations are created. The
 // consuming role grants ordinary object members their own default annotations.
 func (a *analyzer) objectDefaultShapeNode(s *shape, pointer string, allowOwnDefault bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	return a.objectDefaultShapeNodeWithEnums(s, pointer, allowOwnDefault, nil)
+}
+
+// enumOwn identifies original enum nodes whose own annotations belong to an
+// actual selected constructor. Other property roles retain allowOwnDefault.
+func (a *analyzer) objectDefaultShapeNodeWithEnums(s *shape, pointer string, allowOwnDefault bool, enumOwn map[*document.Value]bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	a, err := a.objectDefaultStep(pointer)
 	if err != nil {
 		return nil, err
@@ -277,7 +309,8 @@ func (a *analyzer) objectDefaultShapeNode(s *shape, pointer string, allowOwnDefa
 	declared := map[string]bool{}
 	for _, f := range s.Fields {
 		declared[f.Wire] = true
-		child, err := a.objectDefaultPropertyNode(f.Schema, f.Pointer, f.Depth, allowOwnDefault)
+		own := allowOwnDefault || enumOwn[f.Schema] && has(f.Schema, "enum") && has(f.Schema, "default")
+		child, err := a.objectDefaultPropertyNode(f.Schema, f.Pointer, f.Depth, own)
 		if err != nil {
 			return nil, err
 		}
@@ -310,13 +343,14 @@ func (a *analyzer) objectDefaultContainer(v *document.Value, pointer string, dep
 	if err != nil {
 		return nil, err
 	}
-	node := &nestedDefaultNode{schema: v, pointer: pointer, element: child}
+	node := &nestedDefaultNode{schema: v, pointer: pointer, element: child, dtoUniqueKeys: a.dtoUniqueKeys}
 	kind.Element = &child.ty
-	ty, err := a.checkedCollection(kind, v, pointer)
+	ty, err := a.checkedCollectionRole(kind, v, pointer, child.object)
 	if err != nil {
 		return nil, err
 	}
 	node.ty = ty
+	node.dtoUniqueKeys = a.dtoUniqueKeys
 	if _, nullable, _ := schemaType(v, pointer); nullable {
 		node.ty = node.ty.Null()
 	}
@@ -333,10 +367,15 @@ func (a *analyzer) objectDefaultConstNode(v *document.Value, pointer string) (*n
 	if err != nil {
 		return nil, err
 	}
+	literal := get(v, "const")
+	if kind == "null" && literal.Kind() == document.Null && (text(get(v, "type")) == "null" || inferredNullLiteral(v)) {
+		// A null const body always uses the existing non-null JsonNull codec,
+		// including when its source carries an explicit nullable annotation.
+		return &nestedDefaultNode{schema: v, pointer: pointer, ty: TypeRef{Kind: JSON}, constValue: literal, constKind: "null", native: a}, nil
+	}
 	if nullable {
 		return nil, unsupported(pointer)
 	}
-	literal := get(v, "const")
 	if kind == "" {
 		// A typeless scalar const infers its kind from the literal token.
 		switch literal.Kind() {
@@ -459,6 +498,16 @@ func (a *analyzer) objectDefaultTransparentChain(v *document.Value, pointer, ref
 // intent. Builtin, temporal, bytes and String/native enum chains share that walk;
 // other terminal roles remain separate.
 func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	if node, err := a.falseDTOOwnerReferenceNode(v, pointer, depth); err != nil {
+		return nil, err
+	} else if node != nil {
+		return node, nil
+	}
+	if node, err := a.falseObjectDefaultMemberNode(v, pointer, depth); err != nil {
+		return nil, err
+	} else if node != nil {
+		return node, nil
+	}
 	if err := checkKeys(v, []string{"$ref", "nullable", "default"}, pointer); err != nil {
 		return nil, err
 	}
@@ -780,11 +829,11 @@ func (a *analyzer) objectDefaultScalarCollectionNode(v *document.Value, pointer 
 		return nil, err
 	}
 	ty.Element = &child.ty
-	checked, err := a.checkedCollection(ty, v, pointer)
+	checked, err := a.checkedCollectionRole(ty, v, pointer, child.object)
 	if err != nil {
 		return nil, err
 	}
-	node := &nestedDefaultNode{schema: v, pointer: pointer, element: child, ty: checked}
+	node := &nestedDefaultNode{schema: v, pointer: pointer, element: child, ty: checked, dtoUniqueKeys: a.dtoUniqueKeys}
 	if _, nullable, _ := schemaType(v, pointer); nullable {
 		node.ty = node.ty.Null()
 	}

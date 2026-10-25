@@ -1,0 +1,87 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FalseReferenceFields",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Optional": {
+        "properties": {
+          "blocked": {
+            "$ref": "#/components/schemas/Blocked"
+          },
+          "alias": {
+            "$ref": "#/components/schemas/Alias"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/Nullable",
+            "nullable": false
+          }
+        }
+      },
+      "Required": {
+        "required": [
+          "blocked"
+        ],
+        "properties": {
+          "blocked": {
+            "$ref": "#/components/schemas/Blocked"
+          }
+        }
+      },
+      "NullableHolder": {
+        "required": [
+          "required"
+        ],
+        "properties": {
+          "required": {
+            "$ref": "#/components/schemas/Nullable"
+          },
+          "optional": {
+            "$ref": "#/components/schemas/Nullable"
+          }
+        }
+      },
+      "Blocked": false,
+      "Peer": false,
+      "AbsentSerializer": false,
+      "Companion": false,
+      "Serializer": false,
+      "Alias": {
+        "$ref": "#/components/schemas/Blocked"
+      },
+      "Nullable": {
+        "$ref": "#/components/schemas/Alias",
+        "nullable": true
+      },
+      "Reserved": {
+        "properties": {
+          "AbsentSerializer": {
+            "$ref": "#/components/schemas/AbsentSerializer"
+          },
+          "Companion": {
+            "$ref": "#/components/schemas/Companion"
+          },
+          "Serializer": {
+            "$ref": "#/components/schemas/Serializer"
+          }
+        }
+      },
+      "Twin": {
+        "properties": {
+          "blocked": {
+            "$ref": "#/components/schemas/Blocked"
+          },
+          "alias": {
+            "$ref": "#/components/schemas/Alias"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/Nullable",
+            "nullable": false
+          }
+        }
+      }
+    }
+  }
+}

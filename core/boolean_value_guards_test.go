@@ -21,6 +21,20 @@ func TestBooleanValueFalseAndExcludedContexts(t *testing.T) {
 			r := tupleRequest(t, schema)
 			r.Options.Validation = checked
 			got, err := core.GenerateWithDiagnostics(r)
+			if value, ok := schema.(bool); ok && !value {
+				if err != nil || !strings.Contains(source(t, got, "Probe"), "sealed class Probe private constructor()") {
+					t.Fatal("original root false role did not graduate", err)
+				}
+				continue
+			}
+			// Preserve the exactoriginal required/unused literal-falsefield
+			// controls as85 positivegraduations; othercontexts stayclosed.
+			if reflect.DeepEqual(schema, map[string]any{"properties": map[string]any{"v": false}, "required": []string{"v"}}) || reflect.DeepEqual(schema, map[string]any{"properties": map[string]any{"unused": false}}) {
+				if err != nil || !strings.Contains(source(t, got, "Probe"), "sealed class FalseValue private constructor()") {
+					t.Fatal("literalfalsefield graduation", schema, err)
+				}
+				continue
+			}
 			if err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("excluded source accepted/partial", schema, checked, got, err)
 			}
@@ -48,6 +62,19 @@ func TestBooleanValueRootAndInternalReferenceExclusions(t *testing.T) {
 		map[string]any{"properties": map[string]any{"v": map[string]any{"type": "array", "items": false}}},
 	} {
 		got, err := core.GenerateWithDiagnostics(tupleRequest(t, schema))
+		if reflect.DeepEqual(schema, map[string]any{"properties": map[string]any{"v": false}}) {
+			if err != nil || !strings.Contains(source(t, got, "Probe"), "AbsentSerializer") {
+				t.Fatal("originaloptionalFalsefield graduation", err)
+			}
+			continue
+		}
+		if reflect.DeepEqual(schema, map[string]any{"properties": map[string]any{"v": map[string]any{"type": "array", "items": false}}}) {
+			text := source(t, got, "Probe")
+			if err != nil || !strings.Contains(text, "List<org.example.models.models.Probe.FalseValue>") || strings.Contains(text, "AbsentSerializer") {
+				t.Fatal("original literal array field graduation", err, text)
+			}
+			continue
+		}
 		ds, ok := err.(core.Diagnostics)
 		if !ok || len(ds) != 1 || ds[0].Code != "E_SCHEMA_INVALID" || ds[0].Pointer == nil || !strings.HasPrefix(*ds[0].Pointer, "/components/schemas/Probe/properties/v") || !reflect.DeepEqual(got, core.GenerationReport{}) {
 			t.Fatal("false original source drift", got, err)

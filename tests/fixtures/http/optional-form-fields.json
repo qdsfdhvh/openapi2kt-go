@@ -1,0 +1,321 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/submit": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "large": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "class": {
+                    "type": "string"
+                  },
+                  "it": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        },
+        "parameters": [
+          {
+            "name": "io",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "OpenapiKtFormDataImport",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/priority": {
+      "post": {
+        "operationId": "priority",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "optional": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/variant": {
+      "post": {
+        "operationId": "variant",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "APPLICATION/X-WWW-FORM-URLENCODED; charset=UTF-8": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "a b&+雪": {
+                    "type": "string"
+                  },
+                  "empty": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "post": {
+        "operationId": "events",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "message"
+                    },
+                    "data": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submit-copy": {
+      "post": {
+        "operationId": "submitCopy",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "large": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "class": {
+                    "type": "string"
+                  },
+                  "it": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/optional-submit": {
+      "post": {
+        "operationId": "optionalSubmit",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "large": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "class": {
+                    "type": "string"
+                  },
+                  "it": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/optional-variant": {
+      "post": {
+        "operationId": "optionalVariant",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "APPLICATION/X-WWW-FORM-URLENCODED; charset=UTF-8": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "a b&+雪": {
+                    "type": "string"
+                  },
+                  "empty": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/optional-events": {
+      "post": {
+        "operationId": "optionalEvents",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "message"
+                    },
+                    "data": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

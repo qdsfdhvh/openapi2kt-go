@@ -53,6 +53,9 @@ func TestRawResponseMediaExactSpellingAndDroppedSourceValidation(t *testing.T) {
 	}
 	bad := httpDoc(`{"responses":{"200":{"content":{"application/json":{"schema":{"type":"integer"}},"text/plain":{"schema":{"type":"string","format":"unsupported"}}}}}}`)
 	failure(t, bad, "E_SCHEMA_UNSUPPORTED", "/paths/~1ping/get/responses/200/content/text~1plain/schema/format")
-	// Requests and error selection keep their existing media policy.
-	failure(t, httpDoc(`{"requestBody":{"content":{"text/plain":{"schema":{"type":"string"}}}},"responses":{"204":{}}}`), "E_OPERATIONS_UNSUPPORTED", "/paths/~1ping/get/requestBody/content")
+	// The exact former optional-raw rejection is now an explicit positive.
+	optional := httpDoc(`{"requestBody":{"content":{"text/plain":{"schema":{"type":"string"}}}},"responses":{"204":{}}}`)
+	if api := source(t, report(t, optional, ""), "DefaultApi"); !strings.Contains(api, "input: kotlin.String? = null") {
+		t.Fatal(api)
+	}
 }

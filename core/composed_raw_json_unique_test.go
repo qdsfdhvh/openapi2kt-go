@@ -51,16 +51,26 @@ func TestJSONUniqueComposedRawBudgetsAndNoDrop(t *testing.T) {
 }
 
 func TestJSONUniqueComposedRawExcludedSources(t *testing.T) {
+	// The non-null operand now narrows this original empty allOf source. It
+	// uses the existing raw JSON codec/equality rather than a fake DTO.
+	original := aggregationReport(t, schemas(`{"Value":{"allOf":[{"type":"object","nullable":true},{"properties":{}}]},"Record":{"properties":{"value":{"type":"array","uniqueItems":true,"items":{"$ref":"#/components/schemas/Value"}}}}}`))
+	if !strings.Contains(source(t, original, "Record"), "`openapi-kt unique JSON items`") {
+		t.Fatal("original raw intersection lost JSON equality")
+	}
+
 	for _, terminal := range []string{
 		`{"allOf":[{"properties":{"id":{"type":"string"}}},{"properties":{}}]}`,
 		`{"allOf":[{"properties":{"kind":{"const":"only"}}},{"type":"object"}]}`,
 		`{"allOf":[{"type":"object","minProperties":1},{"type":"object"}]}`,
-		`{"allOf":[{"type":"object","nullable":true},{"properties":{}}]}`,
 		`{"allOf":[{"additionalProperties":{"type":"string"}},{"properties":{}}]}`,
 		`{"allOf":[{"oneOf":[{"properties":{"a":{"type":"string"}}},{"properties":{"b":{"type":"string"}}}]},{"properties":{}}]}`,
 	} {
 		rq := request(schemas(`{"Value":`+terminal+`,"Record":{"properties":{"value":{"type":"array","uniqueItems":true,"items":{"$ref":"#/components/schemas/Value"}}}}}`), "Dto")
 		rq.Options.Validation = true
+		if terminal == `{"allOf":[{"properties":{"id":{"type":"string"}}},{"properties":{}}]}` {
+			dtoAllOfUniqueGraduation(t, rq.Document, "RecordDto")
+			continue
+		}
 		if got, err := core.GenerateWithDiagnostics(rq); err == nil || len(got.Artifacts.Files) != 0 {
 			t.Fatal("nonraw composition acquired JSON equality", terminal, err)
 		}

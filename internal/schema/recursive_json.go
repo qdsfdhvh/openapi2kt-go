@@ -31,7 +31,13 @@ func (a *analyzer) recursiveJSONEdges(v *document.Value, pointer string, depth i
 		if child == nil || child.Kind() != document.Object || !has(child, "$ref") {
 			return nil
 		}
-		if err := checkKeys(child, []string{"$ref"}, p); err != nil {
+		if err := checkKeys(child, []string{"$ref", "nullable"}, p); err != nil {
+			return err
+		}
+		// Complete JSON covers already contain JsonNull. An edge's carrier
+		// intent cannot introduce a Kotlin null slot inside a JsonElement tree.
+		// Validate its original spelling without changing the SCC source work.
+		if _, _, err := schemaType(child, p); err != nil {
 			return err
 		}
 		ref, valid := get(child, "$ref").Text()

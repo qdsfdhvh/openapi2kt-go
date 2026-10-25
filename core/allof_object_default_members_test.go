@@ -62,7 +62,7 @@ func TestAllOfObjectDefaultMemberDiagnosticsAndPresence(t *testing.T) {
 		}
 		for _, member := range []string{
 			strings.Replace(allOfObjectMember, `{"allOf":`, `{"nullable":true,"allOf":`, 1),
-			strings.Replace(allOfObjectMember, `{"allOf":[{`, `{"allOf":[{"nullable":true,`, 1),
+			nullableAllOfMembers(t, allOfObjectMember),
 		} {
 			r := request(carrierDefaultDocument(allOfMemberField(member, `{"member":null}`), false), "Dto")
 			r.Options.Validation = checked
@@ -122,6 +122,10 @@ func TestAllOfObjectDefaultMemberBoundaries(t *testing.T) {
 		for _, value := range []string{`{}`, `{"member":{}}`} {
 			r := request(carrierDefaultDocument(allOfMemberField(member, value), false), "Dto")
 			r.Options.Validation = true
+			if member == allOfOverrideDuplicateA {
+				allOfDefaultOverridePositive(t, r)
+				continue
+			}
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
 				t.Fatal("excluded member admitted", member, value, err)
 			}

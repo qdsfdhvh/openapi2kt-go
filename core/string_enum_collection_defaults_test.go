@@ -71,6 +71,10 @@ func TestStringEnumCollectionDefaultsOriginalDiagnostics(t *testing.T) {
 		for _, checked := range []bool{false, true} {
 			r := request(fieldDoc(tc.field), "Dto")
 			r.Options.Validation = checked
+			if tc.field == `{"type":"array","items":{"enum":["one",null]},"default":[]}` {
+				implicitStringEnumGraduation(t, fieldDoc(tc.field), checked)
+				continue
+			}
 			got, err := core.GenerateWithDiagnostics(r)
 			if err == nil || err.(core.Diagnostics)[0].Code != tc.code || err.(core.Diagnostics)[0].Pointer == nil || *err.(core.Diagnostics)[0].Pointer != "/components/schemas/Record/properties/value"+tc.tail || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal(tc, checked, err)
@@ -98,7 +102,6 @@ func TestStringEnumCollectionDefaultsChecksAndExcludedRoles(t *testing.T) {
 	}
 	field := `{"type":"array","items":{"type":"string","enum":["one","two"]},"default":["one"]}`
 	for _, input := range []string{
-		`{"Code":{"type":"string","enum":["one"]},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Code"},"default":["one"]}}}}`,
 		`{"Holder":{"properties":{"value":{"type":"array","items":` + field + `}}}}`,
 		`{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,
 		`{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"value":` + field + `}},{"properties":{"tag":{"const":"two"}}}]}}`,

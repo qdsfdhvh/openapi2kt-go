@@ -94,7 +94,7 @@ const (
 
 func (a *analyzer) referencedDefaultSchema(v *document.Value, pointer string, ty TypeRef, depth int, root bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	role := noReferencedDefaultRole
-	if root && has(v, "default") && (has(v, "$ref") || a.inlineReferencedAllOfCollection(v)) {
+	if root && has(v, "default") && (has(v, "$ref") || a.inlineReferencedAllOfCollection(v) || a.inlineReferencedScalarCollection(v)) {
 		switch defaultBacking(ty).WithoutRootNull().Kind {
 		case Scalar:
 			role = referencedScalarOwnDefault
@@ -151,7 +151,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 			return a.referencedAllOfCollectionElementNode(v, pointer, actual, depth)
 		}
 	}
-	node := &nestedDefaultNode{schema: v, pointer: pointer, ty: actual}
+	node := &nestedDefaultNode{schema: v, pointer: pointer, ty: actual, dtoUniqueKeys: a.dtoUniqueKeys}
 	keys := []string{"type", "nullable", "format"}
 	edge := ""
 	switch {
@@ -162,7 +162,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		keys = a.collectionKeys([]string{"type", "nullable", "properties", "required", "additionalProperties"})
 		edge = "additionalProperties"
 	}
-	if edge != "" && root && role == referencedCollectionOwnDefault && a.inlineReferencedAllOfCollection(v) {
+	if edge != "" && root && role == referencedCollectionOwnDefault && (a.inlineReferencedAllOfCollection(v) || a.inlineReferencedScalarCollection(v)) {
 		// Only the consuming inline container owns this annotation. Inner
 		// containers and target/reference sources retain their strict keys.
 		keys = append(keys, "default")
@@ -249,7 +249,13 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		if bare.Kind != Named {
 			return nil, unsupported(pointer)
 		}
-		object, err := a.objectDefaultNode(v, pointer, depth, false)
+		// Independently owned target annotations remain source-validated by the
+		// actual retained target factory; this field still decodes its own value.
+		allowTargetDefault := false
+		if scope := a.falseDTOFieldDefaultScope; scope != nil && scope.TargetSchema == v && a.modelPointers[scope.Target] == pointer && has(v, "default") {
+			allowTargetDefault = a.falseDTOTargetFactoriesMatch(scope.Target)
+		}
+		object, err := a.objectDefaultNode(v, pointer, depth, allowTargetDefault)
 		if err != nil {
 			return nil, err
 		}
@@ -318,6 +324,63 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 	return node, nil
 }
 
+// Shared preflight and deferred consumers use the same original annotation
+// grammar, value budgets and literal rendering. Neither caller grants types.
+func (a *analyzer) referencedDefaultValue(f field, ty TypeRef) (*nestedDefaultNode, string, *diagnostic.Diagnostic) {
+	node, err := a.referencedDefaultSchema(f.Schema, f.Pointer, ty, f.Depth, true)
+	if err != nil {
+		return nil, "", err
+	}
+	kind := node.ty.WithoutRootNull().Kind
+	if kind != List && kind != Map && kind != Scalar && !(kind == Named && node.stringEnum) && !node.object {
+		return nil, "", unsupported(naming.Pointer(f.Pointer, "default"))
+	}
+	value := get(f.Schema, "default")
+	at := naming.Pointer(f.Pointer, "default")
+	work, bytes := 0, 0
+	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
+		return nil, "", err
+	}
+	encoded, err := node.value(value, at)
+	if err != nil {
+		return nil, "", err
+	}
+	if len(encoded) > maxNestedDefaultBytes {
+		return nil, "", diagnostic.At("E_MODEL_LIMIT", "Canonical nested default exceeds the supported 32 KiB JSON byte limit.", at)
+	}
+	return node, encoded, nil
+}
+
+func referencedDefaultInitializer(node *nestedDefaultNode, ty TypeRef, value *document.Value, encoded, at string) (string, *diagnostic.Diagnostic) {
+	if value.Kind() == document.Null {
+		return "null", nil
+	}
+	if node.stringEnum {
+		return "`openapi-kt default enum scalar`(" + naming.Literal(encoded) + ")", nil
+	}
+	if node.object {
+		target := ty.WithoutRootNull()
+		if target.Kind != Named || target.Element != nil {
+			return "", unsupported(at)
+		}
+		return "`openapi-kt default model`(" + naming.Literal(encoded) + ")", nil
+	}
+	if node.ty.WithoutRootNull().Kind == Scalar && node.ty.WithoutRootNull().Name != "kotlin.ByteArray" {
+		scalar := node.ty.WithoutRootNull().Name
+		literal, err := scalarLiteral(scalar, value, at)
+		if err != nil {
+			return "", err
+		}
+		return scalarDefaultInitializer(scalar, literal), nil
+	}
+	if kind := ty.WithoutRootNull().Kind; node.hasEnum() && (kind == List || kind == Map) {
+		// Deferred lexical enum names are finalized after field preflight.
+		// Bind the helper to the actual consuming type in the shared emitter.
+		return "`openapi-kt default enum tree`(" + naming.Literal(encoded) + ")", nil
+	}
+	return "`openapi-kt default tree " + referencedDefaultTypeKey(ty.WithoutRootNull()) + "`(" + naming.Literal(encoded) + ")", nil
+}
+
 func (a *analyzer) planReferencedFieldDefaults() *diagnostic.Diagnostic {
 	for _, plan := range *a.referencedDefaults {
 		if handled, err := a.planReferencedUnionDefault(plan); err != nil {
@@ -325,68 +388,31 @@ func (a *analyzer) planReferencedFieldDefaults() *diagnostic.Diagnostic {
 		} else if handled {
 			continue
 		}
-		node, err := a.referencedDefaultSchema(plan.Field.Schema, plan.Field.Pointer, plan.Type, plan.Field.Depth, true)
+		validation := *a
+		validation.falseDTOFieldDefaultScope = a.falseDTOFieldScope(plan)
+		node, encoded, err := validation.referencedDefaultValue(plan.Field, plan.Type)
 		if err != nil {
 			return err
-		}
-		kind := node.ty.WithoutRootNull().Kind
-		if kind != List && kind != Map && kind != Scalar && !(kind == Named && node.stringEnum) && !node.object {
-			return unsupported(naming.Pointer(plan.Field.Pointer, "default"))
-		}
-		value := get(plan.Field.Schema, "default")
-		at := naming.Pointer(plan.Field.Pointer, "default")
-		work, bytes := 0, 0
-		if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
-			return err
-		}
-		encoded, err := node.value(value, at)
-		if err != nil {
-			return err
-		}
-		if len(encoded) > maxNestedDefaultBytes {
-			return diagnostic.At("E_MODEL_LIMIT", "Canonical nested default exceeds the supported 32 KiB JSON byte limit.", at)
 		}
 		if plan.Model == nil {
 			continue
 		}
 		property := &plan.Model.Properties[plan.Index]
-		// Required and Patch annotations are fully checked before suppression.
-		if !property.DefaultNull || property.Type.Kind == PatchValue {
-			continue
-		}
-		if value.Kind() == document.Null {
-			property.Default = "null"
-			continue
-		}
-		if node.stringEnum {
-			// Bind the final actual lexical type in the emitter after relocation.
-			property.Default = "`openapi-kt default enum scalar`(" + naming.Literal(encoded) + ")"
-			continue
-		}
-		if node.object {
-			// Retain the plain nominal constructor boundary without transparent
-			// Element aliases. The emitter binds the final actual DTO type after
-			// relocation; each source role has already checked its own authority.
-			target := property.Type.WithoutRootNull()
-			if target.Kind != Named || target.Element != nil {
-				return unsupported(naming.Pointer(plan.Field.Pointer, "default"))
-			}
-			property.Default = "`openapi-kt default model`(" + naming.Literal(encoded) + ")"
-			continue
-		}
-		if kind == Scalar && node.ty.WithoutRootNull().Name != "kotlin.ByteArray" {
-			// Source admission/checks and both annotation budgets have already
-			// run. Other scalars use their existing literal path; bytes use the
-			// typed JSON helper below to bound initializer bytecode size.
-			scalar := node.ty.WithoutRootNull().Name
-			literal, err := scalarLiteral(scalar, value, at)
+		// Validate required/Patch annotations before suppressing their initializers.
+		if property.DefaultNull && property.Type.Kind != PatchValue {
+			value := get(plan.Field.Schema, "default")
+			at := naming.Pointer(plan.Field.Pointer, "default")
+			property.Default, err = referencedDefaultInitializer(node, property.Type, value, encoded, at)
 			if err != nil {
 				return err
 			}
-			property.Default = scalarDefaultInitializer(scalar, literal)
-			continue
 		}
-		property.Default = "`openapi-kt default tree " + referencedDefaultTypeKey(property.Type.WithoutRootNull()) + "`(" + naming.Literal(encoded) + ")"
+		if scope := validation.falseDTOFieldDefaultScope; scope != nil && scope.Used {
+			a.falseDTOFieldDefaultUses[falseDTOFieldDefaultKey{plan.Model, plan.Index}] = plan.Field.Pointer
+			if err := a.recordFalseDTOFieldDefault(*scope, encoded); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }

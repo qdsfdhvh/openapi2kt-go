@@ -124,6 +124,12 @@ func TestAllOfObjectDefaultExclusionsAndBudget(t *testing.T) {
 		`{"allOf":[{"properties":{"a":{"const":"x"}}}],"default":{"a":"x"}}`,
 		`{"allOf":[{},{}],"default":{}}`,
 	} {
+		if field == `{"allOf":[{"properties":{"a":{"type":"string"}}},{"properties":{"a":{"type":"string"}}}],"default":{"a":"x"}}` {
+			r := request(carrierDefaultDocument(field, false), "Dto")
+			r.Options.Validation = true
+			allOfDefaultOverridePositive(t, r)
+			continue
+		}
 		carrierDefaultFailure(t, carrierDefaultDocument(field, false), true, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Holder/properties/v/default")
 	}
 	large := strings.Replace(ordinaryAllOfDefault, `"label":"x"`, `"label":"`+strings.Repeat("a", 32767)+`"`, 1)

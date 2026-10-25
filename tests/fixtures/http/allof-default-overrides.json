@@ -1,0 +1,2632 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Lower": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "value": {
+            "type": "integer",
+            "default": 0
+          },
+          "label": {
+            "type": "string",
+            "default": "earlier"
+          },
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "default": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Upper": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3,
+            "default": 2
+          },
+          "label": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 8,
+            "default": "ok"
+          },
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "minLength": 36,
+            "default": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        }
+      },
+      "Record": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Lower"
+          },
+          {
+            "$ref": "#/components/schemas/Upper"
+          }
+        ]
+      },
+      "Factory": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Lower"
+          },
+          {
+            "$ref": "#/components/schemas/Upper"
+          }
+        ],
+        "default": {
+          "id": "factory",
+          "value": 1
+        }
+      },
+      "NullableFactory": {
+        "$ref": "#/components/schemas/Factory",
+        "nullable": true,
+        "default": null
+      },
+      "NarrowFactory": {
+        "$ref": "#/components/schemas/NullableFactory",
+        "nullable": false,
+        "default": {
+          "id": "alias",
+          "value": 3,
+          "label": "last"
+        }
+      },
+      "Holder": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Record",
+            "default": {
+              "id": "a",
+              "value": 1
+            }
+          },
+          "inline": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Lower"
+              },
+              {
+                "$ref": "#/components/schemas/Upper"
+              }
+            ],
+            "default": {
+              "id": "i",
+              "value": 1
+            }
+          },
+          "cfg": {
+            "properties": {
+              "node": {
+                "$ref": "#/components/schemas/Record",
+                "default": {
+                  "id": "c",
+                  "value": 1
+                }
+              }
+            },
+            "default": {}
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            },
+            "default": [
+              {
+                "id": "r",
+                "value": 1
+              }
+            ]
+          },
+          "maps": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Record"
+            },
+            "default": {
+              "k": {
+                "id": "m",
+                "value": 3
+              }
+            }
+          },
+          "empty": {
+            "$ref": "#/components/schemas/Record",
+            "default": {
+              "id": "empty"
+            }
+          },
+          "required": {
+            "$ref": "#/components/schemas/Record",
+            "default": {
+              "id": "suppressed"
+            }
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "Strict": {
+        "allOf": [
+          {
+            "properties": {
+              "value": {
+                "type": "integer",
+                "default": 0
+              }
+            }
+          },
+          {
+            "properties": {
+              "value": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3,
+                "default": 2
+              }
+            }
+          }
+        ],
+        "default": {
+          "value": 3
+        }
+      },
+      "PlainString": {
+        "allOf": [
+          {
+            "properties": {
+              "value": {
+                "type": "string",
+                "default": "earlier"
+              }
+            }
+          },
+          {
+            "properties": {
+              "value": {
+                "type": "string",
+                "default": "winner"
+              }
+            }
+          }
+        ],
+        "default": {}
+      },
+      "NullableValues": {
+        "allOf": [
+          {
+            "properties": {
+              "value": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "default": 0
+              }
+            }
+          },
+          {
+            "properties": {
+              "value": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1,
+                "maximum": 3,
+                "default": 2
+              }
+            }
+          }
+        ],
+        "default": {
+          "value": null
+        }
+      },
+      "Numbers": {
+        "allOf": [
+          {
+            "properties": {
+              "intValue": {
+                "type": "integer",
+                "format": "int32",
+                "default": 0
+              },
+              "longValue": {
+                "type": "integer",
+                "format": "int64",
+                "default": 0
+              },
+              "floatValue": {
+                "type": "number",
+                "format": "float",
+                "default": 0
+              },
+              "doubleValue": {
+                "type": "number",
+                "format": "double",
+                "default": 0
+              },
+              "zero": {
+                "type": "number",
+                "format": "double",
+                "default": 0
+              }
+            }
+          },
+          {
+            "properties": {
+              "intValue": {
+                "type": "integer",
+                "format": "int32",
+                "default": -2147483648,
+                "minimum": -2147483648,
+                "maximum": 2147483647
+              },
+              "longValue": {
+                "type": "integer",
+                "format": "int64",
+                "default": -9223372036854775808,
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "floatValue": {
+                "type": "number",
+                "format": "float",
+                "default": 16777216,
+                "minimum": 16777217,
+                "maximum": 16777220
+              },
+              "doubleValue": {
+                "type": "number",
+                "format": "double",
+                "default": 9007199254740992,
+                "minimum": 9007199254740993,
+                "maximum": 9007199254741000
+              },
+              "zero": {
+                "type": "number",
+                "format": "double",
+                "default": -0.0
+              }
+            }
+          }
+        ],
+        "default": {
+          "intValue": -2147483648,
+          "longValue": -9223372036854775808,
+          "floatValue": 16777216,
+          "doubleValue": 9007199254740992,
+          "zero": -0.0
+        }
+      },
+      "ExactLong": {
+        "allOf": [
+          {
+            "properties": {
+              "value": {
+                "type": "integer",
+                "format": "int64",
+                "default": 0
+              }
+            }
+          },
+          {
+            "properties": {
+              "value": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": 9007199254740993,
+                "maximum": 9007199254741005,
+                "multipleOf": 3,
+                "default": 9007199254740996
+              }
+            }
+          }
+        ],
+        "default": {
+          "value": 9007199254740999
+        }
+      },
+      "Wide": {
+        "allOf": [
+          {
+            "properties": {
+              "p0": {
+                "type": "string",
+                "default": "early"
+              },
+              "p1": {
+                "type": "string",
+                "default": "early"
+              },
+              "p2": {
+                "type": "string",
+                "default": "early"
+              },
+              "p3": {
+                "type": "string",
+                "default": "early"
+              },
+              "p4": {
+                "type": "string",
+                "default": "early"
+              },
+              "p5": {
+                "type": "string",
+                "default": "early"
+              },
+              "p6": {
+                "type": "string",
+                "default": "early"
+              },
+              "p7": {
+                "type": "string",
+                "default": "early"
+              },
+              "p8": {
+                "type": "string",
+                "default": "early"
+              },
+              "p9": {
+                "type": "string",
+                "default": "early"
+              },
+              "p10": {
+                "type": "string",
+                "default": "early"
+              },
+              "p11": {
+                "type": "string",
+                "default": "early"
+              },
+              "p12": {
+                "type": "string",
+                "default": "early"
+              },
+              "p13": {
+                "type": "string",
+                "default": "early"
+              },
+              "p14": {
+                "type": "string",
+                "default": "early"
+              },
+              "p15": {
+                "type": "string",
+                "default": "early"
+              },
+              "p16": {
+                "type": "string",
+                "default": "early"
+              },
+              "p17": {
+                "type": "string",
+                "default": "early"
+              },
+              "p18": {
+                "type": "string",
+                "default": "early"
+              },
+              "p19": {
+                "type": "string",
+                "default": "early"
+              },
+              "p20": {
+                "type": "string",
+                "default": "early"
+              },
+              "p21": {
+                "type": "string",
+                "default": "early"
+              },
+              "p22": {
+                "type": "string",
+                "default": "early"
+              },
+              "p23": {
+                "type": "string",
+                "default": "early"
+              },
+              "p24": {
+                "type": "string",
+                "default": "early"
+              },
+              "p25": {
+                "type": "string",
+                "default": "early"
+              },
+              "p26": {
+                "type": "string",
+                "default": "early"
+              },
+              "p27": {
+                "type": "string",
+                "default": "early"
+              },
+              "p28": {
+                "type": "string",
+                "default": "early"
+              },
+              "p29": {
+                "type": "string",
+                "default": "early"
+              },
+              "p30": {
+                "type": "string",
+                "default": "early"
+              },
+              "p31": {
+                "type": "string",
+                "default": "early"
+              },
+              "p32": {
+                "type": "string",
+                "default": "early"
+              },
+              "p33": {
+                "type": "string",
+                "default": "early"
+              },
+              "p34": {
+                "type": "string",
+                "default": "early"
+              },
+              "p35": {
+                "type": "string",
+                "default": "early"
+              },
+              "p36": {
+                "type": "string",
+                "default": "early"
+              },
+              "p37": {
+                "type": "string",
+                "default": "early"
+              },
+              "p38": {
+                "type": "string",
+                "default": "early"
+              },
+              "p39": {
+                "type": "string",
+                "default": "early"
+              },
+              "p40": {
+                "type": "string",
+                "default": "early"
+              },
+              "p41": {
+                "type": "string",
+                "default": "early"
+              },
+              "p42": {
+                "type": "string",
+                "default": "early"
+              },
+              "p43": {
+                "type": "string",
+                "default": "early"
+              },
+              "p44": {
+                "type": "string",
+                "default": "early"
+              },
+              "p45": {
+                "type": "string",
+                "default": "early"
+              },
+              "p46": {
+                "type": "string",
+                "default": "early"
+              },
+              "p47": {
+                "type": "string",
+                "default": "early"
+              },
+              "p48": {
+                "type": "string",
+                "default": "early"
+              },
+              "p49": {
+                "type": "string",
+                "default": "early"
+              },
+              "p50": {
+                "type": "string",
+                "default": "early"
+              },
+              "p51": {
+                "type": "string",
+                "default": "early"
+              },
+              "p52": {
+                "type": "string",
+                "default": "early"
+              },
+              "p53": {
+                "type": "string",
+                "default": "early"
+              },
+              "p54": {
+                "type": "string",
+                "default": "early"
+              },
+              "p55": {
+                "type": "string",
+                "default": "early"
+              },
+              "p56": {
+                "type": "string",
+                "default": "early"
+              },
+              "p57": {
+                "type": "string",
+                "default": "early"
+              },
+              "p58": {
+                "type": "string",
+                "default": "early"
+              },
+              "p59": {
+                "type": "string",
+                "default": "early"
+              },
+              "p60": {
+                "type": "string",
+                "default": "early"
+              },
+              "p61": {
+                "type": "string",
+                "default": "early"
+              },
+              "p62": {
+                "type": "string",
+                "default": "early"
+              },
+              "p63": {
+                "type": "string",
+                "default": "early"
+              },
+              "p64": {
+                "type": "string",
+                "default": "early"
+              },
+              "p65": {
+                "type": "string",
+                "default": "early"
+              },
+              "p66": {
+                "type": "string",
+                "default": "early"
+              },
+              "p67": {
+                "type": "string",
+                "default": "early"
+              },
+              "p68": {
+                "type": "string",
+                "default": "early"
+              },
+              "p69": {
+                "type": "string",
+                "default": "early"
+              },
+              "p70": {
+                "type": "string",
+                "default": "early"
+              },
+              "p71": {
+                "type": "string",
+                "default": "early"
+              },
+              "p72": {
+                "type": "string",
+                "default": "early"
+              },
+              "p73": {
+                "type": "string",
+                "default": "early"
+              },
+              "p74": {
+                "type": "string",
+                "default": "early"
+              },
+              "p75": {
+                "type": "string",
+                "default": "early"
+              },
+              "p76": {
+                "type": "string",
+                "default": "early"
+              },
+              "p77": {
+                "type": "string",
+                "default": "early"
+              },
+              "p78": {
+                "type": "string",
+                "default": "early"
+              },
+              "p79": {
+                "type": "string",
+                "default": "early"
+              },
+              "p80": {
+                "type": "string",
+                "default": "early"
+              },
+              "p81": {
+                "type": "string",
+                "default": "early"
+              },
+              "p82": {
+                "type": "string",
+                "default": "early"
+              },
+              "p83": {
+                "type": "string",
+                "default": "early"
+              },
+              "p84": {
+                "type": "string",
+                "default": "early"
+              },
+              "p85": {
+                "type": "string",
+                "default": "early"
+              },
+              "p86": {
+                "type": "string",
+                "default": "early"
+              },
+              "p87": {
+                "type": "string",
+                "default": "early"
+              },
+              "p88": {
+                "type": "string",
+                "default": "early"
+              },
+              "p89": {
+                "type": "string",
+                "default": "early"
+              },
+              "p90": {
+                "type": "string",
+                "default": "early"
+              },
+              "p91": {
+                "type": "string",
+                "default": "early"
+              },
+              "p92": {
+                "type": "string",
+                "default": "early"
+              },
+              "p93": {
+                "type": "string",
+                "default": "early"
+              },
+              "p94": {
+                "type": "string",
+                "default": "early"
+              },
+              "p95": {
+                "type": "string",
+                "default": "early"
+              },
+              "p96": {
+                "type": "string",
+                "default": "early"
+              },
+              "p97": {
+                "type": "string",
+                "default": "early"
+              },
+              "p98": {
+                "type": "string",
+                "default": "early"
+              },
+              "p99": {
+                "type": "string",
+                "default": "early"
+              },
+              "p100": {
+                "type": "string",
+                "default": "early"
+              },
+              "p101": {
+                "type": "string",
+                "default": "early"
+              },
+              "p102": {
+                "type": "string",
+                "default": "early"
+              },
+              "p103": {
+                "type": "string",
+                "default": "early"
+              },
+              "p104": {
+                "type": "string",
+                "default": "early"
+              },
+              "p105": {
+                "type": "string",
+                "default": "early"
+              },
+              "p106": {
+                "type": "string",
+                "default": "early"
+              },
+              "p107": {
+                "type": "string",
+                "default": "early"
+              },
+              "p108": {
+                "type": "string",
+                "default": "early"
+              },
+              "p109": {
+                "type": "string",
+                "default": "early"
+              },
+              "p110": {
+                "type": "string",
+                "default": "early"
+              },
+              "p111": {
+                "type": "string",
+                "default": "early"
+              },
+              "p112": {
+                "type": "string",
+                "default": "early"
+              },
+              "p113": {
+                "type": "string",
+                "default": "early"
+              },
+              "p114": {
+                "type": "string",
+                "default": "early"
+              },
+              "p115": {
+                "type": "string",
+                "default": "early"
+              },
+              "p116": {
+                "type": "string",
+                "default": "early"
+              },
+              "p117": {
+                "type": "string",
+                "default": "early"
+              },
+              "p118": {
+                "type": "string",
+                "default": "early"
+              },
+              "p119": {
+                "type": "string",
+                "default": "early"
+              },
+              "p120": {
+                "type": "string",
+                "default": "early"
+              },
+              "p121": {
+                "type": "string",
+                "default": "early"
+              },
+              "p122": {
+                "type": "string",
+                "default": "early"
+              },
+              "p123": {
+                "type": "string",
+                "default": "early"
+              },
+              "p124": {
+                "type": "string",
+                "default": "early"
+              },
+              "p125": {
+                "type": "string",
+                "default": "early"
+              },
+              "p126": {
+                "type": "string",
+                "default": "early"
+              },
+              "p127": {
+                "type": "string",
+                "default": "early"
+              },
+              "p128": {
+                "type": "string",
+                "default": "early"
+              },
+              "p129": {
+                "type": "string",
+                "default": "early"
+              },
+              "p130": {
+                "type": "string",
+                "default": "early"
+              },
+              "p131": {
+                "type": "string",
+                "default": "early"
+              },
+              "p132": {
+                "type": "string",
+                "default": "early"
+              },
+              "p133": {
+                "type": "string",
+                "default": "early"
+              },
+              "p134": {
+                "type": "string",
+                "default": "early"
+              },
+              "p135": {
+                "type": "string",
+                "default": "early"
+              },
+              "p136": {
+                "type": "string",
+                "default": "early"
+              },
+              "p137": {
+                "type": "string",
+                "default": "early"
+              },
+              "p138": {
+                "type": "string",
+                "default": "early"
+              },
+              "p139": {
+                "type": "string",
+                "default": "early"
+              },
+              "p140": {
+                "type": "string",
+                "default": "early"
+              },
+              "p141": {
+                "type": "string",
+                "default": "early"
+              },
+              "p142": {
+                "type": "string",
+                "default": "early"
+              },
+              "p143": {
+                "type": "string",
+                "default": "early"
+              },
+              "p144": {
+                "type": "string",
+                "default": "early"
+              },
+              "p145": {
+                "type": "string",
+                "default": "early"
+              },
+              "p146": {
+                "type": "string",
+                "default": "early"
+              },
+              "p147": {
+                "type": "string",
+                "default": "early"
+              },
+              "p148": {
+                "type": "string",
+                "default": "early"
+              },
+              "p149": {
+                "type": "string",
+                "default": "early"
+              },
+              "p150": {
+                "type": "string",
+                "default": "early"
+              },
+              "p151": {
+                "type": "string",
+                "default": "early"
+              },
+              "p152": {
+                "type": "string",
+                "default": "early"
+              },
+              "p153": {
+                "type": "string",
+                "default": "early"
+              },
+              "p154": {
+                "type": "string",
+                "default": "early"
+              },
+              "p155": {
+                "type": "string",
+                "default": "early"
+              },
+              "p156": {
+                "type": "string",
+                "default": "early"
+              },
+              "p157": {
+                "type": "string",
+                "default": "early"
+              },
+              "p158": {
+                "type": "string",
+                "default": "early"
+              },
+              "p159": {
+                "type": "string",
+                "default": "early"
+              },
+              "p160": {
+                "type": "string",
+                "default": "early"
+              },
+              "p161": {
+                "type": "string",
+                "default": "early"
+              },
+              "p162": {
+                "type": "string",
+                "default": "early"
+              },
+              "p163": {
+                "type": "string",
+                "default": "early"
+              },
+              "p164": {
+                "type": "string",
+                "default": "early"
+              },
+              "p165": {
+                "type": "string",
+                "default": "early"
+              },
+              "p166": {
+                "type": "string",
+                "default": "early"
+              },
+              "p167": {
+                "type": "string",
+                "default": "early"
+              },
+              "p168": {
+                "type": "string",
+                "default": "early"
+              },
+              "p169": {
+                "type": "string",
+                "default": "early"
+              },
+              "p170": {
+                "type": "string",
+                "default": "early"
+              },
+              "p171": {
+                "type": "string",
+                "default": "early"
+              },
+              "p172": {
+                "type": "string",
+                "default": "early"
+              },
+              "p173": {
+                "type": "string",
+                "default": "early"
+              },
+              "p174": {
+                "type": "string",
+                "default": "early"
+              },
+              "p175": {
+                "type": "string",
+                "default": "early"
+              },
+              "p176": {
+                "type": "string",
+                "default": "early"
+              },
+              "p177": {
+                "type": "string",
+                "default": "early"
+              },
+              "p178": {
+                "type": "string",
+                "default": "early"
+              },
+              "p179": {
+                "type": "string",
+                "default": "early"
+              },
+              "p180": {
+                "type": "string",
+                "default": "early"
+              },
+              "p181": {
+                "type": "string",
+                "default": "early"
+              },
+              "p182": {
+                "type": "string",
+                "default": "early"
+              },
+              "p183": {
+                "type": "string",
+                "default": "early"
+              },
+              "p184": {
+                "type": "string",
+                "default": "early"
+              },
+              "p185": {
+                "type": "string",
+                "default": "early"
+              },
+              "p186": {
+                "type": "string",
+                "default": "early"
+              },
+              "p187": {
+                "type": "string",
+                "default": "early"
+              },
+              "p188": {
+                "type": "string",
+                "default": "early"
+              },
+              "p189": {
+                "type": "string",
+                "default": "early"
+              },
+              "p190": {
+                "type": "string",
+                "default": "early"
+              },
+              "p191": {
+                "type": "string",
+                "default": "early"
+              },
+              "p192": {
+                "type": "string",
+                "default": "early"
+              },
+              "p193": {
+                "type": "string",
+                "default": "early"
+              },
+              "p194": {
+                "type": "string",
+                "default": "early"
+              },
+              "p195": {
+                "type": "string",
+                "default": "early"
+              },
+              "p196": {
+                "type": "string",
+                "default": "early"
+              },
+              "p197": {
+                "type": "string",
+                "default": "early"
+              },
+              "p198": {
+                "type": "string",
+                "default": "early"
+              },
+              "p199": {
+                "type": "string",
+                "default": "early"
+              },
+              "p200": {
+                "type": "string",
+                "default": "early"
+              },
+              "p201": {
+                "type": "string",
+                "default": "early"
+              },
+              "p202": {
+                "type": "string",
+                "default": "early"
+              },
+              "p203": {
+                "type": "string",
+                "default": "early"
+              },
+              "p204": {
+                "type": "string",
+                "default": "early"
+              },
+              "p205": {
+                "type": "string",
+                "default": "early"
+              },
+              "p206": {
+                "type": "string",
+                "default": "early"
+              },
+              "p207": {
+                "type": "string",
+                "default": "early"
+              },
+              "p208": {
+                "type": "string",
+                "default": "early"
+              },
+              "p209": {
+                "type": "string",
+                "default": "early"
+              },
+              "p210": {
+                "type": "string",
+                "default": "early"
+              },
+              "p211": {
+                "type": "string",
+                "default": "early"
+              },
+              "p212": {
+                "type": "string",
+                "default": "early"
+              },
+              "p213": {
+                "type": "string",
+                "default": "early"
+              },
+              "p214": {
+                "type": "string",
+                "default": "early"
+              },
+              "p215": {
+                "type": "string",
+                "default": "early"
+              },
+              "p216": {
+                "type": "string",
+                "default": "early"
+              },
+              "p217": {
+                "type": "string",
+                "default": "early"
+              },
+              "p218": {
+                "type": "string",
+                "default": "early"
+              },
+              "p219": {
+                "type": "string",
+                "default": "early"
+              },
+              "p220": {
+                "type": "string",
+                "default": "early"
+              },
+              "p221": {
+                "type": "string",
+                "default": "early"
+              },
+              "p222": {
+                "type": "string",
+                "default": "early"
+              },
+              "p223": {
+                "type": "string",
+                "default": "early"
+              },
+              "p224": {
+                "type": "string",
+                "default": "early"
+              },
+              "p225": {
+                "type": "string",
+                "default": "early"
+              },
+              "p226": {
+                "type": "string",
+                "default": "early"
+              },
+              "p227": {
+                "type": "string",
+                "default": "early"
+              },
+              "p228": {
+                "type": "string",
+                "default": "early"
+              },
+              "p229": {
+                "type": "string",
+                "default": "early"
+              },
+              "p230": {
+                "type": "string",
+                "default": "early"
+              },
+              "p231": {
+                "type": "string",
+                "default": "early"
+              },
+              "p232": {
+                "type": "string",
+                "default": "early"
+              },
+              "p233": {
+                "type": "string",
+                "default": "early"
+              },
+              "p234": {
+                "type": "string",
+                "default": "early"
+              },
+              "p235": {
+                "type": "string",
+                "default": "early"
+              },
+              "p236": {
+                "type": "string",
+                "default": "early"
+              },
+              "p237": {
+                "type": "string",
+                "default": "early"
+              },
+              "p238": {
+                "type": "string",
+                "default": "early"
+              },
+              "p239": {
+                "type": "string",
+                "default": "early"
+              }
+            }
+          },
+          {
+            "properties": {
+              "p0": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p1": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p2": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p3": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p4": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p5": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p6": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p7": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p8": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p9": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p10": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p11": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p12": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p13": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p14": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p15": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p16": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p17": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p18": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p19": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p20": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p21": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p22": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p23": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p24": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p25": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p26": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p27": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p28": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p29": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p30": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p31": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p32": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p33": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p34": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p35": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p36": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p37": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p38": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p39": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p40": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p41": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p42": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p43": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p44": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p45": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p46": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p47": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p48": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p49": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p50": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p51": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p52": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p53": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p54": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p55": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p56": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p57": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p58": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p59": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p60": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p61": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p62": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p63": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p64": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p65": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p66": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p67": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p68": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p69": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p70": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p71": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p72": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p73": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p74": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p75": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p76": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p77": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p78": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p79": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p80": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p81": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p82": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p83": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p84": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p85": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p86": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p87": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p88": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p89": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p90": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p91": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p92": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p93": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p94": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p95": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p96": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p97": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p98": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p99": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p100": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p101": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p102": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p103": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p104": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p105": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p106": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p107": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p108": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p109": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p110": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p111": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p112": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p113": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p114": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p115": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p116": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p117": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p118": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p119": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p120": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p121": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p122": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p123": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p124": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p125": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p126": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p127": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p128": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p129": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p130": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p131": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p132": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p133": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p134": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p135": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p136": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p137": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p138": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p139": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p140": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p141": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p142": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p143": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p144": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p145": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p146": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p147": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p148": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p149": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p150": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p151": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p152": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p153": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p154": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p155": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p156": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p157": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p158": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p159": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p160": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p161": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p162": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p163": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p164": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p165": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p166": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p167": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p168": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p169": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p170": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p171": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p172": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p173": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p174": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p175": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p176": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p177": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p178": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p179": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p180": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p181": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p182": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p183": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p184": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p185": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p186": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p187": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p188": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p189": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p190": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p191": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p192": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p193": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p194": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p195": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p196": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p197": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p198": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p199": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p200": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p201": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p202": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p203": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p204": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p205": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p206": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p207": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p208": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p209": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p210": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p211": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p212": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p213": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p214": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p215": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p216": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p217": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p218": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p219": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p220": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p221": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p222": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p223": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p224": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p225": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p226": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p227": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p228": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p229": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p230": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p231": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p232": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p233": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p234": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p235": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p236": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p237": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p238": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              },
+              "p239": {
+                "type": "string",
+                "minLength": 2,
+                "default": "ok"
+              }
+            }
+          }
+        ],
+        "default": {}
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "strings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "post": {
+        "operationId": "watch",
+        "tags": [
+          "strings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "tags": [
+          "strings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Lower"
+                      },
+                      {
+                        "$ref": "#/components/schemas/Upper"
+                      }
+                    ],
+                    "nullable": true,
+                    "default": {
+                      "id": "patch"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,419 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Item": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "default": 0,
+            "enum": [
+              0,
+              1
+            ]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "weight": {
+            "type": "number",
+            "format": "float",
+            "default": 0,
+            "enum": [
+              0,
+              1
+            ]
+          },
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "instant": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "day": {
+            "type": "string",
+            "format": "date"
+          },
+          "flag": {
+            "type": "boolean",
+            "default": false,
+            "enum": [
+              false,
+              true
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "done"
+            ],
+            "default": "ready"
+          },
+          "kind": {
+            "const": "fixed"
+          },
+          "pinnedFlag": {
+            "type": "boolean",
+            "const": false
+          },
+          "pinnedNumber": {
+            "type": "number",
+            "const": -0.0
+          },
+          "requiredNull": {
+            "type": "null"
+          },
+          "optionalNull": {
+            "type": "null",
+            "nullable": true,
+            "default": null
+          },
+          "nullEnum": {
+            "enum": [
+              null
+            ],
+            "default": null
+          },
+          "fixedNull": {
+            "const": null
+          },
+          "typedFixedNull": {
+            "type": "null",
+            "const": null
+          },
+          "numbers": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "float",
+              "minimum": 0,
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "default": [
+              0,
+              1
+            ]
+          },
+          "lookup": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number",
+              "format": "float"
+            }
+          },
+          "batches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number",
+                "format": "float"
+              }
+            }
+          },
+          "instants": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "uuids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "nulls": {
+            "type": "array",
+            "items": {
+              "type": "null"
+            },
+            "default": [
+              null
+            ]
+          },
+          "enumNulls": {
+            "type": "array",
+            "items": {
+              "enum": [
+                null
+              ],
+              "nullable": true
+            },
+            "default": [
+              null
+            ]
+          },
+          "nullTree": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "null",
+                "enum": [
+                  null
+                ]
+              }
+            }
+          },
+          "nativeInts": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32",
+              "enum": [
+                0,
+                1
+              ],
+              "nullable": true
+            },
+            "default": [
+              0,
+              null
+            ]
+          },
+          "nativeLongs": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64",
+              "enum": [
+                0,
+                1
+              ]
+            },
+            "default": [
+              0,
+              1
+            ]
+          },
+          "nativeFlags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean",
+              "enum": [
+                false,
+                true
+              ]
+            },
+            "default": {
+              "a": false,
+              "b": true
+            }
+          },
+          "nativeTree": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "format": "double",
+                "enum": [
+                  0,
+                  1
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "id",
+          "requiredNull"
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "NullableHolder": {
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item",
+              "nullable": true
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "InlineHolder": {
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "ready",
+                    "done"
+                  ],
+                  "default": "ready"
+                },
+                "kind": {
+                  "const": "fixed"
+                },
+                "fixedNull": {
+                  "const": null
+                },
+                "requiredNull": {
+                  "type": "null"
+                },
+                "numbers": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "default": [
+                    0,
+                    1
+                  ]
+                },
+                "nulls": {
+                  "type": "array",
+                  "items": {
+                    "type": "null"
+                  },
+                  "default": [
+                    null
+                  ]
+                },
+                "nativeInts": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "nullable": true
+                  },
+                  "default": [
+                    0,
+                    null
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "requiredNull"
+              ]
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "post": {
+        "operationId": "watch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/Holder",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

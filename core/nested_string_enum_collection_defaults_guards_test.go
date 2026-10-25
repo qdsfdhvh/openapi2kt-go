@@ -21,7 +21,6 @@ func TestNestedStringEnumCollectionDefaultsOriginalGrammarMembershipAndNoDrop(t 
 		{`{"additionalProperties":{"additionalProperties":{"enum":[null,"one"]}},"default":{}}`, "E_SCHEMA_INVALID", "/additionalProperties/additionalProperties/enum/0"},
 		{`{"additionalProperties":{"additionalProperties":{"enum":[null,"one",null],"nullable":true}},"default":{}}`, "E_SCHEMA_INVALID", "/additionalProperties/additionalProperties/enum/2"},
 		{`{"additionalProperties":{"additionalProperties":{"type":"string","enum":[null],"nullable":true}},"default":{}}`, "E_SCHEMA_INVALID", "/additionalProperties/additionalProperties/enum"},
-		{`{"additionalProperties":{"additionalProperties":{"enum":[null],"nullable":true}},"default":{}}`, "E_SCHEMA_UNSUPPORTED", "/additionalProperties/additionalProperties/enum"},
 		{`{"type":"array","items":{"type":"array","items":{"enum":[null,"one",false],"nullable":true}},"default":[]}`, "E_SCHEMA_INVALID", "/items/items/enum/2"},
 		{`{"type":"array","items":{"type":"array","items":{"type":"string","format":"uuid","enum":["one"]}},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/items/items/enum"},
 		{`{"type":"array","items":{"type":"array","items":{"enum":["one"],"minLength":1}},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/items/items/minLength"},
@@ -32,6 +31,10 @@ func TestNestedStringEnumCollectionDefaultsOriginalGrammarMembershipAndNoDrop(t 
 		for _, checked := range []bool{false, true} {
 			r := request(fieldDoc(tc.field), "Dto")
 			r.Options.Validation = checked
+			if tc.field == `{"additionalProperties":{"additionalProperties":{"enum":[null,"one"]}},"default":{}}` {
+				implicitStringEnumGraduation(t, fieldDoc(tc.field), checked)
+				continue
+			}
 			got, err := core.GenerateWithDiagnostics(r)
 			if err == nil || err.(core.Diagnostics)[0].Code != tc.code || *err.(core.Diagnostics)[0].Pointer != "/components/schemas/Record/properties/value"+tc.tail || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal(tc, checked, err)
@@ -90,7 +93,6 @@ func TestNestedStringEnumCollectionDefaultsIndependentScopeAndCaps(t *testing.T)
 	for _, input := range []string{
 		`{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,
 		`{"Holder":{"properties":{"value":{"type":"array","items":` + field + `}}}}`,
-		`{"Leaf":{"enum":["one"]},"Holder":{"properties":{"value":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Leaf"}},"default":[]}}}}`,
 		`{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"value":` + field + `}},{"properties":{"tag":{"const":"two"}}}]}}`,
 	} {
 		for _, checked := range []bool{false, true} {

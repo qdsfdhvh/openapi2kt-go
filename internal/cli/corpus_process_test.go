@@ -106,8 +106,8 @@ func TestOriginalCorpusThroughActualGoBinary(t *testing.T) {
 			}
 		})
 	}
-	if positives != 42 || negatives != 101 || snapshots != 54 || graduated != 11 {
+	if positives != 42 || negatives != 99 || snapshots != 54 || graduated != 13 {
 		t.Fatal("corpus inventory drift", positives, negatives, snapshots, graduated)
 	}
-	t.Logf("Actual native Go command: %d current positive (including two YAML acceptances) + %d remaining negative + %d explicit scalar/array/nullable-raw/boolean-value/default graduations, %d reviewed snapshots", positives, negatives, graduated, snapshots)
+	t.Logf("Actual native Go command: %d current positive (including two YAML acceptances) + %d remaining negative + %d explicit scalar/array/nullable-raw/boolean-value/root/default graduations, %d reviewed snapshots", positives, negatives, graduated, snapshots)
 }

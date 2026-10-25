@@ -1,0 +1,146 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FalseCollectionDefaults",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Rows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Blocked"
+        },
+        "default": []
+      },
+      "Mapping": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Blocked"
+        },
+        "default": {}
+      },
+      "Nested": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Blocked"
+            }
+          }
+        },
+        "default": [
+          {
+            "key": []
+          }
+        ]
+      },
+      "NullableRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Blocked"
+        },
+        "nullable": true,
+        "default": null
+      },
+      "NullElements": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Nullable"
+        },
+        "default": [
+          null,
+          null
+        ]
+      },
+      "NarrowElements": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Nullable",
+          "nullable": false
+        }
+      },
+      "NullMapping": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/Nullable"
+        },
+        "default": {
+          "description": null
+        }
+      },
+      "RowsAlias": {
+        "$ref": "#/components/schemas/Rows"
+      },
+      "Blocked": false,
+      "Peer": false,
+      "Alias": {
+        "$ref": "#/components/schemas/Blocked"
+      },
+      "Nullable": {
+        "$ref": "#/components/schemas/Alias",
+        "nullable": true
+      },
+      "Holder": {
+        "required": [
+          "rows",
+          "mapping",
+          "nested",
+          "nullableElements",
+          "nullableMapping"
+        ],
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "mapping": {
+            "$ref": "#/components/schemas/Mapping"
+          },
+          "nested": {
+            "$ref": "#/components/schemas/Nested"
+          },
+          "nullableElements": {
+            "$ref": "#/components/schemas/NullElements"
+          },
+          "nullableMapping": {
+            "$ref": "#/components/schemas/NullMapping"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/rows": {
+      "post": {
+        "operationId": "sendRows",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rows"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NullMapping"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "collections"
+        ]
+      }
+    }
+  }
+}

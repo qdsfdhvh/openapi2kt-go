@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"openapi-kt/core"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -24,6 +25,12 @@ func TestBooleanRootNullableNoDropAndLegacy(t *testing.T) {
 			r := request([]byte(input), "Dto")
 			r.Options.Validation = checked
 			got, err := core.GenerateWithDiagnostics(r)
+			if input == `{"openapi":"3.1.0","components":{"schemas":{"Alias":{"$ref":"#/components/schemas/ZAny","nullable":true},"ZAny":false}}}` {
+				if err != nil || !strings.Contains(source(t, got, "ZAnyDto"), "sealed class ZAnyDto private constructor()") || !strings.Contains(source(t, got, "AliasDto"), "typealias AliasDto = "+r.Options.PackageName+".models.ZAnyDto?") {
+					t.Fatal("original nullable false alias did not graduate", err)
+				}
+				continue
+			}
 			if err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("excluded accepted/partial", checked, input, got, err)
 			}

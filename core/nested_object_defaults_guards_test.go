@@ -26,6 +26,10 @@ func TestNestedObjectDefaultsGuards(t *testing.T) {
 		for _, validation := range []bool{false, true} {
 			r := request(fieldDoc(tc.field), "Dto")
 			r.Options.Validation = validation
+			if validation && tc.field == `{"type":"object","properties":{"a":{"type":"string"}},"allOf":[{"properties":{"a":{"type":"string"}}}],"default":{"a":"x"}}` {
+				allOfDefaultOverridePositive(t, r)
+				continue
+			}
 			report, err := core.GenerateWithDiagnostics(r)
 			ds, ok := err.(core.Diagnostics)
 			want := "/components/schemas/Record/properties/value" + tc.tail

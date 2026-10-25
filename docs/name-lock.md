@@ -29,6 +29,16 @@ subset](hoist-models.md), not arbitrary nested/union/hierarchy/error shapes.
 state. Nil explicitly starts a fresh state; nonnil empty bytes are malformed.
 Previous bytes with locking disabled return `E_OPTIONS`.
 
+For explicit migration planning, `GenerationRequest.ProjectPreviousNameLock`
+retains original allocations for a subset of original occurrences, including a
+singleton canonical hoist. It requires previous locked state and cannot allocate
+new locked shapes. The core grants no ownership: the adapter must separately
+verify exact whole-source Kotlin and allocation-occurrence union coverage; see
+[split adoption](ownership-migration.md#split-locked-owner-adoption). Ordinary
+unprojected state still rejects removed occurrences; ordinary replay of an
+already projected singleton preserves its canonical name. Existing encodings are
+unchanged; older generators do not implement singleton retention.
+
 `GenerationArtifacts.NameLock` contains canonical version1 JSON when enabled and
 is nil otherwise. Both core generation APIs return the same state. Failed calls
 return no files, state or warnings. The core does not load/save files, contact a
@@ -40,8 +50,8 @@ packages are not a public library API; ordinary internal output entry points sti
 reject nonnil lock metadata rather than silently discard it. Keep metadata and
 its manifest with the generated Kotlin; do not append JSON as a Kotlin artifact,
 write it after committing output or delete it to bypass a safety error. Broader
-shapes and partial root migrations remain unsupported; [explicit complete root
-move](output-root-move.md) preserves existing v1–v4 raw code/metadata and ownership.
+shapes remain unsupported; [explicit root moves](output-root-move.md) preserve
+existing v1–v4 state, with selected-owner and disjoint source-group profiles.
 Explicit [named-owner
 rename](output-owner-rename.md) preserves version2/4 Kotlin and lock semantics,
 and the disable/reset workflow below covers existing version3/4 output only.
@@ -351,3 +361,5 @@ before transactional replacement. Preserve and review old source/lock state befo
 such a migration. Wire checks and the earlier hoist alias/nested-classifier
 migration still apply. This is not general provider equivalence, crash atomicity,
 an independent runtime library, platform coverage or a performance claim.
+
+[Existing-v4 owner addition](ownership-migration.md#add-an-owner-to-an-existing-locked-inventory) uses `--adopt-locked-owner-from DONOR` with an explicit locked `--spec`. It projects donor allocations/occurrences and exact Kotlin subsets while retaining all old memberships/raw locks. Complete pre-input capture, all-peer CAS, existing budgets and manifest-last metadata-only rollback apply; existing full-inventory replay stays unchanged.

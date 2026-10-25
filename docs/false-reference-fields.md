@@ -1,0 +1,34 @@
+# Fields referencing false component roots
+
+OpenAPI 3.1 ordinary named component DTOs may have direct `$ref` fields targeting a [literal false component root](false-component-roots.md) or its pure named aliases. The original field accepts `$ref` and an optional Boolean `nullable`; the referenced nominal root and serializer remain authoritative. This profile works with validation off or on.
+
+```json
+{"openapi":"3.1.0","components":{"schemas":{
+  "Denied":false,
+  "Holder":{"properties":{"blocked":{"$ref":"#/components/schemas/Denied"}}}
+}}}
+```
+
+The optional, logically non-null `blocked` field has a Kotlin nullable property with default `null` as its absence carrier. Missing JSON keys decode to that carrier. A supplied value, including JSON null, throws `SerializationException`. `EncodeDefault(NEVER)` always omits the absence carrier, including with `encodeDefaults=true` and `explicitNulls=true`. A dedicated type-use serializer has a nullable descriptor so the serialization decoder delegates explicit null to the rejecting serializer. Kotlin null here represents absence; it does not create a valid false-schema value.
+
+A required, logically non-null field has a required non-null constructor argument. Its DTO is uninhabited: missing keys fail required decoding and every supplied value fails the actual false-root codec. The generated constructor and reified serializer APIs remain available to typed Kotlin consumers.
+
+A nullable alias or field override uses the established shared-model nullable policy. JSON null is admitted through the nullable wrapper, every non-null value rejects, and shared required-nullable fields retain their existing default-null/missing behavior. The nearest explicit nullable override wins. A false override after a nullable alias restores strict optional absence or the required non-null argument, according to the original `required` list. This profile adds no Patch policy.
+
+Only retained ordinary named shared DTO constructors grant this field role. Inline literal false fields, nested inline DTO owners, internal false targets, own defaults, readOnly/writeOnly fields, allOf/union/hierarchy owners, container elements and direct false HTTP/parameter/SSE roots remain outside it. A supported ordinary DTO may still be used by existing JSON HTTP model consumers; this grants no independent false HTTP-root role. Unknown semantic keys and malformed nullable values fail without partial output.
+
+The generator retains original owner/property/required/reference/nullable nodes, member and lookup consistency, actual model/property/type-tree identity, and the root codec declaration. Changing or replacing an omission flag, default-null carrier, serializer or retained field cannot acquire that authority through equal generated text. Only actual strict optional uses enable the additional root helper. Unused roots retain their previous output. Source captures share the existing 16,384 false-source work budget; source depth48, JVM slots240 and other limits remain unchanged.
+
+Data/Plain, suffixes, deterministic generation and existing dedup/hoist/merge naming rules retain the omission and codec semantics. Separate false roots retain nominal identity. Roots named `AbsentSerializer`, `Serializer` or `Companion` use safe helper names and fully qualified types.
+
+Previously rejected eligible fields now generate; existing accepted APIs and wire behavior are unchanged. This is a bounded F10/D06 extension, with no manifest, naming-lock or configuration format migration. It does not complete general Boolean schemas, defaults, compositions or platform acceptance.
+
+[Fixture](../tests/fixtures/http/false-reference-fields.json), [core contracts](../core/false_reference_fields_test.go), [actual field/source guards](../internal/schema/false_reference_fields_test.go), [native parity and failure preservation](../internal/cli/false_reference_fields_process_test.go), and [consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/FalseReferenceFieldsContracts.kt) cover the profile. `bash scripts/test.sh feature false-reference-fields` generates Data/Plain × validation off/on projects, each with baseline and optimized locked output and four Json configurations. It also generates a separate 240-field DTO for compilation and absence/null checks. These are JVM checks, not Android/KMP or a Cartesian maximum-resource promise.
+
+[Named collections with false-reference leaves](false-collection-references.md) extend F10/D06/E05 with finite original List/typed Map roots, actual nominal leaf codecs, empty-container and nullable-leaf semantics, existing referenced DTO/JSON HTTP consumers, immutable source/export/backing/cached-height authority and source48/work16384/checked16/JVM240 limits. Inline/literal-false/default/tuple/composed/internal/discarded-extra-key and direct false HTTP-root roles remain separate; broader plan/platform/final acceptance stays open.
+
+[False-reference field own null defaults](false-reference-field-defaults.md) extend D03/E03 for actual ordinary named Shared DTO fields with logical nullable intent before presence wrapping. Only null validates; required arguments keep no initializer and optional arguments initialize null, using existing Json explicitNulls rules and actual rejecting-root nullable codecs. Original owner/property/required/default/type/initializer/omission authority, source48/work16384/value/bytes/checked16/JVM240 and no inheritance remain. Other default/object-member/child/composed/internal/directional/inline/direct false HTTP/platform/general roles stay separate.
+
+[False-reference members in object root defaults](false-object-default-members.md) extend D03/E03 for actual ordinary named Shared root-owned annotations. Original logical nullable members admit null, optional non-null false members admit only absence, and literal required keys remain mandatory. Unique actual getter/source/type/required/codec and model factory/canonical initializer/literal-node authority, source48/work16384/value16384/32KiB/checked16/JVM240 and existing wire-count/JSON policies remain. Consuming-field/nested/child/wrapper/composed/internal/directional/inline and general/platform/final acceptance remain separate.
+
+[Inline collection fields with false-reference leaves](false-inline-collection-fields.md) separately admit ordinary named Shared DTO direct finite List/Map fields without field/owner defaults. Empty containers remain inhabited, logical nullable leaves admit null, non-null false leaves reject every supplied value, and optional containers retain normal presence rather than direct-false absence policy. Actual retained field/type/check/source/codec proof and existing depth/work/checked/JVM limits remain; other roles and general Boolean/platform acceptance stay separate.

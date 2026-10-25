@@ -61,8 +61,13 @@ func emitModelValidation(model *schema.Model, indent int, hints schema.EmissionH
 		fmt.Fprintf(out, "%s    }\n", pad)
 	}
 	fmt.Fprintf(out, "%s}\n", pad)
+	emitted := map[string]bool{}
 	for i, p := range model.Properties {
 		if helper := helpers[i]; helper != "" {
+			if emitted[helper] {
+				continue
+			}
+			emitted[helper] = true
 			ty := p.Type
 			if p.Validation != nil && (ty.Kind == schema.Nullable || ty.Kind == schema.PatchValue) {
 				ty = *ty.Element
@@ -82,6 +87,8 @@ func emitModelValidation(model *schema.Model, indent int, hints schema.EmissionH
 // state, extra serializer field, cast, regex cache, or source-count expansion.
 func primitiveHelperNames(model *schema.Model, hints schema.EmissionHints) map[int]string {
 	names := map[int]string{}
+	structural := map[string]string{}
+	budgeted := inlineModelValidationTooLarge(model, hints)
 	used := map[string]bool{"companion": true, "serializer": true, strings.ToLower(model.ClassName): true}
 	reserve := func(name string) { used[strings.ToLower(strings.Trim(name, "`"))] = true }
 	for _, p := range model.Properties {
@@ -97,12 +104,32 @@ func primitiveHelperNames(model *schema.Model, hints schema.EmissionHints) map[i
 		reserve(propertyCountSerializerName(model))
 	}
 	for i, p := range model.Properties {
+		sharedBudget := false
 		if p.Validation != nil {
 			if !hints[p.Validation] {
 				continue
 			}
 		} else if !typeNeedsPrimitiveHelper(p.Type, hints) {
-			continue
+			if !budgeted || !typeHasInlineValidationTraversal(p.Type) {
+				continue
+			}
+			sharedBudget = true
+		}
+		key := ""
+		if p.Validation == nil && (typeUsesUnique(p.Type, structuralUniqueElement) || typeHasDTOUnique(p.Type)) {
+			var checks strings.Builder
+			emitTypeChecks(p.Type, "value", "Field value", 0, &checks)
+			key = RenderType(p.Type) + "\n" + checks.String()
+			if helper := structural[key]; helper != "" {
+				names[i] = helper
+				continue
+			}
+		} else if sharedBudget {
+			key = "budget\n" + validationHelperKey(p)
+			if helper := structural[key]; helper != "" {
+				names[i] = helper
+				continue
+			}
 		}
 		name := "openapiKtValidatePrimitive"
 		for suffix := 2; used[strings.ToLower(name)]; suffix++ {
@@ -110,14 +137,56 @@ func primitiveHelperNames(model *schema.Model, hints schema.EmissionHints) map[i
 		}
 		reserve(name)
 		names[i] = name
+		if key != "" {
+			structural[key] = name
+		}
 	}
 	return names
+}
+
+// Bound the source expanded into one constructor's validation body. Nested
+// inline collection loops make the JVM optimizer's control-flow work grow far
+// beyond source width alone. Larger bodies use ordinary private typed methods;
+// this changes neither input limits nor public types, checks, state or codecs.
+const inlineValidationSourceLimit = 12 * 1024
+
+func inlineModelValidationTooLarge(model *schema.Model, hints schema.EmissionHints) bool {
+	var checks strings.Builder
+	for _, p := range model.Properties {
+		if p.Validation != nil || typeNeedsPrimitiveHelper(p.Type, hints) || !typeHasInlineValidationTraversal(p.Type) {
+			continue
+		}
+		emitTypeChecks(p.Type, "value", "Field value", 0, &checks)
+		if checks.Len() > inlineValidationSourceLimit {
+			return true
+		}
+	}
+	return false
+}
+
+func typeHasInlineValidationTraversal(ty schema.TypeRef) bool {
+	if ty.Element == nil {
+		return false
+	}
+	if ty.Kind == schema.List || ty.Kind == schema.Map {
+		return typeHasValidation(*ty.Element)
+	}
+	return typeHasInlineValidationTraversal(*ty.Element)
+}
+
+// Only identical actual Kotlin parameter types and emitted checks share a
+// method. Collection helpers retain the full original type, including nullable
+// roots and Patch views. Existing scalar and shared uniqueness helpers stay put.
+func validationHelperKey(p schema.Property) string {
+	var checks strings.Builder
+	emitTypeChecks(p.Type, "value", "Field value", 0, &checks)
+	return RenderType(p.Type) + "\n" + checks.String()
 }
 
 // Only plan-hinted typed leaves demand a model helper. The full property type
 // and unchanged recursive checker retain null/Patch/container semantics.
 func typeNeedsPrimitiveHelper(ty schema.TypeRef, hints schema.EmissionHints) bool {
-	return hints[ty.Validation] || ty.Element != nil && typeNeedsPrimitiveHelper(*ty.Element, hints)
+	return hints[ty.Validation] || typeUsesUnique(ty, structuralUniqueElement) || typeHasDTOUnique(ty) || ty.Element != nil && typeNeedsPrimitiveHelper(*ty.Element, hints)
 }
 
 // Messages use fixed labels, never raw values or source property names.

@@ -53,7 +53,7 @@ func readGeneratePrevious(args arguments, timer *metricCollector, previous []byt
 		return core.GenerationReport{}, 4, failed("E_INPUT_IO", "Cannot read the input document.").Diagnostics
 	}
 	finishGeneration := timer.phase("generate")
-	generated, err := core.GenerateWithPhaseObserver(core.GenerationRequest{Document: data, Format: args.format, SourceName: args.input, PreviousNameLock: previous, Options: core.GenerationOptions{PackageName: args.packageName, RuntimePackage: args.runtimePackage, ModelStyle: args.modelStyle, DeduplicateModels: args.deduplicateModels, MergeIdenticalModels: args.mergeIdenticalModels, ExcludeMergeModels: args.excludeMergeModels, ExcludeMergeModelPatterns: args.excludeMergeModelPatterns, ExcludeMergeModelSuffixes: args.excludeMergeModelSuffixes, HoistSharedShapes: args.hoistSharedShapes, QualifyHoistedNames: args.qualifyHoistedNames, LockHoistedNames: args.lockHoistedNames, ModelNameSuffix: args.suffix, APIClientName: args.clientName, ExcludeAPIs: args.excludeAPIs, Validation: args.validation}}, timer.coreObserver())
+	generated, err := core.GenerateWithPhaseObserver(core.GenerationRequest{Document: data, Format: args.format, SourceName: args.input, PreviousNameLock: previous, ProjectPreviousNameLock: args.projectNameLock, Options: core.GenerationOptions{PackageName: args.packageName, RuntimePackage: args.runtimePackage, ModelStyle: args.modelStyle, DeduplicateModels: args.deduplicateModels, MergeIdenticalModels: args.mergeIdenticalModels, ExcludeMergeModels: args.excludeMergeModels, ExcludeMergeModelPatterns: args.excludeMergeModelPatterns, ExcludeMergeModelSuffixes: args.excludeMergeModelSuffixes, HoistSharedShapes: args.hoistSharedShapes, QualifyHoistedNames: args.qualifyHoistedNames, LockHoistedNames: args.lockHoistedNames, ModelNameSuffix: args.suffix, APIClientName: args.clientName, ExcludeAPIs: args.excludeAPIs, Validation: args.validation}}, timer.coreObserver())
 	finishGeneration()
 	if err != nil {
 		return generated, 1, err.(core.Diagnostics)
@@ -77,6 +77,16 @@ func configArguments(base arguments, s config.Settings, dir string) arguments {
 	a.clientName = text("api_client_name")
 	a.excludeAPIs, _ = s["exclude_apis"].([]string)
 	a.validation, _ = s["validation"].(bool)
+	a.denyWarnings, _ = s["deny_warnings"].(bool)
+	a.allowWarnings, _ = s["allow_warnings"].([]string)
+	// Invocation warning flags apply to every generated source, including peer
+	// controls in migrations. Other emission overrides retain selected scope.
+	if base.denyWarnings {
+		a.denyWarnings = true
+	}
+	if len(base.allowWarnings) > 0 {
+		a.allowWarnings = base.allowWarnings
+	}
 	a.deduplicateModels, _ = s["deduplicate_models"].(bool)
 	a.mergeIdenticalModels, _ = s["merge_identical_models"].(bool)
 	a.excludeMergeModels, _ = s["exclude_merge_models"].([]string)
@@ -207,6 +217,10 @@ func executeConfig(args arguments, timer *metricCollector) (int, report) {
 			base.nameLockAction = ""
 		}
 		a := configArguments(base, config.Overlay(cfg.Defaults, s.Settings), dir)
+		if !a.denyWarnings && len(a.allowWarnings) != 0 {
+			return 1, failed("E_CONFIG_INVALID", "A nonempty warning allowlist requires effective deny_warnings or --deny-warnings.")
+		}
+
 		if err := naming.ValidateMergeExclusions(a.mergeIdenticalModels, a.excludeMergeModels, a.excludeMergeModelPatterns, a.excludeMergeModelSuffixes); err != nil {
 			return 1, report{Status: "error", Files: []string{}, Diagnostics: core.Diagnostics{*err}, Spec: s.Name}
 		}
@@ -244,6 +258,9 @@ func executeConfig(args arguments, timer *metricCollector) (int, report) {
 		return 1, failed("E_CONFIG_RUNTIME_ROOTS", "An explicit shared runtime package requires one declared output root across its configured specs.")
 	}
 	if len(cfg.Specs) == 0 {
+		if args.reassignLockedOwners {
+			return 4, failed("E_LOCKED_OWNER_REASSIGN_INVALID", "Locked reassignment requires a nonempty complete desired inventory.")
+		}
 		if args.nameLockAction != "" {
 			return 1, failed("E_CONFIG_EMPTY", "Name-lock actions require selected specs with existing state.")
 		}
@@ -257,6 +274,9 @@ func executeConfig(args arguments, timer *metricCollector) (int, report) {
 		updates[a.output] = output.OwnerUpdate{Reconcile: true}
 	}
 	finishConfig()
+	if args.reassignLockedOwners {
+		return executeLockedOwnerReassignment(args, cfg, settings, timer)
+	}
 	if args.adoptLockedOwner {
 		return executeLockedOwnerAdoption(args, cfg, settings, timer)
 	}
@@ -315,17 +335,13 @@ func executeConfig(args arguments, timer *metricCollector) (int, report) {
 		updates[a.output] = update
 	}
 	timer.plannedConfig(updates)
-	if args.denyWarnings {
-		endPolicy := timer.phase("warning_policy")
-		denied := deniedWarnings(all.Warnings, args.allowWarnings)
-		endPolicy()
-		if len(denied) != 0 {
-			all.Status = "error"
-			all.Diagnostics = denied
-			all.NameLockMigrations = nil
-			return 1, all
-		}
+	if denied := configDeniedWarnings(all.Specs, settings, timer); len(denied) != 0 {
+		all.Status = "error"
+		all.Diagnostics = denied
+		all.NameLockMigrations = nil
+		return 1, all
 	}
+
 	if args.command == "generate" || args.nameLockAction != "" {
 		phase := "commit"
 		readonly := args.check || args.command == "validate"

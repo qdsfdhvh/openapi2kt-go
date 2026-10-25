@@ -62,7 +62,6 @@ func TestTemporalArrayDefaultsKeepInvalidMembersAndUnsupportedRoles(t *testing.T
 		}
 	}
 	for _, input := range []string{
-		`{"Day":{"type":"string","format":"date"},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Day"},"default":[]}}}}`,
 		`{"Holder":{"allOf":[{"properties":{"value":{"type":"array","items":{"type":"string","format":"date"},"default":["invalid"]}}},{"properties":{"value":{"type":"string"}}}]}}`,
 	} {
 		got, err := core.GenerateWithDiagnostics(request(schemas(input), "Dto"))

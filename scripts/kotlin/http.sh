@@ -5,6 +5,243 @@ mkdir -p build
 workspace="$(mktemp -d "$root/build/http-smoke-XXXXXX")"
 cp -R samples/kotlin-http-smoke "$workspace/project"
 openapi_kt_build_cli "$workspace/openapi-kt"
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-allof-unique.json --output "$workspace/project/build/generated-limits/dto-allof-unique" --package-name org.example.dtoallofunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-collection-reference-leaves-unique.json --output "$workspace/project/build/generated-limits/dto-collection-reference-leaves-unique" --package-name org.example.dtocollectionreferenceleavesunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-string-collection-reference-unique.json --output "$workspace/project/build/generated-limits/dto-string-collection-reference-unique" --package-name org.example.dtostringcollectionreferenceunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-native-collection-reference-unique.json --output "$workspace/project/build/generated-limits/dto-native-collection-reference-unique" --package-name org.example.dtonativecollectionreferenceunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-special-collection-reference-unique.json --output "$workspace/project/build/generated-limits/dto-special-collection-reference-unique" --package-name org.example.dtospecialcollectionreferenceunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-builtin-collection-reference-unique.json --output "$workspace/project/build/generated-limits/dto-builtin-collection-reference-unique" --package-name org.example.dtobuiltincollectionreferenceunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-string-reference-unique.json --output "$workspace/project/build/generated-limits/dto-string-reference-unique" --package-name org.example.dtostringreferenceunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-native-reference-unique.json --output "$workspace/project/build/generated-limits/dto-native-reference-unique" --package-name org.example.dtonativereferenceunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-scalar-reference-unique.json --output "$workspace/project/build/generated-limits/dto-scalar-reference-unique" --package-name org.example.dtoscalarreferenceunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-string-collection-unique.json --output "$workspace/project/build/generated-limits/dto-string-collection-unique" --package-name org.example.dtostringcollectionunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-native-collection-unique.json --output "$workspace/project/build/generated-limits/dto-native-collection-unique" --package-name org.example.dtonativecollectionunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-null-collection-unique.json --output "$workspace/project/build/generated-limits/dto-null-collection-unique" --package-name org.example.dtonullcollectionunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/null-component-factories.json --output "$workspace/project/build/generated-limits/null-component-factories" --package-name org.example.nullcomponentfactories --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/null-value-defaults.json --output "$workspace/project/build/generated-limits/null-value-defaults" --package-name org.example.nullvaluedefaults --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/null-value-defaults.json --output "$workspace/project/build/generated-limits/null-value-defaults" --package-name org.example.nullvaluedefaults --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/null-const-object-defaults.json --output "$workspace/project/build/generated-limits/null-const-object-defaults" --package-name org.example.nullconstdefaults --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/null-const-object-defaults.json --output "$workspace/project/build/generated-limits/null-const-object-defaults" --package-name org.example.nullconstdefaults --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-collection-unique.json --output "$workspace/project/build/generated-limits/dto-collection-unique" --package-name org.example.dtocollectionunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-collection-unique.json --output "$workspace/project/build/generated-limits/dto-collection-unique" --package-name org.example.dtocollectionunique --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-null-unique.json --output "$workspace/project/build/generated-limits/dto-null-unique" --package-name org.example.dtonullunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-null-unique.json --output "$workspace/project/build/generated-limits/dto-null-unique" --package-name org.example.dtonullunique --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-const-unique.json --output "$workspace/project/build/generated-limits/dto-const-unique" --package-name org.example.dtoconstunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-const-unique.json --output "$workspace/project/build/generated-limits/dto-const-unique" --package-name org.example.dtoconstunique --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-enum-unique.json --output "$workspace/project/build/generated-limits/dto-enum-unique" --package-name org.example.dtoenumunique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-enum-unique.json --output "$workspace/project/build/generated-limits/dto-enum-unique" --package-name org.example.dtoenumunique --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-unique.json --output "$workspace/project/build/generated-limits/dto-unique" --package-name org.example.dtounique --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/dto-unique.json --output "$workspace/project/build/generated-limits/dto-unique" --package-name org.example.dtounique --model-name-suffix Dto --check
+
+for profile in composed-leaf-intersections nullable-composed-leaf-intersections; do
+  package=org.example.composedleaf
+  if [[ "$profile" == nullable-composed-leaf-intersections ]]; then package=org.example.composedleafnullable;fi
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto --check
+done
+for profile in hierarchy-dto-intersections nullable-hierarchy-dto-intersections; do
+  package=org.example.hierarchydto
+  if [[ "$profile" == nullable-hierarchy-dto-intersections ]]; then package=org.example.hierarchydtonullable;fi
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto --check
+done
+for profile in composed-dto-intersections nullable-composed-dto-intersections; do
+  package=org.example.composeddto
+  if [[ "$profile" == nullable-composed-dto-intersections ]]; then package=org.example.composeddtonullable;fi
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto --check
+done
+for profile in composed-target-owners nullable-composed-target-owners; do
+  package=org.example.composedtargetowners
+  if [[ "$profile" == nullable-composed-target-owners ]]; then package=org.example.composedtargetownersnullable;fi
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto --check
+done
+for profile in allof-target-intersections nullable-allof-target-intersections; do
+  package=org.example.alloftarget
+  if [[ "$profile" == nullable-allof-target-intersections ]]; then package=org.example.alloftargetnullable;fi
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto --check
+done
+for profile in internal-dto-intersections nullable-internal-dto-intersections; do
+  package=org.example.internaldto
+  if [[ "$profile" == nullable-internal-dto-intersections ]]; then package=org.example.internaldtonullable;fi
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto
+  "$workspace/openapi-kt" generate --validation --input "tests/fixtures/http/$profile.json" \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "$package" --api-client-name BridgeClient --model-name-suffix Dto --check
+done
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/nullable-bridge-intersections.json \
+  --output "$workspace/project/build/generated-limits/nullable-bridge-intersections" --package-name org.example.nullablebridge --api-client-name BridgeClient --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/nullable-bridge-intersections.json \
+  --output "$workspace/project/build/generated-limits/nullable-bridge-intersections" --package-name org.example.nullablebridge --api-client-name BridgeClient --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/bridge-intersections.json \
+  --output "$workspace/project/build/generated-limits/bridge-intersections" --package-name org.example.bridge --api-client-name BridgeClient --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/bridge-intersections.json \
+  --output "$workspace/project/build/generated-limits/bridge-intersections" --package-name org.example.bridge --api-client-name BridgeClient --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/allof-uuid-defaults.json \
+  --output "$workspace/project/build/generated-limits/allof-uuid-defaults" --package-name org.example.allofuuid --api-client-name UUIDDefaultsClient --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/allof-uuid-defaults.json \
+  --output "$workspace/project/build/generated-limits/allof-uuid-defaults" --package-name org.example.allofuuid --api-client-name UUIDDefaultsClient --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/standard-form-fields.json \
+  --output "$workspace/project/build/generated-limits/standard-form-fields" --package-name org.example.standardform --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/standard-form-fields.json \
+  --output "$workspace/project/build/generated-limits/standard-form-fields" --package-name org.example.standardform --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/wide-deep-validation.json \
+  --output "$workspace/project/build/generated-limits/wide-deep-validation" --package-name org.example.widedeep --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/wide-deep-validation.json \
+  --output "$workspace/project/build/generated-limits/wide-deep-validation" --package-name org.example.widedeep --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/enum-form-fields.json \
+  --output "$workspace/project/build/generated-limits/enum-form-fields" --package-name org.example.enumform --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/enum-form-fields.json \
+  --output "$workspace/project/build/generated-limits/enum-form-fields" --package-name org.example.enumform --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/floating-form-fields.json \
+  --output "$workspace/project/build/generated-limits/floating-form-fields" --package-name org.example.floatingform --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/floating-form-fields.json \
+  --output "$workspace/project/build/generated-limits/floating-form-fields" --package-name org.example.floatingform --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/optional-form-fields.json \
+  --output "$workspace/project/build/generated-limits/optional-form-fields" --package-name org.example.formfields --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/optional-form-fields.json \
+  --output "$workspace/project/build/generated-limits/optional-form-fields" --package-name org.example.formfields --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/unformatted-native-factories.json \
+  --output "$workspace/project/build/generated-limits/unformatted-native-factories" --package-name org.example.unformatted --model-name-suffix Dto --api-client-name UnformattedFactoryClient
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/unformatted-native-factories.json \
+  --output "$workspace/project/build/generated-limits/unformatted-native-factories" --package-name org.example.unformatted --model-name-suffix Dto --api-client-name UnformattedFactoryClient --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/object-collection-factories.json \
+  --output "$workspace/project/build/generated-limits/object-collection-factories" --package-name org.example.objectfactory --model-name-suffix Dto --api-client-name ObjectFactoryClient
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/object-collection-factories.json \
+  --output "$workspace/project/build/generated-limits/object-collection-factories" --package-name org.example.objectfactory --model-name-suffix Dto --api-client-name ObjectFactoryClient --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/tuple-root-defaults.json \
+  --output "$workspace/project/build/generated-limits/tuple-root-defaults" --package-name org.example.tupleroot --model-name-suffix Dto --api-client-name TupleRootClient
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/tuple-root-defaults.json \
+  --output "$workspace/project/build/generated-limits/tuple-root-defaults" --package-name org.example.tupleroot --model-name-suffix Dto --api-client-name TupleRootClient --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/false-dto-field-counts.json \
+  --output "$workspace/project/build/generated-limits/false-dto-field-counts" --package-name org.example.falsedtocounts --model-name-suffix "" --api-client-name FalseDTOFieldCountsClient
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/false-dto-field-counts.json \
+  --output "$workspace/project/build/generated-limits/false-dto-field-counts" --package-name org.example.falsedtocounts --model-name-suffix "" --api-client-name FalseDTOFieldCountsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-dto-independent-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-dto-independent-defaults" --package-name org.example.falsedtoindependent --model-name-suffix "" --api-client-name FalseDTOIndependentDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-dto-independent-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-dto-independent-defaults" --package-name org.example.falsedtoindependent --model-name-suffix "" --api-client-name FalseDTOIndependentDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-inline-collection-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-inline-collection-defaults" --package-name org.example.falseinlinedefaults --model-name-suffix "" --api-client-name FalseInlineDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-inline-collection-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-inline-collection-defaults" --package-name org.example.falseinlinedefaults --model-name-suffix "" --api-client-name FalseInlineDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-dto-owner-alias-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-dto-owner-alias-defaults" --package-name org.example.falsedtoaliasdefaults --model-name-suffix "" --api-client-name FalseDTOAliasDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-dto-owner-alias-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-dto-owner-alias-defaults" --package-name org.example.falsedtoaliasdefaults --model-name-suffix "" --api-client-name FalseDTOAliasDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-dto-owner-root-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-dto-owner-root-defaults" --package-name org.example.falsedtorootdefaults --model-name-suffix "" --api-client-name FalseDTORootDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-dto-owner-root-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-dto-owner-root-defaults" --package-name org.example.falsedtorootdefaults --model-name-suffix "" --api-client-name FalseDTORootDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-collection-dto-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/literal-false-collection-dto-field-defaults" --package-name org.example.literalcollectionfielddefaults --model-name-suffix "" --api-client-name LiteralCollectionFieldDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-collection-dto-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/literal-false-collection-dto-field-defaults" --package-name org.example.literalcollectionfielddefaults --model-name-suffix "" --api-client-name LiteralCollectionFieldDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-collection-root-defaults.json \
+  --output "$workspace/project/build/generated-limits/literal-false-collection-root-defaults" --package-name org.example.literalcollectionrootdefaults --model-name-suffix "" --api-client-name LiteralCollectionRootDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-collection-root-defaults.json \
+  --output "$workspace/project/build/generated-limits/literal-false-collection-root-defaults" --package-name org.example.literalcollectionrootdefaults --model-name-suffix "" --api-client-name LiteralCollectionRootDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-collection-defaults.json \
+  --output "$workspace/project/build/generated-limits/literal-false-collection-defaults" --package-name org.example.literalcollectiondefaults --model-name-suffix "" --api-client-name LiteralCollectionDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-collection-defaults.json \
+  --output "$workspace/project/build/generated-limits/literal-false-collection-defaults" --package-name org.example.literalcollectiondefaults --model-name-suffix "" --api-client-name LiteralCollectionDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-collection-fields.json \
+  --output "$workspace/project/build/generated-limits/literal-false-collection-fields" --package-name org.example.literalcollections --model-name-suffix "" --api-client-name LiteralCollectionsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-collection-fields.json \
+  --output "$workspace/project/build/generated-limits/literal-false-collection-fields" --package-name org.example.literalcollections --model-name-suffix "" --api-client-name LiteralCollectionsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-dto-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/literal-false-dto-field-defaults" --package-name org.example.literalfielddefaults --model-name-suffix "" --api-client-name LiteralFieldDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-dto-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/literal-false-dto-field-defaults" --package-name org.example.literalfielddefaults --model-name-suffix "" --api-client-name LiteralFieldDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-root-defaults.json \
+  --output "$workspace/project/build/generated-limits/literal-false-root-defaults" --package-name org.example.literalrootdefaults --model-name-suffix "" --api-client-name LiteralRootDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-root-defaults.json \
+  --output "$workspace/project/build/generated-limits/literal-false-root-defaults" --package-name org.example.literalrootdefaults --model-name-suffix "" --api-client-name LiteralRootDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-fields.json \
+  --output "$workspace/project/build/generated-limits/literal-false-fields" --package-name org.example.literalfalse --model-name-suffix "" --api-client-name LiteralFalseClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/literal-false-fields.json \
+  --output "$workspace/project/build/generated-limits/literal-false-fields" --package-name org.example.literalfalse --model-name-suffix "" --api-client-name LiteralFalseClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-inline-collection-fields.json \
+  --output "$workspace/project/build/generated-limits/false-inline-collection-fields" --package-name org.example.falseinlinecollections --model-name-suffix "" --api-client-name FalseInlineCollectionsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-inline-collection-fields.json \
+  --output "$workspace/project/build/generated-limits/false-inline-collection-fields" --package-name org.example.falseinlinecollections --model-name-suffix "" --api-client-name FalseInlineCollectionsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-dto-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-dto-field-defaults" --package-name org.example.falsedtodefaults --model-name-suffix "" --api-client-name FalseDTOFieldDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-dto-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-dto-field-defaults" --package-name org.example.falsedtodefaults --model-name-suffix "" --api-client-name FalseDTOFieldDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-object-default-members.json \
+  --output "$workspace/project/build/generated-limits/false-object-default-members" --package-name org.example.falseobjectdefaults --model-name-suffix "" --api-client-name FalseObjectDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-object-default-members.json \
+  --output "$workspace/project/build/generated-limits/false-object-default-members" --package-name org.example.falseobjectdefaults --model-name-suffix "" --api-client-name FalseObjectDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-reference-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-reference-field-defaults" --package-name org.example.falsefielddefaults --model-name-suffix "" --api-client-name FalseFieldDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-reference-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-reference-field-defaults" --package-name org.example.falsefielddefaults --model-name-suffix "" --api-client-name FalseFieldDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-alias-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-alias-defaults" --package-name org.example.falsealiasdefaults --model-name-suffix "" --api-client-name FalseAliasDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-alias-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-alias-defaults" --package-name org.example.falsealiasdefaults --model-name-suffix "" --api-client-name FalseAliasDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-collection-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-collection-defaults" --package-name org.example.falsecollectiondefaults --model-name-suffix "" --api-client-name FalseCollectionDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-collection-defaults.json \
+  --output "$workspace/project/build/generated-limits/false-collection-defaults" --package-name org.example.falsecollectiondefaults --model-name-suffix "" --api-client-name FalseCollectionDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-collection-references.json \
+  --output "$workspace/project/build/generated-limits/false-collection-references" --package-name org.example.falsecollections --model-name-suffix "" --api-client-name FalseCollectionsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-collection-references.json \
+  --output "$workspace/project/build/generated-limits/false-collection-references" --package-name org.example.falsecollections --model-name-suffix "" --api-client-name FalseCollectionsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-reference-fields.json \
+  --output "$workspace/project/build/generated-limits/false-reference-fields" --package-name org.example.falsefields --model-name-suffix ""
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-reference-fields.json \
+  --output "$workspace/project/build/generated-limits/false-reference-fields" --package-name org.example.falsefields --model-name-suffix "" --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-component-roots.json \
+  --output "$workspace/project/build/generated-limits/false-component-roots" --package-name org.example.falsecomponents --model-name-suffix ""
+"$workspace/openapi-kt" generate --input tests/fixtures/http/false-component-roots.json \
+  --output "$workspace/project/build/generated-limits/false-component-roots" --package-name org.example.falsecomponents --model-name-suffix "" --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/nullable-recursive-cover-edges.json \
+  --output "$workspace/project/build/generated-limits/nullable-recursive-cover-edges" --package-name org.example.nullablerecursiveedges --model-name-suffix Dto --api-client-name NullableRecursiveEdgesClient
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/nullable-recursive-cover-edges.json \
+  --output "$workspace/project/build/generated-limits/nullable-recursive-cover-edges" --package-name org.example.nullablerecursiveedges --model-name-suffix Dto --api-client-name NullableRecursiveEdgesClient --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/tuple-native-enum-references.json \
+  --output "$workspace/project/build/generated-limits/tuple-native-enum-references" --package-name org.example.tuplenative --model-name-suffix Dto --api-client-name TupleNativeClient
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/tuple-native-enum-references.json \
+  --output "$workspace/project/build/generated-limits/tuple-native-enum-references" --package-name org.example.tuplenative --model-name-suffix Dto --api-client-name TupleNativeClient --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/allof-default-overrides.json \
+  --output "$workspace/project/build/generated-limits/allof-default-overrides" --package-name org.example.allofdefaultoverrides --model-name-suffix Dto --api-client-name DefaultOverridesClient
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/allof-default-overrides.json \
+  --output "$workspace/project/build/generated-limits/allof-default-overrides" --package-name org.example.allofdefaultoverrides --model-name-suffix Dto --api-client-name DefaultOverridesClient --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/allof-numeric-defaults.json \
+  --output "$workspace/project/build/generated-limits/allof-numeric-defaults" --package-name org.example.allofnumeric --model-name-suffix Dto --api-client-name NumericDefaultsClient
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/allof-numeric-defaults.json \
+  --output "$workspace/project/build/generated-limits/allof-numeric-defaults" --package-name org.example.allofnumeric --model-name-suffix Dto --api-client-name NumericDefaultsClient --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/allof-string-defaults.json \
+  --output "$workspace/project/build/generated-limits/allof-string-defaults" --package-name org.example.allofstring --model-name-suffix Dto --api-client-name StringDefaultsClient
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/allof-string-defaults.json \
+  --output "$workspace/project/build/generated-limits/allof-string-defaults" --package-name org.example.allofstring --model-name-suffix Dto --api-client-name StringDefaultsClient --check
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/composed-member-defaults.json \
+  --output "$workspace/project/build/generated-limits/composed-member" --package-name org.example.composedmember --model-name-suffix Dto --api-client-name ComposedMemberClient
+"$workspace/openapi-kt" generate --validation --input tests/fixtures/http/composed-member-defaults.json \
+  --output "$workspace/project/build/generated-limits/composed-member" --package-name org.example.composedmember --model-name-suffix Dto --api-client-name ComposedMemberClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/split-adoption-source.json \
+  --output "$workspace/project/build/generated-limits/split-adoption" --package-name org.example.split --model-name-suffix Dto --api-client-name SplitClient --hoist-shared-shapes --lock-hoisted-names
+"$workspace/openapi-kt" generate --input tests/fixtures/http/split-adoption-source.json \
+  --output "$workspace/project/build/generated-limits/split-adoption" --package-name org.example.split --model-name-suffix Dto --api-client-name SplitClient --hoist-shared-shapes --lock-hoisted-names --check
+env -u GOROOT GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off \
+  OPENAPI_KT_PROJECTION_OUTPUT="$workspace/project/build/generated-limits/single-projection" \
+  OPENAPI_KT_PROJECTION_INPUT="$root/tests/fixtures/http/split-adoption-source.json" \
+  OPENAPI_KT_PROJECTION_STYLE=data_class OPENAPI_KT_PROJECTION_CHECKED=off \
+  "${GO:-go}" test ./core -run '^TestExportNameLockProjection$' -count=1
 "$workspace/openapi-kt" generate --validation --input tests/fixtures/http/map-unique.json \
   --output "$workspace/project/build/generated-limits/map-unique" --package-name org.example.mapunique --model-name-suffix Dto
 "$workspace/openapi-kt" generate --validation --input tests/fixtures/http/map-unique.json \
@@ -37,6 +274,18 @@ openapi_kt_build_cli "$workspace/openapi-kt"
   --output "$workspace/project/build/generated-limits/parameter-styles" --package-name org.example.parameterstyles --api-client-name ParameterStyles --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/parameter-styles.json \
   --output "$workspace/project/build/generated-limits/parameter-styles" --package-name org.example.parameterstyles --api-client-name ParameterStyles --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/tuple-field-defaults" --package-name org.example.tuplefielddefaults --model-name-suffix Dto --api-client-name TupleFieldDefaults
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-field-defaults.json \
+  --output "$workspace/project/build/generated-limits/tuple-field-defaults" --package-name org.example.tuplefielddefaults --model-name-suffix Dto --api-client-name TupleFieldDefaults --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/raw-request-media.json \
+  --output "$workspace/project/build/generated-limits/raw-request-media" --package-name org.example.rawrequest --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/raw-request-media.json \
+  --output "$workspace/project/build/generated-limits/raw-request-media" --package-name org.example.rawrequest --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/form-request-media.json \
+  --output "$workspace/project/build/generated-limits/form-request-media" --package-name org.example.formmedia --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/form-request-media.json \
+  --output "$workspace/project/build/generated-limits/form-request-media" --package-name org.example.formmedia --model-name-suffix Dto --check
 "$workspace/openapi-kt" generate --input tests/fixtures/http/raw-response-media.json \
   --output "$workspace/project/build/generated-limits/raw-response-media" --package-name org.example.rawmedia --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/raw-response-media.json \
@@ -45,6 +294,16 @@ openapi_kt_build_cli "$workspace/openapi-kt"
   --output "$workspace/project/build/generated-limits/referenced-bytes-field-defaults" --package-name org.example.refbytes --api-client-name ReferencedBytes --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/referenced-bytes-field-defaults.json \
   --output "$workspace/project/build/generated-limits/referenced-bytes-field-defaults" --package-name org.example.refbytes --api-client-name ReferencedBytes --model-name-suffix Dto --check
+for profile in allofdirectional allofdirectionaloptions; do
+  options=()
+  if [[ "$profile" == allofdirectionaloptions ]]; then
+    options=(--deduplicate-models --hoist-shared-shapes --merge-identical-models --lock-hoisted-names)
+  fi
+  "$workspace/openapi-kt" generate --input tests/fixtures/http/allof-directional-models.json \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "org.example.$profile" --model-name-suffix Dto "${options[@]}"
+  "$workspace/openapi-kt" generate --input tests/fixtures/http/allof-directional-models.json \
+    --output "$workspace/project/build/generated-limits/$profile" --package-name "org.example.$profile" --model-name-suffix Dto "${options[@]}" --check
+done
 for profile in directional directionaloptions; do
   options=()
   if [[ "$profile" == directionaloptions ]]; then
@@ -1736,6 +1995,14 @@ exclusion_flags=(--merge-identical-models --validation --hoist-shared-shapes --d
   --output "$workspace/project/build/generated-limits/explicit-null-literals" --package-name org.example.nullliterals --api-client-name NullLiterals --model-name-suffix Dto --validation
 "$workspace/openapi-kt" generate --input tests/fixtures/http/null-only-defaults.json \
   --output "$workspace/project/build/generated-limits/explicit-null-literals" --package-name org.example.nullliterals --api-client-name NullLiterals --model-name-suffix Dto --validation --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/discarded-structured-const.json \
+  --output "$workspace/project/build/generated-limits/discarded-structured-const" --package-name org.example.discarded --api-client-name DiscardedClient --model-name-suffix Dto --validation
+"$workspace/openapi-kt" generate --input tests/fixtures/http/discarded-structured-const.json \
+  --output "$workspace/project/build/generated-limits/discarded-structured-const" --package-name org.example.discarded --api-client-name DiscardedClient --model-name-suffix Dto --validation --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/pinned-structured-const.json \
+  --output "$workspace/project/build/generated-limits/pinned-structured-const" --package-name org.example.pinned --api-client-name PinnedClient --model-name-suffix Dto --validation
+"$workspace/openapi-kt" generate --input tests/fixtures/http/pinned-structured-const.json \
+  --output "$workspace/project/build/generated-limits/pinned-structured-const" --package-name org.example.pinned --api-client-name PinnedClient --model-name-suffix Dto --validation --check
 "$workspace/openapi-kt" generate --input tests/fixtures/http/structured-const-fields.json \
   --output "$workspace/project/build/generated-limits/structured-const-fields" --package-name org.example.structuredconst --api-client-name StructuredConsts --model-name-suffix Dto --validation
 "$workspace/openapi-kt" generate --input tests/fixtures/http/structured-const-fields.json \
@@ -1880,6 +2147,38 @@ for contract in bytes-field-defaults bytes-component-defaults reference-wrapper-
   "$workspace/openapi-kt" generate --input "tests/fixtures/http/$contract.json" \
     --output "$workspace/project/build/generated-limits/$contract" --package-name "$pkg" --api-client-name "$client" --model-name-suffix Dto --check
 done
+"$workspace/openapi-kt" generate --input tests/fixtures/http/merge-primitive-unions.json \
+  --output "$workspace/project/build/generated-limits/merge-primitive-unions" --package-name org.example.unionmerge --model-name-suffix Dto --merge-identical-models
+"$workspace/openapi-kt" generate --input tests/fixtures/http/merge-primitive-unions.json \
+  --output "$workspace/project/build/generated-limits/merge-primitive-unions" --package-name org.example.unionmerge --model-name-suffix Dto --merge-identical-models --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-target-defaults.json \
+  --output "$workspace/project/build/generated-limits/tuple-target-defaults" --package-name org.example.tupletargetdefaults --model-name-suffix Dto --api-client-name TupleTargetDefaultsClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-target-defaults.json \
+  --output "$workspace/project/build/generated-limits/tuple-target-defaults" --package-name org.example.tupletargetdefaults --model-name-suffix Dto --api-client-name TupleTargetDefaultsClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-allof-references.json \
+  --output "$workspace/project/build/generated-limits/tuple-allof-references" --package-name org.example.tupleallof --model-name-suffix Dto --api-client-name TupleAllOfClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-allof-references.json \
+  --output "$workspace/project/build/generated-limits/tuple-allof-references" --package-name org.example.tupleallof --model-name-suffix Dto --api-client-name TupleAllOfClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-dto-references.json \
+  --output "$workspace/project/build/generated-limits/tuple-dto-references" --package-name org.example.tupledtos --model-name-suffix Dto --api-client-name TupleDTOClient
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-dto-references.json \
+  --output "$workspace/project/build/generated-limits/tuple-dto-references" --package-name org.example.tupledtos --model-name-suffix Dto --api-client-name TupleDTOClient --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-enum-references.json \
+  --output "$workspace/project/build/generated-limits/tuple-enum-references" --package-name org.example.tupleenums --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-enum-references.json \
+  --output "$workspace/project/build/generated-limits/tuple-enum-references" --package-name org.example.tupleenums --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-references.json \
+  --output "$workspace/project/build/generated-limits/tuple-references" --package-name org.example.tuplereferences --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-references.json \
+  --output "$workspace/project/build/generated-limits/tuple-references" --package-name org.example.tuplereferences --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/inline-error-roots.json \
+  --output "$workspace/project/build/generated-limits/inline-error-roots" --package-name org.example.errorroots --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/inline-error-roots.json \
+  --output "$workspace/project/build/generated-limits/inline-error-roots" --package-name org.example.errorroots --model-name-suffix Dto --check
+"$workspace/openapi-kt" generate --input tests/fixtures/http/object-default-graphs.json \
+  --output "$workspace/project/build/generated-limits/object-default-graphs" --package-name org.example.defaultgraphs --model-name-suffix Dto
+"$workspace/openapi-kt" generate --input tests/fixtures/http/object-default-graphs.json \
+  --output "$workspace/project/build/generated-limits/object-default-graphs" --package-name org.example.defaultgraphs --model-name-suffix Dto --check
 "$workspace/openapi-kt" generate --input tests/fixtures/http/nested-object-defaults.json \
   --output "$workspace/project/build/generated-limits/nested-object-defaults" --package-name org.example.nestedobject --api-client-name NestedObject --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/nested-object-defaults.json \

@@ -13,6 +13,10 @@ import (
 // not expand refs, rewrite source nodes, or grant a generic discarded-check
 // exemption. Only complete, independently validated groups own an exemption.
 func (a *analyzer) ordinaryPrimitiveAggregates(v *document.Value, s *shape, ordinary bool) (map[string]*PrimitiveValidation, map[string]bool, *diagnostic.Diagnostic) {
+	return a.ordinaryPrimitiveAggregatesWithDefaults(v, s, ordinary, nil)
+}
+
+func (a *analyzer) ordinaryPrimitiveAggregatesWithDefaults(v *document.Value, s *shape, ordinary bool, defaults map[string]*numericDefaultAggregate) (map[string]*PrimitiveValidation, map[string]bool, *diagnostic.Diagnostic) {
 	plans := map[string]*PrimitiveValidation{}
 	preserved := map[string]bool{}
 	if !ordinary || !a.options.Validation || !has(v, "allOf") {
@@ -57,7 +61,7 @@ func (a *analyzer) ordinaryPrimitiveAggregates(v *document.Value, s *shape, ordi
 		if !actualDiscarded {
 			continue
 		} // False-only legacy modifiers are not a drop exemption.
-		plan, err := a.mergePrimitiveChecks(fields, checks, scalar)
+		plan, numeric, err := a.mergePrimitiveChecks(fields, checks, scalar)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -78,6 +82,9 @@ func (a *analyzer) ordinaryPrimitiveAggregates(v *document.Value, s *shape, ordi
 			}
 		}
 		plans[winner.Wire] = plan
+		if defaults != nil && numeric != nil {
+			defaults[winner.Wire] = numeric
+		}
 		a.emissionHints[plan] = true
 		for _, f := range fields[:len(fields)-1] {
 			preserved[f.Pointer] = true
@@ -110,8 +117,12 @@ func aggregateSignature(fields []field) (string, bool) {
 	return scalar, true
 }
 
-func (a *analyzer) mergePrimitiveChecks(fields []field, checks []*PrimitiveValidation, scalar string) (*PrimitiveValidation, *diagnostic.Diagnostic) {
+func (a *analyzer) mergePrimitiveChecks(fields []field, checks []*PrimitiveValidation, scalar string) (*PrimitiveValidation, *numericDefaultAggregate, *diagnostic.Diagnostic) {
 	result := &PrimitiveValidation{Floating: scalar == "kotlin.Float" || scalar == "kotlin.Double"}
+	var defaults *numericDefaultAggregate
+	if scalar != "kotlin.String" && scalar != "kotlin.uuid.Uuid" {
+		defaults = &numericDefaultAggregate{}
+	}
 	var endpoints [4]*numericEndpoint // inclusive lower, strict lower, inclusive upper, strict upper
 	var factorExact *big.Rat
 	factorPointer := ""
@@ -127,17 +138,17 @@ func (a *analyzer) mergePrimitiveChecks(fields []field, checks []*PrimitiveValid
 				result.MinLength = check.MinLength
 			}
 			if result.MinLength != nil && result.MaxLength != nil && *result.MinLength > *result.MaxLength {
-				return nil, invalid("Minimum length exceeds maximum length.", f.Pointer+"/minLength")
+				return nil, nil, invalid("Minimum length exceeds maximum length.", f.Pointer+"/minLength")
 			}
 			if check.MaxLength != nil && (result.MaxLength == nil || *check.MaxLength < *result.MaxLength) {
 				result.MaxLength = check.MaxLength
 			}
 			if result.MinLength != nil && result.MaxLength != nil && *result.MinLength > *result.MaxLength {
-				return nil, invalid("Minimum length exceeds maximum length.", f.Pointer+"/maxLength")
+				return nil, nil, invalid("Minimum length exceeds maximum length.", f.Pointer+"/maxLength")
 			}
 			if check.Pattern != nil {
 				if result.Pattern != nil && *result.Pattern != *check.Pattern {
-					return nil, unsupported(f.Pointer + "/pattern")
+					return nil, nil, unsupported(f.Pointer + "/pattern")
 				}
 				result.Pattern = check.Pattern
 			}
@@ -150,16 +161,17 @@ func (a *analyzer) mergePrimitiveChecks(fields []field, checks []*PrimitiveValid
 			// Each source already passed literal/nonzero/finite/resource/domain checks.
 			bound, exact, err := constraintNumber(get(f.Schema, key), scalar, f.Pointer+"/"+key)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			if key == "multipleOf" {
 				if factorExact != nil && factorExact.Cmp(exact) != 0 {
-					return nil, unsupported(f.Pointer + "/multipleOf")
+					return nil, nil, unsupported(f.Pointer + "/multipleOf")
 				}
 				if factorExact == nil {
 					factorExact = exact
 					factorPointer = f.Pointer + "/multipleOf"
 					result.MultipleOf = check.MultipleOf
+					defaults.factor = &numericDefaultEndpoint{source: get(f.Schema, key), pointer: factorPointer, exact: exact, bound: check.MultipleOf}
 				}
 				continue
 			}
@@ -187,6 +199,7 @@ func (a *analyzer) mergePrimitiveChecks(fields []field, checks []*PrimitiveValid
 			current := endpoints[category]
 			if current == nil || category < 2 && exact.Cmp(current.exact) > 0 || category >= 2 && exact.Cmp(current.exact) < 0 {
 				endpoints[category] = &numericEndpoint{key: p, exact: exact, bound: bound}
+				defaults.endpoints[category] = &numericDefaultEndpoint{source: get(f.Schema, key), pointer: p, exact: exact, bound: bound}
 			}
 		}
 	}
@@ -222,7 +235,7 @@ func (a *analyzer) mergePrimitiveChecks(fields []field, checks []*PrimitiveValid
 		factor = new(big.Int).Set(factorExact.Num())
 	}
 	if err := validateNumericDomain(scalar, lows, highs, factor, factorPointer); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return result, nil
+	return result, defaults, nil
 }

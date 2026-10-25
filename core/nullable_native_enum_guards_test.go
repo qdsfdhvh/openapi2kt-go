@@ -10,6 +10,13 @@ import (
 )
 
 func TestNullableNativeEnumsKeepShapeExclusionsAndNoDrop(t *testing.T) {
+	// Retain the exact former nullable unformatted factory refusal as positive.
+	factory := request(schemas(`{"Code":{"type":"integer","nullable":true,"enum":[1],"default":null}}`), "Dto")
+	factory.Options.Validation = true
+	factoryOutput, factoryErr := core.GenerateWithDiagnostics(factory)
+	if factoryErr != nil || !strings.Contains(source(t, factoryOutput, "CodeDto"), "public fun `CodeDto default`") {
+		t.Fatal("nullable unformatted root factory lost", factoryErr)
+	}
 	base := `"Alias":{"$ref":"#/components/schemas/Code","nullable":false},"Code":{"type":["integer","null"],"enum":[1,2]}`
 	for _, target := range []string{"Code", "Alias"} {
 		for _, tail := range []string{`"Choice":{"allOf":[{"$ref":"#/components/schemas/` + target + `"},{"properties":{"id":{"type":"string"}}}]}`, `"Choice":{"oneOf":[{"$ref":"#/components/schemas/` + target + `"},{"type":"string"}]}`, `"Leaf":{"properties":{"id":{"type":"string"}}},"Choice":{"oneOf":[{"$ref":"#/components/schemas/Leaf"}],"discriminator":{"propertyName":"tag","mapping":{"bad":"#/components/schemas/` + target + `"}}}`} {
@@ -21,7 +28,7 @@ func TestNullableNativeEnumsKeepShapeExclusionsAndNoDrop(t *testing.T) {
 			}
 		}
 	}
-	for _, leaf := range []string{`{"type":["integer","null"],"enum":[1],"minimum":2}`, `{"type":["integer","null"],"enum":[null]}`, `{"type":"integer","nullable":true,"enum":[1],"default":null}`, `{"type":"number","nullable":true,"enum":[1],"multipleOf":0.5}`} {
+	for _, leaf := range []string{`{"type":["integer","null"],"enum":[1],"minimum":2}`, `{"type":["integer","null"],"enum":[null]}`, `{"type":"number","nullable":true,"enum":[1],"multipleOf":0.5}`} {
 		r := request(schemas(`{"Code":`+leaf+`}`), "Dto")
 		r.Options.Validation = true
 		got, e := core.GenerateWithDiagnostics(r)

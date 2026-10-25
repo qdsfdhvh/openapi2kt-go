@@ -97,17 +97,11 @@ func TestScalarAliasObjectDefaultMemberGuards(t *testing.T) {
 			}
 		}
 	}
-	// Preserve the historical enum/date inputs as graduated member cases.
-	// Collection terminals and hop defaults keep their separate roles.
+	// Preserve historical enum/date/collection inputs as graduated member cases.
+	// Hop/target defaults still keep their independent annotation roles.
 	for _, target := range []string{`{"type":"string","enum":["x"]}`, `{"type":"string","format":"date"}`, `{"type":"array","items":{"type":"string"}}`} {
-		if target == `{"type":"string","format":"date"}` || target == `{"type":"string","enum":["x"]}` {
-			if got, err := core.GenerateWithDiagnostics(request(scalarAliasMemberDocument(target, allOfMemberHops, `{"$ref":"#/components/schemas/Bridge"}`, `{}`), "Dto")); err != nil || len(got.Artifacts.Files) == 0 {
-				t.Fatal("enum/temporal member graduation", err)
-			}
-			continue
-		}
-		if got, err := core.GenerateWithDiagnostics(request(scalarAliasMemberDocument(target, allOfMemberHops, `{"$ref":"#/components/schemas/Bridge"}`, `{}`), "Dto")); err == nil || len(got.Artifacts.Files) != 0 {
-			t.Fatal("excluded role", target, err)
+		if got, err := core.GenerateWithDiagnostics(request(scalarAliasMemberDocument(target, allOfMemberHops, `{"$ref":"#/components/schemas/Bridge"}`, `{}`), "Dto")); err != nil || len(got.Artifacts.Files) == 0 {
+			t.Fatal("enum/temporal/collection member graduation", target, err)
 		}
 	}
 	hops := strings.Replace(allOfMemberHops, `"first":{`, `"first":{"default":"hidden",`, 1)

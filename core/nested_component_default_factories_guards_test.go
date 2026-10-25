@@ -50,6 +50,16 @@ func TestNestedComponentDefaultFactoryValuePointers(t *testing.T) {
 }
 
 func TestNestedComponentDefaultFactorySourceGuards(t *testing.T) {
+	// Keep the exact formerly unsupported ordinary object leaf as a positive.
+	for _, annotation := range []string{`[]`, `null`} {
+		for _, checked := range []bool{false, true} {
+			r := request(schemas(`{"T":{"type":"string"},"N":{"type":"array","nullable":true,"items":{"type":"array","items":{"type":"object","properties":{"x":{"type":"string"}}}},"default":`+annotation+`}}`), "Dto")
+			r.Options.Validation = checked
+			if _, err := core.GenerateWithDiagnostics(r); err != nil {
+				t.Fatal("ordinary object collection factory rejected", annotation, checked, err)
+			}
+		}
+	}
 	for _, leaf := range []string{
 		`{"$ref":"#/components/schemas/T"}`,
 		`{"allOf":[{"type":"string"}]}`,
@@ -61,7 +71,6 @@ func TestNestedComponentDefaultFactorySourceGuards(t *testing.T) {
 		`{"type":"string","enum":["one","one"]}`,
 		`{"type":"string","enum":["one",1]}`,
 		`{"type":"string","nullable":"yes"}`,
-		`{"type":"object","properties":{"x":{"type":"string"}}}`,
 		`{"additionalProperties":true}`,
 	} {
 		for _, annotation := range []string{`[]`, `null`} {

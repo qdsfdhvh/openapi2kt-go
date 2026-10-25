@@ -62,6 +62,17 @@ func TestJSONUniqueRecursiveCoverExcludedSources(t *testing.T) {
 	} {
 		rq := request(schemas(`{"Value":`+terminal+`,"Cycle":{"$ref":"#/components/schemas/Value"},"Record":{"properties":{"value":{"type":"array","uniqueItems":true,"items":{"$ref":"#/components/schemas/Value"}}}}}`), "Dto")
 		rq.Options.Validation = true
+		if terminal == strings.Replace(original, `"items":{"$ref":"#/components/schemas/Value"}`, `"items":{"$ref":"#/components/schemas/Value","nullable":true}`, 1) {
+			got, e := core.GenerateWithDiagnostics(rq)
+			if e != nil || len(got.Artifacts.Files) == 0 {
+				t.Fatal("original complete nullable-edge cover lost JSON equality", e)
+			}
+			rq.Options.Validation = false
+			if unchecked, e := core.GenerateWithDiagnostics(rq); e == nil || len(unchecked.Artifacts.Files) != 0 {
+				t.Fatal("nullable edge disabled uniqueness opt-in", e)
+			}
+			continue
+		}
 		if got, err := core.GenerateWithDiagnostics(rq); err == nil || len(got.Artifacts.Files) != 0 {
 			t.Fatal("incomplete/constrained/ref-only graph acquired equality", terminal, err)
 		}

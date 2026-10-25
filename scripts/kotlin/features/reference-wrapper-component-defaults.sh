@@ -12,6 +12,8 @@ for style in data_class plain_class; do
     cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ReferenceWrapperComponentDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
     cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/WrapperOwnedDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
     cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/WrapperChainNullabilityDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
+    cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ObjectEnumOwnDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
+    cp samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/ObjectNativeEnumOwnDefaultsContracts.kt "$project/src/main/kotlin/org/example/contracts/"
     cp tests/fixtures/http/reference-wrapper-component-defaults.json "$project/input.json"
     flags=()
     [[ "$validation" == off ]] || flags+=(--validation)
@@ -35,10 +37,19 @@ for style in data_class plain_class; do
       "$workspace/openapi-kt" generate --input tests/fixtures/http/nullable-scalar-wrapper-defaults.json --output "$project/build/generated-checked/scalars" --package-name org.example.refwrapper --model-name-suffix Dto --model-style "$style" --validation
       "$workspace/openapi-kt" generate --input tests/fixtures/http/nullable-scalar-wrapper-defaults.json --output "$project/build/generated-checked/scalars" --package-name org.example.refwrapper --model-name-suffix Dto --model-style "$style" --validation --check
     fi
+    for check in generate check; do
+      check_flags=(); [[ "$check" == generate ]] || check_flags=(--check)
+      "$workspace/openapi-kt" generate --input "$project/input.json" --output "$project/build/generated/optimized" --package-name org.example.optimizedrefwrapper --api-client-name RefWrapper --model-name-suffix Dto --model-style "$style" "${flags[@]}" --deduplicate-models --hoist-shared-shapes --merge-identical-models --lock-hoisted-names "${check_flags[@]}"
+    done
     python3 - "$project" "$style" "$validation" <<'PYMAIN'
 from pathlib import Path
 import sys
-p=Path(sys.argv[1]);copy='' if sys.argv[2]=='plain_class' else '''
+p=Path(sys.argv[1])
+consumer=(p/'src/main/kotlin/org/example/contracts/ObjectEnumOwnDefaultsContracts.kt').read_text()
+(p/'src/main/kotlin/org/example/contracts/OptimizedObjectEnumOwnDefaultsContracts.kt').write_text(consumer.replace('org.example.refwrapper','org.example.optimizedrefwrapper').replace('objectEnumOwnDefaultsContracts','optimizedObjectEnumOwnDefaultsContracts'))
+consumer=(p/'src/main/kotlin/org/example/contracts/ObjectNativeEnumOwnDefaultsContracts.kt').read_text()
+(p/'src/main/kotlin/org/example/contracts/OptimizedObjectNativeEnumOwnDefaultsContracts.kt').write_text(consumer.replace('org.example.refwrapper','org.example.optimizedrefwrapper').replace('objectNativeEnumOwnDefaultsContracts','optimizedObjectNativeEnumOwnDefaultsContracts'))
+copy='' if sys.argv[2]=='plain_class' else '''
  val value=org.example.refwrapper.models.HolderDto()
  check(value.copy(mode=org.example.refwrapper.models.ModeDto.B).mode==org.example.refwrapper.models.ModeDto.B)
  check(value.copy().rows==null)
@@ -52,7 +63,12 @@ import kotlinx.coroutines.runBlocking
 fun main() = runBlocking {
 '''+copy+(' nullableScalarWrapperDefaultsContracts()\n constrainedComponentDefaultsContracts()\n numericComponentDefaultsContracts()\n uuidComponentDefaultsContracts()\n' if sys.argv[3]=='on' else '')+''' wrapperOwnedDefaultsContracts()
  wrapperChainNullabilityDefaultsContracts()
- referenceWrapperComponentDefaultsContracts() }
+ referenceWrapperComponentDefaultsContracts()
+ for (defaults in listOf(false,true)) for (nulls in listOf(false,true)) {
+  optimizedObjectEnumOwnDefaultsContracts(kotlinx.serialization.json.Json { encodeDefaults=defaults; explicitNulls=nulls })
+  optimizedObjectNativeEnumOwnDefaultsContracts(kotlinx.serialization.json.Json { encodeDefaults=defaults; explicitNulls=nulls })
+ }
+ }
 ''')
 b=p/'build.gradle.kts';b.write_text(b.read_text()+'''
 kotlin.sourceSets.main { kotlin.srcDir(layout.buildDirectory.dir("generated-checked")) }

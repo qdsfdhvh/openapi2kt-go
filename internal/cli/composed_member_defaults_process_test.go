@@ -1,0 +1,76 @@
+package cli_test
+
+import (
+	"bytes"
+	"encoding/json"
+	"path/filepath"
+	"reflect"
+	"testing"
+
+	"openapi-kt/core"
+)
+
+func TestComposedMemberDefaultsNativeParityAndPreservation(t *testing.T) {
+	valid := read(t, filepath.Join(repo, "tests/fixtures/http/composed-member-defaults.json"))
+	for _, checked := range []bool{false, true} {
+		for _, style := range []core.ModelStyle{core.DataClass, core.PlainClass} {
+			p := newProject(t)
+			put(t, p.Input, valid)
+			args := objectDefaultReferencedPropertyArgs(p.Input, p.Output, checked, style)
+			result(t, invoke(t, p.Root, args...), 0)
+			report, err := core.GenerateWithDiagnostics(core.GenerationRequest{Document: valid, Options: core.GenerationOptions{PackageName: "org.example.catalog", ModelNameSuffix: "Dto", ModelStyle: style, Validation: checked}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, file := range report.Artifacts.Files {
+				if string(read(t, filepath.Join(p.Output, file.Path))) != file.Content {
+					t.Fatal("native/core parity", file.Path)
+				}
+			}
+			before := snapshot(t, p.Output)
+			commands := [][]string{args, append(append([]string{}, args...), "--check"), {"validate", "--input", p.Input, "--diagnostic-format=json"}}
+			if checked {
+				commands[2] = append(commands[2], "--validation")
+			}
+			for _, command := range commands {
+				result(t, invoke(t, p.Root, command...), 0)
+			}
+			if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+				t.Fatal("readonly/noop changed output")
+			}
+			for _, bad := range []string{"missing-pin", "wrong-own", "unselected-own"} {
+				var doc map[string]any
+				decoder := json.NewDecoder(bytes.NewReader(valid))
+				decoder.UseNumber()
+				if err := decoder.Decode(&doc); err != nil {
+					t.Fatal(err)
+				}
+				schemas := doc["components"].(map[string]any)["schemas"].(map[string]any)
+				pointer := "/components/schemas/Holder/properties/value/default"
+				if bad == "missing-pin" {
+					delete(schemas["Holder"].(map[string]any)["properties"].(map[string]any)["value"].(map[string]any)["default"].(map[string]any), "mode")
+				} else {
+					branches := schemas["Stable"].(map[string]any)["allOf"].([]any)[1].(map[string]any)["oneOf"].([]any)
+					if bad == "wrong-own" {
+						branches[0].(map[string]any)["properties"].(map[string]any)["flag"].(map[string]any)["default"] = "bad"
+						pointer = "/components/schemas/Stable/allOf/1/oneOf/0/properties/flag/default"
+					} else {
+						branches[1].(map[string]any)["properties"].(map[string]any)["other"] = map[string]any{"type": "string", "enum": []any{"a", "b"}, "default": "bad"}
+						pointer = "/components/schemas/Stable/allOf/1/oneOf/1/properties/other/default"
+					}
+				}
+				data, err := json.Marshal(doc)
+				if err != nil {
+					t.Fatal(err)
+				}
+				put(t, p.Input, data)
+				for _, command := range commands {
+					failure := fails(t, invoke(t, p.Root, command...), 1, "E_SCHEMA_INVALID")
+					if failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != pointer || !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("failure lost original Pointer or output", bad, pointer, failure)
+					}
+				}
+			}
+		}
+	}
+}

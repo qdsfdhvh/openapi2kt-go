@@ -258,6 +258,26 @@ func terminalInternalScalar(v *document.Value, p, source string) *diagnostic.Dia
 // referenceType adds one use-site schema step, never the physical owner path.
 // Named references preserve the old alias depth and nullable behavior exactly.
 func (a *analyzer) referenceType(target *resolvedSchema, override *bool, depth int, source string) (TypeRef, *diagnostic.Diagnostic) {
+	return a.referenceTypeRole(target, override, depth, source, false)
+}
+
+func (a *analyzer) referenceTypeRole(target *resolvedSchema, override *bool, depth int, source string, falseReference bool) (TypeRef, *diagnostic.Diagnostic) {
+	falseRootSource := false
+	if target.Catalog != nil {
+		root := target.Catalog
+		if root.BindingTarget != nil {
+			root = root.BindingTarget
+		}
+		falseRootSource = root.FalseRoot
+		if root.FalseRoot {
+			if !falseReference {
+				return TypeRef{}, invalid("Schema must be an object.", root.Pointer)
+			}
+			if err := depthCheck(depth+max(1, target.Steps), source); err != nil {
+				return TypeRef{}, err
+			}
+		}
+	}
 	if target.Catalog != nil {
 		if target.CanonicalCover != nil {
 			if err := depthCheck(depth+max(1, target.Steps)+a.recursiveJSONHeights[target.CanonicalCover.Schema], source); err != nil {
@@ -329,7 +349,9 @@ func (a *analyzer) referenceType(target *resolvedSchema, override *bool, depth i
 		}
 		// Attach erased work after root narrowing, which may remove an outer
 		// Nullable wrapper; otherwise explicit false could discard its hops.
-		if a.aliasPlanning && target.CanonicalCover != nil {
+		if a.aliasPlanning && falseRootSource {
+			ty.SchemaSteps = max(1, target.Steps)
+		} else if a.aliasPlanning && target.CanonicalCover != nil {
 			ty.SchemaSteps = max(1+target.Catalog.AliasHeight, target.Steps) + a.recursiveJSONHeights[target.CanonicalCover.Schema]
 		} else if a.aliasPlanning && (bare(ty).Kind == Scalar || target.CanonicalJSON != nil) {
 			ty.SchemaSteps = max(1+target.Catalog.AliasHeight, target.Steps)
@@ -379,7 +401,10 @@ func (a *analyzer) referenceType(target *resolvedSchema, override *bool, depth i
 	}
 	if kind == "array" || kind == "object" {
 		var nested []Declaration
+		borrowed := a.borrowedCollectionPlanning
+		a.borrowedCollectionPlanning = true
 		ty, err = a.propertyType(v, "", p, &nested, map[string]bool{}, depth+steps)
+		a.borrowedCollectionPlanning = borrowed
 		if err != nil {
 			return TypeRef{}, err
 		}

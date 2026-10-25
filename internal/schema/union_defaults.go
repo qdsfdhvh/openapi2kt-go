@@ -337,29 +337,7 @@ func (a *analyzer) composedObjectUnionEncoded(value *document.Value, at string, 
 	if value.Kind() != document.Object {
 		return "", invalid("A union default must be a JSON object.", at)
 	}
-	index := -1
-	for _, rule := range union.TagCombinations {
-		matched := true
-		for _, match := range rule.Matches {
-			content, ok := unionTagContent(get(value, match.Wire))
-			if !ok || !slices.Contains(match.Values, content) {
-				matched = false
-				break
-			}
-		}
-		if matched {
-			index = rule.Index
-			break
-		}
-	}
-	if index < 0 {
-		for _, rule := range union.Presence {
-			if has(value, rule.Value) {
-				index = rule.Index
-				break
-			}
-		}
-	}
+	index := composedDefaultVariant(value, union)
 	if index < 0 || index >= len(union.Variants) {
 		return "", invalid("A union default must select a known composed variant.", at)
 	}
@@ -367,11 +345,39 @@ func (a *analyzer) composedObjectUnionEncoded(value *document.Value, at string, 
 	if a.modelOrigins[variant] == nil || composition.Branches[index].Shape == nil {
 		return "", unsupported(at)
 	}
-	node, err := a.objectDefaultShapeNode(composition.Branches[index].Shape, a.modelPointers[variant], false)
+	node, err := a.composedVariantDefaultNode(composition.Branches[index].Shape, variant)
 	if err != nil {
 		return "", err
 	}
-	return node.value(value, at)
+	encoded, err := node.value(value, at)
+	if err != nil {
+		return "", err
+	}
+	return preserveComposedDefaultVariant(value, encoded, at, union, index)
+}
+
+// The selected Cartesian variant already owns its retained constructor fields.
+// Grant enum-own annotation permission only to their original schema nodes;
+// constants/tags, projections and other member default roles stay separate.
+func (a *analyzer) composedVariantDefaultNode(s *shape, variant *Model) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	pointer, known := a.modelPointers[variant]
+	if s == nil || !known || a.modelOrigins[variant] == nil {
+		return nil, unsupported(pointer)
+	}
+	fields := map[string]bool{}
+	for _, property := range variant.Properties {
+		kind := property.Type.WithoutRootNull().Kind
+		if kind == Scalar || kind == Named {
+			fields[property.WireName] = true
+		}
+	}
+	enumOwn := map[*document.Value]bool{}
+	for _, f := range s.Fields {
+		if fields[f.Wire] && has(f.Schema, "enum") && has(f.Schema, "default") {
+			enumOwn[f.Schema] = true
+		}
+	}
+	return a.objectDefaultShapeNodeWithEnums(s, pointer, false, enumOwn)
 }
 
 // unionTagContent mirrors the emitted `obj[key]?.jsonPrimitive?.content`

@@ -24,6 +24,9 @@ type LockedOwnerAdoptionState struct {
 	Version                 uint32
 	Manifest, NameLock      []byte
 	Files                   []core.GeneratedFile
+	OwnerNames              []string
+	NameLocks               map[string][]byte
+	Owners                  map[string][]string
 	identity                os.FileInfo
 }
 
@@ -34,16 +37,39 @@ type LockedOwnerAdoptionUpdate struct {
 }
 
 func lockedAdoptionInvalid() *diagnostic.Diagnostic {
-	return fail("E_LOCKED_OWNER_ADOPTION_INVALID", "Locked ownership adoption requires one existing complete version3 root or the same single locked version4 owner, with explicit named selection.")
+	return fail("E_LOCKED_OWNER_ADOPTION_INVALID", "Locked ownership adoption requires one existing complete version3 root or an exact locked version4 owner inventory, with explicit single-spec or full-configuration selection.")
 }
 
 // ReadLockedOwnerAdoptionState is read-only, validates all source bytes and the
 // dedicated destination, and captures canonical binding before source input IO.
 func ReadLockedOwnerAdoptionState(root, owner string) (LockedOwnerAdoptionState, *diagnostic.Diagnostic) {
+	return readLockedAdoptionState(root, []string{owner}, false)
+}
+
+// ReadSplitLockedAdoptionState captures complete v3 or exact multiowner v4
+// state with the same aggregate/remaining-read Kotlin budget as single adoption.
+func ReadSplitLockedAdoptionState(root string, owners []string) (LockedOwnerAdoptionState, *diagnostic.Diagnostic) {
+	return readLockedAdoptionState(root, owners, true)
+}
+
+func readLockedAdoptionState(root string, owners []string, split bool) (LockedOwnerAdoptionState, *diagnostic.Diagnostic) {
+	return readLockedAdoptionInventory(root, owners, split, "")
+}
+
+func readLockedAdoptionInventory(root string, owners []string, split bool, addition string) (LockedOwnerAdoptionState, *diagnostic.Diagnostic) {
 	empty := LockedOwnerAdoptionState{}
-	if !ownerName(owner) {
+	if len(owners) == 0 || len(owners) > maxLockedOwners {
 		return empty, lockedAdoptionInvalid()
 	}
+	owners = append([]string(nil), owners...)
+	sort.Strings(owners)
+	for i, owner := range owners {
+		if !ownerName(owner) || i > 0 && owners[i-1] == owner {
+			return empty, lockedAdoptionInvalid()
+		}
+	}
+	owner := owners[0]
+
 	canonical, e := canonicalRoot(root)
 	if e != nil {
 		return empty, e
@@ -51,7 +77,7 @@ func ReadLockedOwnerAdoptionState(root, owner string) (LockedOwnerAdoptionState,
 	if e := inspectRecovery(canonical); e != nil {
 		return empty, e
 	}
-	identity, err := os.Stat(canonical)
+	identity, err := captureRootIdentity(canonical)
 	if os.IsNotExist(err) {
 		return empty, lockedAdoptionInvalid()
 	}
@@ -69,6 +95,20 @@ func ReadLockedOwnerAdoptionState(root, owner string) (LockedOwnerAdoptionState,
 	if e != nil {
 		return empty, e
 	}
+	if addition != "" {
+		if m.Version != 4 || m.Owners == nil || m.NameLocks == nil || (*m.Owners)[owner] == nil {
+			return empty, lockedAdoptionInvalid()
+		}
+		owners = sortedKeys(*m.Owners)
+		if _, exists := (*m.Owners)[addition]; !exists {
+			if len(owners) >= maxLockedOwners {
+				return empty, lockedAdoptionInvalid()
+			}
+			if _, err := readNamedState(canonical, addition, nil); err != nil {
+				return empty, err
+			}
+		}
+	}
 	if m.Version != 3 && m.Version != 4 || len(m.Files) == 0 {
 		return empty, lockedAdoptionInvalid()
 	}
@@ -76,28 +116,48 @@ func ReadLockedOwnerAdoptionState(root, owner string) (LockedOwnerAdoptionState,
 	if err != nil {
 		return empty, ioFailure()
 	}
-	s := LockedOwnerAdoptionState{Owner: owner, Root: canonical, SourceRoot: source, Version: m.Version, Manifest: raw, Files: []core.GeneratedFile{}, identity: identity}
+	s := LockedOwnerAdoptionState{Owner: owner, Root: canonical, SourceRoot: source, Version: m.Version, Manifest: raw, Files: []core.GeneratedFile{}, identity: identity, OwnerNames: owners, NameLocks: map[string][]byte{}}
 	if m.Version == 3 {
 		s.NameLock, e = readManagedNameLock(canonical, m)
 		if e == nil {
-			_, e = readNamedState(canonical, owner, nil)
+			for _, name := range owners {
+				if _, e = readNamedState(canonical, name, nil); e != nil {
+					break
+				}
+				s.NameLocks[name] = s.NameLock
+			}
 		}
 	} else {
-		if m.Owners == nil || m.NameLocks == nil || len(*m.Owners) != 1 || len(*m.NameLocks) != 1 || len((*m.Owners)[owner]) != len(m.Files) {
+		if m.Owners == nil || m.NameLocks == nil || len(*m.Owners) != len(owners) || len(*m.NameLocks) != len(owners) {
 			return empty, lockedAdoptionInvalid()
 		}
-		hash, ok := (*m.NameLocks)[owner]
-		if !ok {
-			return empty, lockedAdoptionInvalid()
+		s.Owners = *m.Owners
+		total := 0
+		for _, name := range owners {
+			if s.Owners[name] == nil || !split && len(s.Owners[name]) != len(m.Files) {
+				return empty, lockedAdoptionInvalid()
+			}
+			hash, ok := (*m.NameLocks)[name]
+			if !ok {
+				return empty, lockedAdoptionInvalid()
+			}
+			payload, err := readNamedState(canonical, name, &hash)
+			if err != nil {
+				return empty, err
+			}
+			total += len(payload)
+			if total > maxOwnerNameLockBytes {
+				return empty, fail("E_NAME_LOCK_LIMIT", "Named name-lock inventory exceeds metadata limits.")
+			}
+			s.NameLocks[name] = payload
 		}
-		s.NameLock, e = readNamedState(canonical, owner, &hash)
-		if e == nil {
-			_, e = readManagedNameLock(canonical, nil)
-		}
+		s.NameLock = s.NameLocks[owner]
+		_, e = readManagedNameLock(canonical, nil)
 	}
 	if e != nil {
 		return empty, e
 	}
+
 	paths := sortedKeys(m.Files)
 	if e := inspectAdoptionKotlinBudget(canonical, paths); e != nil {
 		return empty, e

@@ -12,7 +12,16 @@ func TestUnionNominalNullableAliasesDoNotAuthorizeShapeBorrowing(t *testing.T) {
 		{`"Consumer":{"allOf":[{"$ref":"#/components/schemas/Maybe"},{"properties":{"id":{"type":"string"}}}]}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Consumer/allOf/0"},
 		{`"Owner":{"properties":{"hop":{"$ref":"#/components/schemas/Choice"}}},"Bridge":{"$ref":"#/components/schemas/Owner/properties/hop"},"Consumer":{"allOf":[{"$ref":"#/components/schemas/Bridge"},{"properties":{"id":{"type":"string"}}}]}`, "E_REF_UNSUPPORTED", "/components/schemas/Consumer/allOf/0"},
 	} {
-		t.Run(tc.pointer, func(t *testing.T) { aliasFailure(t, schemas(`{`+base+`,`+tc.body+`}`), tc.code, tc.pointer) })
+		t.Run(tc.pointer, func(t *testing.T) {
+			if tc.body == `"Consumer":{"allOf":[{"$ref":"#/components/schemas/Maybe"},{"properties":{"id":{"type":"string"}}}]}` {
+				accepted := report(t, schemas(`{`+base+`,`+tc.body+`}`), "Dto")
+				if !strings.Contains(source(t, accepted, "ConsumerDto"), "public sealed class ConsumerDto") {
+					t.Fatal("nullable union operand lost physical variants")
+				}
+			} else {
+				aliasFailure(t, schemas(`{`+base+`,`+tc.body+`}`), tc.code, tc.pointer)
+			}
+		})
 	}
 	aliasFailure(t, schemas(`{"Alias":{"$ref":"#/components/schemas/Owner/properties/hop"},"Owner":{"properties":{"hop":{"$ref":"#/components/schemas/Alias"}}}}`), "E_REF_CYCLE", "/components/schemas/Alias/$ref")
 	invalid := strings.Replace(base, `"id":{"type":"string"}`, `"id":{"type":"string","format":"unsupported"}`, 1)

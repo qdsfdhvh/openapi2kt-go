@@ -1,0 +1,2764 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Lower": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "minLength": 2,
+            "default": "longer"
+          }
+        }
+      },
+      "Upper": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "maxLength": 3,
+            "default": "ab"
+          }
+        }
+      },
+      "Record": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Lower"
+          },
+          {
+            "$ref": "#/components/schemas/Upper"
+          }
+        ]
+      },
+      "Factory": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Lower"
+          },
+          {
+            "$ref": "#/components/schemas/Upper"
+          }
+        ],
+        "default": {
+          "value": "abc"
+        }
+      },
+      "NullableFactory": {
+        "$ref": "#/components/schemas/Factory",
+        "nullable": true,
+        "default": null
+      },
+      "NarrowFactory": {
+        "$ref": "#/components/schemas/NullableFactory",
+        "nullable": false,
+        "default": {
+          "value": "ab"
+        }
+      },
+      "NullableValues": {
+        "allOf": [
+          {
+            "properties": {
+              "value": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 2,
+                "default": "longer"
+              }
+            }
+          },
+          {
+            "properties": {
+              "value": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 3,
+                "default": "ab"
+              }
+            }
+          }
+        ],
+        "default": {
+          "value": null
+        }
+      },
+      "Holder": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Record",
+            "default": {
+              "value": "abc"
+            }
+          },
+          "inline": {
+            "allOf": [
+              {
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "minLength": 2,
+                    "default": "longer"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "maxLength": 3,
+                    "default": "ab"
+                  }
+                }
+              }
+            ],
+            "default": {
+              "value": "abc"
+            }
+          },
+          "cfg": {
+            "properties": {
+              "node": {
+                "allOf": [
+                  {
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "minLength": 2,
+                        "default": "longer"
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "maxLength": 3,
+                        "default": "ab"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "default": {
+              "node": {
+                "value": "abc"
+              }
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "minLength": 2,
+                      "default": "longer"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "maxLength": 3,
+                      "default": "ab"
+                    }
+                  }
+                }
+              ]
+            },
+            "default": [
+              {
+                "value": "abc"
+              }
+            ]
+          },
+          "maps": {
+            "type": "object",
+            "additionalProperties": {
+              "allOf": [
+                {
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "minLength": 2,
+                      "default": "longer"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "maxLength": 3,
+                      "default": "ab"
+                    }
+                  }
+                }
+              ]
+            },
+            "default": {
+              "k": {
+                "value": "ab"
+              }
+            }
+          },
+          "empty": {
+            "$ref": "#/components/schemas/Record",
+            "default": {}
+          },
+          "required": {
+            "$ref": "#/components/schemas/Record",
+            "default": {
+              "value": "abc"
+            }
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "Wide": {
+        "allOf": [
+          {
+            "properties": {
+              "p0": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p1": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p2": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p3": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p4": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p5": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p6": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p7": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p8": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p9": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p10": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p11": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p12": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p13": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p14": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p15": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p16": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p17": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p18": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p19": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p20": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p21": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p22": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p23": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p24": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p25": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p26": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p27": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p28": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p29": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p30": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p31": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p32": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p33": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p34": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p35": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p36": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p37": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p38": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p39": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p40": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p41": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p42": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p43": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p44": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p45": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p46": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p47": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p48": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p49": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p50": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p51": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p52": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p53": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p54": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p55": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p56": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p57": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p58": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p59": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p60": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p61": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p62": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p63": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p64": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p65": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p66": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p67": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p68": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p69": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p70": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p71": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p72": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p73": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p74": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p75": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p76": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p77": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p78": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p79": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p80": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p81": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p82": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p83": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p84": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p85": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p86": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p87": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p88": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p89": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p90": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p91": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p92": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p93": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p94": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p95": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p96": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p97": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p98": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p99": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p100": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p101": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p102": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p103": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p104": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p105": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p106": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p107": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p108": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p109": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p110": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p111": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p112": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p113": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p114": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p115": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p116": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p117": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p118": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p119": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p120": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p121": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p122": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p123": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p124": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p125": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p126": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p127": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p128": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p129": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p130": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p131": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p132": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p133": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p134": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p135": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p136": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p137": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p138": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p139": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p140": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p141": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p142": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p143": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p144": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p145": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p146": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p147": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p148": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p149": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p150": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p151": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p152": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p153": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p154": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p155": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p156": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p157": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p158": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p159": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p160": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p161": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p162": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p163": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p164": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p165": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p166": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p167": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p168": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p169": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p170": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p171": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p172": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p173": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p174": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p175": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p176": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p177": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p178": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p179": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p180": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p181": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p182": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p183": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p184": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p185": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p186": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p187": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p188": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p189": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p190": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p191": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p192": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p193": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p194": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p195": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p196": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p197": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p198": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p199": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p200": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p201": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p202": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p203": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p204": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p205": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p206": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p207": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p208": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p209": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p210": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p211": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p212": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p213": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p214": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p215": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p216": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p217": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p218": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p219": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p220": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p221": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p222": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p223": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p224": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p225": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p226": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p227": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p228": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p229": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p230": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p231": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p232": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p233": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p234": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p235": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p236": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p237": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p238": {
+                "type": "string",
+                "minLength": 2
+              },
+              "p239": {
+                "type": "string",
+                "minLength": 2
+              }
+            }
+          },
+          {
+            "properties": {
+              "p0": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p1": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p2": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p3": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p4": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p5": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p6": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p7": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p8": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p9": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p10": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p11": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p12": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p13": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p14": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p15": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p16": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p17": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p18": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p19": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p20": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p21": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p22": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p23": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p24": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p25": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p26": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p27": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p28": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p29": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p30": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p31": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p32": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p33": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p34": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p35": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p36": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p37": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p38": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p39": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p40": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p41": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p42": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p43": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p44": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p45": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p46": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p47": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p48": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p49": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p50": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p51": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p52": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p53": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p54": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p55": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p56": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p57": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p58": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p59": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p60": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p61": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p62": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p63": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p64": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p65": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p66": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p67": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p68": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p69": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p70": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p71": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p72": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p73": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p74": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p75": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p76": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p77": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p78": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p79": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p80": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p81": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p82": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p83": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p84": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p85": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p86": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p87": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p88": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p89": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p90": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p91": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p92": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p93": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p94": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p95": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p96": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p97": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p98": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p99": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p100": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p101": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p102": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p103": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p104": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p105": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p106": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p107": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p108": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p109": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p110": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p111": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p112": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p113": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p114": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p115": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p116": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p117": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p118": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p119": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p120": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p121": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p122": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p123": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p124": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p125": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p126": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p127": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p128": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p129": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p130": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p131": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p132": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p133": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p134": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p135": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p136": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p137": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p138": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p139": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p140": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p141": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p142": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p143": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p144": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p145": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p146": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p147": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p148": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p149": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p150": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p151": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p152": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p153": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p154": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p155": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p156": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p157": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p158": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p159": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p160": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p161": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p162": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p163": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p164": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p165": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p166": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p167": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p168": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p169": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p170": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p171": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p172": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p173": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p174": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p175": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p176": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p177": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p178": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p179": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p180": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p181": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p182": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p183": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p184": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p185": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p186": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p187": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p188": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p189": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p190": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p191": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p192": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p193": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p194": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p195": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p196": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p197": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p198": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p199": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p200": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p201": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p202": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p203": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p204": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p205": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p206": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p207": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p208": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p209": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p210": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p211": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p212": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p213": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p214": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p215": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p216": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p217": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p218": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p219": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p220": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p221": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p222": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p223": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p224": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p225": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p226": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p227": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p228": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p229": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p230": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p231": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p232": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p233": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p234": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p235": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p236": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p237": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p238": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              },
+              "p239": {
+                "type": "string",
+                "maxLength": 3,
+                "default": "ab"
+              }
+            }
+          }
+        ],
+        "default": {
+          "p0": "abc",
+          "p1": "abc",
+          "p2": "abc",
+          "p3": "abc",
+          "p4": "abc",
+          "p5": "abc",
+          "p6": "abc",
+          "p7": "abc",
+          "p8": "abc",
+          "p9": "abc",
+          "p10": "abc",
+          "p11": "abc",
+          "p12": "abc",
+          "p13": "abc",
+          "p14": "abc",
+          "p15": "abc",
+          "p16": "abc",
+          "p17": "abc",
+          "p18": "abc",
+          "p19": "abc",
+          "p20": "abc",
+          "p21": "abc",
+          "p22": "abc",
+          "p23": "abc",
+          "p24": "abc",
+          "p25": "abc",
+          "p26": "abc",
+          "p27": "abc",
+          "p28": "abc",
+          "p29": "abc",
+          "p30": "abc",
+          "p31": "abc",
+          "p32": "abc",
+          "p33": "abc",
+          "p34": "abc",
+          "p35": "abc",
+          "p36": "abc",
+          "p37": "abc",
+          "p38": "abc",
+          "p39": "abc",
+          "p40": "abc",
+          "p41": "abc",
+          "p42": "abc",
+          "p43": "abc",
+          "p44": "abc",
+          "p45": "abc",
+          "p46": "abc",
+          "p47": "abc",
+          "p48": "abc",
+          "p49": "abc",
+          "p50": "abc",
+          "p51": "abc",
+          "p52": "abc",
+          "p53": "abc",
+          "p54": "abc",
+          "p55": "abc",
+          "p56": "abc",
+          "p57": "abc",
+          "p58": "abc",
+          "p59": "abc",
+          "p60": "abc",
+          "p61": "abc",
+          "p62": "abc",
+          "p63": "abc",
+          "p64": "abc",
+          "p65": "abc",
+          "p66": "abc",
+          "p67": "abc",
+          "p68": "abc",
+          "p69": "abc",
+          "p70": "abc",
+          "p71": "abc",
+          "p72": "abc",
+          "p73": "abc",
+          "p74": "abc",
+          "p75": "abc",
+          "p76": "abc",
+          "p77": "abc",
+          "p78": "abc",
+          "p79": "abc",
+          "p80": "abc",
+          "p81": "abc",
+          "p82": "abc",
+          "p83": "abc",
+          "p84": "abc",
+          "p85": "abc",
+          "p86": "abc",
+          "p87": "abc",
+          "p88": "abc",
+          "p89": "abc",
+          "p90": "abc",
+          "p91": "abc",
+          "p92": "abc",
+          "p93": "abc",
+          "p94": "abc",
+          "p95": "abc",
+          "p96": "abc",
+          "p97": "abc",
+          "p98": "abc",
+          "p99": "abc",
+          "p100": "abc",
+          "p101": "abc",
+          "p102": "abc",
+          "p103": "abc",
+          "p104": "abc",
+          "p105": "abc",
+          "p106": "abc",
+          "p107": "abc",
+          "p108": "abc",
+          "p109": "abc",
+          "p110": "abc",
+          "p111": "abc",
+          "p112": "abc",
+          "p113": "abc",
+          "p114": "abc",
+          "p115": "abc",
+          "p116": "abc",
+          "p117": "abc",
+          "p118": "abc",
+          "p119": "abc",
+          "p120": "abc",
+          "p121": "abc",
+          "p122": "abc",
+          "p123": "abc",
+          "p124": "abc",
+          "p125": "abc",
+          "p126": "abc",
+          "p127": "abc",
+          "p128": "abc",
+          "p129": "abc",
+          "p130": "abc",
+          "p131": "abc",
+          "p132": "abc",
+          "p133": "abc",
+          "p134": "abc",
+          "p135": "abc",
+          "p136": "abc",
+          "p137": "abc",
+          "p138": "abc",
+          "p139": "abc",
+          "p140": "abc",
+          "p141": "abc",
+          "p142": "abc",
+          "p143": "abc",
+          "p144": "abc",
+          "p145": "abc",
+          "p146": "abc",
+          "p147": "abc",
+          "p148": "abc",
+          "p149": "abc",
+          "p150": "abc",
+          "p151": "abc",
+          "p152": "abc",
+          "p153": "abc",
+          "p154": "abc",
+          "p155": "abc",
+          "p156": "abc",
+          "p157": "abc",
+          "p158": "abc",
+          "p159": "abc",
+          "p160": "abc",
+          "p161": "abc",
+          "p162": "abc",
+          "p163": "abc",
+          "p164": "abc",
+          "p165": "abc",
+          "p166": "abc",
+          "p167": "abc",
+          "p168": "abc",
+          "p169": "abc",
+          "p170": "abc",
+          "p171": "abc",
+          "p172": "abc",
+          "p173": "abc",
+          "p174": "abc",
+          "p175": "abc",
+          "p176": "abc",
+          "p177": "abc",
+          "p178": "abc",
+          "p179": "abc",
+          "p180": "abc",
+          "p181": "abc",
+          "p182": "abc",
+          "p183": "abc",
+          "p184": "abc",
+          "p185": "abc",
+          "p186": "abc",
+          "p187": "abc",
+          "p188": "abc",
+          "p189": "abc",
+          "p190": "abc",
+          "p191": "abc",
+          "p192": "abc",
+          "p193": "abc",
+          "p194": "abc",
+          "p195": "abc",
+          "p196": "abc",
+          "p197": "abc",
+          "p198": "abc",
+          "p199": "abc",
+          "p200": "abc",
+          "p201": "abc",
+          "p202": "abc",
+          "p203": "abc",
+          "p204": "abc",
+          "p205": "abc",
+          "p206": "abc",
+          "p207": "abc",
+          "p208": "abc",
+          "p209": "abc",
+          "p210": "abc",
+          "p211": "abc",
+          "p212": "abc",
+          "p213": "abc",
+          "p214": "abc",
+          "p215": "abc",
+          "p216": "abc",
+          "p217": "abc",
+          "p218": "abc",
+          "p219": "abc",
+          "p220": "abc",
+          "p221": "abc",
+          "p222": "abc",
+          "p223": "abc",
+          "p224": "abc",
+          "p225": "abc",
+          "p226": "abc",
+          "p227": "abc",
+          "p228": "abc",
+          "p229": "abc",
+          "p230": "abc",
+          "p231": "abc",
+          "p232": "abc",
+          "p233": "abc",
+          "p234": "abc",
+          "p235": "abc",
+          "p236": "abc",
+          "p237": "abc",
+          "p238": "abc",
+          "p239": "abc"
+        }
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "strings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "post": {
+        "operationId": "watch",
+        "tags": [
+          "strings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "tags": [
+          "strings"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "allOf": [
+                      {
+                        "properties": {
+                          "value": {
+                            "type": "string",
+                            "minLength": 2,
+                            "default": "longer"
+                          }
+                        }
+                      },
+                      {
+                        "properties": {
+                          "value": {
+                            "type": "string",
+                            "maxLength": 3,
+                            "default": "ab"
+                          }
+                        }
+                      }
+                    ],
+                    "nullable": true,
+                    "default": {
+                      "value": "abc"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

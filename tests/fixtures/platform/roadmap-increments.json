@@ -1,0 +1,184 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Base": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "minLength": 2
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "BaseAlias": {
+        "$ref": "#/components/schemas/Base"
+      },
+      "Node": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseAlias"
+          },
+          {
+            "properties": {
+              "count": {
+                "type": "integer",
+                "default": 7
+              },
+              "next": {
+                "$ref": "#/components/schemas/Node"
+              }
+            }
+          }
+        ]
+      },
+      "AliasNode": {
+        "$ref": "#/components/schemas/Node",
+        "nullable": true
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Node"
+          },
+          {
+            "$ref": "#/components/schemas/AliasNode",
+            "nullable": false
+          }
+        ]
+      },
+      "MaybeRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/AliasNode"
+          }
+        ]
+      },
+      "Seed": {
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "default": {
+          "value": "seed",
+          "tags": [
+            "one"
+          ]
+        }
+      },
+      "SeedAlias": {
+        "$ref": "#/components/schemas/Seed",
+        "default": {
+          "value": "alias",
+          "tags": [
+            "other"
+          ]
+        }
+      },
+      "SeedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/SeedAlias"
+          }
+        ]
+      },
+      "State": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "done"
+        ],
+        "default": "ready"
+      },
+      "EnumRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/State"
+          }
+        ]
+      },
+      "UnionFirst": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "UnionSecond": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "values": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "default": [
+              "fallback"
+            ],
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "tree": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "rows",
+          "tree"
+        ]
+      }
+    }
+  }
+}

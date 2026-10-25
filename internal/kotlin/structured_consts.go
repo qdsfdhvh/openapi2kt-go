@@ -44,3 +44,14 @@ func emitStructuredConstHelpers(declaration schema.Declaration, out *strings.Bui
 		out.WriteString("\nprivate fun `openapi-kt array const`(source: kotlin.String): kotlinx.serialization.json.JsonArray = kotlinx.serialization.json.Json.parseToJsonElement(source) as kotlinx.serialization.json.JsonArray\n")
 	}
 }
+
+// Structured body values carry decoded state even without constructor fields.
+// Keep scalar/tag-only variants on their existing singleton serializer path.
+func modelHasStructuredConstants(model *schema.Model) bool {
+	for _, c := range model.Constants {
+		if c.Type.Kind == schema.Scalar && (c.Type.Name == "kotlinx.serialization.json.JsonObject" || c.Type.Name == "kotlinx.serialization.json.JsonArray") {
+			return true
+		}
+	}
+	return false
+}

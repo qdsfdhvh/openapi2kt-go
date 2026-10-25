@@ -1,0 +1,117 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FalseDTOIndependentDefaults",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Blocked": false,
+      "Maybe": {
+        "$ref": "#/components/schemas/Blocked",
+        "nullable": true
+      },
+      "Target": {
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "blocked": {
+            "$ref": "#/components/schemas/Blocked"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "value": null,
+          "label": "root"
+        }
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Target"
+      },
+      "NullableTarget": {
+        "nullable": true,
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Maybe"
+          }
+        },
+        "default": null
+      },
+      "Consumer": {
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/Target",
+            "default": {
+              "value": null,
+              "label": "synthetic"
+            }
+          },
+          "alias": {
+            "$ref": "#/components/schemas/Alias",
+            "default": {
+              "value": null
+            }
+          },
+          "absent": {
+            "$ref": "#/components/schemas/Target"
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/NullableTarget",
+            "default": null
+          }
+        }
+      },
+      "RequiredConsumer": {
+        "required": [
+          "target"
+        ],
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/Target",
+            "default": {
+              "value": null
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/defaults": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Consumer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Consumer"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

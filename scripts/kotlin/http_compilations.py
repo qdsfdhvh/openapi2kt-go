@@ -13,10 +13,12 @@ import sys
 TARGET_BYTES = 384 * 1024
 CONTRACT_PACKAGE = 'org.example.contracts'
 PACKAGE = re.compile(r'^package\s+([\w.]+)', re.MULTILINE)
-QUALIFIED = re.compile(r'\borg\.example\.[\w.]+')
+IDENTIFIER = r'(?:[^\W\d]\w*|`[^`\r\n]+`)'
+QUALIFIED = re.compile(r'\b' + IDENTIFIER + r'(?:\.' + IDENTIFIER + r')+')
+TOKEN = re.compile(r'`[^`\r\n]+`|\b[^\W\d]\w*\b')
 DECLARATION = re.compile(
     r'^((?:(?:private|internal|public|suspend|inline|data|sealed|enum|value|open|abstract|actual|expect)[ \t]+)*)'
-    r'(?:fun|class|object|interface|typealias)[ \t]+([A-Za-z_]\w*)', re.MULTILINE)
+    r'(?:fun|class|object|interface|typealias)[ \t]+(' + IDENTIFIER + ')', re.MULTILINE)
 
 
 class Groups:
@@ -133,31 +135,38 @@ def partition(project):
         code = re.sub(r'""".*?"""', '', sources[path], flags=re.DOTALL)
         for match in DECLARATION.finditer(code):
             if 'private' not in match[1].split():
-                names.add(match[2])
+                names.add(match[2].strip('`'))
         for name in names:
             symbols[packages[path] + '.' + name].add(path)
             local_symbols[packages[path]][name].add(path)
     edges = {path: set() for path in libraries}
     for path in libraries:
         for name in QUALIFIED.findall(sources[path]):
+            name = name.replace('`', '')
             while name:
                 if name in symbols:
                     edges[path].update(symbols[name])
                     break
                 name = name.rpartition('.')[0]
-        for name in set(re.findall(r'\b[A-Za-z_]\w*\b', sources[path])):
+        for name in {name.strip('`') for name in TOKEN.findall(sources[path])}:
             edges[path].update(local_symbols[packages[path]].get(name, []))
         edges[path].discard(path)
     # Kotlin requires direct subclasses of sealed declarations in the same
     # compilation module, even when the reference graph itself is acyclic.
     # A reverse inheritance edge keeps the whole sealed family in one SCC.
-    inheritance = re.compile(r'(?:\)|\b(?:class|interface)[ \t]+\w+)[ \t\r\n]*:[ \t\r\n]*([\w.]+)')
+    inheritance = re.compile(r'(?:\)|\b(?:class|interface|object)[ \t]+' + IDENTIFIER +
+                             r')[ \t\r\n]*:[ \t\r\n]*(' + IDENTIFIER + r'(?:\.' + IDENTIFIER + r')*)')
     for path in libraries:
         for name in inheritance.findall(sources[path]):
-            qualified = name if name.startswith('org.example.') else packages[path] + '.' + name
-            while qualified and qualified not in symbols:
-                qualified = qualified.rpartition('.')[0]
-            for base in symbols.get(qualified, []):
+            name = name.replace('`', '')
+            # A base may be fully qualified under any declared package, or
+            # relative to this file (including a nested declaration).
+            bases = set()
+            for candidate in (name, packages[path] + '.' + name):
+                while candidate and candidate not in symbols:
+                    candidate = candidate.rpartition('.')[0]
+                bases.update(symbols.get(candidate, []))
+            for base in bases:
                 if re.search(r'\bsealed[ \t]+(?:class|interface)\b', sources[base]):
                     edges[base].add(path)
     library_shards = pack(dependency_components(edges), sizes, ordered=True)
@@ -169,10 +178,10 @@ def partition(project):
         code = re.sub(r'""".*?"""', '', sources[path], flags=re.DOTALL)
         for match in DECLARATION.finditer(code):
             if 'private' not in match[1].split():
-                exports[match[2]].append(path)
+                exports[match[2].strip('`')].append(path)
     groups = Groups(contracts)
     for path in contracts:
-        for name in set(re.findall(r'\b[A-Za-z_]\w*\b', sources[path])):
+        for name in {name.strip('`') for name in TOKEN.findall(sources[path])}:
             for owner in exports.get(name, []):
                 groups.join(path, owner)
     components = defaultdict(list)

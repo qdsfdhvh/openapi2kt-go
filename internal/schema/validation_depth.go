@@ -4,7 +4,8 @@ import "openapi-kt/internal/diagnostic"
 
 // Kotlin's metadata parser and nested inline collection checks have lower
 // practical limits than the schema graph traversal guard. Bound only emitted
-// use-site validation chains; nominal DTO/value-class constructors are barriers.
+// use-site chains, including DTO getter keys. Other nominal constructor
+// validation stays behind its existing DTO/value-class barrier.
 const MaxValidationCollectionDepth = 16
 
 func (a *analyzer) validationDepth(plan *Plan) *diagnostic.Diagnostic {
@@ -18,6 +19,16 @@ func (a *analyzer) validationDepth(plan *Plan) *diagnostic.Diagnostic {
 		}
 		if ty.Collection != nil && depth > MaxValidationCollectionDepth {
 			return diagnostic.At("E_SCHEMA_DEPTH", "Collection validation exceeds the supported 16 nested collection edges; introduce named object models.", a.collectionSources[ty.Collection])
+		}
+		if ty.Collection != nil && ty.Collection.Unique && !uniqueMapType(*ty.Element) && structuralUniqueType(*ty.Element, 0) && depth+structuralUniqueCollectionDepth(*ty.Element) > MaxValidationCollectionDepth {
+			return diagnostic.At("E_SCHEMA_DEPTH", "Collection validation exceeds the supported 16 nested collection edges; introduce named object models.", a.collectionSources[ty.Collection])
+		}
+		if ty.Collection != nil && ty.Collection.UniqueDTO != nil {
+			for _, field := range ty.Collection.UniqueDTO.Fields {
+				if depth+structuralUniqueCollectionDepth(field.Type) > MaxValidationCollectionDepth {
+					return diagnostic.At("E_SCHEMA_DEPTH", "DTO uniqueness getter validation exceeds the supported 16 nested collection edges.", a.collectionSources[ty.Collection])
+				}
+			}
 		}
 		if ty.Element != nil {
 			return check(*ty.Element, depth)

@@ -184,7 +184,10 @@ func TestIntrinsicNullableDTOBoundsAndExclusions(t *testing.T) {
 func TestIntrinsicNullableDTONoShapeErasure(t *testing.T) {
 	base := `"Z":{"nullable":true,"properties":{"id":{"type":"string"}}},"Other":{"properties":{"ok":{"type":"boolean"}}},"A":{"$ref":"#/components/schemas/Z","nullable":false}`
 	for _, ref := range []string{"Z", "A"} {
-		aliasFailure(t, schemas(`{`+base+`,"C":{"allOf":[{"$ref":"#/components/schemas/`+ref+`","nullable":false},{"properties":{"more":{"type":"boolean"}}}]}}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/C/allOf/0/$ref")
+		intersection := report(t, schemas(`{`+base+`,"C":{"allOf":[{"$ref":"#/components/schemas/`+ref+`","nullable":false},{"properties":{"more":{"type":"boolean"}}}]}}`), "Dto")
+		if !strings.Contains(source(t, intersection, "CDto"), "public val more: kotlin.Boolean? = null") {
+			t.Fatal("nullable DTO intersection lost its original fields")
+		}
 		original := schemas(`{` + base + `,"C":{"oneOf":[{"$ref":"#/components/schemas/` + ref + `"},{"$ref":"#/components/schemas/Other"}]}}`)
 		accepted := report(t, original, "Dto")
 		if text := source(t, accepted, "CDto"); strings.Contains(text, "NullCDto") != (ref == "Z") || !strings.Contains(text, "public val id: kotlin.String? = null,") {

@@ -61,6 +61,15 @@ func TestRecursiveJSONSourceGuards(t *testing.T) {
 				r := request(recursiveJSONChange(t, tc.change), "Dto")
 				r.Options.Validation = checked
 				got, err := core.GenerateWithDiagnostics(r)
+				if tc.name == "child-nullable" {
+					control := r
+					control.Document = recursiveJSONChange(t, func(map[string]any) {})
+					before, e := core.GenerateWithDiagnostics(control)
+					if err != nil || e != nil || !reflect.DeepEqual(got, before) {
+						t.Fatal("original nullable edge changed raw carrier", err, e)
+					}
+					return
+				}
 				if tc.name == "alias-nullable" {
 					// Same historical input explicitly graduates to a nullable
 					// canonical carrier; other source guards remain failures.

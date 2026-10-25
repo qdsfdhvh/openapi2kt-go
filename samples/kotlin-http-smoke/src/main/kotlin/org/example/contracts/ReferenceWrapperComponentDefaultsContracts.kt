@@ -85,6 +85,8 @@ suspend fun referenceWrapperComponentDefaultsContracts() {
     for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }
 
+        objectNativeEnumOwnDefaultsContracts(codec)
+        objectEnumOwnDefaultsContracts(codec)
         chainedWrapperDefaults(codec)
         explicitNullableWrapperDefaults(codec)
 

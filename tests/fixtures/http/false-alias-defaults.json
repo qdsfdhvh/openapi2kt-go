@@ -1,0 +1,115 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FalseAliasDefaults",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Blocked": false,
+      "Peer": false,
+      "Maybe": {
+        "$ref": "#/components/schemas/Blocked",
+        "nullable": true,
+        "default": null
+      },
+      "OwnInherited": {
+        "$ref": "#/components/schemas/Maybe",
+        "default": null
+      },
+      "Inherited": {
+        "$ref": "#/components/schemas/Maybe"
+      },
+      "Narrow": {
+        "$ref": "#/components/schemas/Maybe",
+        "nullable": false
+      },
+      "Again": {
+        "$ref": "#/components/schemas/Narrow",
+        "nullable": true,
+        "default": null
+      },
+      "Other": {
+        "$ref": "#/components/schemas/Peer",
+        "nullable": true,
+        "default": null
+      },
+      "Rows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Maybe"
+        },
+        "default": [
+          null
+        ]
+      },
+      "Mapping": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/OwnInherited"
+        },
+        "default": {
+          "description": null
+        }
+      },
+      "Holder": {
+        "required": [
+          "first",
+          "inherited"
+        ],
+        "properties": {
+          "first": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "inherited": {
+            "$ref": "#/components/schemas/Inherited"
+          },
+          "again": {
+            "$ref": "#/components/schemas/Again"
+          }
+        }
+      },
+      "Required": {
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Narrow"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "aliases"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

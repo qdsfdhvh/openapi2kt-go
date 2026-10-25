@@ -101,8 +101,19 @@ func TestCollectionUniqueExcludedOperationStillValidated(t *testing.T) {
 	result(t, accepted.generate(t, "--validation", "--check"), 0)
 	result(t, accepted.generate(t, "--validation", "--exclude-api", "UniqueApi"), 0)
 	result(t, accepted.generate(t, "--validation", "--exclude-api", "UniqueApi", "--check"), 0)
-	// Structured elements still cannot lose an unsupported uniqueness check.
+	// Keep the original nested-array negative as a structural graduation.
 	schema["items"] = map[string]any{"type": "array", "items": map[string]any{"type": "number"}}
+	structural, err := json.Marshal(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	put(t, accepted.Input, structural)
+	result(t, accepted.generate(t, "--validation"), 0)
+	result(t, accepted.generate(t, "--validation", "--check"), 0)
+	result(t, accepted.generate(t, "--validation", "--exclude-api", "UniqueApi"), 0)
+	result(t, accepted.generate(t, "--validation", "--exclude-api", "UniqueApi", "--check"), 0)
+	// Nominal DTO elements still cannot lose an unsupported uniqueness check.
+	schema["items"] = map[string]any{"type": "object", "properties": map[string]any{"v": map[string]any{"type": "number"}}}
 	bad, err := json.Marshal(doc)
 	if err != nil {
 		t.Fatal(err)

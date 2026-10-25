@@ -22,16 +22,26 @@ type arrayItemsDecision struct {
 type tupleScalarSignature struct {
 	Kind, Format        string
 	HasFormat, Nullable bool
+	EnumSource          *document.Value
+	ModelSource         *document.Value
 }
 
 func tupleScalar(v *document.Value, pointer string, depth int) (tupleScalarSignature, *diagnostic.Diagnostic) {
+	return tupleScalarOwnDefault(v, pointer, depth, false)
+}
+
+func tupleScalarOwnDefault(v *document.Value, pointer string, depth int, ownDefault bool) (tupleScalarSignature, *diagnostic.Diagnostic) {
 	if err := depthCheck(depth, pointer); err != nil {
 		return tupleScalarSignature{}, err
 	}
 	if err := object(v, pointer); err != nil {
 		return tupleScalarSignature{}, err
 	}
-	if err := checkKeys(v, []string{"type", "format", "nullable"}, pointer); err != nil {
+	keys := []string{"type", "format", "nullable"}
+	if ownDefault {
+		keys = append(keys, "default")
+	}
+	if err := checkKeys(v, keys, pointer); err != nil {
 		return tupleScalarSignature{}, err
 	}
 	kind, nullable, err := schemaType(v, pointer)
@@ -50,8 +60,12 @@ func tupleScalar(v *document.Value, pointer string, depth int) (tupleScalarSigna
 }
 
 func (a *analyzer) arrayItems(v *document.Value, pointer string, depth int) (*arrayItemsDecision, *diagnostic.Diagnostic) {
+	return a.arrayItemsOwnDefault(v, pointer, depth, false)
+}
+
+func (a *analyzer) arrayItemsOwnDefault(v *document.Value, pointer string, depth int, ownDefault bool) (*arrayItemsDecision, *diagnostic.Diagnostic) {
 	keys := a.collectionKeys([]string{"type", "nullable", "items", "prefixItems"})
-	if a.objectDefaultSchemas[v] {
+	if ownDefault || a.objectDefaultSchemas[v] {
 		keys = append(keys, "default")
 	}
 	if err := checkKeys(v, keys, pointer); err != nil {
@@ -72,11 +86,12 @@ func (a *analyzer) arrayItems(v *document.Value, pointer string, depth int) (*ar
 	if prefix.Kind() != document.Array || len(prefix.Items()) == 0 {
 		return nil, invalid("prefixItems must be a non-empty schema array.", location)
 	}
+	referenceWork := 0
 	uniform := true
 	var first tupleScalarSignature
 	for i, member := range prefix.Items() {
 		source := naming.Pointer(location, strconv.Itoa(i))
-		signature, err := tupleScalar(member, source, depth+1)
+		signature, err := a.tupleScalar(member, source, depth+1, &referenceWork)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +108,7 @@ func (a *analyzer) arrayItems(v *document.Value, pointer string, depth int) (*ar
 		if decision.Selected.Kind() == document.Boolean {
 			return nil, unsupported(location)
 		}
-		if _, err := tupleScalar(decision.Selected, decision.Pointer, depth+1); err != nil {
+		if _, err := a.tupleScalar(decision.Selected, decision.Pointer, depth+1, &referenceWork); err != nil {
 			return nil, err
 		}
 	} else if uniform {

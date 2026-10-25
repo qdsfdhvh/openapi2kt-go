@@ -1,0 +1,179 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LiteralFalseDTOFieldDefaults",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Blocked": false,
+      "Target": {
+        "properties": {
+          "blocked": false,
+          "reference": {
+            "$ref": "#/components/schemas/Blocked"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "default": {
+          "labels": [
+            "target"
+          ]
+        }
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Target"
+      },
+      "WithoutFactory": {
+        "properties": {
+          "blocked": false
+        }
+      },
+      "RootNullable": {
+        "type": "object",
+        "nullable": true,
+        "required": [
+          "blocked"
+        ],
+        "properties": {
+          "blocked": false
+        },
+        "default": null
+      },
+      "Optional": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Alias",
+            "default": {
+              "labels": [
+                "field"
+              ]
+            }
+          },
+          "without": {
+            "$ref": "#/components/schemas/WithoutFactory",
+            "default": {}
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/RootNullable",
+            "default": null
+          },
+          "plain": {
+            "$ref": "#/components/schemas/Target"
+          }
+        }
+      },
+      "Required": {
+        "required": [
+          "value",
+          "nullable"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Target",
+            "default": {
+              "labels": [
+                "field"
+              ]
+            }
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/RootNullable",
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/consumer": {
+      "post": {
+        "tags": [
+          "objects"
+        ],
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Optional"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Optional"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/first": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "first",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    },
+    "/second": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "second",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    }
+  }
+}

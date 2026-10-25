@@ -192,7 +192,11 @@ func TestRootInternalDTOAliasExcludedTargetsAndShapeUses(t *testing.T) {
 		aliasFailure(t, input, "E_REF_UNSUPPORTED", "/components/schemas/Alias/$ref")
 	}
 	owner := `"Alias":{"$ref":"#/components/schemas/Owner/properties/node"},"Owner":{"properties":{"node":{"properties":{"id":{"type":"string"}}}}}`
-	aliasFailure(t, schemas(`{`+owner+`,"Consumer":{"allOf":[{"$ref":"#/components/schemas/Alias"},{"properties":{"extra":{"type":"string"}}}]}}`), "E_REF_UNSUPPORTED", "/components/schemas/Consumer/allOf/0")
+	// Keep the exact former alias-to-internal allOf input as a positive.
+	intersection := report(t, schemas(`{`+owner+`,"Consumer":{"allOf":[{"$ref":"#/components/schemas/Alias"},{"properties":{"extra":{"type":"string"}}}]}}`), "Dto")
+	if !strings.Contains(source(t, intersection, "ConsumerDto"), "id: kotlin.String? = null") {
+		t.Fatal("original alias/internal allOf fields lost")
+	}
 	// Explicit graduation of the unchanged chain-to-named-internal-DTO-alias
 	// input; both modes must retain its original physical constructor owner.
 	doc := schemas(`{` + owner + `,"Extra":{"properties":{"hop":{"$ref":"#/components/schemas/Alias"}}},"Consumer":{"properties":{"v":{"$ref":"#/components/schemas/Extra/properties/hop"}}}}`)

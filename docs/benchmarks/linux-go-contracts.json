@@ -1,0 +1,136 @@
+{
+  "scope": "Linux ARM64 complete repository Go/native CLI suite; Kotlin and Python not executed by these commands",
+  "generator_sources_sha256": "99a33422c9f425fd8e637079bf1849c04635db56f440a90b5d2bbaf03133641e",
+  "generator_sources_count": 1401,
+  "source_hash_scheme": "SHA256 compact sorted relative-path:SHA256 map; .go under core/internal/cmd/vendor plus go.mod, go.sum and vendor/modules.txt; comma/colon separators",
+  "go_version": "go1.27.2 linux/arm64",
+  "toolchain": "Go command/compiler/tools built offline for Linux ARM64 from matching installed Go1.27.2 source; original stdlib/lib/include read-only; no patches",
+  "runtime": "native ARM64 Ubuntu24.04 local container, unprivileged user",
+  "base_image": "sha256:95d16dfcd4ab8b61154e2280ab9fe4afa2ef03e5eefa8a689e86571e8a1b32cf",
+  "race_image": "sha256:6f9fe191f09d75fb5221e811e840da13244be929085b003fb44974d2d0dbb361",
+  "race_compiler": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "race_packages": {
+    "gcc": "4:13.2.0-7ubuntu1",
+    "libc6-dev:arm64": "2.39-0ubuntu8.9"
+  },
+  "preparation": "isolated compiler prerequisite image prepared separately; no host global install",
+  "execution": {
+    "network": "none",
+    "root_filesystem": "read-only",
+    "source": "read-only; ignored .pi test scratch has separate writable exec tmpfs",
+    "capabilities": "all dropped",
+    "cpu_limit": 2,
+    "memory_limit_GiB": 4,
+    "cache": "task-local writable mount",
+    "tests_forced_uncached": true
+  },
+  "checks": {
+    "gofmt_core_internal_cmd": {
+      "exit_code": 0,
+      "paths": []
+    },
+    "go_vet_all": {
+      "exit_code": 0,
+      "CGO_ENABLED": 0
+    },
+    "go_test_all": {
+      "exit_code": 0,
+      "CGO_ENABLED": 0
+    },
+    "go_test_race_all": {
+      "exit_code": 0,
+      "CGO_ENABLED": 1
+    }
+  },
+  "packages": {
+    "test": {
+      "tested": [
+        {
+          "package": "openapi-kt/core",
+          "seconds": 6.759
+        },
+        {
+          "package": "openapi-kt/internal/cli",
+          "seconds": 12.768
+        },
+        {
+          "package": "openapi-kt/internal/config",
+          "seconds": 0.174
+        },
+        {
+          "package": "openapi-kt/internal/document",
+          "seconds": 0.442
+        },
+        {
+          "package": "openapi-kt/internal/kotlin",
+          "seconds": 0.481
+        },
+        {
+          "package": "openapi-kt/internal/naming",
+          "seconds": 0.005
+        },
+        {
+          "package": "openapi-kt/internal/output",
+          "seconds": 2.334
+        },
+        {
+          "package": "openapi-kt/internal/schema",
+          "seconds": 0.103
+        },
+        {
+          "package": "openapi-kt/internal/testutil",
+          "seconds": 0.004
+        }
+      ],
+      "without_test_files": [
+        "openapi-kt/cmd/openapi-kt",
+        "openapi-kt/internal/diagnostic"
+      ]
+    },
+    "race": {
+      "tested": [
+        {
+          "package": "openapi-kt/core",
+          "seconds": 42.895
+        },
+        {
+          "package": "openapi-kt/internal/cli",
+          "seconds": 22.033
+        },
+        {
+          "package": "openapi-kt/internal/config",
+          "seconds": 4.939
+        },
+        {
+          "package": "openapi-kt/internal/document",
+          "seconds": 7.516
+        },
+        {
+          "package": "openapi-kt/internal/kotlin",
+          "seconds": 2.163
+        },
+        {
+          "package": "openapi-kt/internal/naming",
+          "seconds": 1.055
+        },
+        {
+          "package": "openapi-kt/internal/output",
+          "seconds": 15.718
+        },
+        {
+          "package": "openapi-kt/internal/schema",
+          "seconds": 1.884
+        },
+        {
+          "package": "openapi-kt/internal/testutil",
+          "seconds": 1.019
+        }
+      ],
+      "without_test_files": [
+        "openapi-kt/cmd/openapi-kt",
+        "openapi-kt/internal/diagnostic"
+      ]
+    }
+  },
+  "limits": "exact Go source/toolchain/host profile; other architectures/Windows/minimum compiler intervals, Kotlin/HTTP engine runtime on Linux, Python tooling and final unified all remain separate"
+}

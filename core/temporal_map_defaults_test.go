@@ -64,7 +64,6 @@ func TestTemporalMapDefaultsOriginalMemberDiagnosticsAndExcludedRoles(t *testing
 	}
 	field := `{"type":"object","additionalProperties":{"type":"string","format":"date"},"default":{"day":"2024-02-29"}}`
 	for _, input := range []string{
-		`{"Day":{"type":"string","format":"date"},"Holder":{"properties":{"value":{"type":"object","additionalProperties":{"$ref":"#/components/schemas/Day"},"default":{}}}}}`,
 		`{"Holder":{"properties":{"value":{"type":"object","additionalProperties":` + field + `,"default":{}}}}}`,
 		`{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,
 		`{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"value":` + field + `}},{"properties":{"tag":{"const":"two"}}}]}}`,

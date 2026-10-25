@@ -94,6 +94,10 @@ func TestInlineReferencedAllOfDiagnosticsBudgetsAndExclusions(t *testing.T) {
 		} {
 			r := request([]byte(strings.ReplaceAll(string(inlineReferencedAllOfDocument(field)), referencedAllOfCollectionItem, target)), "Dto")
 			r.Options.Validation = checked
+			if checked && target == allOfOverrideDuplicateName {
+				allOfDefaultOverridePositive(t, r)
+				continue
+			}
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("empty value authorized excluded target", err)
 			}

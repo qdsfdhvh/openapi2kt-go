@@ -1,0 +1,212 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LiteralFalseCollectionDTOFieldDefaults",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Blocked": false,
+      "Target": {
+        "properties": {
+          "blocked": false,
+          "reference": {
+            "$ref": "#/components/schemas/Blocked"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": false,
+            "default": []
+          },
+          "mapping": {
+            "additionalProperties": {
+              "type": "array",
+              "nullable": true,
+              "items": false
+            }
+          }
+        },
+        "default": {
+          "labels": [
+            "target"
+          ],
+          "rows": [],
+          "mapping": {
+            "description": []
+          }
+        }
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Target"
+      },
+      "WithoutFactory": {
+        "properties": {
+          "blocked": false,
+          "rows": {
+            "type": "array",
+            "items": false
+          }
+        }
+      },
+      "RootNullable": {
+        "type": "object",
+        "nullable": true,
+        "required": [
+          "rows"
+        ],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": false
+          }
+        },
+        "default": null
+      },
+      "Optional": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Alias",
+            "default": {
+              "labels": [
+                "field"
+              ],
+              "rows": [],
+              "mapping": {
+                "description": null
+              }
+            }
+          },
+          "without": {
+            "$ref": "#/components/schemas/WithoutFactory",
+            "default": {
+              "rows": []
+            }
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/RootNullable",
+            "default": null
+          },
+          "plain": {
+            "$ref": "#/components/schemas/Target"
+          }
+        }
+      },
+      "Required": {
+        "required": [
+          "value",
+          "nullable"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Target",
+            "default": {
+              "labels": [
+                "field"
+              ],
+              "rows": [],
+              "mapping": {
+                "description": null
+              }
+            }
+          },
+          "nullable": {
+            "$ref": "#/components/schemas/RootNullable",
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/consumer": {
+      "post": {
+        "tags": [
+          "objects"
+        ],
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Optional"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Optional"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/first": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "first",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    },
+    "/second": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "second",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic"
+          }
+        }
+      }
+    }
+  }
+}

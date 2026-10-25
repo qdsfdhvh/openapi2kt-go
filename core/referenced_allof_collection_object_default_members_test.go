@@ -111,7 +111,16 @@ func TestReferencedAllOfCollectionObjectDefaultMemberGuards(t *testing.T) {
 		for _, value := range []string{`{}`, `{"member":[]}`} {
 			r := request(chainedAllOfMemberDocument(target, allOfMemberHops, member, value, false), "Dto")
 			r.Options.Validation = true
-			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
+			if target == allOfOverrideDuplicateA {
+				allOfDefaultOverridePositive(t, r)
+				continue
+			}
+			got, err := core.GenerateWithDiagnostics(r)
+			if target == `{"type":"array","items":`+allOfObjectMember+`}` {
+				if err != nil || len(got.Artifacts.Files) == 0 {
+					t.Fatal("original finite collection terminal did not graduate", value, err)
+				}
+			} else if err == nil || len(got.Artifacts.Files) != 0 {
 				t.Fatal("excluded terminal admitted", target, value, err)
 			}
 		}

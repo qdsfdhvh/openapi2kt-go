@@ -13,6 +13,10 @@ func TestJSONUniqueSourceEligibilityAndLimits(t *testing.T) {
 		rq := request(schemas(`{"Raw":true,"Record":{"properties":{"value":{"type":"array","items":`+leaf+`,"uniqueItems":true}}}}`), "Dto")
 		rq.Options.Validation = true
 		got, err := core.GenerateWithDiagnostics(rq)
+		if strings.Contains(leaf, `"properties":{"v"`) {
+			dtoUniqueGraduation(t, rq.Document)
+			continue
+		}
 		if err == nil || len(got.Artifacts.Files) != 0 {
 			t.Fatal("type spelling granted JSON equality authority", leaf, got, err)
 		}

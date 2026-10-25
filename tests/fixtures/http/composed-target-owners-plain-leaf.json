@@ -1,0 +1,198 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Value": {
+        "$ref": "#/components/schemas/Owner/properties/payload"
+      },
+      "Hops": {
+        "properties": {
+          "first": {
+            "$ref": "#/components/schemas/Owner/properties/payload"
+          },
+          "second": {
+            "$ref": "#/components/schemas/Hops/properties/first"
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Hops/properties/second"
+      },
+      "Consumer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Bridge"
+          },
+          {
+            "properties": {
+              "extra": {
+                "type": "string",
+                "default": "extra"
+              }
+            }
+          }
+        ]
+      },
+      "Owner": {
+        "properties": {
+          "payload": {
+            "allOf": [
+              {
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "default": "base"
+                  },
+                  "node": {
+                    "properties": {
+                      "count": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "count"
+                    ]
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "ready",
+                      "done"
+                    ],
+                    "default": "ready"
+                  },
+                  "next": {
+                    "$ref": "#/components/schemas/Owner/properties/payload",
+                    "nullable": true
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "DirectConsumer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Owner/properties/payload"
+          },
+          {
+            "properties": {
+              "direct": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "Root": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Owner"
+          },
+          {
+            "$ref": "#/components/schemas/OtherOwner"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind"
+        }
+      },
+      "OtherOwner": {
+        "properties": {
+          "other": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Consumer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Consumer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "$ref": "#/components/schemas/Consumer",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/watch": {
+      "post": {
+        "operationId": "watch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Consumer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Consumer"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

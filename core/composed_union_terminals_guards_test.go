@@ -32,7 +32,14 @@ func TestComposedUnionAliasesRetainShapeExclusionsAndNoDrop(t *testing.T) {
 		{`{"allOf":[{"$ref":"#/components/schemas/Bridge"},{"properties":{"extra":{"type":"string"}}}]}`, "E_REF_UNSUPPORTED", "/components/schemas/Consumer/allOf/0"},
 		{`{"oneOf":[{"$ref":"#/components/schemas/Bridge"},{"properties":{"extra":{"type":"string"}}}]}`, "E_REF_UNSUPPORTED", "/components/schemas/Consumer/oneOf/0"},
 	} {
-		aliasFailure(t, schemas(`{`+base+`,"Consumer":`+tc.consumer+`}`), tc.code, tc.pointer)
+		if strings.Contains(tc.consumer, `"#/components/schemas/Maybe"`) {
+			accepted := report(t, schemas(`{`+base+`,"Consumer":`+tc.consumer+`}`), "Dto")
+			if !strings.Contains(source(t, accepted, "ConsumerDto"), "public sealed class ConsumerDto") {
+				t.Fatal("nullable product alias lost its physical alternatives")
+			}
+		} else {
+			aliasFailure(t, schemas(`{`+base+`,"Consumer":`+tc.consumer+`}`), tc.code, tc.pointer)
+		}
 	}
 	invalid := strings.Replace(base, `"id":{"type":"string"}`, `"id":{"type":"string","format":"unsupported"}`, 1)
 	aliasFailure(t, schemas(`{`+invalid+`}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Product/allOf/0/oneOf/0/properties/id/format")

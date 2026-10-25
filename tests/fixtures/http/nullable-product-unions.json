@@ -136,6 +136,450 @@
           "narrow",
           "box"
         ]
+      },
+      "JointA": {
+        "nullable": true,
+        "properties": {
+          "left": {
+            "type": "string"
+          },
+          "self": {
+            "$ref": "#/components/schemas/JointA"
+          }
+        },
+        "required": [
+          "left"
+        ]
+      },
+      "JointB": {
+        "nullable": true,
+        "allOf": [
+          {
+            "properties": {
+              "right": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "right"
+            ]
+          }
+        ]
+      },
+      "JointPair": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JointA"
+          },
+          {
+            "$ref": "#/components/schemas/JointB"
+          }
+        ]
+      },
+      "JointPairAlias": {
+        "$ref": "#/components/schemas/JointPair"
+      },
+      "JointPairFalse": {
+        "$ref": "#/components/schemas/JointPairAlias",
+        "nullable": false
+      },
+      "JointNarrow": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/JointPairFalse"
+          },
+          {
+            "properties": {
+              "extra": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "JointProductFF": {
+        "allOf": [
+          {
+            "nullable": false,
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "a"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "b"
+                  },
+                  "ok": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "ok"
+                ]
+              }
+            ]
+          },
+          {
+            "nullable": false,
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      },
+      "JointProductFT": {
+        "allOf": [
+          {
+            "nullable": false,
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "a"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "b"
+                  },
+                  "ok": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "ok"
+                ]
+              }
+            ]
+          },
+          {
+            "nullable": true,
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      },
+      "JointProductTF": {
+        "allOf": [
+          {
+            "nullable": true,
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "a"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "b"
+                  },
+                  "ok": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "ok"
+                ]
+              }
+            ]
+          },
+          {
+            "nullable": false,
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      },
+      "JointProductTT": {
+        "allOf": [
+          {
+            "nullable": true,
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "a"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "b"
+                  },
+                  "ok": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "ok"
+                ]
+              }
+            ]
+          },
+          {
+            "nullable": true,
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      },
+      "JointProductAlias": {
+        "$ref": "#/components/schemas/JointProductTT"
+      },
+      "JointProductMaybe": {
+        "$ref": "#/components/schemas/JointProductAlias",
+        "nullable": true
+      },
+      "JointProductFalse": {
+        "$ref": "#/components/schemas/JointProductMaybe",
+        "nullable": false
+      },
+      "JointNullBranch": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "a"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "b"
+                  },
+                  "ok": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "ok"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          {
+            "nullable": true,
+            "properties": {
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      },
+      "JointRaw": {
+        "allOf": [
+          {
+            "type": "object",
+            "nullable": true
+          },
+          {
+            "properties": {}
+          }
+        ]
+      },
+      "JointHolder": {
+        "properties": {
+          "pair": {
+            "$ref": "#/components/schemas/JointPair"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/JointNarrow"
+          },
+          "product": {
+            "$ref": "#/components/schemas/JointProductTT"
+          },
+          "mixed": {
+            "$ref": "#/components/schemas/JointProductTF"
+          },
+          "inlineProduct": {
+            "allOf": [
+              {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "a"
+                      },
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "b"
+                      },
+                      "ok": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "ok"
+                    ]
+                  }
+                ]
+              },
+              {
+                "nullable": true,
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label"
+                ]
+              }
+            ]
+          },
+          "inlineMixed": {
+            "allOf": [
+              {
+                "nullable": true,
+                "oneOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "a"
+                      },
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "b"
+                      },
+                      "ok": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "ok"
+                    ]
+                  }
+                ]
+              },
+              {
+                "nullable": false,
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label"
+                ]
+              }
+            ]
+          },
+          "rawValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JointRaw"
+            },
+            "nullable": true
+          }
+        },
+        "required": [
+          "pair",
+          "narrow",
+          "product",
+          "mixed",
+          "inlineProduct",
+          "inlineMixed"
+        ]
+      },
+      "JointNestedAlias": {
+        "$ref": "#/components/schemas/JointHolder/properties/inlineProduct"
+      },
+      "JointNestedFalse": {
+        "$ref": "#/components/schemas/JointNestedAlias",
+        "nullable": false
       }
     }
   },
@@ -216,6 +660,13 @@
                         }
                       }
                     ]
+                  },
+                  "pair": {
+                    "$ref": "#/components/schemas/JointPair"
+                  },
+                  "jointProduct": {
+                    "$ref": "#/components/schemas/JointProductTT",
+                    "nullable": true
                   }
                 },
                 "required": []
@@ -246,6 +697,141 @@
                         },
                         "data": {
                           "$ref": "#/components/schemas/Product"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/joint-pair": {
+      "post": {
+        "operationId": "jointPair",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JointPair"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JointPair"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/joint-narrow": {
+      "post": {
+        "operationId": "jointNarrow",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JointNarrow"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JointNarrow"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/joint-product": {
+      "post": {
+        "operationId": "jointProduct",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JointProductTT"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JointProductTT"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/joint-echo": {
+      "post": {
+        "operationId": "jointEcho",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JointHolder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JointHolder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/joint-watch": {
+      "get": {
+        "operationId": "jointWatch",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "sample"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/JointHolder"
                         }
                       },
                       "required": [

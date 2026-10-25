@@ -1,0 +1,686 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Pinned structured const data"
+  },
+  "components": {
+    "schemas": {
+      "ObjectValue": {
+        "const": {
+          "$ref": "literal data",
+          "type": "data",
+          "nested": [
+            null,
+            true
+          ]
+        },
+        "nullable": true
+      },
+      "ObjectAlias": {
+        "$ref": "#/components/schemas/ObjectValue",
+        "nullable": false
+      },
+      "ArrayValue": {
+        "type": "array",
+        "const": [
+          1,
+          null,
+          {
+            "literal": true
+          }
+        ],
+        "nullable": true
+      },
+      "ArrayAlias": {
+        "$ref": "#/components/schemas/ArrayValue"
+      },
+      "Choice": {
+        "oneOf": [
+          {
+            "properties": {
+              "tag": {
+                "const": "one"
+              },
+              "payload": {
+                "const": {
+                  "literal": true
+                },
+                "nullable": true
+              }
+            }
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "two"
+              },
+              "payload": {
+                "const": {
+                  "literal": false
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RefChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "tag": {
+                "const": "one"
+              },
+              "payload": {
+                "$ref": "#/components/schemas/ObjectAlias"
+              },
+              "rows": {
+                "$ref": "#/components/schemas/ArrayAlias"
+              }
+            }
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "two"
+              },
+              "payload": {
+                "$ref": "#/components/schemas/ObjectAlias"
+              },
+              "rows": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ArrayAlias"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "WithArgs": {
+        "oneOf": [
+          {
+            "properties": {
+              "tag": {
+                "const": "one"
+              },
+              "payload": {
+                "const": []
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "two"
+              },
+              "payload": {
+                "const": [
+                  2
+                ]
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label"
+            ]
+          }
+        ]
+      },
+      "Base": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "const": {
+              "base": [
+                null
+              ]
+            }
+          },
+          "tag": {
+            "type": "string"
+          }
+        }
+      },
+      "Alpha": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Base"
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "one"
+              },
+              "rows": {
+                "const": [
+                  1,
+                  {
+                    "literal": true
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "Beta": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Base"
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "two"
+              },
+              "rows": {
+                "const": [
+                  2
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "Root": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Alpha"
+          },
+          {
+            "$ref": "#/components/schemas/Beta"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "tag",
+          "mapping": {
+            "one": "#/components/schemas/Alpha",
+            "two": "#/components/schemas/Beta"
+          }
+        }
+      },
+      "InferredAlpha": {
+        "properties": {
+          "tag": {
+            "const": "one"
+          },
+          "payload": {
+            "const": {
+              "n": 1
+            }
+          }
+        }
+      },
+      "InferredBeta": {
+        "properties": {
+          "tag": {
+            "const": "two"
+          },
+          "payload": {
+            "const": {
+              "n": 2
+            }
+          }
+        }
+      },
+      "Inferred": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/InferredAlpha"
+          },
+          {
+            "$ref": "#/components/schemas/InferredBeta"
+          }
+        ]
+      },
+      "SealedAlpha": {
+        "properties": {
+          "payload": {
+            "const": {
+              "n": 1
+            }
+          }
+        }
+      },
+      "SealedBeta": {
+        "properties": {
+          "payload": {
+            "const": {
+              "n": 2
+            }
+          }
+        }
+      },
+      "Sealed": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/SealedAlpha"
+          },
+          {
+            "$ref": "#/components/schemas/SealedBeta"
+          }
+        ]
+      },
+      "Product": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "properties": {
+                  "tag": {
+                    "const": "one"
+                  },
+                  "payload": {
+                    "const": {
+                      "one": true
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "tag": {
+                    "const": "two"
+                  },
+                  "payload": {
+                    "const": {
+                      "two": true
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "oneOf": [
+              {
+                "properties": {
+                  "mode": {
+                    "const": "fast"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "mode": {
+                    "const": "slow"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "Envelope": {
+        "properties": {
+          "choice": {
+            "$ref": "#/components/schemas/Choice"
+          },
+          "root": {
+            "$ref": "#/components/schemas/Root"
+          },
+          "inferred": {
+            "$ref": "#/components/schemas/Inferred"
+          },
+          "ref": {
+            "$ref": "#/components/schemas/RefChoice"
+          }
+        }
+      },
+      "ContainerRoot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Group"
+          },
+          {
+            "$ref": "#/components/schemas/Other"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "family",
+          "mapping": {
+            "group": "Group",
+            "other": "Other"
+          }
+        }
+      },
+      "Group": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/GroupAlpha"
+          },
+          {
+            "$ref": "#/components/schemas/GroupBeta"
+          }
+        ]
+      },
+      "GroupAlpha": {
+        "properties": {
+          "tag": {
+            "const": "one"
+          },
+          "payload": {
+            "const": {
+              "data": "one"
+            }
+          }
+        }
+      },
+      "GroupBeta": {
+        "properties": {
+          "tag": {
+            "const": "two"
+          },
+          "payload": {
+            "const": {
+              "data": "two"
+            }
+          }
+        }
+      },
+      "Other": {
+        "properties": {
+          "family": {
+            "const": "other"
+          }
+        }
+      },
+      "NullableChoice": {
+        "oneOf": [
+          {
+            "properties": {
+              "tag": {
+                "const": "one"
+              },
+              "payload": {
+                "const": {
+                  "literal": true
+                },
+                "nullable": true
+              }
+            }
+          },
+          {
+            "properties": {
+              "tag": {
+                "const": "two"
+              },
+              "payload": {
+                "const": {
+                  "literal": false
+                }
+              }
+            }
+          }
+        ],
+        "nullable": true
+      },
+      "TypeDataAlpha": {
+        "properties": {
+          "type": {
+            "const": {
+              "n": 1
+            }
+          },
+          "labels": {
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TypeDataBeta": {
+        "properties": {
+          "type": {
+            "const": {
+              "n": 2
+            }
+          },
+          "payload": {
+            "const": []
+          },
+          "labels": {
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TypeData": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TypeDataAlpha"
+          },
+          {
+            "$ref": "#/components/schemas/TypeDataBeta"
+          }
+        ]
+      },
+      "MixedTypeDataAlpha": {
+        "properties": {
+          "type": {
+            "const": {
+              "n": 1
+            }
+          }
+        }
+      },
+      "MixedTypeDataBeta": {
+        "properties": {
+          "type": {
+            "const": "scalar"
+          },
+          "payload": {
+            "const": []
+          }
+        }
+      },
+      "MixedTypeData": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/MixedTypeDataAlpha"
+          },
+          {
+            "$ref": "#/components/schemas/MixedTypeDataBeta"
+          }
+        ]
+      },
+      "TypeContainerRoot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TypeGroup"
+          },
+          {
+            "$ref": "#/components/schemas/TypeOther"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "family",
+          "mapping": {
+            "group": "TypeGroup",
+            "other": "TypeOther"
+          }
+        }
+      },
+      "TypeGroup": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TypeGroupAlpha"
+          },
+          {
+            "$ref": "#/components/schemas/TypeGroupBeta"
+          }
+        ]
+      },
+      "TypeGroupAlpha": {
+        "properties": {
+          "type": {
+            "const": {
+              "source": "TypeGroupAlpha"
+            }
+          }
+        }
+      },
+      "TypeGroupBeta": {
+        "properties": {
+          "type": {
+            "const": {
+              "source": "TypeGroupBeta"
+            }
+          }
+        }
+      },
+      "TypeOther": {
+        "properties": {
+          "family": {
+            "const": "other"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/choice": {
+      "post": {
+        "operationId": "sendChoice",
+        "tags": [
+          "pinned"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Choice"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Choice"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/root": {
+      "post": {
+        "operationId": "sendRoot",
+        "tags": [
+          "pinned"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Root"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Root"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "tags": [
+          "pinned"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "choice"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Choice"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/left": {
+      "get": {
+        "operationId": "getLeft",
+        "tags": [
+          "pinned"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/right": {
+      "get": {
+        "operationId": "getRight",
+        "tags": [
+          "pinned"
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

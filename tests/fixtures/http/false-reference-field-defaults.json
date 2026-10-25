@@ -1,0 +1,121 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FalseReferenceFieldDefaults",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Blocked": false,
+      "Maybe": {
+        "$ref": "#/components/schemas/Blocked",
+        "nullable": true,
+        "default": null
+      },
+      "Narrow": {
+        "$ref": "#/components/schemas/Maybe",
+        "nullable": false
+      },
+      "Optional": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Blocked",
+            "nullable": true,
+            "default": null
+          },
+          "inherited": {
+            "$ref": "#/components/schemas/Maybe",
+            "default": null
+          },
+          "restored": {
+            "$ref": "#/components/schemas/Narrow",
+            "nullable": true,
+            "default": null
+          },
+          "targetOnly": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/Maybe",
+            "nullable": false
+          }
+        }
+      },
+      "Required": {
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Maybe",
+            "default": null
+          }
+        }
+      },
+      "DirectRequired": {
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Blocked",
+            "nullable": true,
+            "default": null
+          }
+        }
+      },
+      "LegacyRequired": {
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Maybe"
+          }
+        }
+      },
+      "NullableOwner": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Maybe",
+            "default": null
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/required": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "fields"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Required"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Required"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -37,6 +37,8 @@ import kotlinx.serialization.json.jsonObject
 import org.example.mapunique.MapUniqueApiClient
 import org.example.mapunique.api.models.PatchInputDto
 import org.example.mapunique.api.models.WatchEventDto
+import org.example.mapunique.models.StateDto
+import org.example.mapunique.models.`DefaultStructuralDto default`
 import org.example.mapunique.models.HolderDto
 import org.example.mapunique.models.Patch
 import org.example.mapunique.models.`DefaultValuesDto default`
@@ -87,7 +89,8 @@ suspend fun mapUniqueContracts(checked: Boolean = true) = withTimeout(20000) {
     check(id == same)
     for (defaults in listOf(false, true)) for (nulls in listOf(false, true)) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }
-        val holder = HolderDto(directValues, values, mapOf("ids" to values), ids = listOf(mapOf("a" to uuid), null), dates = listOf(mapOf("a" to date), emptyMap()), instants = instantMaps)
+        structuralUniqueContracts(codec, checked)
+        val holder = HolderDto(directValues, values, mapOf("ids" to values), ids = listOf(mapOf("a" to uuid), null), dates = listOf(mapOf("a" to date), emptyMap()), instants = instantMaps, listRows = listOf(listOf(1, null), listOf(null, 1)), mixedRows = listOf(mapOf("a" to listOf(instant, null))), aliasRows = listOf(listOf(1), listOf(2)))
         val encoded = codec.encodeToString(holder)
         check(codec.decodeFromString<HolderDto>(encoded) == holder)
         check(holder.defaultInstantMaps == instantMaps)
@@ -139,6 +142,9 @@ suspend fun mapUniqueContracts(checked: Boolean = true) = withTimeout(20000) {
         mapUniqueExpect(checked) { codec.decodeFromString<HolderDto>(badBridge) }
         PatchInputDto(); PatchInputDto(directValues = Patch.Null, values = Patch.Null)
 
+        val badStructuralValues = "[[1,null],[1,null]]"
+        val badStructural = JsonObject(codec.parseToJsonElement(encoded).jsonObject + ("listRows" to codec.parseToJsonElement(badStructuralValues))).toString()
+        var expectedStructural: List<List<Int?>>? = listOf(listOf(1, null), listOf(2))
         var mode = 0
         var calls = 0
         var expectedValues: List<Map<String, String?>?>? = values
@@ -152,7 +158,7 @@ suspend fun mapUniqueContracts(checked: Boolean = true) = withTimeout(20000) {
             when (request.url.encodedPath) {
                 "/echo" -> {
                     check(codec.parseToJsonElement(mapUniqueBody(request.body)) == codec.parseToJsonElement(encoded))
-                    respond(if (mode == 1) bad else if (mode == 2) badSpecial else encoded, HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+                    respond(if (mode == 1) bad else if (mode == 2) badSpecial else if (mode == 3) badStructural else encoded, HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
                 }
                 "/values" -> {
                     check(codec.parseToJsonElement(mapUniqueBody(request.body)) == codec.parseToJsonElement(codec.encodeToString(expectedValues)))
@@ -166,9 +172,13 @@ suspend fun mapUniqueContracts(checked: Boolean = true) = withTimeout(20000) {
                     check(codec.parseToJsonElement(mapUniqueBody(request.body)) == codec.parseToJsonElement(codec.encodeToString(expectedInstants)))
                     respond(if (mode == 2) badInstants else codec.encodeToString(expectedInstants), HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
                 }
+                "/structural" -> {
+                    check(codec.parseToJsonElement(mapUniqueBody(request.body)) == codec.parseToJsonElement(codec.encodeToString(expectedStructural)))
+                    respond(if (mode == 3) badStructuralValues else codec.encodeToString(expectedStructural), HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+                }
                 "/watch" -> {
                     val channel = ByteChannel(autoFlush = true); channels += channel
-                    val payload = if (mode == 1) bad else if (mode == 2) badSpecial else encoded
+                    val payload = if (mode == 1) bad else if (mode == 2) badSpecial else if (mode == 3) badStructural else encoded
                     jobs += scope.launch {
                         for (byte in "event: sample\r\ndata: $payload\r\n\r\n".encodeToByteArray()) channel.writeFully(byteArrayOf(byte))
                         awaitCancellation()
@@ -184,6 +194,9 @@ suspend fun mapUniqueContracts(checked: Boolean = true) = withTimeout(20000) {
             check(api.echo(holder) == holder)
             check(api.values(values) == values)
             check(api.instants(instantMaps) == instantMaps)
+            check(api.structural(expectedStructural) == expectedStructural)
+            expectedStructural = null; check(api.structural(null) == null)
+            expectedStructural = listOf(listOf(1, null), listOf(2))
             expectedInstants = null; check(api.instants(null) == null); expectedInstants = instantMaps
             expectedValues = null; check(api.values(null) == null)
             expectedValues = values
@@ -201,12 +214,21 @@ suspend fun mapUniqueContracts(checked: Boolean = true) = withTimeout(20000) {
             mapUniqueExpect(checked) { api.instants(duplicateInstantMaps) { callback = true } }
             if (checked) check(!callback && calls == beforeSpecial)
             expectedInstants = instantMaps
+            val beforeStructural = calls
+            callback = false
+            expectedStructural = listOf(listOf(1, null), listOf(1, null))
+            mapUniqueExpect(checked) { api.structural(expectedStructural) { callback = true } }
+            if (checked) check(!callback && calls == beforeStructural)
+            expectedStructural = listOf(listOf(1, null), listOf(2))
             expectedValues = values
             mode = 1
             mapUniqueExpect(checked) { api.echo(holder) }
             mapUniqueExpect(checked) { api.values(values) }
             mode = 2
             mapUniqueExpect(checked) { api.instants(instantMaps) }
+            mapUniqueExpect(checked) { api.echo(holder) }
+            mode = 3
+            mapUniqueExpect(checked) { api.structural(expectedStructural) }
             mapUniqueExpect(checked) { api.echo(holder) }
             mode = 0
             val count = calls
@@ -219,10 +241,53 @@ suspend fun mapUniqueContracts(checked: Boolean = true) = withTimeout(20000) {
             mode = 2
             mapUniqueExpect(checked) { cold.take(1).toList() }
             withTimeout(3000) { while (!channels.last().isClosedForRead) yield() }
+            mode = 3
+            mapUniqueExpect(checked) { cold.take(1).toList() }
+            withTimeout(3000) { while (!channels.last().isClosedForRead) yield() }
             mode = 0
             check((cold.take(1).toList().single() as WatchEventDto.Sample).data == holder)
             check(api.echo(holder) == holder)
         } finally { client.close(); scope.cancel(); jobs.forEach { it.cancel() }; channels.forEach { it.cancel(null) } }
         println("MapUnique checked=$checked defaults=$defaults nulls=$nulls Map-value-equality-null-defaults-alias-Patch-preflight-HTTP-liveSSEclose-cold-reuse passed")
     }
+}
+
+private suspend fun structuralUniqueContracts(codec: Json, checked: Boolean) {
+    val instant = Instant.parse("2026-01-02T03:04:05Z")
+    HolderDto(emptyList(), listRows = listOf(null, emptyList(), listOf(null), listOf(1, 2), listOf(2, 1)))
+    HolderDto(emptyList(), mixedRows = listOf(null, emptyMap(), mapOf("a" to null), mapOf("a" to emptyList()), mapOf("a" to listOf(null))))
+    val first = linkedMapOf("a" to listOf(instant), "b" to null)
+    val second = linkedMapOf("b" to null, "a" to listOf(Instant.parse("2026-01-02T05:04:05+02:00")))
+    check(first == second)
+    mapUniqueExpect(checked) { HolderDto(emptyList(), mixedRows = listOf(first, second)) }
+    mapUniqueExpect(checked) { PatchInputDto(mixedRows = Patch.Value(listOf(first, second))) }
+    for (rows in listOf(listOf(listOf(1), listOf(1)), listOf(null, null))) {
+        mapUniqueExpect(checked) { HolderDto(emptyList(), listRows = rows) }
+        mapUniqueExpect(checked) { PatchInputDto(listRows = Patch.Value(rows)) }
+    }
+    PatchInputDto(listRows = Patch.Null); PatchInputDto(listRows = Patch.Absent)
+    mapUniqueExpect(checked) { HolderDto(emptyList(), aliasRows = listOf(listOf(1), listOf(1))) }
+    mapUniqueExpect(checked) { HolderDto(emptyList(), floatRows = listOf(listOf(0.0f), listOf(-0.0f))) }
+    mapUniqueExpect(checked) { HolderDto(emptyList(), floatRows = listOf(listOf(Float.NaN))) }
+    mapUniqueExpect(checked) { HolderDto(emptyList(), doubleMaps = listOf(mapOf("a" to 0.0), mapOf("a" to -0.0))) }
+    mapUniqueExpect(checked) { HolderDto(emptyList(), doubleMaps = listOf(mapOf("a" to Double.POSITIVE_INFINITY))) }
+    val known = codec.decodeFromString<StateDto>("\"a\"")
+    mapUniqueExpect(checked) { HolderDto(emptyList(), enumRows = listOf(listOf(known), listOf(StateDto.Unrecognized("a")))) }
+    HolderDto(emptyList(), enumRows = listOf(listOf(known), listOf(StateDto.Unrecognized("other"))))
+    for ((field, duplicate) in listOf(
+        "listRows" to "[[1,null],[1,null]]",
+        "mixedRows" to "[{\"a\":[\"2026-01-02T03:04:05Z\"],\"b\":null},{\"b\":null,\"a\":[\"2026-01-02T05:04:05+02:00\"]}]",
+        "floatRows" to "[[16777216],[16777217]]",
+        "doubleMaps" to "[{\"a\":0.0},{\"a\":-0.0}]",
+        "enumRows" to "[[\"a\"],[\"a\"]]",
+        "aliasRows" to "[[1],[1]]"
+    )) mapUniqueExpect(checked) { codec.decodeFromString<HolderDto>("{\"directValues\":[],\"$field\":$duplicate}") }
+    check(HolderDto(emptyList()).defaultListRows == listOf(listOf(1), listOf(2)))
+    check(`DefaultStructuralDto default`() == listOf(listOf(1), listOf(2)))
+    val a = listOf(0, 31)
+    val b = listOf(1, 0)
+    check(a.hashCode() == b.hashCode() && a != b)
+    HolderDto(emptyList(), listRows = listOf(a, b))
+    HolderDto(emptyList(), mixedRows = listOf(mapOf("a" to listOf(instant)), mapOf("a" to listOf(Instant.parse("2026-01-02T03:04:05.000000001Z")))))
+    println("Structural unique typed-list-map-alias-float-enum-null-defaults-Patch passed checked=$checked")
 }

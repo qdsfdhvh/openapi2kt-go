@@ -1,0 +1,284 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "nullable": false,
+        "default": [
+          1,
+          2
+        ]
+      },
+      "Longs": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "nullable": false,
+        "default": [
+          -9223372036854775808,
+          9223372036854775807
+        ]
+      },
+      "Floats": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number",
+            "format": "float"
+          },
+          {
+            "type": "number",
+            "format": "float"
+          }
+        ],
+        "nullable": false,
+        "default": [
+          -0.0,
+          1.25
+        ]
+      },
+      "Dates": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "format": "date"
+          },
+          {
+            "type": "string",
+            "format": "date"
+          }
+        ],
+        "nullable": false,
+        "default": [
+          "2024-02-29"
+        ]
+      },
+      "Times": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "nullable": false,
+        "default": [
+          "2024-02-29T10:04:56.123456789Z"
+        ]
+      },
+      "Ids": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "nullable": false,
+        "default": [
+          "00000000-0000-0000-0000-000000000001"
+        ]
+      },
+      "Flags": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "boolean"
+          }
+        ],
+        "nullable": true,
+        "default": null
+      },
+      "Empty": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "nullable": false,
+        "default": []
+      },
+      "NullableRows": {
+        "$ref": "#/components/schemas/Rows",
+        "nullable": true,
+        "default": null
+      },
+      "Wrapped": {
+        "$ref": "#/components/schemas/Rows",
+        "default": [
+          3
+        ]
+      },
+      "Narrow": {
+        "$ref": "#/components/schemas/NullableRows",
+        "nullable": false,
+        "default": [
+          4
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          }
+        ],
+        "items": {
+          "type": "integer"
+        },
+        "default": [
+          5
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "required": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "rows": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "tuples"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/watch": {
+      "post": {
+        "operationId": "watch",
+        "tags": [
+          "tuples"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "record"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "tags": [
+          "tuples"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "rows": {
+                    "$ref": "#/components/schemas/Rows",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

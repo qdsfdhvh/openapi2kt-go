@@ -1,0 +1,370 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FalseDTOOwnerRootDefaults",
+    "version": "synthetic"
+  },
+  "components": {
+    "schemas": {
+      "Blocked": false,
+      "Maybe": {
+        "$ref": "#/components/schemas/Blocked",
+        "nullable": true
+      },
+      "Target": {
+        "required": [
+          "rows"
+        ],
+        "properties": {
+          "blocked": false,
+          "reference": {
+            "$ref": "#/components/schemas/Blocked"
+          },
+          "value": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "rows": {
+            "type": "array",
+            "items": false,
+            "default": []
+          },
+          "mapping": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "array",
+                "nullable": true,
+                "items": false
+              }
+            }
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "spares": {
+            "type": "array",
+            "items": false,
+            "default": []
+          },
+          "falseValue": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "rows": [],
+          "labels": [
+            "target"
+          ],
+          "mapping": {
+            "description": {
+              "items": []
+            }
+          },
+          "value": null,
+          "falseValue": "target-name"
+        }
+      },
+      "Outer": {
+        "required": [
+          "target"
+        ],
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/Target"
+          },
+          "missing": {
+            "$ref": "#/components/schemas/Target"
+          },
+          "org": {
+            "$ref": "#/components/schemas/Target"
+          },
+          "kotlinx": {
+            "$ref": "#/components/schemas/Target"
+          }
+        },
+        "default": {
+          "target": {
+            "rows": [],
+            "labels": [
+              "owner"
+            ],
+            "mapping": {
+              "description": {
+                "items": null
+              }
+            },
+            "value": null,
+            "falseValue": "owner-name"
+          }
+        }
+      },
+      "Omitted": {
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/Target"
+          }
+        },
+        "default": {}
+      },
+      "NullableMember": {
+        "required": [
+          "target"
+        ],
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/Target",
+            "nullable": true
+          }
+        },
+        "default": {
+          "target": null
+        }
+      },
+      "NullableOwner": {
+        "type": "object",
+        "nullable": true,
+        "required": [
+          "target"
+        ],
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/Target"
+          }
+        },
+        "default": null
+      },
+      "WithoutFactory": {
+        "required": [
+          "rows"
+        ],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": false
+          },
+          "blocked": false
+        }
+      },
+      "OwnerWithoutFactory": {
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/WithoutFactory"
+          }
+        },
+        "default": {
+          "target": {
+            "rows": []
+          }
+        }
+      },
+      "EarlierTarget": {
+        "required": [
+          "rows"
+        ],
+        "properties": {
+          "blocked": false,
+          "reference": {
+            "$ref": "#/components/schemas/Blocked"
+          },
+          "value": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "rows": {
+            "type": "array",
+            "items": false,
+            "default": []
+          },
+          "mapping": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "array",
+                "nullable": true,
+                "items": false
+              }
+            }
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "spares": {
+            "type": "array",
+            "items": false,
+            "default": []
+          },
+          "falseValue": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "rows": [],
+          "labels": [
+            "earlier"
+          ],
+          "mapping": {
+            "description": {
+              "items": []
+            }
+          },
+          "value": null,
+          "falseValue": "target-name"
+        }
+      },
+      "LaterOwner": {
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/EarlierTarget"
+          }
+        },
+        "default": {
+          "target": {
+            "rows": [],
+            "labels": [
+              "later"
+            ],
+            "mapping": {
+              "description": {
+                "items": null
+              }
+            },
+            "value": null,
+            "falseValue": "owner-name"
+          }
+        }
+      },
+      "CountedTarget": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "blocked": false
+        },
+        "default": {
+          "value": null
+        }
+      },
+      "CountedOwner": {
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/CountedTarget"
+          }
+        },
+        "default": {
+          "target": {}
+        }
+      }
+    }
+  },
+  "paths": {
+    "/root": {
+      "post": {
+        "tags": [
+          "objects"
+        ],
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Outer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Outer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/first": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "first",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/second": {
+      "post": {
+        "tags": [
+          "ordinary"
+        ],
+        "operationId": "second",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

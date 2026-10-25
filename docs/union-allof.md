@@ -1,6 +1,6 @@
 # Object unions within allOf
 
-[Explicit nullable product roots](nullable-product-unions.md) use the existing standalone Null-carrier and inline nullable-codec policies while keeping physical variant shapes non-null. Nullable intersection members retain their separate exclusion.
+[Explicit nullable product roots](nullable-product-unions.md) use the existing standalone Null-carrier and inline nullable-codec policies while keeping physical variant shapes non-null. [Nullable object operands](nullable-intersections.md) derive the product null view from all operand null sets.
 
 [Inline variant-owned fields](union-inline-values.md) can hold supported inline object/allOf/union values and finite containers; the product retains each actual nested owner.
 
@@ -36,7 +36,7 @@ Ordinary allOf inputs without a union and ordinary unions retain their existing 
 
 The existing 48-level source budget, 16,384 expansion-work budget, 240 union branches and 240 JVM serialized constructor slots apply. A Cartesian product exceeding 240 is rejected before allocating combinations. Transparent composition cycles remain errors. These independent limits are not a promise that every combination of maximum width and depth compiles on all Kotlin targets.
 
-Nullable object/intersection alternatives, primitive/dictionary alternatives, explicit discriminator hierarchy composition, internal nominal shape borrowing and general JSON Schema intersections are separate contracts and remain diagnosed here. [Common dictionary fields](union-common-dictionaries.md) have a separate compatible Map/JsonObject property contract. [Common nominal references](union-common-nominals.md) reuse actual DTO/union/hierarchy classifiers. General cross-reference constraint aggregation and inline common object ownership remain pending.
+[Nullable object/intersection alternatives](nullable-intersections.md) now retain separate typed null sets over their original physical shapes. Primitive/dictionary alternatives, explicit discriminator hierarchy composition, internal nominal shape borrowing and general JSON Schema intersections remain separate contracts. [Common dictionary fields](union-common-dictionaries.md) have a separate compatible Map/JsonObject property contract. [Common nominal references](union-common-nominals.md) reuse actual DTO/union/hierarchy classifiers. General cross-reference constraint aggregation and inline common object ownership remain pending.
 
 ## Migration and evidence
 

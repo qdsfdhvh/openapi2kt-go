@@ -99,6 +99,8 @@ func schemaType(v *document.Value, pointer string) (string, bool, *diagnostic.Di
 		kind = "object"
 	} else if inferredNullLiteral(v) {
 		kind = "null"
+	} else if implicitStringEnumNull(v) {
+		nullable = true
 	}
 	return kind, nullable || typeNull, nil
 }

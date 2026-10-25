@@ -14,7 +14,6 @@ func TestHTTPBodyGuardsAndSlots(t *testing.T) {
 	for _, tc := range []struct{ body, code, tail string }{
 		{`null`, "E_SCHEMA_INVALID", ""},
 		{`{"required":"yes","content":{}}`, "E_SCHEMA_INVALID", "/required"},
-		{`{"content":{"text/plain":{"schema":{"type":"string"}}}}`, "E_OPERATIONS_UNSUPPORTED", "/content"},
 		{`{"content":{"application/json":{"schema":{"allOf":[{"type":"string"},{"type":"boolean"}]}}}}`, "E_SCHEMA_UNSUPPORTED", "/content/application~1json/schema/allOf/0/type"},
 		{`{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/Missing"}}}}`, "E_REF_MISSING", "/content/application~1json/schema"},
 	} {

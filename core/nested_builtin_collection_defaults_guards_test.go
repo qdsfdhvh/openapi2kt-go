@@ -49,7 +49,6 @@ func TestNestedBuiltinCollectionDefaultsChecksBeforeRequiredPatchAndEmpty(t *tes
 		{`{"type":"array","items":{"type":"array","items":{"type":"integer","nullable":true},"uniqueItems":true},"default":[[null,null]]}`, "E_SCHEMA_INVALID", "/default/0/1"},
 		{`{"type":"array","items":{"type":"array","items":{"type":"string","minLength":-1}},"default":[]}`, "E_SCHEMA_INVALID", "/items/items/minLength"},
 		{`{"additionalProperties":{"additionalProperties":{"type":"number","format":"float","multipleOf":1}},"default":{}}`, "E_SCHEMA_UNSUPPORTED", "/additionalProperties/additionalProperties/multipleOf"},
-		{`{"type":"array","items":{"type":"array","items":{"type":"integer"}},"uniqueItems":true,"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/uniqueItems"},
 	} {
 		r := request(fieldDoc(tc.field), "Dto")
 		r.Options.Validation = true
@@ -80,7 +79,6 @@ func TestNestedBuiltinCollectionDefaultsExcludeIndependentRoles(t *testing.T) {
 		`{"Holder":{"properties":{"value":{"type":"array","items":` + field + `}}}}`,
 		`{"Holder":{"properties":{"value":{"additionalProperties":` + field + `}}}}`,
 		`{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,
-		`{"Leaf":{"type":"string"},"Holder":{"properties":{"value":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Leaf"}},"default":[]}}}}`,
 		// Object leaves inside collections now use the separate object default role.
 		`{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"value":` + field + `}},{"properties":{"tag":{"const":"two"}}}]}}`,
 	} {

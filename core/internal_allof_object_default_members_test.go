@@ -40,7 +40,7 @@ func TestInternalAllOfObjectDefaultMemberScopes(t *testing.T) {
 func TestInternalAllOfObjectDefaultMemberNullable(t *testing.T) {
 	for _, checked := range []bool{false, true} {
 		for _, targetIntent := range []string{"", `,"nullable":true`, `,"nullable":false`} {
-			target := strings.TrimSuffix(strings.Replace(allOfObjectMember, `"allOf":[{`, `"allOf":[{"nullable":true,`, 1), "}") + targetIntent + "}"
+			target := strings.TrimSuffix(nullableAllOfMembers(t, allOfObjectMember), "}") + targetIntent + "}"
 			for _, aliasIntent := range []string{"", `,"nullable":true`, `,"nullable":false`} {
 				for _, consumer := range []string{"", `,"nullable":true`, `,"nullable":false`} {
 					member := `{"$ref":"#/components/schemas/Alias"` + consumer + `}`
@@ -101,6 +101,10 @@ func TestInternalAllOfObjectDefaultMemberGuards(t *testing.T) {
 		for _, value := range []string{`{}`, `{"member":{"label":"x"}}`} {
 			r := request(internalAllOfMemberDocument(target, member, value), "Dto")
 			r.Options.Validation = true
+			if target == allOfOverrideDuplicateA && value == `{}` {
+				allOfDefaultOverridePositive(t, r)
+				continue
+			}
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
 				t.Fatal("excluded source admitted", target, err)
 			}

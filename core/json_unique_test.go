@@ -52,8 +52,13 @@ func TestJSONUniqueReferencedRawTrueArrays(t *testing.T) {
 			}
 		}
 	}
-	for _, terminal := range []string{`{"type":"object","properties":{"v":{"type":"string"}}}`, `{"type":"object","additionalProperties":{"type":"string"}}`} {
-		aliasFailure(t, schemas(`{"Value":`+terminal+`,"Record":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Value"},"uniqueItems":true}}}}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Record/properties/value/uniqueItems")
+	for _, terminal := range []string{`{"type":"object","properties":{"v":{"type":"string"}}}`} {
+		rq := request(schemas(`{"Value":`+terminal+`,"Record":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Value"},"uniqueItems":true}}}}`), "Dto")
+		rq.Options.Validation = true
+		got, e := core.GenerateWithDiagnostics(rq)
+		if e != nil || !strings.Contains(source(t, got, "RecordDto"), "List<org.example.models.models.ValueDto>") || strings.Contains(source(t, got, "RecordDto"), "`openapi-kt unique JSON items`") {
+			t.Fatal("originalordinaryDTO nowrequires mappedDTO equality", e)
+		}
 	}
 }
 

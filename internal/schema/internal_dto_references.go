@@ -160,8 +160,7 @@ func (a *analyzer) nominalSourceNullable(target *resolvedSchema) (bool, *diagnos
 			if target.Catalog != nil {
 				return false, nil // Standalone products retain their Null carrier.
 			}
-			_, nullable, err := schemaType(target.Schema, target.Pointer)
-			return nullable, err
+			return a.compositionNullable(target.Schema, target.Pointer, 0, &compositionBudget{remaining: 16384, enabled: true}, map[*document.Value]bool{})
 		}
 		shape, err := a.objectShape(target.Schema, target.Pointer, 0)
 		if err != nil {
@@ -297,6 +296,30 @@ func (a *analyzer) bindNamedChainModel(target *resolvedSchema, source string) bo
 // Syntax is not enough to invent a classifier. Check each used owner against
 // final shared declarations, after all components and operation uses validate.
 func (a *analyzer) validateInternalModels(declarations []Declaration) *diagnostic.Diagnostic {
+	if err := a.validateFalseDTOOwnerDefaults(declarations); err != nil {
+		return err
+	}
+	if err := a.validateLiteralFalseFields(declarations); err != nil {
+		return err
+	}
+	if err := a.validateFalseInlineCollectionBindings(declarations); err != nil {
+		return err
+	}
+	if err := a.validateFalseDTOFieldDefaults(declarations); err != nil {
+		return err
+	}
+	if err := a.validateFalseCollectionBindings(declarations); err != nil {
+		return err
+	}
+	if err := a.validateFalseFieldBindings(declarations); err != nil {
+		return err
+	}
+	if err := a.validateFalseRootBindings(declarations); err != nil {
+		return err
+	}
+	if err := a.validateTupleNativeSources(); err != nil {
+		return err
+	}
 	if err := a.validateNativeEnumBindings(declarations); err != nil {
 		return err
 	}

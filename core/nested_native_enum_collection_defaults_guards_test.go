@@ -135,7 +135,6 @@ func TestNestedNativeEnumCollectionDefaultsRetainedCountsBoundsAndFactors(t *tes
 		{nestedDefaultChain(2, `{"type":"number","enum":[1,2],"multipleOf":0.5}`, `[]`), "E_SCHEMA_UNSUPPORTED", "/items/items/multipleOf"},
 		{nestedDefaultChain(2, `{"type":"boolean","enum":[true],"minimum":0}`, `[]`), "E_SCHEMA_UNSUPPORTED", "/items/items/minimum"},
 		{nestedDefaultChain(2, `{"type":"integer","enum":[1],"minLength":1}`, `[]`), "E_SCHEMA_UNSUPPORTED", "/items/items/minLength"},
-		{`{"type":"array","uniqueItems":true,"items":{"type":"array","items":{"type":"boolean","enum":[true]}},"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/uniqueItems"},
 	} {
 		r := request(fieldDoc(tc.field), "Dto")
 		r.Options.Validation = true
@@ -163,14 +162,12 @@ func TestNestedNativeEnumCollectionDefaultsExcludedRolesAndNoDrop(t *testing.T) 
 	field := nestedDefaultChain(2, `{"type":"integer","enum":[1,2]}`, `[[1]]`)
 	pure := strings.Replace(field, `,"default":[[1]]`, "", 1)
 	for name, input := range map[string]string{
-		"child":        `{"Holder":{"properties":{"value":{"type":"array","items":` + field + `}}}}`,
-		"mapChild":     `{"Holder":{"properties":{"value":{"additionalProperties":` + field + `}}}}`,
-		"wrapper":      `{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,
-		"namedLeaf":    `{"Code":{"type":"integer","enum":[1,2]},"Holder":{"properties":{"value":` + nestedDefaultChain(2, `{"$ref":"#/components/schemas/Code"}`, `[]`) + `}}}`,
-		"internalLeaf": `{"Catalog":{"properties":{"code":{"type":"integer","enum":[1,2]}}},"Holder":{"properties":{"value":` + nestedDefaultChain(2, `{"$ref":"#/components/schemas/Catalog/properties/code"}`, `[]`) + `}}}`,
-		"refWrapper":   `{"Tree":` + pure + `,"Holder":{"properties":{"value":{"allOf":[{"$ref":"#/components/schemas/Tree"}],"default":[[1]]}}}}`,
-		"union":        `{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"value":` + field + `}},{"properties":{"tag":{"const":"two"}}}]}}`,
-		"hierarchy":    `{"Base":{"discriminator":{"propertyName":"kind"},"properties":{"kind":{"type":"string"},"value":` + field + `},"required":["kind"]},"Child":{"allOf":[{"$ref":"#/components/schemas/Base"},{"properties":{"x":{"type":"string"}}}]}}`,
+		"child":      `{"Holder":{"properties":{"value":{"type":"array","items":` + field + `}}}}`,
+		"mapChild":   `{"Holder":{"properties":{"value":{"additionalProperties":` + field + `}}}}`,
+		"wrapper":    `{"Holder":{"properties":{"value":{"allOf":[` + field + `]}}}}`,
+		"refWrapper": `{"Tree":` + pure + `,"Holder":{"properties":{"value":{"allOf":[{"$ref":"#/components/schemas/Tree"}],"default":[[1]]}}}}`,
+		"union":      `{"Choice":{"oneOf":[{"properties":{"tag":{"const":"one"},"value":` + field + `}},{"properties":{"tag":{"const":"two"}}}]}}`,
+		"hierarchy":  `{"Base":{"discriminator":{"propertyName":"kind"},"properties":{"kind":{"type":"string"},"value":` + field + `},"required":["kind"]},"Child":{"allOf":[{"$ref":"#/components/schemas/Base"},{"properties":{"x":{"type":"string"}}}]}}`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			for _, checked := range []bool{false, true} {

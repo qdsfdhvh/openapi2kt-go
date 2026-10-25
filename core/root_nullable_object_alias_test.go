@@ -173,7 +173,7 @@ func TestRootNullableObjectAliasSourceSlotsAndGuards(t *testing.T) {
 		})
 	}
 	aliasFailure(t, schemas(`{"A":{"$ref":"#/components/schemas/B","nullable":true},"B":{"$ref":"#/components/schemas/A","nullable":false}}`), "E_REF_CYCLE", "/components/schemas/A/$ref")
-	aliasFailure(t, schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":{"properties":{"id":{"type":"string"}}},"C":{"allOf":[{"$ref":"#/components/schemas/A"},{"properties":{"other":{"type":"boolean"}}}]}}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/C/allOf/0/$ref")
+	report(t, schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":{"properties":{"id":{"type":"string"}}},"C":{"allOf":[{"$ref":"#/components/schemas/A"},{"properties":{"other":{"type":"boolean"}}}]}}`), "Dto")
 	r := report(t, schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"B":{"$ref":"#/components/schemas/A","nullable":false},"Z":{"allOf":[{"properties":{"id":{"type":"string"}}},{"properties":{"ok":{"type":"boolean"}}}]},"C":{"allOf":[{"$ref":"#/components/schemas/B"},{"properties":{"other":{"type":"boolean"}}}]}}`), "Dto")
 	if !strings.Contains(source(t, r, "ADto"), "ZDto?") || !strings.Contains(source(t, r, "CDto"), "val other") {
 		t.Fatal(r)

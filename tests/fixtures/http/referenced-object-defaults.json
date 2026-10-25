@@ -95,7 +95,7 @@
           ]}},
           "maybe": {"allOf": [
             {"nullable": true, "properties": {"label": {"type": "string"}}, "required": ["label"]},
-            {"properties": {"flag": {"type": "boolean"}}}
+            {"nullable": true, "properties": {"flag": {"type": "boolean"}}}
           ]}
         }
       },

@@ -20,6 +20,8 @@ kotlin {
     sourceSets.commonMain {
         kotlin.srcDir("generated")
         kotlin.srcDir("generated-increments")
+        kotlin.srcDir("generated-roadmap")
+        kotlin.srcDir("generated-getters")
         dependencies { implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0") }
     }
 }
