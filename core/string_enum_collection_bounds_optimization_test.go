@@ -9,7 +9,7 @@ import (
 )
 
 func TestStringEnumCollectionBoundsActualOptimizationIdentity(t *testing.T) {
-	shape := `{"properties":{"codes":{"type":"array","items":{"enum":["one","two","x"],"minLength":2,"maxLength":4},"default":["one"]},"labels":{"additionalProperties":{"enum":["one","two"],"pattern":"^[a-z]+$"},"default":{"b":"two","a":"one"}}}}`
+	shape := `{"properties":{"state":{"type":"string","format":"date","enum":["one","two","x"],"minLength":2,"maxLength":4,"default":"one"},"codes":{"type":"array","items":{"enum":["one","two","x"],"minLength":2,"maxLength":4},"default":["one"]},"labels":{"additionalProperties":{"enum":["one","two"],"pattern":"^[a-z]+$"},"default":{"b":"two","a":"one"}}}}`
 	op := func(id, shape string) string {
 		return `{"get":{"operationId":"` + id + `","responses":{"200":{"content":{"application/json":{"schema":` + shape + `}}}}}}`
 	}
@@ -33,7 +33,7 @@ func TestStringEnumCollectionBoundsActualOptimizationIdentity(t *testing.T) {
 		if !strings.Contains(source(t, got, "BetaResponseDto"), "public typealias") || strings.Contains(source(t, got, "BoundsResponseDto"), "public typealias") || strings.Contains(source(t, got, "DefaultsResponseDto"), "public typealias") {
 			t.Fatal("Wrong identity", mode)
 		}
-		for _, leaf := range []string{"CodesInner", "LabelsValue"} {
+		for _, leaf := range []string{"State", "CodesInner", "LabelsValue"} {
 			if !strings.Contains(canonical, "org.example.models."+strings.ReplaceAll(owner, "/", ".")+"."+leaf) {
 				t.Fatal("Wrong final lexical owner", mode, canonical)
 			}
@@ -49,7 +49,7 @@ func TestStringEnumCollectionBoundsActualOptimizationIdentity(t *testing.T) {
 			if err != nil || !reflect.DeepEqual(got, again) {
 				t.Fatal("Canonical keys lost", err)
 			}
-			for _, change := range []struct{ old, new string }{{`"minLength":2`, `"minLength":3`}, {`"pattern":"^[a-z]+$"`, `"pattern":"[a-z]"`}, {`"default":["one"]`, `"default":["two"]`}} {
+			for _, change := range []struct{ old, new string }{{`"minLength":2`, `"minLength":3`}, {`"pattern":"^[a-z]+$"`, `"pattern":"[a-z]"`}, {`"default":["one"]`, `"default":["two"]`}, {`"default":"one"`, `"default":"two"`}} {
 				r.Document = []byte(strings.ReplaceAll(doc, change.old, change.new))
 				changed, err := core.GenerateWithDiagnostics(r)
 				if err == nil || err.(core.Diagnostics)[0].Code != "E_NAME_LOCK_CHANGED" || !reflect.DeepEqual(changed, core.GenerationReport{}) {

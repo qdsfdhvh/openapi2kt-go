@@ -112,6 +112,20 @@ func (a *analyzer) objectDefaultReferenceTarget(v *document.Value) (*document.Va
 	return nil, "", false
 }
 
+// Only an original component admitted by the factory planner can retain an
+// independent object annotation while another owner borrows its shape.
+func (a *analyzer) independentObjectComponentDefault(v *document.Value, pointer string) bool {
+	if !a.componentDefaultSchemas[v] || !a.componentRoot(v, pointer) {
+		return false
+	}
+	if has(v, "$ref") {
+		_, _, ok := a.objectDefaultReferenceTarget(v)
+		return ok
+	}
+	kind, _, err := schemaType(v, pointer)
+	return err == nil && kind == "object" && objectDefaultCandidateSchema(v)
+}
+
 func objectDefaultRequiredNames(v *document.Value, pointer string) (map[string]bool, *diagnostic.Diagnostic) {
 	required := map[string]bool{}
 	value, ok := v.Get("required")
@@ -167,6 +181,10 @@ func (a *analyzer) objectDefaultNode(v *document.Value, pointer string, depth in
 	if err := object(v, pointer); err != nil {
 		return nil, err
 	}
+	// An original admitted component keeps its independent factory annotation.
+	// Borrowing its shape neither inherits that value nor grants an annotation
+	// role to a copied, internal or otherwise unmarked schema node.
+	allowOwnDefault = allowOwnDefault || a.independentObjectComponentDefault(v, pointer)
 	kind, nullable, err := schemaType(v, pointer)
 	if err != nil {
 		return nil, err
@@ -287,7 +305,20 @@ func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, 
 		if has(v, "enum") && has(v, "default") && !allowOwnDefault {
 			return nil, unsupported(naming.Pointer(pointer, "default"))
 		}
-		return a.nestedDefaultSchema(v, "Validation", pointer, nil, nil, depth, true)
+		var boundedEnum *document.Value
+		if a.options.Validation {
+			if directStringEnumFieldBounds(v) {
+				boundedEnum = v
+			} else if leaf := nestedStringEnumBoundsLeaf(v); leaf != nil {
+				boundedEnum = leaf
+			} else if directStringEnumCollectionBounds(v) {
+				boundedEnum = get(v, "items")
+				if dictionarySchema(v) {
+					boundedEnum = get(v, "additionalProperties")
+				}
+			}
+		}
+		return a.nestedDefaultSchemaWithEnumBounds(v, "Validation", pointer, nil, nil, depth, true, boundedEnum)
 	}
 }
 
@@ -420,7 +451,7 @@ func (a *analyzer) objectDefaultTransparentTerminal(v *document.Value) *document
 		v = source
 	}
 	kind, _, _ := schemaType(v, "")
-	if objectDefaultCandidateSchema(v) || objectDefaultTransparentLeaf(v, kind) {
+	if objectDefaultCandidateSchema(v) || objectDefaultTransparentLeaf(v, kind) || a.checkedEnumReferenceCandidate(v) {
 		return v
 	}
 	return nil
@@ -439,7 +470,7 @@ func (a *analyzer) objectDefaultTransparentChain(v *document.Value, pointer, ref
 		}
 		owner := a.componentsByOriginalSchema(v)
 		kind, _, _ := schemaType(v, pointer)
-		leaf := objectDefaultTransparentLeaf(v, kind)
+		leaf := objectDefaultTransparentLeaf(v, kind) || a.checkedEnumReferenceCandidate(v)
 		if owner == nil && (has(v, "$ref") || leaf) {
 			// An internal hop or leaf keeps its original source identity.
 			if err := a.internalDefaultMemberSource(v, pointer, reference); err != nil {
@@ -454,7 +485,11 @@ func (a *analyzer) objectDefaultTransparentChain(v *document.Value, pointer, ref
 			if leaf {
 				// Validation borrows the original vocabulary; the ordinary field
 				// planner remains the sole authority for the actual enum classifier.
-				node, err = a.nestedDefaultSchema(v, "Validation", pointer, nil, nil, depth, false)
+				var bounded *document.Value
+				if a.checkedEnumReferenceCandidate(v) {
+					bounded = v
+				}
+				node, err = a.nestedDefaultSchemaWithEnumBounds(v, "Validation", pointer, nil, nil, depth, a.independentEnumComponentDefault(v, pointer) || a.independentCheckedEnumFieldDefault(v, pointer), bounded)
 			} else if objectDefaultCandidateSchema(v) {
 				node, err = a.objectDefaultNode(v, pointer, depth, false)
 			} else {
@@ -479,7 +514,11 @@ func (a *analyzer) objectDefaultTransparentChain(v *document.Value, pointer, ref
 			return nil, stepErr
 		}
 		a = stepped
-		if err := checkKeys(v, []string{"$ref", "nullable"}, pointer); err != nil {
+		keys := []string{"$ref", "nullable"}
+		if a.independentEnumComponentDefault(v, pointer) || a.independentObjectComponentDefault(v, pointer) {
+			keys = append(keys, "default")
+		}
+		if err := checkKeys(v, keys, pointer); err != nil {
 			return nil, err
 		}
 		reference = text(get(v, "$ref"))
@@ -539,6 +578,8 @@ func (a *analyzer) objectDefaultPropertyReference(v *document.Value, pointer str
 		// A referenced List/typed Map whose elements are scalar/temporal/enum
 		// leaves reuses the existing collection leaf planner.
 		node, err = a.objectDefaultScalarCollectionNode(source, sourcePointer, depth)
+	} else if a.checkedEnumReferenceCandidate(source) {
+		node, err = a.nestedDefaultSchemaWithEnumBounds(source, "Validation", sourcePointer, nil, nil, depth, a.independentCheckedEnumFieldDefault(source, sourcePointer) || a.independentEnumComponentDefault(source, sourcePointer), source)
 	} else {
 		node, err = a.nestedDefaultSchema(source, "Validation", sourcePointer, nil, nil, depth, false)
 	}

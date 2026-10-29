@@ -18,6 +18,7 @@ fun main() {
             modelIncrementContracts(json)
             roadmapIncrementContracts(json)
             dtoGetterContracts(json)
+            enumFieldBoundsContracts(json)
             val value = json.decodeFromString<Item>(input)
             check(value.id == 42L)
             check(value.tags == listOf("one", null))
@@ -30,5 +31,5 @@ fun main() {
             check(json.decodeFromString<Item>(encoded).tags == value.tags)
         }
     }
-    println("Generated platform contracts passed (four Json configurations; catalog, allOf/byte/self defaults and roadmap tuple/independent factories/structural uniqueness/primitive union aliases and DTO scalar/enum/const getters)")
+    println("Generated platform contracts passed (four Json configurations; catalog, allOf/byte/self defaults, roadmap tuple/independent factories/structural uniqueness/primitive union aliases, DTO scalar/enum/const getters and lexical enum field bounds)")
 }

@@ -1,5 +1,8 @@
 # String enum list uniqueness
 
+[Model String enum metadata](metadata-string-enums.md) extends nullable roots/aliases, actual internal lexical references, existing independent scalar/collection/object default roles and serialName uniqueness. Original ownership, source/null-vocabulary boundaries, presence and budgets remain. Equivalent enum merges now retain each component-owned factory; generic graphs, platforms and final acceptance remain open.
+
+
 With `--validation`, arrays with original plain String enum items accept `uniqueItems: true`. Items may declare `type: string` or use an already admitted typeless String vocabulary, including its existing explicit nullable/null-member grammar. Root collection aliases, ordinary DTO fields, supported nested List/typed Map paths and existing typed HTTP/SSE consumers share the check. A reference to an eligible collection retains that collection's check. Already admitted local named/internal enum leaf references and their existing aliases also retain serialName equality; the reference graph itself is unchanged.
 
 ```json

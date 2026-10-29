@@ -1,0 +1,819 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Value": {
+        "x-native-type": "bigint"
+      },
+      "Bytes": {
+        "type": "string",
+        "format": "byte"
+      },
+      "Binary": {
+        "type": "string",
+        "format": "binary"
+      },
+      "Token": {
+        "type": "string",
+        "x-kotlin-value-class": true
+      },
+      "Count": {
+        "type": "integer",
+        "format": "int64",
+        "x-kotlin-value-class": true
+      },
+      "Money": {
+        "x-native-type": "org.example.scalarvalues.Money"
+      },
+      "NativeLong": {
+        "x-native-type": "kotlin.Long"
+      },
+      "NativeBytes": {
+        "x-native-type": "kotlin.ByteArray"
+      },
+      "NativeText": {
+        "x-native-type": "kotlin.String"
+      },
+      "DateNative": {
+        "x-native-type": "date"
+      },
+      "Raw": {
+        "type": "object",
+        "properties": {}
+      },
+      "Open": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "Maybe": {
+        "$ref": "#/components/schemas/Value",
+        "nullable": true
+      },
+      "Narrow": {
+        "$ref": "#/components/schemas/Maybe",
+        "nullable": false
+      },
+      "Hops": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Maybe"
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Hops/properties/value"
+      },
+      "ValueRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Value"
+          }
+        ],
+        "default": [
+          1,
+          -9223372036854775808,
+          9223372036854775807
+        ]
+      },
+      "BytesRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Bytes"
+          }
+        ],
+        "default": [
+          [
+            -128,
+            0,
+            127
+          ],
+          []
+        ]
+      },
+      "BinaryRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Binary"
+          }
+        ],
+        "default": [
+          [
+            1
+          ],
+          []
+        ]
+      },
+      "TokenRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Token"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "CountRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Count"
+          }
+        ],
+        "default": [
+          1,
+          9223372036854775807
+        ]
+      },
+      "MoneyRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Money"
+          }
+        ],
+        "default": []
+      },
+      "NativeLongRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/NativeLong"
+          }
+        ],
+        "default": [
+          1
+        ]
+      },
+      "NativeBytesRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/NativeBytes"
+          }
+        ],
+        "default": [
+          [
+            -128,
+            0,
+            127
+          ]
+        ]
+      },
+      "NativeTextRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/NativeText"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "DateNativeRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/DateNative"
+          }
+        ],
+        "default": [
+          "2026-01-02T03:04:05Z"
+        ]
+      },
+      "RawRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Raw"
+          }
+        ],
+        "default": [
+          null,
+          {
+            "description": {
+              "$ref": "data",
+              "allOf": [
+                1
+              ]
+            }
+          },
+          [
+            true
+          ]
+        ]
+      },
+      "OpenRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Open"
+          }
+        ],
+        "default": [
+          {
+            "data": [
+              null,
+              1
+            ]
+          },
+          {}
+        ]
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Value"
+          }
+        ],
+        "default": [
+          1,
+          -9223372036854775808,
+          9223372036854775807
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Rows",
+        "default": []
+      },
+      "NullableRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Bridge"
+          }
+        ],
+        "default": [
+          null,
+          7
+        ]
+      },
+      "NarrowRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Narrow"
+          }
+        ],
+        "default": [
+          7
+        ]
+      },
+      "MaybeMoney": {
+        "$ref": "#/components/schemas/Money",
+        "nullable": true
+      },
+      "NullableMoneyRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/MaybeMoney"
+          }
+        ],
+        "default": [
+          null
+        ]
+      },
+      "IndependentBytes": {
+        "$ref": "#/components/schemas/BytesRows",
+        "default": [
+          []
+        ]
+      },
+      "InlineObjects": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "object",
+            "additionalProperties": true
+          }
+        ],
+        "default": [
+          {
+            "description": {
+              "$ref": "data"
+            }
+          }
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Money"
+          }
+        ],
+        "items": {
+          "type": "integer"
+        },
+        "default": [
+          7
+        ]
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Value"
+          },
+          {
+            "$ref": "#/components/schemas/Money"
+          }
+        ],
+        "default": [
+          {
+            "data": 1
+          },
+          null
+        ]
+      },
+      "Repeated": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Value"
+          },
+          {
+            "$ref": "#/components/schemas/Value"
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Value"
+              }
+            ],
+            "default": [
+              1,
+              -9223372036854775808,
+              9223372036854775807
+            ]
+          },
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Value"
+              }
+            ],
+            "default": [
+              1
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "direct": {
+            "$ref": "#/components/schemas/Value"
+          },
+          "label": {
+            "type": "string",
+            "default": "ready"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "Samples": {
+        "properties": {
+          "bytes": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Bytes"
+              }
+            ],
+            "default": [
+              [
+                -128,
+                0,
+                127
+              ],
+              []
+            ]
+          },
+          "binary": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Binary"
+              }
+            ],
+            "default": [
+              [
+                1
+              ],
+              []
+            ]
+          },
+          "token": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Token"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "count": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Count"
+              }
+            ],
+            "default": [
+              1,
+              9223372036854775807
+            ]
+          },
+          "money": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Money"
+              }
+            ],
+            "default": []
+          },
+          "nativeLong": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/NativeLong"
+              }
+            ],
+            "default": [
+              1
+            ]
+          },
+          "nativeBytes": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/NativeBytes"
+              }
+            ],
+            "default": [
+              [
+                -128,
+                0,
+                127
+              ]
+            ]
+          },
+          "nativeText": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/NativeText"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "dateNative": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/DateNative"
+              }
+            ],
+            "default": [
+              "2026-01-02T03:04:05Z"
+            ]
+          },
+          "raw": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Raw"
+              }
+            ],
+            "default": [
+              null,
+              {
+                "description": {
+                  "$ref": "data",
+                  "allOf": [
+                    1
+                  ]
+                }
+              },
+              [
+                true
+              ]
+            ]
+          },
+          "open": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Open"
+              }
+            ],
+            "default": [
+              {
+                "data": [
+                  null,
+                  1
+                ]
+              },
+              {}
+            ]
+          },
+          "kotlin": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Token"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "kotlinx": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Money"
+              }
+            ],
+            "default": []
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "get": {
+        "operationId": "inlineRows",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "$ref": "#/components/schemas/Value"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "$ref": "#/components/schemas/Value"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "$ref": "#/components/schemas/Value"
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      1
+                    ]
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "$ref": "#/components/schemas/Value"
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      1
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/samples": {
+      "post": {
+        "operationId": "echoSamples",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Samples"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Samples"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sample-events": {
+      "get": {
+        "operationId": "sampleEvents",
+        "responses": {
+          "200": {
+            "description": "synthetic events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Samples"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "Synthetic special tuple reference contracts",
+    "version": "1.0"
+  }
+}

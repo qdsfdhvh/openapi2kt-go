@@ -44,7 +44,7 @@ func nullableArraySchema(v *document.Value) bool {
 // A nil value denotes the open/closed JsonObject representation.
 func (a *analyzer) dictionaryValue(v *document.Value, pointer string) (*document.Value, *diagnostic.Diagnostic) {
 	keys := a.collectionKeys([]string{"type", "nullable", "properties", "required", "additionalProperties"})
-	if a.objectDefaultSchemas[v] {
+	if a.objectDefaultSchemas[v] || a.independentBorrowedEnumCollectionFieldDefault(v, pointer) {
 		keys = append(keys, "default")
 	}
 	if err := checkKeys(v, keys, pointer); err != nil {

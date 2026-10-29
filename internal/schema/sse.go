@@ -177,7 +177,7 @@ func (a *analyzer) sseSchema(v *document.Value, owner, pointer string) (*SSEEven
 			// data name. Qualify every newly planned root declaration so client
 			// decoders and event models use the exact same resolved type tree.
 			for _, decl := range declarations[start:] {
-				ty = qualifyOperationType(ty, decl.Name(), a.options.PackageName+".api.models."+decl.Name())
+				ty = a.qualifyTupleOperationType(ty, decl.Name(), a.options.PackageName+".api.models."+decl.Name())
 			}
 			if !variant.Required {
 				ty = ty.Null()

@@ -1,0 +1,280 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/submit": {
+      "post": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requiredValue": {
+                    "type": "string",
+                    "default": "annotation-only"
+                  },
+                  "text": {
+                    "type": "string",
+                    "default": "a b+&雪"
+                  },
+                  "active": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "count": {
+                    "type": "integer",
+                    "default": 0
+                  },
+                  "large": {
+                    "type": "integer",
+                    "format": "int64",
+                    "default": 9223372036854775807
+                  },
+                  "ratio": {
+                    "type": "number",
+                    "format": "float",
+                    "default": 1.25
+                  },
+                  "amount": {
+                    "type": "number",
+                    "format": "double",
+                    "default": 2.5
+                  },
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "ready",
+                      "done"
+                    ],
+                    "default": "ready"
+                  },
+                  "state": {
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2
+                    ],
+                    "default": 2
+                  },
+                  "uuid": {
+                    "type": "string",
+                    "format": "uuid",
+                    "default": "123E4567-E89B-12D3-A456-426614174000"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "default": "2026-10-27"
+                  },
+                  "instant": {
+                    "type": "string",
+                    "format": "date-time",
+                    "default": "2026-10-27T20:30:40+08:00"
+                  }
+                },
+                "required": [
+                  "requiredValue"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/optional": {
+      "post": {
+        "operationId": "optionalSubmit",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requiredValue": {
+                    "type": "string",
+                    "default": "annotation-only"
+                  },
+                  "text": {
+                    "type": "string",
+                    "default": "a b+&雪"
+                  },
+                  "active": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "count": {
+                    "type": "integer",
+                    "default": 0
+                  },
+                  "large": {
+                    "type": "integer",
+                    "format": "int64",
+                    "default": 9223372036854775807
+                  },
+                  "ratio": {
+                    "type": "number",
+                    "format": "float",
+                    "default": 1.25
+                  },
+                  "amount": {
+                    "type": "number",
+                    "format": "double",
+                    "default": 2.5
+                  },
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "ready",
+                      "done"
+                    ],
+                    "default": "ready"
+                  },
+                  "state": {
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2
+                    ],
+                    "default": 2
+                  },
+                  "uuid": {
+                    "type": "string",
+                    "format": "uuid",
+                    "default": "123E4567-E89B-12D3-A456-426614174000"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "default": "2026-10-27"
+                  },
+                  "instant": {
+                    "type": "string",
+                    "format": "date-time",
+                    "default": "2026-10-27T20:30:40+08:00"
+                  }
+                },
+                "required": [
+                  "requiredValue"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "post": {
+        "operationId": "events",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requiredValue": {
+                    "type": "string",
+                    "default": "annotation-only"
+                  },
+                  "text": {
+                    "type": "string",
+                    "default": "a b+&雪"
+                  },
+                  "active": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "count": {
+                    "type": "integer",
+                    "default": 0
+                  },
+                  "large": {
+                    "type": "integer",
+                    "format": "int64",
+                    "default": 9223372036854775807
+                  },
+                  "ratio": {
+                    "type": "number",
+                    "format": "float",
+                    "default": 1.25
+                  },
+                  "amount": {
+                    "type": "number",
+                    "format": "double",
+                    "default": 2.5
+                  },
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "ready",
+                      "done"
+                    ],
+                    "default": "ready"
+                  },
+                  "state": {
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2
+                    ],
+                    "default": 2
+                  },
+                  "uuid": {
+                    "type": "string",
+                    "format": "uuid",
+                    "default": "123E4567-E89B-12D3-A456-426614174000"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "default": "2026-10-27"
+                  },
+                  "instant": {
+                    "type": "string",
+                    "format": "date-time",
+                    "default": "2026-10-27T20:30:40+08:00"
+                  }
+                },
+                "required": [
+                  "requiredValue"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "message"
+                    },
+                    "data": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

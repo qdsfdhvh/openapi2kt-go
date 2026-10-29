@@ -21,10 +21,11 @@ func bareArrayDefaultSchema(v *document.Value) bool {
 	return err == nil && kind == "array"
 }
 
-// Direct DTO scalar-array defaults borrow their original schema and value members.
+// Direct DTO array defaults borrow their original schema and value members.
 // Container and element checks retain their original schema provenance; the
 // default annotation never grants a lost-check path. Date/date-time leaves use
-// the same literal validation and serializers as ordinary temporal fields.
+// the same literal validation and serializers as ordinary temporal fields;
+// raw tuple decisions reuse their actual List<JsonElement> codec.
 func (a *analyzer) primitiveArrayDefault(v *document.Value, name, pointer string, nested *[]Declaration, used map[string]bool, depth int) (TypeRef, string, *diagnostic.Diagnostic) {
 	if err := depthCheck(depth, pointer); err != nil {
 		return TypeRef{}, "", err
@@ -48,11 +49,29 @@ func (a *analyzer) primitiveArrayDefault(v *document.Value, name, pointer string
 			return TypeRef{}, "", err
 		}
 		if decision.Projection != nil {
-			return TypeRef{}, "", unsupported(naming.Pointer(pointer, "prefixItems"))
+			return a.rawTupleFieldDefault(v, pointer, decision)
 		}
 		item, itemPointer = decision.Selected, decision.Pointer
+		if a.tupleObjects != nil && a.tupleObjects.Unions[item] != nil {
+			return a.tupleUnionFieldDefault(v, pointer, name, decision, nested, used, depth)
+		}
+		if a.tupleObjects != nil && a.tupleObjects.Collections[item] {
+			return a.tupleCollectionFieldDefault(v, pointer, name, decision, nested, used, depth)
+		}
+		if directInternalModel(item, itemPointer) || composedModelCandidate(item) {
+			return a.tupleInlineDTOFieldDefault(v, pointer, name, decision, nested, used, depth)
+		}
+		if a.booleanFalseRoot(item) {
+			return a.tupleFalseFieldDefault(v, pointer, name, decision, nested, used, depth)
+		}
 		if has(item, "$ref") {
-			return TypeRef{}, "", unsupported(naming.Pointer(pointer, "prefixItems"))
+			return a.tupleReferenceFieldDefault(v, pointer, decision, depth)
+		}
+		if tupleNullCandidate(item) || tupleScalarConstCandidate(item) || structuredLiteral(item) {
+			return a.tupleLiteralFieldDefault(v, pointer, name, decision, nested, used, depth)
+		}
+		if metadataStringEnumCandidate(item) {
+			return a.tupleMetadataEnumFieldDefault(v, pointer, name, decision, nested, used, depth)
 		}
 	}
 	element, err := a.collectionDefaultElement(item, name+"Inner", itemPointer, nested, used, depth+1)

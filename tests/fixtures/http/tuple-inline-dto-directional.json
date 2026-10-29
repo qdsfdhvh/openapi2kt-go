@@ -1,0 +1,90 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "rows": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "secret": {
+                            "type": "string",
+                            "writeOnly": true
+                          },
+                          "id": {
+                            "type": "integer",
+                            "readOnly": true
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "secret",
+                          "id"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "rows"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "secret": {
+                              "type": "string",
+                              "writeOnly": true
+                            },
+                            "id": {
+                              "type": "integer",
+                              "readOnly": true
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "secret",
+                            "id"
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "rows"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

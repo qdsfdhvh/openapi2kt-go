@@ -94,6 +94,14 @@ func TestReferencedStringEnumCollectionFieldDefaultsExcludedSourceRolesAndNoDrop
 			for _, value := range []string{`[]`, `null`} {
 				r := request(referencedFieldDoc(`{"type":"array","items":`+leaf+`}`, value, `,"nullable":true`), "Dto")
 				r.Options.Validation = checked
+				if metadataStringEnumFixture(leaf) {
+					metadataStringEnumGraduation(t, r)
+					continue
+				}
+				if checked && (leaf == `{"type":"string","enum":["on"],"minLength":0}` || leaf == `{"type":"string","enum":["on"],"pattern":".*"}`) {
+					boundedEnumRootsGenerate(t, r.Document)
+					continue
+				}
 				got, err := core.GenerateWithDiagnostics(r)
 				if err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 					t.Fatal("excluded source", leaf, value, checked, err)
@@ -102,12 +110,9 @@ func TestReferencedStringEnumCollectionFieldDefaultsExcludedSourceRolesAndNoDrop
 		}
 	}
 	for _, body := range []string{
-		`{"Statuses":{"type":"array","items":{"type":"string","enum":["on"]},"default":[]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Statuses","default":[]}}}}`,
-		`{"Statuses":{"type":"array","items":{"type":"string","enum":["on"]}},"Alias":{"$ref":"#/components/schemas/Statuses","default":[]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias","default":[]}}}}`,
 		`{"Statuses":{"type":"array","items":{"type":"string","enum":["on"]}},"Holder":{"properties":{"v":{"allOf":[{"$ref":"#/components/schemas/Statuses"}],"default":[]}}}}`,
 		`{"Statuses":{"type":"array","items":{"type":"string","enum":["on"]}},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Statuses","default":[]}}}}}`,
 		`{"Statuses":{"type":"array","items":{"$ref":"#/components/schemas/Statuses"}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Statuses","default":[]}}}}`,
-		`{"Status":{"type":"string","enum":["on"],"default":"on"},"Statuses":{"type":"array","items":{"$ref":"#/components/schemas/Status"}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Statuses","default":[]}}}}`,
 		`{"Status":{"type":"string","enum":["on"]},"Statuses":{"type":"array","items":{"$ref":"#/components/schemas/Status"}},"Holder":{"properties":{"v":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Statuses","default":[]}}}}}}`,
 		`{"Statuses":{"type":"array","items":{"type":"string","enum":["on"]}},"Choice":{"oneOf":[{"properties":{"tag":{"const":"a"},"v":{"$ref":"#/components/schemas/Statuses","default":[]}}},{"properties":{"tag":{"const":"b"}}}]}}`,
 	} {

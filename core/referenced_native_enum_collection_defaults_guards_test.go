@@ -102,7 +102,6 @@ func TestReferencedNativeEnumCollectionFieldDefaultsExcludedSourceRolesAndNoDrop
 		`{"Codes":{"type":"array","items":{"type":"integer","format":"int32","enum":[1]}},"Holder":{"properties":{"v":{"allOf":[{"$ref":"#/components/schemas/Codes"}],"default":[]}}}}`,
 		`{"Codes":{"type":"array","items":{"type":"integer","format":"int32","enum":[1]}},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Codes","default":[]}}}}}`,
 		`{"Codes":{"type":"array","items":{"$ref":"#/components/schemas/Codes"}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Codes","default":[]}}}}`,
-		`{"Code":{"type":"integer","format":"int32","enum":[1],"default":1},"Codes":{"type":"array","items":{"$ref":"#/components/schemas/Code"}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Codes","default":[]}}}}`,
 		`{"Codes":{"type":"array","items":{"type":"integer","format":"int32","enum":[1]}},"Choice":{"oneOf":[{"properties":{"tag":{"const":"a"},"v":{"$ref":"#/components/schemas/Codes","default":[]}}},{"properties":{"tag":{"const":"b"}}}]}}`,
 	} {
 		for _, checked := range []bool{false, true} {

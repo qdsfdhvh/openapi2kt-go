@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"strings"
 	"testing"
 
 	"openapi-kt/core"
@@ -11,8 +12,13 @@ func TestJsonNullComponentDefaultFactories(t *testing.T) {
 		for _, checked := range []bool{false, true} {
 			rq := request(schemas(`{"Null":`+definition+`}`), "Dto")
 			rq.Options.Validation = checked
-			if _, e := core.GenerateWithDiagnostics(rq); e != nil {
+			got, e := core.GenerateWithDiagnostics(rq)
+			if e != nil {
 				t.Fatal("original JsonNull component own factory", definition, checked, e)
+			}
+			generated := source(t, got, "NullDto")
+			if !strings.Contains(generated, "public fun `NullDto default`(): NullDto =") || strings.Contains(generated, "NullDto? = null") {
+				t.Fatal("JsonNull factory must return its nonnullable singleton", generated)
 			}
 		}
 	}

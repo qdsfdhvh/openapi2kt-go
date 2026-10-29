@@ -305,6 +305,10 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 			return nil, kindErr
 		}
 		checkedNativeEnum := a.options.Validation && has(f.Schema, "enum") && (kind == "integer" || kind == "number" || kind == "boolean")
+		var boundedEnumTree *document.Value
+		if ordinary {
+			boundedEnumTree = nestedStringEnumBoundsLeaf(f.Schema)
+		}
 		falseType, falseRoot, falseErr := a.falseReferenceFieldType(f, v, pointer, ordinary, common, typed)
 		if falseErr != nil {
 			return nil, falseErr
@@ -346,6 +350,14 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 			}
 		} else if checkedNativeEnum {
 			ty, validation, err = a.nativeEnumFieldType(f, has(f.Schema, "default"))
+		} else if ordinary && directStringEnumFieldBounds(f.Schema) {
+			ty, err = a.checkedStringEnumLeaf(f.Schema, nestedName, f.Pointer, nested, used, f.Depth, has(f.Schema, "default"))
+		} else if boundedEnumTree != nil {
+			var node *nestedDefaultNode
+			node, err = a.nestedDefaultSchemaWithEnumBounds(f.Schema, nestedName, f.Pointer, nested, used, f.Depth, true, boundedEnumTree)
+			if err == nil {
+				ty = node.ty
+			}
 		} else if has(f.Schema, "default") && has(f.Schema, "enum") {
 			ty, err = a.enumDefaultType(f, nestedName, nested, used)
 		} else if has(f.Schema, "default") {
@@ -504,6 +516,7 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 	if a.modelPointers != nil {
 		a.modelPointers[model] = pointer
 	}
+	a.recordCheckedEnumGetters(model, shape.Fields)
 	if a.modelDiagnosticPointers != nil {
 		a.modelDiagnosticPointers[model] = pointer
 	}

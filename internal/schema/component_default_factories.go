@@ -149,6 +149,13 @@ func (a *analyzer) markComponentDefaultSource(v *document.Value, pointer string)
 		a.componentDefaultSchemas = map[*document.Value]bool{}
 	}
 	a.componentDefaultSchemas[v] = true
+	if target := a.referenceWrapperDefaultTarget(c); target != nil && target.Internal && a.enumReferenceCandidate(target.Schema) && has(target.Schema, "default") {
+		// Shape probes run before declarations. The terminal's own annotation
+		// remains independent; the final factory/retained-enum barrier must prove
+		// every such provisional original source before any artifact can emit.
+		a.initInternalEnumFactories()
+		a.internalEnumFactories.Terminals[target.Schema] = true
+	}
 	return nil
 }
 
@@ -181,11 +188,23 @@ func (a *analyzer) planComponentDefaultFactories(declarations []Declaration) *di
 				return err
 			}
 		case *StringEnum:
+			if err := a.recordMetadataEnumFactory(declaration, c, encoded); err != nil {
+				return err
+			}
 			declaration.ComponentDefault = encoded
 		case *ScalarAlias:
 			declaration.ComponentDefault = encoded
 		case *ValueAlias:
 			declaration.ComponentDefault = encoded
+			if err := a.recordReferencedEnumCollectionFactory(declaration, c, encoded, declarations); err != nil {
+				return err
+			}
+			if err := a.recordCheckedEnumRootFactory(declaration, c, encoded); err != nil {
+				return err
+			}
+			if err := a.recordInternalEnumFactory(declaration, c, encoded); err != nil {
+				return err
+			}
 			if err := a.recordFalseCollectionFactory(declaration, c, encoded); err != nil {
 				return err
 			}
@@ -279,8 +298,8 @@ func (a *analyzer) componentDefaultNode(c *component) (*nestedDefaultNode, *diag
 		validation.falseCollectionDefaultPlanning = a.falseCollectionDefaultProfile(c.Schema, c.Pointer)
 		return validation.nestedDefaultSchema(c.Schema, c.Name, c.Pointer, nil, nil, 0, true)
 	}
-	if a.scalarTupleComponentDefaultCandidate(c) {
-		return a.scalarTupleComponentDefaultNode(c)
+	if a.tupleComponentDefaultCandidate(c) {
+		return a.tupleComponentDefaultNode(c)
 	}
 	if has(c.Schema, "allOf") {
 		return a.ordinaryAllOfDefaultNode(c.Schema, c.Pointer, 0)
@@ -293,6 +312,12 @@ func (a *analyzer) componentDefaultNode(c *component) (*nestedDefaultNode, *diag
 		return a.scalarComponentNode(c)
 	}
 	if kind == "array" || dictionarySchema(c.Schema) {
+		if a.referencedEnumCollectionSource(c.Schema, c.Pointer) != nil {
+			return a.referencedEnumCollectionFactoryNode(c)
+		}
+		if leaf := inlineStringEnumBoundsLeaf(c.Schema, 1); a.options.Validation && leaf != nil {
+			return a.nestedDefaultSchemaWithEnumBounds(c.Schema, c.Name, c.Pointer, nil, nil, 0, true, leaf)
+		}
 		if a.objectCollectionComponentRoot(c.Schema) {
 			// The existing consuming-field walk owns finite ordinary DTO
 			// leaves. The root alias's retained serializer owns the factory.
@@ -314,6 +339,9 @@ func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
 	if err != nil {
 		return false
 	}
+	if (kind == "" || kind == "string") && lexicalStringEnumSchema(c.Schema) {
+		return true
+	}
 	if has(c.Schema, "x-native-type") || has(c.Schema, "x-kotlin-value-class") ||
 		has(c.Schema, "const") || has(c.Schema, "oneOf") || has(c.Schema, "anyOf") ||
 		has(c.Schema, "allOf") || has(c.Schema, "$ref") {
@@ -323,10 +351,6 @@ func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
 	// has no format restriction here, and a numeric/Boolean native vocabulary
 	// keeps its scalar wire type under its own role.
 	if has(c.Schema, "enum") {
-		if kind == "" || kind == "string" {
-			// A String enum with a format keeps the separate temporal/bytes roles.
-			return !has(c.Schema, "format")
-		}
 		// The shared native field planner owns both explicit formats and the
 		// ordinary unformatted Int/Double mappings, plus Boolean vocabularies.
 		return kind == "integer" || kind == "number" || kind == "boolean" || isNullScalarFactoryRoot(c.Schema, kind)
@@ -339,16 +363,25 @@ func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
 // source node, including for empty/null annotations, and retains its leaf,
 // child-default, composition, reference and resource boundaries.
 func (a *analyzer) collectionComponentDefaultCandidate(c *component) bool {
+	if a.referencedEnumCollectionSource(c.Schema, c.Pointer) != nil {
+		return true
+	}
 	if a.falseCollectionOwnDefaultCandidate(c) {
 		return true
 	}
-	if a.scalarTupleComponentDefaultCandidate(c) {
+	if a.tupleComponentDefaultCandidate(c) {
 		return true
 	}
 	if a.objectCollectionComponentRoot(c.Schema) {
 		// Match the ordinary object root's structural marking policy. Shared
 		// type planning and componentDefaultEncoded validate every source and
 		// value after the real catalog exists; no provisional declaration emits.
+		return true
+	}
+	if a.options.Validation && inlineStringEnumBoundsLeaf(c.Schema, 1) != nil {
+		// Mark the original structural role before semantic validation. Invalid
+		// leaf vocabularies/checks must report their original source, even when
+		// a forward alias owns an empty/null annotation.
 		return true
 	}
 	probe := *a
@@ -424,6 +457,13 @@ func (a *analyzer) scalarComponentNode(c *component) (*nestedDefaultNode, *diagn
 	at := naming.Pointer(c.Pointer, "default")
 	value := get(c.Schema, "default")
 	if has(c.Schema, "enum") {
+		if a.checkedStringEnumRoot(c.Schema, c.Pointer) {
+			ty, err := a.checkedStringEnumLeaf(c.Schema, c.Name, c.Pointer, nil, nil, 0, true)
+			if err != nil {
+				return nil, err
+			}
+			return &nestedDefaultNode{schema: c.Schema, pointer: c.Pointer, ty: ty, stringEnum: true}, nil
+		}
 		// The enum role owns its own vocabulary check and node kind.
 		field := field{Wire: c.Name, Pointer: c.Pointer, Schema: c.Schema, Depth: 0}
 		kind, _, kindErr := schemaType(c.Schema, c.Pointer)
@@ -592,6 +632,7 @@ type wrapperDefaultSource struct {
 	Pointer  string
 	Schema   *document.Value
 	Nullable *bool
+	Internal bool // Original chain crosses an internal lexical enum/collection path.
 }
 
 // referenceWrapperDefaultTarget follows finite component aliases without copying
@@ -607,15 +648,23 @@ func (a *analyzer) referenceWrapperDefaultTarget(c *component) *wrapperDefaultSo
 		return nil
 	}
 	intent := nullableOverride(c.Schema)
+	internal := false
 	seen := map[*document.Value]bool{c.Schema: true}
 	for steps := 1; steps <= MaxSchemaDepth; steps++ {
 		pointer, target, ok := a.componentSchemaAtReference(reference)
+		if !ok {
+			pointer, target, ok = a.internalEnumFactoryLookup(reference)
+			internal = internal || ok
+		}
 		if !ok || seen[target] {
 			return nil
 		}
 		seen[target] = true
 		if !has(target, "$ref") {
-			return &wrapperDefaultSource{Pointer: pointer, Schema: target, Nullable: intent}
+			if internal && !a.enumReferenceCandidate(target) && !a.internalEnumCollectionDefaultSource(target, pointer) {
+				return nil
+			}
+			return &wrapperDefaultSource{Pointer: pointer, Schema: target, Nullable: intent, Internal: internal}
 		}
 		if checkKeys(target, []string{"$ref", "nullable", "default"}, pointer) != nil {
 			return nil
@@ -718,6 +767,23 @@ func (a *analyzer) referenceWrapperDefaultEncoded(c *component, validation *anal
 	}
 	if originalEnumWrapperDefaultSource(target.Schema) {
 		return a.originalEnumWrapperDefaultEncoded(c, target, validation)
+	}
+	if target.Internal && a.internalEnumCollectionDefaultSource(target.Schema, target.Pointer) {
+		node, err := a.internalEnumCollectionFactoryNode(c, target, validation)
+		if err != nil {
+			return "", err
+		}
+		encoded, err := node.value(value, at)
+		if err != nil {
+			return "", err
+		}
+		if value.Kind() == document.Null {
+			return "null", nil
+		}
+		if len(encoded) > maxNestedDefaultBytes {
+			return "", diagnostic.At("E_MODEL_LIMIT", "Canonical component default exceeds the supported 32 KiB JSON byte limit.", at)
+		}
+		return encoded, nil
 	}
 	if rawJSONComponentRoot(target.Schema) || a.scalarLeafTarget(target.Schema) {
 		view, err := a.wrapperValidationView(target, c.Schema, at)

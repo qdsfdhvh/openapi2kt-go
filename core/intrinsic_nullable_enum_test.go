@@ -159,6 +159,10 @@ func TestIntrinsicNullableEnumBudgetsAndNoDrop(t *testing.T) {
 		}
 	}
 	for _, extra := range []string{`,"format":"date"`, `,"x-native-type":"kotlin.String"`, `,"x-kotlin-value-class":true`} {
+		if extra == `,"format":"date"` || extra == `,"x-native-type":"kotlin.String"` {
+			metadataStringEnumGraduation(t, request(schemas(`{"Z":{"nullable":true,"type":"string","enum":["ready"]`+extra+`}}`), "Dto"))
+			continue
+		}
 		aliasFailure(t, schemas(`{"Z":{"nullable":true,"type":"string","enum":["ready"]`+extra+`}}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Z")
 	}
 	// Keep the original explicit nullable null vocabulary as a positive contract.

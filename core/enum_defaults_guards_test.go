@@ -18,6 +18,10 @@ func TestEnumDefaultsOriginalValueAndVocabularyGuards(t *testing.T) {
 		`{"type":"integer","enum":[1,2],"default":3}`,
 		`{"type":"string","enum":["a"],"format":"date","default":"a"}`,
 	} {
+		if metadataStringEnumFixture(field) {
+			metadataStringEnumGraduation(t, request(fieldDoc(field), "Dto"))
+			continue
+		}
 		got, err := core.GenerateWithDiagnostics(request(fieldDoc(field), "Dto"))
 		if field == `{"type":["string","null"],"enum":["a",null],"default":null}` {
 			// Preserve the original explicit nullable input as a graduated case.

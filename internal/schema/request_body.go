@@ -100,7 +100,7 @@ func (a *analyzer) requestBody(v *document.Value, pointer, owner string) (*Reque
 		nominal := union != nil && (!union.Nullable || len(union.Branches) > 1)
 		local := plain || nominal
 		name := "Input"
-		if local {
+		if local || tupleFalseContainerCandidate(s) || tupleInlineAllOfContainerCandidate(s) || tupleCollectionContainerCandidate(s) || tupleUnionContainerCandidate(s) {
 			name, err = a.operationModelName(owner, "Input", p+"/schema")
 			if err != nil {
 				return nil, err
@@ -130,7 +130,7 @@ func (a *analyzer) requestBody(v *document.Value, pointer, owner string) (*Reque
 			return nil, err
 		}
 		a.warnings = context.warnings
-		if len(declarations) != 0 && !local {
+		if len(declarations) != 0 && !local && !a.onlyTupleFalsePeers(declarations) && !a.onlyTupleInlineAllOfPeers(declarations) && !a.onlyTupleCollectionPeers(declarations) && !a.onlyTupleUnionPeers(declarations) {
 			return nil, operationUnsupported(p + "/schema")
 		}
 		if nominal && len(declarations) != 0 {
@@ -150,7 +150,12 @@ func (a *analyzer) requestBody(v *document.Value, pointer, owner string) (*Reque
 			declarations = append(declarations, &ValueAlias{ClassName: name, Type: ty})
 			ty = TypeRef{Kind: Named, Name: name}
 		}
-		ty = qualifyOperationType(ty, name, a.options.PackageName+".api.models."+name)
+		ty = a.qualifyTupleOperationType(ty, name, a.options.PackageName+".api.models."+name)
+		if a.onlyTupleFalsePeers(declarations) || a.onlyTupleInlineAllOfPeers(declarations) || a.onlyTupleCollectionPeers(declarations) || a.onlyTupleUnionPeers(declarations) {
+			for _, d := range declarations {
+				ty = a.qualifyTupleOperationType(ty, d.Name(), a.options.PackageName+".api.models."+d.Name())
+			}
+		}
 		if entry.Name == media {
 			selected, selectedModels = ty, declarations
 		}

@@ -45,7 +45,7 @@ func (a *analyzer) dtoUniqueCollectionReferenceTreeSource(v *document.Value, p s
 	defer delete(active, v)
 	if has(v, "$ref") {
 		keys := []string{"$ref", "nullable"}
-		if field {
+		if field || a.independentEnumComponentDefault(v, p) {
 			keys = append(keys, "default")
 		}
 		if checkKeys(v, keys, p) != nil {
@@ -56,6 +56,13 @@ func (a *analyzer) dtoUniqueCollectionReferenceTreeSource(v *document.Value, p s
 			return false
 		}
 		return a.dtoUniqueCollectionReferenceTreeSource(target, at, depth+1, root, false, active)
+	}
+	kind, _, kindErr := schemaType(v, p)
+	if kindErr == nil && (kind == "" || kind == "string") && lexicalStringEnumSchema(v) {
+		if has(v, "default") && !field && !a.independentEnumComponentDefault(v, p) {
+			return false
+		}
+		return !root && a.uniqueStringEnumSource(v, p, depth)
 	}
 	for _, key := range []string{"oneOf", "anyOf", "allOf", "const", "x-native-type", "x-kotlin-value-class"} {
 		if has(v, key) {

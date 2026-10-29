@@ -100,12 +100,23 @@ func TestReferencedStringEnumScalarDefaultsValuesAndExcludedRoles(t *testing.T) 
 		} {
 			r := request(stringScalarDefaultDoc(leaf, `null`, `,"nullable":true`), "Dto")
 			r.Options.Validation = checked
+			if checked && (leaf == `{"type":"string","enum":["on"],"minLength":1}` || leaf == `{"type":"string","enum":["on"],"pattern":"on"}`) {
+				checkedStringEnumRootGraduation(t, r)
+				continue
+			}
+			if leaf == `{"type":"string","enum":["on"],"default":"on"}` {
+				independentEnumFactoryGraduation(t, r)
+				continue
+			}
+			if metadataStringEnumFixture(leaf) {
+				metadataStringEnumGraduation(t, r)
+				continue
+			}
 			if report, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
 				t.Fatal("ungranted terminal", leaf, checked, err)
 			}
 		}
 		for _, body := range []string{
-			`{"Status":{"type":"string","enum":["on"]},"Alias":{"$ref":"#/components/schemas/Status","default":"on"},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias","default":"on"}}}}`,
 			`{"Status":{"type":"string","enum":["on"]},"Holder":{"properties":{"v":{"allOf":[{"$ref":"#/components/schemas/Status"}],"default":"on"}}}}`,
 			`{"Status":{"type":"string","enum":["on"]},"Choice":{"oneOf":[{"properties":{"tag":{"const":"a"},"v":{"$ref":"#/components/schemas/Status","default":"on"}}},{"properties":{"tag":{"const":"b"}}}]}}`,
 		} {

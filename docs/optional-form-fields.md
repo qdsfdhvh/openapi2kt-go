@@ -29,7 +29,7 @@ Optional properties reuse existing typed constructor/codec validation. Absent
 nulls skip field checks; supplied values satisfy the retained constraints before
 callback/dispatch when validation is enabled. Explicit schema-nullable fields
 would need wire-null/Patch semantics and remain rejected, including `type` arrays
-containing null. Default, reference, formatted nonbuiltin, structured,
+containing null. Reference, formatted nonbuiltin, structured,
 projection and media encoding roles keep the [form grammar](form-request-media.md).
 JSON media precedence and validation of discarded/excluded schemas remain.
 
@@ -42,7 +42,7 @@ required fields, independent body presence, bare HttpClient encoding, JSON
 precedence, callback override, validation before dispatch and live fragmented
 SSE close/cancellation/reuse. Native tests compare core bytes and readonly/no-op
 output and preserve old files for invalid source grammars. Source tests retain
-excluded nullable/default/Patch roles, and bounded fuzz compares source admission
+excluded nullable/Patch roles, and bounded fuzz compares source admission
 with required fields. Other platforms need independent validation.
 
 **Migration:** previously rejected eligible optional form properties now
@@ -55,3 +55,5 @@ including mapped IEEE representation and existing opt-in checks.
 
 Direct String/native enum fields have the separate [enum form contract](enum-form-fields.md);
 open String serial names and opt-in mapped native membership retain their policies.
+
+Direct field-own annotations now use the [form default contract](form-field-defaults.md). An omitted constructor argument uses its own default; explicitly passed null still omits the key.

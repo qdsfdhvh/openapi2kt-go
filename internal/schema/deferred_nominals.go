@@ -23,6 +23,7 @@ func (a *analyzer) recordUnionOrigin(d Declaration, v *document.Value, p string,
 	switch d.(type) {
 	case *ObjectUnion, *PrimitiveUnion:
 		a.unionOrigins[d] = nominalOrigin{v, p, nullable}
+		a.recordTupleUnionDeclaration(d, v, p)
 	}
 }
 
@@ -32,6 +33,9 @@ func (a *analyzer) recordEnumOrigin(d *StringEnum, v *document.Value, p string, 
 	}
 	if a.enumDiagnosticOrigins != nil {
 		a.enumDiagnosticOrigins[d] = nominalOrigin{v, p, nullable}
+	}
+	if metadataStringEnumCandidate(v) {
+		a.recordTupleUnionDeclaration(d, v, p)
 	}
 }
 
@@ -135,13 +139,13 @@ func (a *analyzer) linkNominalDeclarations(hierarchy map[string]*Hierarchy, decl
 	// Register actual direct lexical occurrences even before their first
 	// typed use. Source-path eligibility is checked independently by lookup.
 	for v, all := range occurrences {
-		if len(all) == 1 && (directInternalModel(v, "") || composedModelCandidate(v) || unionNominalCandidate(v) || enumNominalCandidate(v) || all[0].owner.ValueClass && all[0].pointer == all[0].owner.Pointer) {
+		if len(all) == 1 && (directInternalModel(v, "") || composedModelCandidate(v) || unionNominalCandidate(v) || a.enumReferenceCandidate(v) || all[0].owner.ValueClass && all[0].pointer == all[0].owner.Pointer) {
 			o := all[0]
 			p := o.pointer
 			if p != o.owner.Pointer {
 				ref := "#" + p
 				target, err := a.lookupSchemaReference(ref, p)
-				if err != nil || target.Schema != v || target.SourceCatalog != o.owner || !target.ComposedLexical && (!target.DirectLexical || !a.hierarchySources[o.owner.Schema] && !unionNominalCandidate(v) && !enumNominalCandidate(v)) {
+				if err != nil || target.Schema != v || target.SourceCatalog != o.owner || !target.ComposedLexical && (!target.DirectLexical || !a.hierarchySources[o.owner.Schema] && !unionNominalCandidate(v) && !a.enumReferenceCandidate(v)) {
 					continue
 				}
 			}

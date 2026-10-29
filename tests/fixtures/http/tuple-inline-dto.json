@@ -1,0 +1,662 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Child": {
+        "properties": {
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label"
+        ]
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "state": {
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "default": "ready"
+              },
+              "n": {
+                "type": "integer",
+                "default": 7
+              },
+              "child": {
+                "$ref": "#/components/schemas/Child",
+                "default": {
+                  "label": "inner"
+                }
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        ],
+        "default": [
+          {
+            "name": "root"
+          }
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Rows",
+        "default": [
+          {
+            "name": "alias"
+          }
+        ]
+      },
+      "NullableRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "state": {
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "default": "ready"
+              },
+              "n": {
+                "type": "integer",
+                "default": 7
+              },
+              "child": {
+                "$ref": "#/components/schemas/Child",
+                "default": {
+                  "label": "inner"
+                }
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "nullable": true
+          }
+        ],
+        "default": [
+          null,
+          {
+            "name": "nullable"
+          }
+        ]
+      },
+      "Maybe": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "state": {
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "default": "ready"
+              },
+              "n": {
+                "type": "integer",
+                "default": 7
+              },
+              "child": {
+                "$ref": "#/components/schemas/Child",
+                "default": {
+                  "label": "inner"
+                }
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        ],
+        "nullable": true,
+        "default": null
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "state": {
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "default": "ready"
+              },
+              "n": {
+                "type": "integer",
+                "default": 7
+              },
+              "child": {
+                "$ref": "#/components/schemas/Child",
+                "default": {
+                  "label": "inner"
+                }
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          {
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "state": {
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "default": "ready"
+              },
+              "n": {
+                "type": "integer",
+                "default": 7
+              },
+              "child": {
+                "$ref": "#/components/schemas/Child",
+                "default": {
+                  "label": "inner"
+                }
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        ],
+        "default": [
+          null,
+          {
+            "default": "data"
+          }
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          false,
+          {
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "state": {
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "default": "ready"
+              },
+              "n": {
+                "type": "integer",
+                "default": 7
+              },
+              "child": {
+                "$ref": "#/components/schemas/Child",
+                "default": {
+                  "label": "inner"
+                }
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        ],
+        "items": {
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "state": {
+              "enum": [
+                "ready",
+                "paused"
+              ],
+              "default": "ready"
+            },
+            "n": {
+              "type": "integer",
+              "default": 7
+            },
+            "child": {
+              "$ref": "#/components/schemas/Child",
+              "default": {
+                "label": "inner"
+              }
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        "default": [
+          {
+            "name": "tail"
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "enum": [
+                      "ready",
+                      "paused"
+                    ],
+                    "default": "ready"
+                  },
+                  "n": {
+                    "type": "integer",
+                    "default": 7
+                  },
+                  "child": {
+                    "$ref": "#/components/schemas/Child",
+                    "default": {
+                      "label": "inner"
+                    }
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            ],
+            "default": [
+              {
+                "name": "ignored"
+              }
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "enum": [
+                      "ready",
+                      "paused"
+                    ],
+                    "default": "ready"
+                  },
+                  "n": {
+                    "type": "integer",
+                    "default": 7
+                  },
+                  "child": {
+                    "$ref": "#/components/schemas/Child",
+                    "default": {
+                      "label": "inner"
+                    }
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            ],
+            "default": [
+              {
+                "name": "field"
+              }
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "nested": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "enum": [
+                          "ready",
+                          "paused"
+                        ],
+                        "default": "ready"
+                      },
+                      "n": {
+                        "type": "integer",
+                        "default": 7
+                      },
+                      "child": {
+                        "$ref": "#/components/schemas/Child",
+                        "default": {
+                          "label": "inner"
+                        }
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "Counted": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "n": {
+                "type": "integer",
+                "default": 7
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        ],
+        "default": [
+          {
+            "name": "count",
+            "n": 1
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "get": {
+        "operationId": "inlineRows",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "enum": [
+                            "ready",
+                            "paused"
+                          ],
+                          "default": "ready"
+                        },
+                        "n": {
+                          "type": "integer",
+                          "default": 7
+                        },
+                        "child": {
+                          "$ref": "#/components/schemas/Child",
+                          "default": {
+                            "label": "inner"
+                          }
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "enum": [
+                              "ready",
+                              "paused"
+                            ],
+                            "default": "ready"
+                          },
+                          "n": {
+                            "type": "integer",
+                            "default": 7
+                          },
+                          "child": {
+                            "$ref": "#/components/schemas/Child",
+                            "default": {
+                              "label": "inner"
+                            }
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ]
+                      }
+                    ],
+                    "default": [
+                      {
+                        "name": "ignored"
+                      }
+                    ],
+                    "nullable": true
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "enum": [
+                              "ready",
+                              "paused"
+                            ],
+                            "default": "ready"
+                          },
+                          "n": {
+                            "type": "integer",
+                            "default": 7
+                          },
+                          "child": {
+                            "$ref": "#/components/schemas/Child",
+                            "default": {
+                              "label": "inner"
+                            }
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ]
+                      }
+                    ],
+                    "default": [
+                      {
+                        "name": "ignored"
+                      }
+                    ],
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic result"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "operationId": "shapeA",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "operationId": "shapeB",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -168,7 +168,14 @@ func MergeIdenticalModels(plan *Plan, pkg string, components map[Declaration]boo
 			if union, ok := r.d.(*PrimitiveUnion); ok {
 				replacement[r.d] = &PrimitiveUnionAlias{ClassName: union.ClassName, Canonical: previous.full, Kinds: append([]PrimitiveKind(nil), union.Kinds...), NullVariant: union.NullVariant}
 			} else {
-				replacement[r.d] = plan.ownedAlias(r.d.Name(), previous.full)
+				alias := plan.ownedAlias(r.d.Name(), previous.full)
+				if vocabulary, ok := r.d.(*StringEnum); ok {
+					// Enum factories are named top-level APIs. A typealias keeps
+					// companion lookup, but needs its own factory entry point.
+					alias.ComponentDefault = vocabulary.ComponentDefault
+					alias.NullableComponentDefault = vocabulary.ComponentDefault == "null"
+				}
+				replacement[r.d] = alias
 			}
 			names := map[string]string{}
 			dedupOwnedNames(r.d, r.d.Name(), previous.full, r.pkg, names)

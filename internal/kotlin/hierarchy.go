@@ -41,7 +41,12 @@ func emitHierarchy(node *schema.Hierarchy, owner string, hints schema.EmissionHi
 		return
 	}
 	emitUnknown(name, 0, owner, node.Inherited, true, node.Plain, out)
-	fmt.Fprintf(out, "\ninternal object %sSerializer : kotlinx.serialization.json.JsonContentPolymorphicSerializer<%s>(%s::class) {\n    override fun selectDeserializer(element: kotlinx.serialization.json.JsonElement): kotlinx.serialization.DeserializationStrategy<%s> {\n", name, base, base, base)
+	if len(node.SerializeVia) != 0 {
+		fmt.Fprintf(out, "\ninternal object %sSerializer : kotlinx.serialization.KSerializer<%s> {\n    private val content = object : kotlinx.serialization.json.JsonContentPolymorphicSerializer<%s>(%s::class) {\n", name, base, base, base)
+	} else {
+		fmt.Fprintf(out, "\ninternal object %sSerializer : kotlinx.serialization.json.JsonContentPolymorphicSerializer<%s>(%s::class) {\n", name, base, base)
+	}
+	fmt.Fprintf(out, "    override fun selectDeserializer(element: kotlinx.serialization.json.JsonElement): kotlinx.serialization.DeserializationStrategy<%s> {\n", base)
 	if len(node.Tags) == 0 && len(node.TagCombinations) == 0 {
 		fmt.Fprintf(out, "        return %s.serializer()\n", unknown)
 	} else {
@@ -58,5 +63,15 @@ func emitHierarchy(node *schema.Hierarchy, owner string, hints schema.EmissionHi
 		}
 		fmt.Fprintf(out, "            else -> %s.serializer()\n        }\n", unknown)
 	}
-	out.WriteString("    }\n}\n")
+	if len(node.SerializeVia) == 0 {
+		out.WriteString("    }\n}\n")
+		return
+	}
+	out.WriteString("    }\n    }\n    override val descriptor: kotlinx.serialization.descriptors.SerialDescriptor get() = content.descriptor\n")
+	fmt.Fprintf(out, "    override fun deserialize(decoder: kotlinx.serialization.encoding.Decoder): %s = content.deserialize(decoder)\n", base)
+	fmt.Fprintf(out, "    override fun serialize(encoder: kotlinx.serialization.encoding.Encoder, value: %s) {\n        when (value) {\n", base)
+	for _, child := range node.SerializeVia {
+		fmt.Fprintf(out, "            is %s.%s -> encoder.encodeSerializableValue(%s.%s.serializer(), value)\n", owner, child, owner, child)
+	}
+	out.WriteString("            else -> content.serialize(encoder, value)\n        }\n    }\n}\n")
 }

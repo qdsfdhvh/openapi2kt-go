@@ -73,6 +73,10 @@ func TestTemporalAliasObjectDefaultMemberSourceAndPresence(t *testing.T) {
 		for _, extra := range []string{`,"enum":["2024-02-29"]`, `,"x-native-type":"kotlinx.datetime.LocalDate"`, `,"x-kotlin-value-class":true`, `,"default":"2024-02-29"`, `,"minLength":2`} {
 			r := request(scalarAliasMemberDocument(`{"type":"string","format":"date"`+extra+`}`, allOfMemberHops, `{"$ref":"#/components/schemas/Bridge"}`, `{}`), "Dto")
 			r.Options.Validation = checked
+			if extra == `,"enum":["2024-02-29"]` {
+				metadataStringEnumGraduation(t, r)
+				continue
+			}
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
 				t.Fatal("source hidden by omission", extra, err)
 			}

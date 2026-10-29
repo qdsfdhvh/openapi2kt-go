@@ -101,3 +101,30 @@ compilation with the [recorded fixed versions and inventories](../../docs/platfo
 The fourth input has no device runtime result; the earlier three-input API34
 result remains historical. Full feature/HTTP/engine/minimum-version acceptance
 is separate.
+
+
+The runner also generates [enum-field-bounds.json](../../tests/fixtures/platform/enum-field-bounds.json)
+in a fifth source root. Its common consumer checks direct lexical String enum
+field bounds and metadata on existing direct List/typed Map enum leaf bounds.
+Known members and Unrecognized keep open standalone enum codecs; actual DTO
+constructor/automatic decoding checks, strict compile-time defaults, nullable
+views, required fields and fresh containers retain the product contract under
+four Json configurations. Metadata uses String words without date/UUID/provider
+dependencies. Original DTO root/alias/null factories and consuming object/DTO-list annotations
+also retain independent values, no inheritance and fresh state. Both KMP and
+Android projects include this source root.
+
+The fifth input requires its own target/style runtime and compilation evidence;
+it does not inherit the historical four-input or Android device results. Run
+the same platform commands above. JVM, JS/Node and macOS ARM64 Native execute
+the common assertions; metadata and Android AAR targets compile them. This
+bounded probe does not establish the complete feature/HTTP/engine matrix,
+minimum dependencies or actual Android API23 behavior.
+
+
+The five-input Data/Plain probe has [separate fixed-combination evidence](../../docs/platform-enum-field-bounds.md):
+JVM, JS/Node and macOS ARM64 Native common assertions execute under four Json
+configurations, and common metadata plus Android AAR compile. Kotlin/plugin2.4.10
+and serialization1.11.0 use Gradle9.3.1 for KMP and Gradle9.5.1 for Android.
+No fifth-input Android device or complete feature/HTTP/engine acceptance is
+implied.

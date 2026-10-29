@@ -64,12 +64,16 @@ func TestReferencedObjectDefaultsPreserveOutputOnFailure(t *testing.T) {
 	args := referencedObjectArgs(p.Input, p.Output, true, core.DataClass)
 	result(t, invoke(t, p.Root, args...), 0)
 	before := snapshot(t, p.Output)
-	// A target with its own root default is outside this role.
-	put(t, p.Input, []byte(`{"openapi":"3.1.0","components":{"schemas":{"Inner":{"type":"object","properties":{"name":{"type":"string"}},"default":{"name":"target"}},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{"name":"x"}}}}}}}`))
-	fails(t, invoke(t, p.Root, args...), 1, "E_SCHEMA_UNSUPPORTED")
+	// A valid consumer cannot hide an invalid independent target annotation.
+	put(t, p.Input, []byte(`{"openapi":"3.1.0","components":{"schemas":{"Inner":{"type":"object","properties":{"name":{"type":"string"}},"default":{"name":false}},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{"name":"x"}}}}}}}`))
+	fails(t, invoke(t, p.Root, args...), 1, "E_SCHEMA_INVALID")
 	if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
 		t.Fatal("failed generation changed existing output")
 	}
+	// Preserve the former exact refusal as an explicit native positive migration.
+	put(t, p.Input, []byte(`{"openapi":"3.1.0","components":{"schemas":{"Inner":{"type":"object","properties":{"name":{"type":"string"}},"default":{"name":"target"}},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{"name":"x"}}}}}}}`))
+	result(t, invoke(t, p.Root, args...), 0)
+	result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
 }
 
 func TestReferencedObjectDefaultsOptimizationRelocation(t *testing.T) {

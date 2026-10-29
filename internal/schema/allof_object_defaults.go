@@ -176,6 +176,13 @@ func (a *analyzer) internalAllOfDefaultMemberSource(v *document.Value, pointer, 
 // plain primitive fields may reuse the retained ordinary primitive conjunction;
 // every child keeps its original schema node, pointer and source depth.
 func (a *analyzer) ordinaryAllOfDefaultNode(v *document.Value, pointer string, depth int) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	return a.ordinaryAllOfDefaultNodeCounts(v, pointer, depth, false)
+}
+
+// Tuple references already passed the ordinary constructor/source planner.
+// Their literal walk may retain that constructor's existing object counts
+// without borrowing a component-root annotation permission.
+func (a *analyzer) ordinaryAllOfDefaultNodeCounts(v *document.Value, pointer string, depth int, tupleReference bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	wrapper, err := parseReferenceWrapper(v, pointer, true)
 	if err != nil {
 		return nil, err
@@ -183,7 +190,7 @@ func (a *analyzer) ordinaryAllOfDefaultNode(v *document.Value, pointer string, d
 	if wrapper != nil {
 		return nil, unsupported(naming.Pointer(pointer, "default"))
 	}
-	counted := a.componentDefaultCounts(v, pointer)
+	counted := tupleReference || a.componentDefaultCounts(v, pointer)
 	shape, err := a.modelShape(v, pointer, depth, counted)
 	if err != nil {
 		return nil, err

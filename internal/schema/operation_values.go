@@ -178,7 +178,7 @@ func (a *analyzer) operationValueType(v *document.Value, name, pointer string, d
 				return TypeRef{}, err
 			}
 		}
-		ty, err := a.checkedCollection(TypeRef{Kind: List, Element: &item}, v, pointer)
+		ty, err := a.checkedArrayItems(item, v, pointer, decision)
 		if err != nil {
 			return TypeRef{}, err
 		}

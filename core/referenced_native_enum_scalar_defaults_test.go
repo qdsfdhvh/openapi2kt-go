@@ -100,7 +100,6 @@ func TestReferencedNativeEnumScalarFieldDefaultsValuesAndSourceRoles(t *testing.
 			}
 		}
 		for _, body := range []string{
-			`{"Code":{"type":"integer","enum":[1]},"Alias":{"$ref":"#/components/schemas/Code","default":1},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias","default":1}}}}`,
 			`{"Code":{"type":"integer","enum":[1]},"Holder":{"properties":{"v":{"allOf":[{"$ref":"#/components/schemas/Code"}],"default":1}}}}`,
 			`{"Code":{"type":"integer","enum":[1]},"Choice":{"oneOf":[{"properties":{"tag":{"const":"a"},"v":{"$ref":"#/components/schemas/Code","default":1}}},{"properties":{"tag":{"const":"b"}}}]}}`,
 		} {

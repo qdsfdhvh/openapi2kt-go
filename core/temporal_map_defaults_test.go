@@ -56,6 +56,10 @@ func TestTemporalMapDefaultsOriginalMemberDiagnosticsAndExcludedRoles(t *testing
 		for _, validation := range []bool{false, true} {
 			r := request(fieldDoc(tc.field), "Dto")
 			r.Options.Validation = validation
+			if tc.field == `{"type":"object","additionalProperties":{"type":"string","format":"date","enum":["2024-02-29"]},"default":{}}` {
+				metadataStringEnumGraduation(t, r)
+				continue
+			}
 			got, err := core.GenerateWithDiagnostics(r)
 			if err == nil || err.(core.Diagnostics)[0].Code != tc.code || err.(core.Diagnostics)[0].Pointer == nil || *err.(core.Diagnostics)[0].Pointer != "/components/schemas/Record/properties/value"+tc.tail || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal(tc, validation, err)

@@ -55,6 +55,9 @@ func (a *analyzer) resolveSchema(reference, source string) (*resolvedSchema, *di
 		return target, err
 	}
 	if a.bindInternalModel(target, source) {
+		if a.checkedEnumReferenceCandidate(target.Schema) && !a.admitBorrowedNominalLeaf(target, source) {
+			return nil, schemaReferenceUnsupported(source)
+		}
 		return target, nil
 	}
 	if has(target.Schema, "$ref") {
@@ -262,6 +265,9 @@ func (a *analyzer) referenceType(target *resolvedSchema, override *bool, depth i
 }
 
 func (a *analyzer) referenceTypeRole(target *resolvedSchema, override *bool, depth int, source string, falseReference bool) (TypeRef, *diagnostic.Diagnostic) {
+	if a.checkedEnumReferenceCandidate(target.Schema) && !a.admitBorrowedNominalLeaf(target, source) {
+		return TypeRef{}, schemaReferenceUnsupported(source)
+	}
 	falseRootSource := false
 	if target.Catalog != nil {
 		root := target.Catalog
@@ -381,6 +387,12 @@ func (a *analyzer) referenceTypeRole(target *resolvedSchema, override *bool, dep
 			nullable = *override
 		}
 		ty := TypeRef{Kind: Named, Name: target.ModelName, deferredNominal: target.Deferred}
+		if a.checkedEnumReferenceCandidate(v) {
+			ty.Validation, err = a.checkedEnumValidation(v, p)
+			if err != nil {
+				return TypeRef{}, err
+			}
+		}
 		if target.Deferred != nil {
 			ty.Name = target.Deferred.Name
 		}

@@ -14,9 +14,11 @@ import (
 func (a *analyzer) closedObjectUnionEncoded(value *document.Value, at string, source *document.Value, sourcePointer string, depth int, union *ObjectUnion) (string, *diagnostic.Diagnostic) {
 	owner := a.componentsByOriginalSchema(source)
 	binding := a.deferredNominals[source]
-	if !a.nominalsLinked || owner == nil || a.hierarchySources[source] || owner.Pointer != sourcePointer ||
-		binding == nil || binding.Schema != source || binding.Owner != owner || binding.Pointer != sourcePointer ||
-		binding.Name != a.options.PackageName+".models."+owner.Name || union.ClassName != owner.Name ||
+	bound := a.nominalsLinked && owner != nil && binding != nil && binding.Schema == source && binding.Owner == owner && binding.Pointer == sourcePointer && binding.Name == a.options.PackageName+".models."+owner.Name
+	if !bound {
+		bound = a.tupleClosedUnionDefaultAuthorized(source, sourcePointer, union)
+	}
+	if !bound || owner == nil || a.hierarchySources[source] || owner.Pointer != sourcePointer || union.ClassName != owner.Name ||
 		len(union.SerialNames) != len(union.Variants) || has(source, "allOf") {
 		return "", unsupported(at)
 	}

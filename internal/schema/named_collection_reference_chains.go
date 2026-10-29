@@ -22,6 +22,7 @@ type namedCollectionOrigin struct {
 	Types                []namedCollectionSourceType
 	Final                bool
 	Peers                []Declaration
+	BoundedEnum          *document.Value
 }
 
 func namedCollectionCandidate(c *component) bool {
@@ -52,7 +53,11 @@ func (a *analyzer) recordNamedCollectionOrigin(d Declaration, c *component) {
 			peers = append(peers, peer)
 		}
 	}
-	a.namedCollectionOrigins[d] = namedCollectionOrigin{c, c.Schema, c.Pointer, string(bytes), c.AliasType, types, false, peers}
+	origin := namedCollectionOrigin{Owner: c, Schema: c.Schema, Pointer: c.Pointer, SourceBytes: string(bytes), Backing: c.AliasType, Types: types, Peers: peers}
+	if a.options.Validation {
+		origin.BoundedEnum = inlineStringEnumBoundsLeaf(c.Schema, 1)
+	}
+	a.namedCollectionOrigins[d] = origin
 }
 func namedCollectionChecks(value TypeRef) string {
 	checks, _ := json.Marshal(struct {
@@ -107,6 +112,9 @@ func (a *analyzer) namedCollectionType(c *component) TypeRef {
 	return ty
 }
 func (a *analyzer) validateNamedCollectionBindings(declarations []Declaration) *diagnostic.Diagnostic {
+	if err := a.validateBoundedEnumCollectionRoots(declarations); err != nil {
+		return err
+	}
 	actual := map[Declaration]int{}
 	for _, d := range declarations {
 		actual[d]++

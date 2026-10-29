@@ -169,6 +169,10 @@ func TestIntrinsicNullableBytesBudgetsAndNoDrop(t *testing.T) {
 		if strings.Contains(terminal, `"nullable":true`) {
 			pointer = "/components/schemas/Z"
 		}
+		if metadataStringEnumFixture(terminal) {
+			metadataStringEnumGraduation(t, request(schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":`+terminal+`}`), "Dto"))
+			continue
+		}
 		aliasFailure(t, schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":`+terminal+`}`), "E_SCHEMA_UNSUPPORTED", pointer)
 	}
 	aliasFailure(t, schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":{"type":"string","format":true}}`), "E_SCHEMA_INVALID", "/components/schemas/Z")
@@ -220,6 +224,10 @@ func TestIntrinsicNullableBytesBorrowingNoDrop(t *testing.T) {
 
 func TestIntrinsicNullableBytesProfileExclusions(t *testing.T) {
 	for _, body := range []string{`{"type":"string","nullable":true,"format":"byte","enum":["x"]}`, `{"type":"string","nullable":true,"format":"binary","const":"x"}`, `{"type":["string","null"],"format":"byte","x-kotlin-value-class":false}`} {
+		if metadataStringEnumFixture(body) {
+			metadataStringEnumGraduation(t, request(schemas(`{"Z":`+body+`}`), "Dto"))
+			continue
+		}
 		aliasFailure(t, schemas(`{"Z":`+body+`}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/Z")
 	}
 }

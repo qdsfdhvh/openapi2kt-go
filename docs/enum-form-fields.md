@@ -31,7 +31,9 @@ report E_MODEL_LIMIT at the original `/enum` Pointer. Native field checks retain
 the original raw source and actual constructor validation. No schema or enum
 is synthesized for form encoding; the emitter uses only the retained fields.
 
-This grants no reference/alias, formatted String enum, default/const,
+Own defaults follow the [form default contract](form-field-defaults.md), with
+strict source vocabulary membership and ordinary required suppression.
+This grants no reference/alias, formatted String enum, const,
 schema-nullable, structured or explicit Patch form role. A null enum member does
 not infer source nullability. Source-depth/work, checked16 and JVMslots240 retain
 their contracts. HTTP/cold SSE share encoding, body absence and final callback;

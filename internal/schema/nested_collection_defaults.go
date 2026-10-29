@@ -22,11 +22,14 @@ const maxNestedDefaultBytes = 32 * 1024
 type nestedDefaultNode struct {
 	dtoUniqueKeys *dtoUniqueDefaultKeys
 	uninhabited   bool
-	schema        *document.Value
-	pointer       string
-	ty            TypeRef
-	element       *nestedDefaultNode
-	enum          *StringEnum
+	// Granted by an original tuple projection or admitted JSON codec source.
+	// JsonNull remains a JSON value independently of Kotlin nullable intent.
+	rawJSON bool
+	schema  *document.Value
+	pointer string
+	ty      TypeRef
+	element *nestedDefaultNode
+	enum    *StringEnum
 	// Referenced collection own-default terminals keep the original source
 	// schema as the strict membership authority; the actual Named TypeRef
 	// stays the only type identity.
@@ -46,11 +49,18 @@ type nestedDefaultNode struct {
 	// Inline primitive union leaves retain the shared declaration and validate
 	// each value against its kinds and enum/const pins.
 	union *PrimitiveUnion
+	// Tuple unions borrow the actual selected declaration, including root
+	// subtype dispatch and null carriers, rather than guessing a nominal type.
+	tupleUnion        Declaration
+	unionDepth        int
+	hierarchyTag      *StringEnum
+	hierarchyTagValue *string
 	// Scalar const properties validate the supplied value for exact equality.
 	constValue *document.Value
 	constKind  string
 	// nullOnly is granted only by the original explicit/inferred JsonNull grammar.
-	nullOnly bool
+	nullOnly      bool
+	literalSource *tupleLiteralSource
 	// native carries the analyzer for pin/const checks on union and const nodes.
 }
 
@@ -70,7 +80,11 @@ func (a *analyzer) nestedCollectionDefault(v *document.Value, pointer string, de
 }
 
 func (a *analyzer) nestedCollectionDefaultNamed(v *document.Value, name, pointer string, nested *[]Declaration, used map[string]bool, depth int) (TypeRef, string, *diagnostic.Diagnostic) {
-	node, err := a.nestedDefaultSchema(v, name, pointer, nested, used, depth, true)
+	return a.nestedCollectionDefaultNamedWithEnumBounds(v, name, pointer, nested, used, depth, nil)
+}
+
+func (a *analyzer) nestedCollectionDefaultNamedWithEnumBounds(v *document.Value, name, pointer string, nested *[]Declaration, used map[string]bool, depth int, boundedEnum *document.Value) (TypeRef, string, *diagnostic.Diagnostic) {
+	node, err := a.nestedDefaultSchemaWithEnumBounds(v, name, pointer, nested, used, depth, true, boundedEnum)
 	if err != nil {
 		return TypeRef{}, "", err
 	}
@@ -104,6 +118,20 @@ func (node *nestedDefaultNode) hasEnum() bool {
 }
 
 func (a *analyzer) nestedDefaultSchema(v *document.Value, name, pointer string, nested *[]Declaration, used map[string]bool, depth int, root bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	return a.nestedDefaultSchemaWithEnumBounds(v, name, pointer, nested, used, depth, root, nil)
+}
+
+// An ordinary field/property may retain one original checked enum source at
+// the end of its admitted inline container path. The exact node grants no
+// permission to a copied leaf or a reference.
+func (a *analyzer) nestedDefaultSchemaWithEnumBounds(v *document.Value, name, pointer string, nested *[]Declaration, used map[string]bool, depth int, root bool, boundedEnum *document.Value) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	if v != nil && v == boundedEnum && a.options.Validation && directStringEnumFieldBounds(v) {
+		ty, err := a.checkedStringEnumLeaf(v, name, pointer, nested, used, depth, root && has(v, "default"))
+		if err != nil {
+			return nil, err
+		}
+		return &nestedDefaultNode{schema: v, pointer: pointer, ty: ty, stringEnum: true}, nil
+	}
 	if node, err := a.literalFalseCollectionDefaultLeaf(v, pointer, depth); err != nil {
 		return nil, err
 	} else if node != nil {
@@ -138,6 +166,9 @@ func (a *analyzer) nestedDefaultSchema(v *document.Value, name, pointer string, 
 		// Nested enum leaves retain the original unbounded enum grammar.
 		// Direct single-layer String bounds do not authorize this role.
 		keys = append(keys, "enum")
+		if lexicalStringEnumSchema(v) {
+			keys = append(keys, "x-native-type")
+		}
 	} else if has(v, "enum") && typeErr == nil && slices.Contains([]string{"boolean", "integer", "number"}, kind) {
 		keys = append(keys, "enum")
 		if a.options.Validation {
@@ -188,7 +219,7 @@ func (a *analyzer) nestedDefaultSchema(v *document.Value, name, pointer string, 
 			edge, suffix = "additionalProperties", "Value"
 			typeKind = Map
 		}
-		element, err := a.nestedDefaultSchema(get(v, edge), name+suffix, naming.Pointer(pointer, edge), nested, used, depth+1, false)
+		element, err := a.nestedDefaultSchemaWithEnumBounds(get(v, edge), name+suffix, naming.Pointer(pointer, edge), nested, used, depth+1, false, boundedEnum)
 		if err != nil {
 			return nil, err
 		}
@@ -200,9 +231,6 @@ func (a *analyzer) nestedDefaultSchema(v *document.Value, name, pointer string, 
 		node.ty = ty
 		node.dtoUniqueKeys = a.dtoUniqueKeys
 	} else if has(v, "enum") && (kind == "" || kind == "string") {
-		if has(v, "format") {
-			return nil, unsupported(naming.Pointer(pointer, "enum"))
-		}
 		// root grants this node its own annotation role (for example an
 		// ordinary object property). Container elements still pass false.
 		if root && has(v, "default") {
@@ -323,6 +351,57 @@ func nestedDefaultBudget(v *document.Value, pointer string, depth int, work, byt
 }
 
 func (node *nestedDefaultNode) value(v *document.Value, pointer string) (string, *diagnostic.Diagnostic) {
+	if node.hierarchyTag != nil {
+		wire, ok := v.Text()
+		found := false
+		if ok {
+			for _, member := range node.hierarchyTag.Members {
+				found = found || member.Wire == wire
+			}
+		}
+		if !found {
+			return "", invalid("A hierarchy discriminator default must name a declared tag.", pointer)
+		}
+		if node.hierarchyTagValue != nil && wire != *node.hierarchyTagValue {
+			return "", invalid("A hierarchy discriminator default must equal its actual typed body tag.", pointer)
+		}
+	}
+	if node.rawJSON {
+		if node.ty.WithoutRootNull().Kind == JSONObject && v.Kind() != document.Object && !(v.Kind() == document.Null && node.ty.Kind == Nullable) {
+			return "", invalid("A JsonObject default member must be an object or an explicitly nullable null.", pointer)
+		}
+		if checks := node.ty.WithoutRootNull().Collection; node.ty.WithoutRootNull().Kind == JSONObject && v.Kind() == document.Object && checks != nil {
+			count := int64(len(v.Members()))
+			if checks.Minimum != nil && count < *checks.Minimum || checks.Maximum != nil && count > *checks.Maximum {
+				return "", invalid("A JsonObject default member must satisfy its retained property counts.", pointer)
+			}
+		}
+		encoded, err := v.MarshalJSON()
+		if err != nil {
+			return "", invalid("A raw tuple default member must be valid JSON.", pointer)
+		}
+		return string(encoded), nil
+	}
+	if node.tupleUnion != nil {
+		if v.Kind() == document.Null && node.ty.Kind == Nullable {
+			return "null", nil
+		}
+		if hierarchy, ok := node.tupleUnion.(*Hierarchy); ok {
+			return node.native.tupleHierarchyDefaultEncoded(v, pointer, hierarchy, node.unionDepth)
+		}
+		if vocabulary, ok := node.tupleUnion.(*StringEnum); ok {
+			if wire, ok := v.Text(); ok {
+				for _, member := range vocabulary.Members {
+					if member.Wire == wire {
+						encoded, _ := v.MarshalJSON()
+						return string(encoded), nil
+					}
+				}
+			}
+			return "", invalid("Default must be a member of the normalized enum vocabulary.", pointer)
+		}
+		return node.native.unionDeclarationEncoded(v, pointer, node.schema, node.pointer, node.unionDepth, node.tupleUnion)
+	}
 	if node.constValue != nil && node.constKind == "null" {
 		if node.constValue.Kind() != document.Null || v.Kind() != document.Null {
 			return "", invalid("Default member must equal the field const value.", pointer)
@@ -343,6 +422,9 @@ func (node *nestedDefaultNode) value(v *document.Value, pointer string) (string,
 	}
 	if node.uninhabited {
 		return "", invalid("A false default leaf admits no non-null value.", pointer)
+	}
+	if node.literalSource != nil {
+		return node.literalSource.defaultValue(v, pointer)
 	}
 	if node.union != nil {
 		return node.unionValue(v, pointer)
@@ -365,6 +447,9 @@ func (node *nestedDefaultNode) value(v *document.Value, pointer string) (string,
 		if ok {
 			for _, member := range get(node.schema, "enum").Items() {
 				if wire, stringMember := member.Text(); stringMember && wire == text {
+					if err := validateDefaultChecksAt(v, node.schema, ty.Validation, "kotlin.String", node.pointer, pointer); err != nil {
+						return "", err
+					}
 					encoded, _ := v.MarshalJSON()
 					return string(encoded), nil
 				}
@@ -433,7 +518,7 @@ func (node *nestedDefaultNode) value(v *document.Value, pointer string) (string,
 	if ty.Kind == List {
 		members := make([]string, 0, count)
 		var seen map[string]bool
-		if ty.Collection != nil && ty.Collection.Unique {
+		if ty.Collection != nil && (ty.Collection.Unique || ty.Collection.UniqueJSON) {
 			seen = map[string]bool{}
 		}
 		for i, member := range v.Items() {
@@ -444,6 +529,13 @@ func (node *nestedDefaultNode) value(v *document.Value, pointer string) (string,
 			}
 			if seen != nil {
 				key := structuralUniqueDefaultKey(node.element.ty, member)
+				if ty.Collection.UniqueJSON {
+					var failure *diagnostic.Diagnostic
+					key, failure = rawJSONDefaultKey(member, location)
+					if failure != nil {
+						return "", failure
+					}
+				}
 				if ty.Collection.UniqueDTO != nil {
 					var failure *diagnostic.Diagnostic
 					key, failure = node.dtoUniqueKeys.key(ty.Collection.UniqueDTO, member, location)
@@ -493,6 +585,10 @@ func nestedDefaultTypeKey(ty TypeRef) string {
 		switch ty.Name {
 		case "kotlinx.serialization.json.JsonNull":
 			return "Scalar JsonNull"
+		case "kotlinx.serialization.json.JsonObject":
+			return "Scalar JsonObject"
+		case "kotlinx.serialization.json.JsonArray":
+			return "Scalar JsonArray"
 		case "kotlin.uuid.Uuid":
 			return "Scalar Uuid"
 		case "kotlin.time.Instant":

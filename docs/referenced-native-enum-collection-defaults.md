@@ -16,7 +16,7 @@ The property retains the resolver's actual scalar alias type and linked backing;
 
 ## Annotation and presence
 
-Only the consuming field's own default is accepted. A default on a referenced target, any intermediate reference, a container child or an enum leaf remains rejected. Nullable intent, required presence, `Patch.Absent`/Null/Value wire states and `explicitNulls = false` missing-required-null inference follow the referenced collection extensions unchanged. Null members require nullable leaf layers in the actual backing; a null container default requires explicit container nullability.
+The consuming field owns its annotation. Independently admitted [enum/collection component and alias factories](referenced-enum-collection-factories.md) may coexist on the original source path; each validates separately and transfers no value to the consumer. Container-child, reference-edge and other unadmitted annotations remain rejected. Nullable intent, required presence, `Patch.Absent`/Null/Value wire states and `explicitNulls = false` missing-required-null inference follow the referenced collection extensions unchanged. Null members require nullable leaf layers in the actual backing; a null container default requires explicit container nullability.
 
 Union/hierarchy fields, String enum leaves (separate contract), formatted temporal leaves (separate contract), const/native-marker/value-class leaves and wider default roles remain outside this profile. The mapped scalar and the actual backing must agree after the reference planner's final authority checks; floating `multipleOf` never joins the walk.
 

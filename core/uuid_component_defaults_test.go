@@ -121,6 +121,10 @@ func TestUUIDComponentDefaultsKeepSourceGates(t *testing.T) {
 	} {
 		r := request(schemas(body), "Dto")
 		r.Options.Validation = true
+		if body == `{"T":{"type":"string","format":"uuid","enum":["text"],"default":"text"}}` {
+			metadataStringEnumGraduation(t, r)
+			continue
+		}
 		if report, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
 			t.Fatal("UUID factory widened another source role", body, err)
 		}

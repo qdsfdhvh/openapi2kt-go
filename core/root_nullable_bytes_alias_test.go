@@ -169,6 +169,10 @@ func TestRootNullableBytesAliasBudgetsAndNoDrop(t *testing.T) {
 		if strings.Contains(terminal, `"const"`) {
 			pointer = "/components/schemas/Z/const"
 		}
+		if metadataStringEnumFixture(terminal) {
+			metadataStringEnumGraduation(t, request(schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":`+terminal+`}`), "Dto"))
+			continue
+		}
 		aliasFailure(t, schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":`+terminal+`}`), "E_SCHEMA_UNSUPPORTED", pointer)
 	}
 	aliasFailure(t, schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":{"type":"string","format":true}}`), "E_SCHEMA_INVALID", "/components/schemas/Z")
@@ -209,6 +213,10 @@ func TestRootNullableBytesAliasMethodSlots(t *testing.T) {
 func TestRootNullableBytesAliasExclusions(t *testing.T) {
 	for _, body := range []string{`{"type":"string","format":"binary","enum":["any"]}`, `{"type":"string","format":"byte","x-kotlin-value-class":true}`} {
 		b := schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":` + body + `}`)
+		if metadataStringEnumFixture(body) {
+			metadataStringEnumGraduation(t, request(b, "Dto"))
+			continue
+		}
 		r, e := core.GenerateWithDiagnostics(request(b, "Dto"))
 		if e == nil || len(r.Artifacts.Files) != 0 {
 			t.Fatal(r, e)

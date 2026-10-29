@@ -1,0 +1,430 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Closed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "items": false
+      },
+      "Open": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "items": true
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "items": false
+      },
+      "Dates": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "format": "date"
+          },
+          {
+            "type": "string",
+            "format": "date"
+          }
+        ],
+        "items": false
+      },
+      "Maybe": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        ],
+        "items": false,
+        "nullable": true
+      },
+      "Numbers": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "items": false,
+        "default": [
+          1
+        ]
+      },
+      "NumbersAlias": {
+        "$ref": "#/components/schemas/Numbers",
+        "default": [
+          2
+        ]
+      },
+      "Choice": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "done"
+        ]
+      },
+      "Enums": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Choice"
+          },
+          {
+            "$ref": "#/components/schemas/Choice"
+          }
+        ],
+        "items": false
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "Objects": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Item"
+          },
+          {
+            "$ref": "#/components/schemas/Item"
+          }
+        ],
+        "items": false
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "closed": {
+            "$ref": "#/components/schemas/Closed"
+          },
+          "open": {
+            "$ref": "#/components/schemas/Open"
+          },
+          "mixed": {
+            "$ref": "#/components/schemas/Mixed"
+          },
+          "dates": {
+            "$ref": "#/components/schemas/Dates"
+          },
+          "maybe": {
+            "$ref": "#/components/schemas/Maybe"
+          },
+          "enums": {
+            "$ref": "#/components/schemas/Enums"
+          },
+          "objects": {
+            "$ref": "#/components/schemas/Objects"
+          },
+          "defaults": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "items": false,
+            "default": [
+              3
+            ]
+          }
+        },
+        "required": [
+          "closed",
+          "open",
+          "mixed",
+          "dates",
+          "enums",
+          "objects"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/open": {
+      "post": {
+        "operationId": "open",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "items": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ],
+                  "items": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/closed": {
+      "post": {
+        "operationId": "closed",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "items": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ],
+                  "items": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rows": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "items": false,
+                    "nullable": true
+                  },
+                  "requiredRows": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "items": false,
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "requiredRows"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "message"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch-copy": {
+      "patch": {
+        "operationId": "updateCopy",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rows": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "items": false,
+                    "nullable": true
+                  },
+                  "requiredRows": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "items": false,
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "requiredRows"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

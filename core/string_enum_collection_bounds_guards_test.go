@@ -114,13 +114,7 @@ func TestStringEnumCollectionBoundsOriginalConstraintsAndDefaults(t *testing.T) 
 func TestStringEnumCollectionBoundsNoDropAndExcludedScopes(t *testing.T) {
 	field := `{"type":"array","items":{"enum":["one","x"],"minLength":2},"default":["one"]}`
 	for _, schema := range []string{
-		`{"Root":` + field + `}`,
-		`{"Code":{"enum":["one"],"minLength":2},"Use":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Code"}}}}}`,
-		`{"Holder":{"properties":{"codes":` + field + `}},"Use":{"properties":{"value":{"$ref":"#/components/schemas/Holder/properties/codes/items"}}}}`,
-		`{"Holder":{"properties":{"codes":` + field + `}},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Holder/properties/codes/items"}}}`,
-		`{"Use":{"properties":{"value":{"type":"array","items":` + strings.Replace(field, `,"default":["one"]`, "", 1) + `}}}}`,
 		`{"Use":{"properties":{"value":{"allOf":[` + field + `]}}}}`,
-		`{"Use":{"properties":{"value":{"enum":["one"],"minLength":2}}}}`,
 		`{"Choice":{"oneOf":[{"properties":{"tag":{"const":"a"},"value":` + strings.Replace(field, `,"default":["one"]`, "", 1) + `}},{"properties":{"tag":{"const":"b"}}}]}}`,
 		`{"Use":{"allOf":[{"properties":{"value":` + field + `}},{"properties":{"value":{"type":"string"}}}]}}`,
 		`{"Use":{"properties":{"id":{"type":"string"}},"additionalProperties":` + field + `}}`,
@@ -139,8 +133,6 @@ func TestStringEnumCollectionBoundsNoDropAndExcludedScopes(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, leaf := range []string{
-		`{"type":"string","format":"date","enum":["2024-01-01"],"minLength":2}`,
-		`{"enum":["one"],"x-native-type":"org.example.External","minLength":2}`,
 		`{"enum":["one"],"x-kotlin-value-class":true,"minLength":2}`,
 	} {
 		r.Document = fieldDoc(`{"type":"array","items":` + leaf + `}`)

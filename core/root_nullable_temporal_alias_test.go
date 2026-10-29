@@ -166,6 +166,10 @@ func TestRootNullableTemporalAliasBudgetsAndNoDrop(t *testing.T) {
 		}
 	}
 	for _, terminal := range []string{`{"type":"string","format":"date","enum":["ready"]}`, `{"type":"string","format":"date-time","const":"2024-02-29T12:34:56Z"}`} {
+		if metadataStringEnumFixture(terminal) {
+			metadataStringEnumGraduation(t, request(schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":`+terminal+`}`), "Dto"))
+			continue
+		}
 		aliasFailure(t, schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":`+terminal+`}`), "E_SCHEMA_UNSUPPORTED", "/components/schemas/A")
 	}
 	aliasFailure(t, schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":{"type":"string","format":true}}`), "E_SCHEMA_INVALID", "/components/schemas/Z")

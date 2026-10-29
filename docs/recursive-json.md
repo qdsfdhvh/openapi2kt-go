@@ -57,3 +57,5 @@ Source validation retains every original root and branch/reference node. The gra
 ## Nullable graph reference edges
 
 [Nullable complete-cover edges](nullable-recursive-cover-edges.md) accept true/false `$ref` siblings on original array-item/object-value and transparent named graph aliases. Complete JSON values already include JsonNull, so graph representation/codec/warnings and SCC weights remain; independently exported aliases/typed consumers retain their existing nearest nullable carrier policy. Original source/nullable/member/item snapshots and cached lookup consistency preserve graph authority. Root nullable syntax, default/bounds, partial/inline covers and general recursive graphs remain separate.
+
+[Recursive cover tuple references](tuple-recursive-cover.md) extend D01/D03/D06/F04/F08/F10/M03/M07/Q05 through original named self/mutual complete graphs and accepted named/internal chains. Actual JSON/null adapters, own outer defaults, unique export/source/type/address proof, cached SCC suffix and shared budgets remain. General recursive/constrained/inline/default/platform and final acceptance stay separate.

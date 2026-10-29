@@ -46,7 +46,7 @@ func TestReferencedStringEnumScalarDefaultsNativeLockAndPreservation(t *testing.
 		{`"default":"on"`, `"default":"future"`, "E_SCHEMA_INVALID"},
 		{`"default":"on"`, `"default":null`, "E_SCHEMA_INVALID"},
 		{`"enum":["on","off"]`, `"enum":["on","off"],"default":"on"`, "E_SCHEMA_UNSUPPORTED"},
-		{`"enum":["on","off"]`, `"enum":["on","off"],"minLength":1`, "E_SCHEMA_UNSUPPORTED"},
+		{`"enum":["on","off"]`, `"enum":["on","off"],"minLength":1`, "E_NAME_LOCK_CHANGED"},
 	} {
 		put(t, input, bytes.ReplaceAll(original, []byte(tc.old), []byte(tc.replacement)))
 		for _, command := range [][]string{args, append(append([]string{}, args...), "--check"), validate} {
@@ -63,5 +63,14 @@ func TestReferencedStringEnumScalarDefaultsNativeLockAndPreservation(t *testing.
 	result(t, invoke(t, base, args...), 0)
 	if !reflect.DeepEqual(before, snapshot(t, output)) {
 		t.Fatal("no-op changed output")
+	}
+	// This original root-bounds input now generates under a fresh lock. Reusing
+	// the original unconstrained lock above must still report the shape change.
+	put(t, input, bytes.ReplaceAll(original, []byte(`"enum":["on","off"]`), []byte(`"enum":["on","off"],"minLength":1`)))
+	fresh := lockArgs(input, filepath.Join(base, "fresh"))
+	result(t, invoke(t, base, fresh...), 0)
+	result(t, invoke(t, base, append(fresh, "--check")...), 0)
+	if !reflect.DeepEqual(before, snapshot(t, output)) {
+		t.Fatal("fresh checked-root output changed the old locked inventory")
 	}
 }

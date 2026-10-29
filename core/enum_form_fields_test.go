@@ -22,7 +22,6 @@ func TestEnumFormFields(t *testing.T) {
 func TestEnumFormFieldSourceGuards(t *testing.T) {
 	for _, field := range []string{
 		`{"type":["string","null"],"enum":["a"]}`,
-		`{"type":"string","enum":["a"],"default":"a"}`,
 		`{"type":"string","format":"date","enum":["2026-01-01"]}`,
 		`{"type":"string","enum":["a"],"x-native-type":"kotlin.String"}`,
 		`{"type":"array","items":{"type":"string","enum":["a"]}}`,

@@ -29,7 +29,6 @@ func TestFloatingFormFieldSourceGuards(t *testing.T) {
 	for _, field := range []string{
 		`{"type":["number","null"]}`,
 		`{"type":"number","nullable":true}`,
-		`{"type":"number","default":1.25}`,
 		`{"type":"number","x-native-type":"kotlin.Double"}`,
 	} {
 		rq := request(formRequestDocument(`{"type":"object","properties":{"value":`+field+`}}`, true), "Dto")

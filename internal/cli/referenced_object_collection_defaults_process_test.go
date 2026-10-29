@@ -64,12 +64,15 @@ func TestReferencedObjectCollectionDefaultsPreserveOutputOnFailure(t *testing.T)
 	args := referencedObjectCollectionArgs(p.Input, p.Output, true, core.DataClass)
 	result(t, invoke(t, p.Root, args...), 0)
 	before := snapshot(t, p.Output)
-	// The referenced DTO target must not own a root default.
-	put(t, p.Input, []byte(`{"openapi":"3.1.0","components":{"schemas":{"Item":{"type":"object","properties":{"name":{"type":"string"}},"default":{"name":"t"}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":[{"name":"x"}]}}}}}}`))
-	fails(t, invoke(t, p.Root, args...), 1, "E_SCHEMA_UNSUPPORTED")
+	// The referenced DTO target validates its independent own annotation.
+	put(t, p.Input, []byte(`{"openapi":"3.1.0","components":{"schemas":{"Item":{"type":"object","properties":{"name":{"type":"string"}},"default":{"name":false}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":[{"name":"x"}]}}}}}}`))
+	fails(t, invoke(t, p.Root, args...), 1, "E_SCHEMA_INVALID")
 	if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
 		t.Fatal("failed generation changed existing output")
 	}
+	put(t, p.Input, []byte(`{"openapi":"3.1.0","components":{"schemas":{"Item":{"type":"object","properties":{"name":{"type":"string"}},"default":{"name":"t"}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":[{"name":"x"}]}}}}}}`))
+	result(t, invoke(t, p.Root, args...), 0)
+	result(t, invoke(t, p.Root, append(append([]string{}, args...), "--check")...), 0)
 }
 
 func TestReferencedObjectCollectionDefaultsOptimizationRelocation(t *testing.T) {

@@ -75,6 +75,10 @@ func TestStringEnumCollectionDefaultsOriginalDiagnostics(t *testing.T) {
 				implicitStringEnumGraduation(t, fieldDoc(tc.field), checked)
 				continue
 			}
+			if tc.field == `{"type":"array","items":{"type":"string","format":"uuid","enum":["one"]},"default":[]}` {
+				metadataStringEnumGraduation(t, r)
+				continue
+			}
 			got, err := core.GenerateWithDiagnostics(r)
 			if err == nil || err.(core.Diagnostics)[0].Code != tc.code || err.(core.Diagnostics)[0].Pointer == nil || *err.(core.Diagnostics)[0].Pointer != "/components/schemas/Record/properties/value"+tc.tail || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal(tc, checked, err)

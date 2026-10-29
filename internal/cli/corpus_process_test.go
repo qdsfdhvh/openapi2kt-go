@@ -106,7 +106,9 @@ func TestOriginalCorpusThroughActualGoBinary(t *testing.T) {
 			}
 		})
 	}
-	if positives != 42 || negatives != 99 || snapshots != 54 || graduated != 13 {
+	// Boolean tuple tails move one original refusal into a reviewed positive;
+	// the 154-input inventory and all other explicit graduations are retained.
+	if positives != 43 || negatives != 98 || snapshots != 55 || graduated != 13 {
 		t.Fatal("corpus inventory drift", positives, negatives, snapshots, graduated)
 	}
 	t.Logf("Actual native Go command: %d current positive (including two YAML acceptances) + %d remaining negative + %d explicit scalar/array/nullable-raw/boolean-value/root/default graduations, %d reviewed snapshots", positives, negatives, graduated, snapshots)

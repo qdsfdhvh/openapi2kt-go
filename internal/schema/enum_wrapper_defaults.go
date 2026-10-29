@@ -14,7 +14,7 @@ func originalEnumWrapperDefaultSource(v *document.Value) bool {
 	if err != nil {
 		return false
 	}
-	return (kind == "" || kind == "string") && plainStringEnumSchema(v) ||
+	return (kind == "" || kind == "string") && lexicalStringEnumSchema(v) ||
 		kind == "integer" || kind == "number" || kind == "boolean"
 }
 
@@ -24,11 +24,20 @@ func (a *analyzer) originalEnumWrapperDefaultEncoded(c *component, target *wrapp
 	at := naming.Pointer(c.Pointer, "default")
 	bound := a.referenceWrapperDefaultTarget(c)
 	if !a.componentRoot(c.Schema, c.Pointer) || bound == nil || target.Schema != bound.Schema || target.Pointer != bound.Pointer ||
-		!a.componentRoot(target.Schema, target.Pointer) || (target.Nullable == nil) != (bound.Nullable == nil) ||
+		target.Internal != bound.Internal || !target.Internal && !a.componentRoot(target.Schema, target.Pointer) || (target.Nullable == nil) != (bound.Nullable == nil) ||
 		target.Nullable != nil && *target.Nullable != *bound.Nullable {
 		return "", unsupported(at)
 	}
-	node, err := validation.nestedDefaultSchema(target.Schema, "Validation", target.Pointer, nil, nil, 0, true)
+	if target.Internal {
+		if err := a.admitInternalEnumFactory(c, target); err != nil {
+			return "", err
+		}
+	}
+	var bounded *document.Value
+	if a.checkedEnumReferenceCandidate(target.Schema) && (target.Internal || a.checkedStringEnumRoot(target.Schema, target.Pointer)) {
+		bounded = target.Schema
+	}
+	node, err := validation.nestedDefaultSchemaWithEnumBounds(target.Schema, "Validation", target.Pointer, nil, nil, 0, true, bounded)
 	if err != nil {
 		return "", err
 	}

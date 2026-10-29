@@ -1,0 +1,718 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Base": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "default": "ready"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "BaseAlias": {
+        "$ref": "#/components/schemas/Base"
+      },
+      "Child": {
+        "properties": {
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label"
+        ]
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseAlias"
+              },
+              {
+                "properties": {
+                  "n": {
+                    "type": "integer",
+                    "default": 7
+                  },
+                  "child": {
+                    "$ref": "#/components/schemas/Child",
+                    "default": {
+                      "label": "inner"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "default": [
+          {
+            "name": "root"
+          }
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Rows",
+        "default": [
+          {
+            "name": "alias"
+          }
+        ]
+      },
+      "NullableRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseAlias",
+                "nullable": true
+              },
+              {
+                "properties": {
+                  "n": {
+                    "type": "integer",
+                    "default": 7
+                  },
+                  "child": {
+                    "$ref": "#/components/schemas/Child",
+                    "default": {
+                      "label": "inner"
+                    }
+                  }
+                },
+                "nullable": true
+              }
+            ]
+          }
+        ],
+        "default": [
+          null,
+          {
+            "name": "nullable"
+          }
+        ]
+      },
+      "Maybe": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseAlias"
+              },
+              {
+                "properties": {
+                  "n": {
+                    "type": "integer",
+                    "default": 7
+                  },
+                  "child": {
+                    "$ref": "#/components/schemas/Child",
+                    "default": {
+                      "label": "inner"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "nullable": true,
+        "default": null
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseAlias"
+              },
+              {
+                "properties": {
+                  "n": {
+                    "type": "integer",
+                    "default": 7
+                  },
+                  "child": {
+                    "$ref": "#/components/schemas/Child",
+                    "default": {
+                      "label": "inner"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseAlias"
+              },
+              {
+                "properties": {
+                  "n": {
+                    "type": "integer",
+                    "default": 7
+                  },
+                  "child": {
+                    "$ref": "#/components/schemas/Child",
+                    "default": {
+                      "label": "inner"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "default": [
+          null,
+          {
+            "default": "data"
+          }
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          false,
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseAlias"
+              },
+              {
+                "properties": {
+                  "n": {
+                    "type": "integer",
+                    "default": 7
+                  },
+                  "child": {
+                    "$ref": "#/components/schemas/Child",
+                    "default": {
+                      "label": "inner"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "items": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/BaseAlias"
+            },
+            {
+              "properties": {
+                "n": {
+                  "type": "integer",
+                  "default": 7
+                },
+                "child": {
+                  "$ref": "#/components/schemas/Child",
+                  "default": {
+                    "label": "inner"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "default": [
+          {
+            "name": "tail"
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BaseAlias"
+                  },
+                  {
+                    "properties": {
+                      "n": {
+                        "type": "integer",
+                        "default": 7
+                      },
+                      "child": {
+                        "$ref": "#/components/schemas/Child",
+                        "default": {
+                          "label": "inner"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "default": [
+              {
+                "name": "ignored"
+              }
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/BaseAlias"
+                  },
+                  {
+                    "properties": {
+                      "n": {
+                        "type": "integer",
+                        "default": 7
+                      },
+                      "child": {
+                        "$ref": "#/components/schemas/Child",
+                        "default": {
+                          "label": "inner"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "default": [
+              {
+                "name": "field"
+              }
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "nested": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/BaseAlias"
+                      },
+                      {
+                        "properties": {
+                          "n": {
+                            "type": "integer",
+                            "default": 7
+                          },
+                          "child": {
+                            "$ref": "#/components/schemas/Child",
+                            "default": {
+                              "label": "inner"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "Counted": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BaseAlias"
+              },
+              {
+                "properties": {
+                  "n": {
+                    "type": "integer",
+                    "default": 7
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "default": [
+          {
+            "name": "count",
+            "n": 1
+          }
+        ]
+      },
+      "Direction": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "allOf": [
+                  {
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "secret": {
+                        "type": "string",
+                        "writeOnly": true
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "secret"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "readOnly": true
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "rows"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "get": {
+        "operationId": "inlineRows",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/BaseAlias"
+                        },
+                        {
+                          "properties": {
+                            "n": {
+                              "type": "integer",
+                              "default": 7
+                            },
+                            "child": {
+                              "$ref": "#/components/schemas/Child",
+                              "default": {
+                                "label": "inner"
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/BaseAlias"
+                          },
+                          {
+                            "properties": {
+                              "n": {
+                                "type": "integer",
+                                "default": 7
+                              },
+                              "child": {
+                                "$ref": "#/components/schemas/Child",
+                                "default": {
+                                  "label": "inner"
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "default": [
+                      {
+                        "name": "ignored"
+                      }
+                    ],
+                    "nullable": true
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/BaseAlias"
+                          },
+                          {
+                            "properties": {
+                              "n": {
+                                "type": "integer",
+                                "default": 7
+                              },
+                              "child": {
+                                "$ref": "#/components/schemas/Child",
+                                "default": {
+                                  "label": "inner"
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "default": [
+                      {
+                        "name": "ignored"
+                      }
+                    ],
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic result"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "operationId": "shapeA",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "operationId": "shapeB",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send-inline": {
+      "post": {
+        "operationId": "sendInline",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/BaseAlias"
+                      },
+                      {
+                        "properties": {
+                          "n": {
+                            "type": "integer",
+                            "default": 7
+                          },
+                          "child": {
+                            "$ref": "#/components/schemas/Child",
+                            "default": {
+                              "label": "inner"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic result"
+          }
+        }
+      }
+    },
+    "/direction": {
+      "post": {
+        "operationId": "direction",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Direction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Direction"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

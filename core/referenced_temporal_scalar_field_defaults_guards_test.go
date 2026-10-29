@@ -81,6 +81,10 @@ func TestReferencedTemporalScalarFieldDefaultsSourceRolesRemainExcluded(t *testi
 		} {
 			r := request(scalarRefDoc(terminal, "null", `,"nullable":true`), "Dto")
 			r.Options.Validation = checked
+			if metadataStringEnumFixture(terminal) {
+				metadataStringEnumGraduation(t, r)
+				continue
+			}
 			got, err := core.GenerateWithDiagnostics(r)
 			if err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("source role", terminal, err)

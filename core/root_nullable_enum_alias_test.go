@@ -179,6 +179,10 @@ func TestRootNullableEnumAliasBudgetsAndExclusions(t *testing.T) {
 			failure(t, input, "E_SCHEMA_UNSUPPORTED", "/components/schemas/A")
 			continue
 		}
+		if metadataStringEnumFixture(terminal) {
+			metadataStringEnumGraduation(t, request(input, "Dto"))
+			continue
+		}
 		aliasFailure(t, input, "E_SCHEMA_UNSUPPORTED", "/components/schemas/A")
 	}
 	report(t, schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":{"enum":["ready"],"nullable":true}}`), "Dto") // Intrinsic plain enum nullability graduated independently.

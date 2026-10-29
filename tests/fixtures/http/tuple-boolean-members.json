@@ -1,0 +1,365 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Zero": {
+        "type": "array",
+        "prefixItems": [
+          false,
+          false
+        ]
+      },
+      "Closed": {
+        "type": "array",
+        "prefixItems": [
+          false
+        ],
+        "items": false,
+        "default": []
+      },
+      "Maybe": {
+        "type": "array",
+        "prefixItems": [
+          false
+        ],
+        "nullable": true,
+        "default": null
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Closed",
+        "default": []
+      },
+      "Open": {
+        "type": "array",
+        "prefixItems": [
+          true,
+          true
+        ],
+        "default": [
+          null,
+          true,
+          {
+            "default": "data"
+          }
+        ]
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          false,
+          {
+            "type": "string"
+          }
+        ],
+        "default": [
+          null,
+          {
+            "enum": "data"
+          }
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          false,
+          true
+        ],
+        "items": {
+          "type": "integer"
+        },
+        "default": [
+          1,
+          2
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              false
+            ],
+            "default": []
+          },
+          "zeros": {
+            "type": "array",
+            "prefixItems": [
+              false,
+              false
+            ],
+            "items": false,
+            "default": []
+          },
+          "open": {
+            "type": "array",
+            "prefixItems": [
+              true
+            ],
+            "default": [
+              null,
+              true
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Zero"
+          },
+          "nested": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "prefixItems": [
+                  false
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "required"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/zero": {
+      "get": {
+        "operationId": "zero",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Zero"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "get": {
+        "operationId": "inlineZero",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    false
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      false
+                    ],
+                    "nullable": true,
+                    "default": []
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      false
+                    ],
+                    "nullable": true,
+                    "default": []
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic result"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/false-events": {
+      "get": {
+        "operationId": "falseEvents",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "empty"
+                        },
+                        "data": {
+                          "type": "array",
+                          "prefixItems": [
+                            false
+                          ]
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "operationId": "shapeA",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "operationId": "shapeB",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send-zero": {
+      "post": {
+        "operationId": "sendZero",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  false
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic result"
+          }
+        }
+      }
+    }
+  }
+}

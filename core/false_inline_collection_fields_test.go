@@ -60,6 +60,15 @@ func TestFalseInlineCollectionFieldClosedRoles(t *testing.T) {
 			rq := request(schemas(`{"Blocked":false,`+role+`}`), "Dto")
 			rq.Options.Validation = checked
 			got, e := core.GenerateWithDiagnostics(rq)
+			if role == `"Holder":{"properties":{"rows":{"type":"array","prefixItems":[{"$ref":"#/components/schemas/Blocked"}]}}}` {
+				if e != nil {
+					t.Fatal("original inline tuple reference input", e)
+				}
+				if !strings.Contains(source(t, got, "HolderDto"), "List<org.example.models.models.BlockedDto>") {
+					t.Fatal("inline tuple reference lost actual rejecting root")
+				}
+				continue
+			}
 			// Exact83 default[] field input graduates under84 ownannotation proof.
 			if role == `"Holder":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/Blocked"},"default":[]}}}` {
 				if e != nil {

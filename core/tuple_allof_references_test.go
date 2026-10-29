@@ -95,7 +95,7 @@ func TestTupleAllOfReferences(t *testing.T) {
 }
 
 func TestTupleAllOfNoConstructorSources(t *testing.T) {
-	for _, target := range []string{`{"allOf":[{}]}`, `{"allOf":[{"properties":{"pin":{"const":"only"}}}]}`, `{"allOf":[{"additionalProperties":{"type":"string"}}]}`, `{"allOf":[{"oneOf":[{"properties":{"a":{"type":"string"}}},{"properties":{"b":{"type":"integer"}}}]}]}`} {
+	for _, target := range []string{`{"allOf":[{}]}`, `{"allOf":[{"properties":{"pin":{"const":"only"}}}]}`, `{"allOf":[{"additionalProperties":{"type":"string"}}]}`, `{"allOf":[{"oneOf":[{"type":"string"},{"type":"integer"}]}]}`} {
 		for _, tail := range []string{"", `,"items":{"type":"integer"}`} {
 			rq := request(schemas(`{"Item":`+target+`,"Probe":{"type":"array","prefixItems":[{"$ref":"#/components/schemas/Item"}]`+tail+`}}`), "Dto")
 			got, err := core.GenerateWithDiagnostics(rq)
@@ -117,6 +117,12 @@ func TestTupleAllOfOwnDefaultAndUniqueRolesRemainSeparate(t *testing.T) {
 			rq := request(schemas(`{"Item":{"allOf":[{"properties":{"value":{"type":"string"}},"required":["value"]}]},"Probe":`+tc.probe+`}`), "Dto")
 			rq.Options.Validation = checked
 			got, err := core.GenerateWithDiagnostics(rq)
+			if strings.Contains(tc.probe, `"default"`) {
+				if err != nil {
+					t.Fatal("former exact tuple default refusal remains", checked, err)
+				}
+				continue
+			}
 			if checked && tc.probe == `{"type":"array","prefixItems":[{"$ref":"#/components/schemas/Item"}],"items":{"$ref":"#/components/schemas/Item"},"uniqueItems":true}` {
 				if err != nil {
 					t.Fatal("actual allOf DTO explicit-tail List equality", err)

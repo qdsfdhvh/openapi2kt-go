@@ -1,0 +1,13 @@
+# Recursive cover tuples
+
+OpenAPI 3.1 prefixItems and schema tails may reference existing named complete JSON-kind covers through accepted finite named/internal chains. Use List<JsonElement> or its actual nullable element view with ordinary lists and reified/backing serializers. Complete covers include null, String, Boolean, Number, recursive arrays and typed dictionaries; partial, constrained and inline covers remain outside this role.
+
+Every original prefix validates before selection. Uniform sources keep the same original terminal and nullable view; mixed sources or a true tail use the existing raw List approximation. Explicit schema tails select their own codec. Positions and exact/closed-tail lengths remain unenforced and W_TUPLE_APPROXIMATION remains. Each original complete root retains W_RECURSIVE_JSON_PROJECTION once.
+
+Non-null JsonElement admits JsonNull. Nullable references decode JSON null to Kotlin null; nearest explicit alias/consumer intent wins. The backing codec controls JSON number spelling and precision. HTTP and SSE reuse the actual selected codec, while optional requests retain Patch semantics.
+
+Ordinary tuple fields, component roots and eligible independent collection aliases can own outer array defaults. Selected cover values accept all JSON kinds, including data keys named description, $ref or allOf. Helpers/factories decode fresh outer collections. Required/Patch annotations validate before initializer suppression; no target/alias/positional annotation is inherited or newly admitted. Array nullability, counts, source identity and value budgets still apply. Prefix-only tuples gain no implicit uniqueItems eligibility.
+
+Incoming reference hops and the complete graph SCC suffix count toward source depth48, including cached/erased prefixes. Reachable original graph nodes share the tuple16384-step/8MiB capture budget; repeated nodes reuse immutable captures. Default16384-node/32KiB, checked16 and JVM240 limits remain. Invalid input preserves old output. Same-byte graph replacements, copied final element nodes or a scalar with identical Kotlin spelling cannot supply cover authority.
+
+For generation, review the warnings and run the same-options --check. Acceptance requires actual codec consumption where relevant; generated source alone does not prove compilation/runtime or broader platform support. The source checkout provides the tuple-recursive-cover feature route for Data/Plain × validation, baseline/combined optimizations and real HTTP/SSE consumers. Previously rejected eligible inputs gain this role; existing accepted API/wire and output/name-lock formats retain their contracts. General recursive/constrained/inline covers and broader defaults remain separate.

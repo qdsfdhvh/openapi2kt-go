@@ -154,6 +154,10 @@ type ScalarAlias struct {
 	// ComponentDefault holds the canonical JSON of the component's own root
 	// `default`; the factory decodes through the actual scalar serializer.
 	ComponentDefault string
+	// NullableComponentDefault preserves a merged enum's nullable factory while
+	// its physical classifier remains nonnullable. JsonNull factories use the
+	// ordinary scalar serializer and leave this false.
+	NullableComponentDefault bool
 }
 
 func (m *ScalarAlias) Name() string { return m.ClassName }
@@ -334,11 +338,19 @@ type analyzer struct {
 	borrowedCollectionRoots        map[Declaration]borrowedCollectionRoot
 	borrowedDTOLeaves              map[*document.Value]*borrowedDTOLeafUse
 	borrowedEnumLeaves             map[*document.Value]*borrowedEnumLeafUse
+	checkedEnumSources             map[*document.Value]*checkedEnumSource
 	borrowedValueClassLeaves       map[*component]*borrowedValueClassLeafUse
 	borrowedAllOfLeaves            map[*document.Value]*borrowedAllOfLeafUse
 	borrowedCollectionPlanning     bool
 	tupleAllOfSources              *tupleAllOfSourceBudget
 	tupleNativeSources             *tupleNativeSourceRegistry
+	tupleBooleans                  *tupleBooleanRegistry
+	tupleObjects                   *tupleInlineDTOState
+	tupleSourceValidation          bool
+	tupleBooleanRefs               *tupleBooleanReferenceRegistry
+	tupleLiterals                  *tupleLiteralRegistry
+	tupleCovers                    *tupleCoverRegistry
+	tupleSpecials                  *tupleSpecialRegistry
 	falseRootSources               *falseRootSourceRegistry
 	falseValueOrigins              map[*FalseValue]falseValueOrigin
 	falseAliasOrigins              map[*ValueAlias]falseAliasOrigin
@@ -381,6 +393,8 @@ type analyzer struct {
 	borrowedDTOAliasEdges          map[*component]*borrowedDTOAliasEdge
 	deferredNominals               map[*document.Value]*deferredNominal
 	referencedDefaults             *[]referencedFieldDefault
+	internalEnumFactories          *internalEnumFactoryRegistry
+	referencedEnumFactories        []*referencedEnumCollectionFactory
 	nominalsLinked                 bool
 }
 

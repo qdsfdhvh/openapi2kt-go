@@ -105,7 +105,11 @@ func emitDeclaration(declaration schema.Declaration, indent int, owner string, h
 		emitValueClass(d, out)
 	case *schema.ScalarAlias:
 		fmt.Fprintf(out, "public typealias %s = %s\n", d.ClassName, d.Scalar)
-		if d.ComponentDefault != "" {
+		if d.ComponentDefault == "null" && d.NullableComponentDefault {
+			// Merging retains the physical non-null enum classifier. Its
+			// independent null annotation belongs only to this opt-in factory.
+			fmt.Fprintf(out, "\n// The OpenAPI component default for this schema.\npublic fun `%s default`(): %s? = null\n", d.ClassName, d.ClassName)
+		} else if d.ComponentDefault != "" {
 			// A typealias cannot own members, so the factory is a top-level
 			// function with the same opt-in contract.
 			helper := "`openapi-kt component default " + strings.ReplaceAll(owner+"."+d.ClassName, ".", " ") + "`"

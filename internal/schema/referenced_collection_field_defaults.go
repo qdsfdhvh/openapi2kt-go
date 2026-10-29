@@ -118,7 +118,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 	}
 	if has(v, "$ref") {
 		keys := []string{"$ref", "nullable"}
-		if root {
+		if root || a.independentEnumComponentDefault(v, pointer) || a.independentObjectComponentDefault(v, pointer) || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer) {
 			keys = append(keys, "default")
 		}
 		if err := checkKeys(v, keys, pointer); err != nil {
@@ -167,18 +167,40 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		// containers and target/reference sources retain their strict keys.
 		keys = append(keys, "default")
 	}
+	if edge != "" && (a.independentEnumComponentDefault(v, pointer) || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer)) {
+		keys = append(keys, "default")
+	}
 	if edge == "" && has(v, "enum") {
 		if kind == "" || kind == "string" {
 			if role != referencedCollectionOwnDefault && role != referencedNamedOwnDefault {
 				return nil, unsupported(naming.Pointer(pointer, "enum"))
 			}
-			// Plain String enum terminals join this profile. Default members are
+			// Lexical String enum terminals retain their metadata. Default members are
 			// strict against the original source vocabulary while runtime stays
-			// open; format and String bounds/pattern remain separate roles.
-			if has(v, "format") || hasPrimitiveBounds(v) {
-				return nil, unsupported(naming.Pointer(pointer, "enum"))
+			// open; String bounds/pattern remain separate roles.
+			if hasPrimitiveBounds(v) {
+				if !a.options.Validation || bare.Kind != Named || bare.Validation == nil || a.validationSources[bare.Validation] != pointer {
+					return nil, unsupported(naming.Pointer(pointer, "enum"))
+				}
+				// Type/reference admission and final named-collection provenance
+				// retain the actual classifier/check objects. Revalidate the complete
+				// original vocabulary and check grammar without declaring a copy.
+				checked, err := a.checkedStringEnumLeaf(v, "Validation", pointer, nil, nil, depth, a.independentCheckedEnumFieldDefault(v, pointer) || a.independentEnumComponentDefault(v, pointer))
+				if err != nil {
+					return nil, err
+				}
+				if namedCollectionChecks(checked.WithoutRootNull()) != namedCollectionChecks(bare) {
+					return nil, schemaReferenceUnsupported(pointer)
+				}
+				node.stringEnum = true
+				return node, nil
 			}
-			if err := checkKeys(v, []string{"type", "nullable", "enum"}, pointer); err != nil {
+			var factorySource *analyzer
+			if a.independentEnumComponentDefault(v, pointer) {
+				factorySource = a
+			}
+			fieldDefault := a.internalEnumFactories != nil && a.internalEnumFactories.Terminals[v]
+			if _, err := buildStringEnumKeysFor("Validation", v, pointer, fieldDefault, factorySource); err != nil {
 				return nil, err
 			}
 			members := get(v, "enum").Items()
@@ -214,6 +236,9 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 			return nil, unsupported(naming.Pointer(pointer, "enum"))
 		}
 		terminalKeys := []string{"type", "nullable", "format", "enum"}
+		if a.independentEnumComponentDefault(v, pointer) {
+			terminalKeys = append(terminalKeys, "default")
+		}
 		if a.options.Validation {
 			terminalKeys = append(terminalKeys, primitiveBoundKeys...)
 		}
@@ -383,6 +408,11 @@ func referencedDefaultInitializer(node *nestedDefaultNode, ty TypeRef, value *do
 
 func (a *analyzer) planReferencedFieldDefaults() *diagnostic.Diagnostic {
 	for _, plan := range *a.referencedDefaults {
+		if handled, err := a.planTupleCollectionFieldDefault(plan); err != nil {
+			return err
+		} else if handled {
+			continue
+		}
 		if handled, err := a.planReferencedUnionDefault(plan); err != nil {
 			return err
 		} else if handled {
@@ -419,6 +449,10 @@ func (a *analyzer) planReferencedFieldDefaults() *diagnostic.Diagnostic {
 
 func referencedDefaultTypeKey(ty TypeRef) string {
 	switch ty.Kind {
+	case InlineValue:
+		return "Value " + strings.ReplaceAll(ty.Name, ".", " ")
+	case Scalar:
+		return strings.ReplaceAll(nestedDefaultTypeKey(ty), ".", " ")
 	case Named:
 		view := "Alias "
 		if ty.ArrayAliasView == NonNullArrayAlias {

@@ -2217,17 +2217,18 @@
     },
     {
       "id": "unsupported-prefixitems",
-      "group": "deferred",
-      "description": "Tuple schemas and boolean tails are not flattened into ordinary arrays.",
-      "input": "invalid/unsupported-prefixitems.json",
+      "group": "collections",
+      "description": "Historical Boolean-tail tuple refusal now projects the original mixed prefix to a warned JsonElement List.",
+      "input": "valid/boolean-tuple-tail.json",
       "package_name": "org.example.fixtures.unsupported_prefixitems",
       "model_name_suffix": "",
       "input_format": "json",
       "validate": true,
       "expect": {
-        "kind": "error",
-        "code": "E_SCHEMA_UNSUPPORTED",
-        "pointer": "/components/schemas/Record/properties/value/prefixItems"
+        "kind": "success",
+        "files": {
+          "org/example/fixtures/unsupported_prefixitems/models/Record.kt": "snapshots/boolean-tuple-tail/Record.kt"
+        }
       }
     },
     {

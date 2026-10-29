@@ -16,9 +16,9 @@ func TestReferencedObjectDefaultsGuards(t *testing.T) {
 		pointer string
 	}{
 		{
-			"target own default",
-			`{"Inner":{"type":"object","properties":{"a":{"type":"string"}},"default":{"a":"t"}},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{"a":"x"}}}}}`,
-			"E_SCHEMA_UNSUPPORTED", "/components/schemas/Inner/default",
+			"invalid target own default",
+			`{"Inner":{"type":"object","properties":{"a":{"type":"string"}},"default":{"a":false}},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Inner","default":{"a":"x"}}}}}`,
+			"E_SCHEMA_INVALID", "/components/schemas/Inner/default/a",
 		},
 		{
 			"unknown key",

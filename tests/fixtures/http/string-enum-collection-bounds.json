@@ -1,61 +1,1792 @@
 {
   "openapi": "3.1.0",
-  "info": {"title": "String enum collection bounds", "version": "1"},
-  "components": {"schemas": {
-    "Holder": {
-      "type": "object",
-      "properties": {
-        "required": {"type": "array", "minItems": 1, "items": {"type": "string", "enum": ["one", "two", "x", "toolong", "BAD"], "minLength": 2, "maxLength": 6, "pattern": "^[a-z]+$"}, "default": ["one"]},
-        "codes": {"type": "array", "maxItems": 3, "items": {"type": ["string", "null"], "enum": ["one", null, "two", "x", "toolong", "BAD"], "minLength": 2, "maxLength": 6, "pattern": "^[a-z]+$"}, "default": ["one", null, "two"]},
-        "labels": {"maxProperties": 2, "additionalProperties": {"enum": ["yes", "no", "x", "toolong", "BAD"], "minLength": 2, "maxLength": 6, "pattern": "^[a-z]+$"}, "default": {"a/~": "yes", "$ref": "no"}},
-        "bareCodes": {"type": "array", "items": {"enum": ["one", "x"], "minLength": 2, "maxLength": 6}},
-        "bareLabels": {"additionalProperties": {"enum": ["hotdog", "cat", "bad", null], "nullable": true, "pattern": "cat|dog"}},
-        "special": {"type": "array", "items": {"enum": ["quote\"$😀", "two"], "minLength": 8, "maxLength": 8}, "default": ["quote\"$😀"]},
-        "empty": {"type": "array", "items": {"enum": ["empty"], "minLength": 6}, "default": []},
-        "emptyMap": {"type": "object", "additionalProperties": {"type": "string", "enum": ["empty"], "pattern": "^other$"}, "default": {}},
-        "nil": {"type": ["object", "null"], "minProperties": 1, "additionalProperties": {"type": "string", "enum": ["yes"], "maxLength": 2}, "default": null},
-        "nested": {"type": "object", "properties": {
-          "labels": {"type": "object", "additionalProperties": {"enum": ["nested", null], "nullable": true, "minLength": 6, "maxLength": 6}, "default": {"one": "nested", "nil": null}}
-        }},
-        "kotlin": {"type": "string"},
-        "kotlinx": {"type": "string"},
-        "labelsInner": {"type": "string"}
-      },
-      "required": ["required"]
-    },
-    "RequiredMaps": {
-      "type": "object",
-      "properties": {
-        "labels": {"additionalProperties": {"enum": ["yes", "no"], "minLength": 2, "maxLength": 6}, "default": {"a": "yes"}},
-        "nullableLabels": {"type": "object", "nullable": true, "additionalProperties": {"enum": ["yes"], "minLength": 2}, "default": null}
-      },
-      "required": ["labels", "nullableLabels"]
-    }
-  }},
-  "paths": {
-    "/holder": {"post": {
-      "operationId": "send", "tags": ["defaults"],
-      "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}},
-      "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Holder"}}}}}
-    }},
-    "/patch": {"patch": {
-      "operationId": "patch", "tags": ["defaults"],
-      "requestBody": {"required": true, "content": {"application/json": {"schema": {
+  "info": {
+    "title": "String enum collection bounds",
+    "version": "1"
+  },
+  "components": {
+    "schemas": {
+      "Holder": {
         "type": "object",
         "properties": {
-          "codes": {"type": "array", "nullable": true, "minItems": 1, "items": {"type": "string", "enum": ["one", "two", "x"], "minLength": 2, "maxLength": 6, "pattern": "^[a-z]+$"}, "default": ["one"]},
-          "labels": {"type": "object", "nullable": true, "additionalProperties": {"enum": ["yes", "no", null], "nullable": true, "minLength": 2, "maxLength": 6}, "default": {"yes": "yes"}},
-          "required": {"type": "array", "nullable": true, "items": {"type": "string", "enum": ["one", "two", "x"], "minLength": 2, "maxLength": 6}, "default": ["one"]}
+          "required": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "enum": [
+                "one",
+                "two",
+                "x",
+                "toolong",
+                "BAD"
+              ],
+              "minLength": 2,
+              "maxLength": 6,
+              "pattern": "^[a-z]+$"
+            },
+            "default": [
+              "one"
+            ]
+          },
+          "codes": {
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "one",
+                null,
+                "two",
+                "x",
+                "toolong",
+                "BAD"
+              ],
+              "minLength": 2,
+              "maxLength": 6,
+              "pattern": "^[a-z]+$"
+            },
+            "default": [
+              "one",
+              null,
+              "two"
+            ]
+          },
+          "labels": {
+            "maxProperties": 2,
+            "additionalProperties": {
+              "enum": [
+                "yes",
+                "no",
+                "x",
+                "toolong",
+                "BAD"
+              ],
+              "minLength": 2,
+              "maxLength": 6,
+              "pattern": "^[a-z]+$"
+            },
+            "default": {
+              "a/~": "yes",
+              "$ref": "no"
+            }
+          },
+          "bareCodes": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "one",
+                "x"
+              ],
+              "minLength": 2,
+              "maxLength": 6
+            }
+          },
+          "bareLabels": {
+            "additionalProperties": {
+              "enum": [
+                "hotdog",
+                "cat",
+                "bad",
+                null
+              ],
+              "nullable": true,
+              "pattern": "cat|dog"
+            }
+          },
+          "special": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "quote\"$\ud83d\ude00",
+                "two"
+              ],
+              "minLength": 8,
+              "maxLength": 8
+            },
+            "default": [
+              "quote\"$\ud83d\ude00"
+            ]
+          },
+          "empty": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "empty"
+              ],
+              "minLength": 6
+            },
+            "default": []
+          },
+          "emptyMap": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "empty"
+              ],
+              "pattern": "^other$"
+            },
+            "default": {}
+          },
+          "nil": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "yes"
+              ],
+              "maxLength": 2
+            },
+            "default": null
+          },
+          "nested": {
+            "type": "object",
+            "properties": {
+              "labels": {
+                "type": "object",
+                "additionalProperties": {
+                  "enum": [
+                    "nested",
+                    null
+                  ],
+                  "nullable": true,
+                  "minLength": 6,
+                  "maxLength": 6
+                },
+                "default": {
+                  "one": "nested",
+                  "nil": null
+                }
+              }
+            }
+          },
+          "kotlin": {
+            "type": "string"
+          },
+          "kotlinx": {
+            "type": "string"
+          },
+          "labelsInner": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "one",
+              "two",
+              "x",
+              "toolong",
+              "BAD"
+            ],
+            "minLength": 2,
+            "maxLength": 6,
+            "pattern": "^[a-z]+$",
+            "default": "one"
+          },
+          "metadataState": {
+            "type": "string",
+            "enum": [
+              "one",
+              "two",
+              "x",
+              "toolong",
+              "BAD"
+            ],
+            "minLength": 2,
+            "maxLength": 6,
+            "pattern": "^[a-z]+$",
+            "format": "date",
+            "nullable": true,
+            "default": "two"
+          },
+          "bareState": {
+            "type": "string",
+            "enum": [
+              "one",
+              "two",
+              "x",
+              "toolong",
+              "BAD"
+            ],
+            "minLength": 2,
+            "maxLength": 6,
+            "pattern": "^[a-z]+$",
+            "x-native-type": "org.example.UnusedProvider"
+          },
+          "metadataRows": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "one",
+                "two",
+                "x",
+                "toolong",
+                "BAD"
+              ],
+              "minLength": 2,
+              "maxLength": 6,
+              "pattern": "^[a-z]+$",
+              "format": "uuid"
+            },
+            "default": [
+              "one"
+            ]
+          },
+          "metadataLabels": {
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "one",
+                "two",
+                "x",
+                "toolong",
+                "BAD"
+              ],
+              "minLength": 2,
+              "maxLength": 6,
+              "pattern": "^[a-z]+$",
+              "x-native-type": "org.example.UnusedProvider"
+            },
+            "default": {
+              "first": "two"
+            }
+          },
+          "bounded": {
+            "$ref": "#/components/schemas/BoundedAlias",
+            "default": {
+              "state": "one",
+              "words": [
+                "two"
+              ],
+              "labels": {
+                "outer": "two"
+              },
+              "trees": [
+                {
+                  "outer": "two"
+                }
+              ]
+            }
+          },
+          "boundedRows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BoundedAlias"
+            },
+            "default": [
+              {
+                "state": "one",
+                "words": [
+                  "two"
+                ],
+                "labels": {
+                  "outer": "two"
+                },
+                "trees": [
+                  {
+                    "outer": "two"
+                  }
+                ]
+              }
+            ]
+          },
+          "boundedInline": {
+            "properties": {
+              "state": {
+                "type": "string",
+                "format": "date",
+                "enum": [
+                  "one",
+                  "two",
+                  "x",
+                  "UPPER",
+                  "toolong"
+                ],
+                "minLength": 2,
+                "maxLength": 6,
+                "pattern": "^[a-z]+$",
+                "default": "one"
+              },
+              "words": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "enum": [
+                    "one",
+                    "two",
+                    "x",
+                    "UPPER",
+                    "toolong"
+                  ],
+                  "minLength": 2,
+                  "maxLength": 6,
+                  "pattern": "^[a-z]+$"
+                },
+                "default": [
+                  "one"
+                ]
+              },
+              "labels": {
+                "additionalProperties": {
+                  "type": "string",
+                  "enum": [
+                    "one",
+                    "two",
+                    "x",
+                    "UPPER",
+                    "toolong"
+                  ],
+                  "minLength": 2,
+                  "maxLength": 6,
+                  "pattern": "^[a-z]+$",
+                  "x-native-type": "org.example.UnusedProvider"
+                },
+                "default": {
+                  "inner": "one"
+                }
+              },
+              "maybe": {
+                "type": "string",
+                "format": "date",
+                "enum": [
+                  "one",
+                  "two",
+                  "x",
+                  "UPPER",
+                  "toolong"
+                ],
+                "minLength": 2,
+                "maxLength": 6,
+                "pattern": "^[a-z]+$",
+                "nullable": true,
+                "default": null
+              },
+              "trees": {
+                "type": "array",
+                "nullable": true,
+                "maxItems": 3,
+                "uniqueItems": true,
+                "items": {
+                  "type": "object",
+                  "nullable": true,
+                  "maxProperties": 2,
+                  "additionalProperties": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date",
+                    "enum": [
+                      "one",
+                      "two",
+                      "x",
+                      "toolong",
+                      "BAD"
+                    ],
+                    "minLength": 2,
+                    "maxLength": 6,
+                    "pattern": "^[a-z]+$"
+                  }
+                },
+                "default": [
+                  null,
+                  {
+                    "a/~": "one",
+                    "$ref": null
+                  }
+                ]
+              },
+              "rootTree": {
+                "$ref": "#/components/schemas/BoundedTreeAlias",
+                "default": [
+                  {
+                    "field": "one"
+                  }
+                ]
+              },
+              "borrowedWord": {
+                "$ref": "#/components/schemas/BorrowedWord",
+                "default": "one"
+              },
+              "borrowedTree": {
+                "$ref": "#/components/schemas/BorrowedTree",
+                "default": {
+                  "field": {
+                    "a": "one"
+                  }
+                }
+              }
+            },
+            "required": [
+              "state"
+            ],
+            "default": {
+              "state": "two",
+              "words": [
+                "two"
+              ],
+              "labels": {
+                "outer": "two"
+              },
+              "trees": [
+                {
+                  "inline": "one"
+                }
+              ],
+              "rootTree": [
+                {
+                  "factory": "two"
+                }
+              ],
+              "borrowedWord": "two",
+              "borrowedTree": {
+                "outer": {
+                  "a": "two"
+                }
+              }
+            }
+          },
+          "trees": {
+            "type": "array",
+            "nullable": true,
+            "maxItems": 3,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "maxProperties": 2,
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "enum": [
+                  "one",
+                  "two",
+                  "x",
+                  "toolong",
+                  "BAD"
+                ],
+                "minLength": 2,
+                "maxLength": 6,
+                "pattern": "^[a-z]+$"
+              }
+            },
+            "default": [
+              null,
+              {
+                "a/~": "one",
+                "$ref": null
+              }
+            ]
+          },
+          "matrix": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "enum": [
+                  "one",
+                  "two",
+                  "x",
+                  "toolong",
+                  "BAD"
+                ],
+                "minLength": 2,
+                "maxLength": 6,
+                "pattern": "^[a-z]+$"
+              }
+            },
+            "default": [
+              [
+                "one",
+                null
+              ]
+            ]
+          },
+          "forest": {
+            "additionalProperties": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "enum": [
+                  "one",
+                  "two",
+                  "x",
+                  "toolong",
+                  "BAD"
+                ],
+                "minLength": 2,
+                "maxLength": 6,
+                "pattern": "^[a-z]+$"
+              }
+            },
+            "default": {
+              "$ref": [
+                "two",
+                null
+              ],
+              "nil": null
+            }
+          },
+          "maps": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "enum": [
+                  "one",
+                  "two",
+                  "x",
+                  "toolong",
+                  "BAD"
+                ],
+                "minLength": 2,
+                "maxLength": 6,
+                "pattern": "^[a-z]+$",
+                "x-native-type": "org.example.UnusedProvider"
+              }
+            }
+          },
+          "rootTree": {
+            "$ref": "#/components/schemas/BoundedTreeAlias",
+            "default": [
+              {
+                "own": "one"
+              }
+            ]
+          },
+          "rootTreeUnannotated": {
+            "$ref": "#/components/schemas/BoundedTreeAlias"
+          },
+          "borrowableTree": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "enum": [
+                  "one",
+                  "two",
+                  "x",
+                  "toolong",
+                  "BAD"
+                ],
+                "minLength": 2,
+                "maxLength": 6,
+                "pattern": "^[a-z]+$",
+                "x-native-type": "org.example.UnusedProvider"
+              }
+            },
+            "default": {
+              "source": {
+                "a": "one"
+              }
+            }
+          },
+          "borrowedWord": {
+            "$ref": "#/components/schemas/BorrowedWord",
+            "default": "one"
+          },
+          "borrowedRows": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/MaybeBorrowedWord"
+            },
+            "default": [
+              "two",
+              null
+            ]
+          },
+          "borrowedTree": {
+            "$ref": "#/components/schemas/BorrowedTree",
+            "default": {
+              "field": {
+                "a": "one"
+              }
+            }
+          },
+          "borrowedTreeUnannotated": {
+            "$ref": "#/components/schemas/BorrowedTree"
+          },
+          "rootWord": {
+            "$ref": "#/components/schemas/RootWordAlias",
+            "default": "one"
+          },
+          "rootWords": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/RootWordAlias"
+            },
+            "default": [
+              "two"
+            ]
+          },
+          "rootWordTree": {
+            "$ref": "#/components/schemas/RootWordTree",
+            "default": {
+              "field": [
+                "one"
+              ]
+            }
+          },
+          "rootWordUnannotated": {
+            "$ref": "#/components/schemas/RootWordAlias"
+          },
+          "rootWordTreeAlias": {
+            "$ref": "#/components/schemas/RootWordTreeAlias",
+            "default": {
+              "fieldAlias": [
+                "one"
+              ]
+            }
+          },
+          "rootWordTreeUnannotated": {
+            "$ref": "#/components/schemas/RootWordTreeAlias"
+          },
+          "nativeFactoryUnannotated": {
+            "$ref": "#/components/schemas/FactoryIntRowsAlias"
+          }
         },
-        "required": ["required"]
-      }}}},
-      "responses": {"204": {"description": "Updated"}}
-    }},
-    "/events": {"get": {
-      "operationId": "watch", "tags": ["defaults"],
-      "responses": {"200": {"description": "Events", "content": {"text/event-stream": {"schema": {
-        "type": "object", "properties": {"event": {"const": "holder"}, "data": {"$ref": "#/components/schemas/Holder"}}, "required": ["event", "data"]
-      }}}}}
-    }}
+        "required": [
+          "required"
+        ]
+      },
+      "RequiredMaps": {
+        "type": "object",
+        "properties": {
+          "labels": {
+            "additionalProperties": {
+              "enum": [
+                "yes",
+                "no"
+              ],
+              "minLength": 2,
+              "maxLength": 6
+            },
+            "default": {
+              "a": "yes"
+            }
+          },
+          "nullableLabels": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {
+              "enum": [
+                "yes"
+              ],
+              "minLength": 2
+            },
+            "default": null
+          }
+        },
+        "required": [
+          "labels",
+          "nullableLabels"
+        ]
+      },
+      "RequiredStates": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "one",
+              "two",
+              "x",
+              "toolong",
+              "BAD"
+            ],
+            "minLength": 2,
+            "maxLength": 6,
+            "pattern": "^[a-z]+$",
+            "format": "date-time",
+            "nullable": true,
+            "default": "two"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "BoundedValue": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "format": "date",
+            "enum": [
+              "one",
+              "two",
+              "x",
+              "UPPER",
+              "toolong"
+            ],
+            "minLength": 2,
+            "maxLength": 6,
+            "pattern": "^[a-z]+$",
+            "default": "one"
+          },
+          "words": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "enum": [
+                "one",
+                "two",
+                "x",
+                "UPPER",
+                "toolong"
+              ],
+              "minLength": 2,
+              "maxLength": 6,
+              "pattern": "^[a-z]+$"
+            },
+            "default": [
+              "one"
+            ]
+          },
+          "labels": {
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "one",
+                "two",
+                "x",
+                "UPPER",
+                "toolong"
+              ],
+              "minLength": 2,
+              "maxLength": 6,
+              "pattern": "^[a-z]+$",
+              "x-native-type": "org.example.UnusedProvider"
+            },
+            "default": {
+              "inner": "one"
+            }
+          },
+          "maybe": {
+            "type": "string",
+            "format": "date",
+            "enum": [
+              "one",
+              "two",
+              "x",
+              "UPPER",
+              "toolong"
+            ],
+            "minLength": 2,
+            "maxLength": 6,
+            "pattern": "^[a-z]+$",
+            "nullable": true,
+            "default": null
+          },
+          "trees": {
+            "type": "array",
+            "nullable": true,
+            "maxItems": 3,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "maxProperties": 2,
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "enum": [
+                  "one",
+                  "two",
+                  "x",
+                  "toolong",
+                  "BAD"
+                ],
+                "minLength": 2,
+                "maxLength": 6,
+                "pattern": "^[a-z]+$"
+              }
+            },
+            "default": [
+              null,
+              {
+                "a/~": "one",
+                "$ref": null
+              }
+            ]
+          },
+          "rootTree": {
+            "$ref": "#/components/schemas/BoundedTreeAlias",
+            "default": [
+              {
+                "field": "one"
+              }
+            ]
+          },
+          "borrowedWord": {
+            "$ref": "#/components/schemas/BorrowedWord",
+            "default": "one"
+          },
+          "borrowedTree": {
+            "$ref": "#/components/schemas/BorrowedTree",
+            "default": {
+              "field": {
+                "a": "one"
+              }
+            }
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "default": {
+          "state": "one",
+          "words": [
+            "one"
+          ],
+          "labels": {
+            "root": "one"
+          },
+          "trees": [
+            {
+              "root": "one"
+            }
+          ],
+          "rootTree": [
+            {
+              "factory": "two"
+            }
+          ],
+          "borrowedWord": "two",
+          "borrowedTree": {
+            "outer": {
+              "a": "two"
+            }
+          }
+        }
+      },
+      "BoundedAlias": {
+        "$ref": "#/components/schemas/BoundedValue",
+        "default": {
+          "state": "two",
+          "words": [
+            "two"
+          ],
+          "labels": {
+            "outer": "two"
+          },
+          "trees": [
+            {
+              "alias": "two"
+            }
+          ]
+        }
+      },
+      "MaybeBoundedAlias": {
+        "$ref": "#/components/schemas/BoundedAlias",
+        "nullable": true,
+        "default": null
+      },
+      "RequiredTrees": {
+        "properties": {
+          "value": {
+            "type": "array",
+            "maxItems": 3,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "maxProperties": 2,
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "enum": [
+                  "one",
+                  "two",
+                  "x",
+                  "toolong",
+                  "BAD"
+                ],
+                "minLength": 2,
+                "maxLength": 6,
+                "pattern": "^[a-z]+$"
+              }
+            },
+            "default": [
+              null,
+              {
+                "a/~": "one",
+                "$ref": null
+              }
+            ]
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "BoundedTree": {
+        "type": "array",
+        "nullable": true,
+        "maxItems": 3,
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "nullable": true,
+          "maxProperties": 2,
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "enum": [
+              "one",
+              "two",
+              "x",
+              "toolong",
+              "BAD"
+            ],
+            "minLength": 2,
+            "maxLength": 6,
+            "pattern": "^[a-z]+$"
+          }
+        },
+        "default": [
+          {
+            "root": "one"
+          }
+        ]
+      },
+      "BoundedTreeAlias": {
+        "$ref": "#/components/schemas/BoundedTree",
+        "nullable": false,
+        "default": [
+          {
+            "alias": "two"
+          }
+        ]
+      },
+      "MaybeBoundedTree": {
+        "$ref": "#/components/schemas/BoundedTreeAlias",
+        "nullable": true,
+        "default": null
+      },
+      "RequiredRootTrees": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/BoundedTreeAlias",
+            "default": [
+              {
+                "required": "one"
+              }
+            ]
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "BorrowedTree": {
+        "$ref": "#/components/schemas/Holder/properties/borrowableTree",
+        "default": {
+          "factory": {
+            "a": "two"
+          }
+        }
+      },
+      "BorrowedWord": {
+        "$ref": "#/components/schemas/Holder/properties/state",
+        "default": "two"
+      },
+      "MaybeBorrowedWord": {
+        "$ref": "#/components/schemas/BorrowedWord",
+        "nullable": true,
+        "default": null
+      },
+      "RequiredBorrowed": {
+        "properties": {
+          "word": {
+            "$ref": "#/components/schemas/BorrowedWord",
+            "default": "two"
+          }
+        },
+        "required": [
+          "word"
+        ]
+      },
+      "BorrowedTreeAlias": {
+        "$ref": "#/components/schemas/BorrowedTree",
+        "default": {
+          "alias": {
+            "a": "one"
+          }
+        }
+      },
+      "MaybeBorrowedTree": {
+        "$ref": "#/components/schemas/BorrowedTreeAlias",
+        "nullable": true,
+        "default": null
+      },
+      "RootWord": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date",
+        "enum": [
+          "one",
+          "two",
+          "x",
+          "toolong",
+          "BAD"
+        ],
+        "minLength": 2,
+        "maxLength": 6,
+        "pattern": "^[a-z]+$",
+        "default": "one"
+      },
+      "RootWordAlias": {
+        "$ref": "#/components/schemas/RootWord",
+        "nullable": false,
+        "default": "two"
+      },
+      "MaybeRootWord": {
+        "$ref": "#/components/schemas/RootWordAlias",
+        "nullable": true,
+        "default": null
+      },
+      "NullRootWord": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          null,
+          "one",
+          "x"
+        ],
+        "minLength": 2,
+        "default": null
+      },
+      "RootWordTree": {
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/RootWordAlias"
+          }
+        },
+        "default": {
+          "factory": [
+            "one"
+          ]
+        }
+      },
+      "RequiredRootWord": {
+        "properties": {
+          "word": {
+            "$ref": "#/components/schemas/RootWordAlias",
+            "default": "one"
+          }
+        },
+        "required": [
+          "word"
+        ]
+      },
+      "RootWordTreeAlias": {
+        "$ref": "#/components/schemas/RootWordTree",
+        "default": {
+          "alias": [
+            "two"
+          ]
+        }
+      },
+      "MaybeRootWordTree": {
+        "$ref": "#/components/schemas/RootWordTreeAlias",
+        "nullable": true,
+        "default": null
+      },
+      "RootWordTreeHolder": {
+        "properties": {
+          "tree": {
+            "$ref": "#/components/schemas/RootWordTreeAlias"
+          }
+        },
+        "default": {
+          "tree": {
+            "outer": [
+              "two"
+            ]
+          }
+        }
+      },
+      "FactoryInt": {
+        "type": "integer",
+        "enum": [
+          1,
+          2
+        ],
+        "default": 1,
+        "format": "int32"
+      },
+      "FactoryIntAlias": {
+        "$ref": "#/components/schemas/FactoryInt",
+        "default": 2
+      },
+      "FactoryIntRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FactoryIntAlias"
+        },
+        "default": [
+          1
+        ]
+      },
+      "FactoryIntRowsAlias": {
+        "$ref": "#/components/schemas/FactoryIntRows",
+        "default": [
+          2
+        ]
+      },
+      "MaybeFactoryIntRows": {
+        "$ref": "#/components/schemas/FactoryIntRowsAlias",
+        "nullable": true,
+        "default": null
+      },
+      "FactoryLong": {
+        "type": "integer",
+        "enum": [
+          1,
+          2
+        ],
+        "default": 1,
+        "format": "int64"
+      },
+      "FactoryLongAlias": {
+        "$ref": "#/components/schemas/FactoryLong",
+        "default": 2
+      },
+      "FactoryLongRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FactoryLongAlias"
+        },
+        "default": [
+          1
+        ]
+      },
+      "FactoryLongRowsAlias": {
+        "$ref": "#/components/schemas/FactoryLongRows",
+        "default": [
+          2
+        ]
+      },
+      "MaybeFactoryLongRows": {
+        "$ref": "#/components/schemas/FactoryLongRowsAlias",
+        "nullable": true,
+        "default": null
+      },
+      "FactoryFloat": {
+        "type": "number",
+        "enum": [
+          1,
+          2
+        ],
+        "default": 1,
+        "format": "float"
+      },
+      "FactoryFloatAlias": {
+        "$ref": "#/components/schemas/FactoryFloat",
+        "default": 2
+      },
+      "FactoryFloatRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FactoryFloatAlias"
+        },
+        "default": [
+          1
+        ]
+      },
+      "FactoryFloatRowsAlias": {
+        "$ref": "#/components/schemas/FactoryFloatRows",
+        "default": [
+          2
+        ]
+      },
+      "MaybeFactoryFloatRows": {
+        "$ref": "#/components/schemas/FactoryFloatRowsAlias",
+        "nullable": true,
+        "default": null
+      },
+      "FactoryDouble": {
+        "type": "number",
+        "enum": [
+          1,
+          2
+        ],
+        "default": 1,
+        "format": "double"
+      },
+      "FactoryDoubleAlias": {
+        "$ref": "#/components/schemas/FactoryDouble",
+        "default": 2
+      },
+      "FactoryDoubleRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FactoryDoubleAlias"
+        },
+        "default": [
+          1
+        ]
+      },
+      "FactoryDoubleRowsAlias": {
+        "$ref": "#/components/schemas/FactoryDoubleRows",
+        "default": [
+          2
+        ]
+      },
+      "MaybeFactoryDoubleRows": {
+        "$ref": "#/components/schemas/FactoryDoubleRowsAlias",
+        "nullable": true,
+        "default": null
+      },
+      "FactoryBoolean": {
+        "type": "boolean",
+        "enum": [
+          true,
+          false
+        ],
+        "default": true
+      },
+      "FactoryBooleanAlias": {
+        "$ref": "#/components/schemas/FactoryBoolean",
+        "default": false
+      },
+      "FactoryBooleanRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FactoryBooleanAlias"
+        },
+        "default": [
+          true
+        ]
+      },
+      "FactoryBooleanRowsAlias": {
+        "$ref": "#/components/schemas/FactoryBooleanRows",
+        "default": [
+          false
+        ]
+      },
+      "MaybeFactoryBooleanRows": {
+        "$ref": "#/components/schemas/FactoryBooleanRowsAlias",
+        "nullable": true,
+        "default": null
+      }
+    }
+  },
+  "paths": {
+    "/holder": {
+      "post": {
+        "operationId": "send",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "patch",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "codes": {
+                    "type": "array",
+                    "nullable": true,
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "one",
+                        "two",
+                        "x"
+                      ],
+                      "minLength": 2,
+                      "maxLength": 6,
+                      "pattern": "^[a-z]+$"
+                    },
+                    "default": [
+                      "one"
+                    ]
+                  },
+                  "labels": {
+                    "type": "object",
+                    "nullable": true,
+                    "additionalProperties": {
+                      "enum": [
+                        "yes",
+                        "no",
+                        null
+                      ],
+                      "nullable": true,
+                      "minLength": 2,
+                      "maxLength": 6
+                    },
+                    "default": {
+                      "yes": "yes"
+                    }
+                  },
+                  "required": {
+                    "type": "array",
+                    "nullable": true,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "one",
+                        "two",
+                        "x"
+                      ],
+                      "minLength": 2,
+                      "maxLength": 6
+                    },
+                    "default": [
+                      "one"
+                    ]
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "one",
+                      "two",
+                      "x",
+                      "toolong",
+                      "BAD"
+                    ],
+                    "minLength": 2,
+                    "maxLength": 6,
+                    "pattern": "^[a-z]+$",
+                    "format": "byte",
+                    "nullable": true,
+                    "default": "one"
+                  },
+                  "bounded": {
+                    "$ref": "#/components/schemas/BoundedAlias",
+                    "nullable": true,
+                    "default": {
+                      "state": "one"
+                    }
+                  },
+                  "trees": {
+                    "type": "array",
+                    "nullable": true,
+                    "maxItems": 3,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "object",
+                      "nullable": true,
+                      "maxProperties": 2,
+                      "additionalProperties": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "format": "date",
+                        "enum": [
+                          "one",
+                          "two",
+                          "x",
+                          "toolong",
+                          "BAD"
+                        ],
+                        "minLength": 2,
+                        "maxLength": 6,
+                        "pattern": "^[a-z]+$"
+                      }
+                    },
+                    "default": [
+                      null,
+                      {
+                        "a/~": "one",
+                        "$ref": null
+                      }
+                    ]
+                  },
+                  "rootTree": {
+                    "$ref": "#/components/schemas/BoundedTreeAlias",
+                    "nullable": true,
+                    "default": [
+                      {
+                        "patch": "one"
+                      }
+                    ]
+                  },
+                  "borrowedWord": {
+                    "$ref": "#/components/schemas/BorrowedWord",
+                    "nullable": true,
+                    "default": "one"
+                  },
+                  "borrowedTree": {
+                    "$ref": "#/components/schemas/BorrowedTree",
+                    "nullable": true,
+                    "default": {
+                      "patch": {
+                        "a": "one"
+                      }
+                    }
+                  },
+                  "rootWord": {
+                    "$ref": "#/components/schemas/RootWordAlias",
+                    "default": "one",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "watch",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "const": "holder"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/root-tree": {
+      "post": {
+        "operationId": "sendTree",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BoundedTreeAlias"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tree",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoundedTreeAlias"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tree-events": {
+      "get": {
+        "operationId": "watchTree",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Tree events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "tree"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BoundedTreeAlias"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/borrowed-word": {
+      "post": {
+        "operationId": "sendBorrowedWord",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BorrowedWord"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Value",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BorrowedWord"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/borrowed-tree": {
+      "post": {
+        "operationId": "sendBorrowedTree",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BorrowedTree"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Value",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BorrowedTree"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/borrowed-events": {
+      "get": {
+        "operationId": "watchBorrowed",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "borrowed"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/BorrowedTree"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/root-word": {
+      "post": {
+        "operationId": "sendRootWord",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RootWordAlias"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RootWordAlias"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/root-word-tree": {
+      "post": {
+        "operationId": "sendRootWordTree",
+        "tags": [
+          "defaults"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RootWordTree"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RootWordTree"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/root-word-events": {
+      "get": {
+        "operationId": "watchRootWord",
+        "tags": [
+          "defaults"
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "properties": {
+                    "event": {
+                      "const": "word"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/RootWordAlias"
+                    }
+                  },
+                  "required": [
+                    "event",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

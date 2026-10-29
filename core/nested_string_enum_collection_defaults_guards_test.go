@@ -31,8 +31,16 @@ func TestNestedStringEnumCollectionDefaultsOriginalGrammarMembershipAndNoDrop(t 
 		for _, checked := range []bool{false, true} {
 			r := request(fieldDoc(tc.field), "Dto")
 			r.Options.Validation = checked
+			if checked && (tc.field == `{"type":"array","items":{"type":"array","items":{"enum":["one"],"minLength":1}},"default":[]}` || tc.field == `{"type":"array","items":{"type":"array","items":{"enum":["one"],"pattern":"^o"}},"default":[]}`) {
+				nestedStringEnumBoundsGraduation(t, r.Document)
+				continue
+			}
 			if tc.field == `{"additionalProperties":{"additionalProperties":{"enum":[null,"one"]}},"default":{}}` {
 				implicitStringEnumGraduation(t, fieldDoc(tc.field), checked)
+				continue
+			}
+			if tc.code == "E_SCHEMA_UNSUPPORTED" && strings.HasSuffix(tc.tail, "/enum") && metadataStringEnumCollectionFixture(tc.field) {
+				metadataStringEnumGraduation(t, r)
 				continue
 			}
 			got, err := core.GenerateWithDiagnostics(r)

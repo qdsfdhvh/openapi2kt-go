@@ -104,6 +104,10 @@ func TestTemporalUniqueKeepsOtherSourceRolesExcluded(t *testing.T) {
 	for _, leaf := range []string{`{"type":"string","x-native-type":"date"}`, `{"type":"string","x-native-type":"kotlin.time.Instant"}`, `{"type":"string","format":"date","enum":["2024-02-29"]}`, `{"type":"string","format":"date","const":"2024-02-29"}`, `{"type":"string","format":"byte"}`} {
 		rq := request(fieldDoc(`{"type":"array","uniqueItems":true,"items":`+leaf+`}`), "Dto")
 		rq.Options.Validation = true
+		if metadataStringEnumFixture(leaf) {
+			metadataStringEnumGraduation(t, rq)
+			continue
+		}
 		if r, err := core.GenerateWithDiagnostics(rq); err == nil || len(r.Artifacts.Files) != 0 {
 			t.Fatal("type spelling acquired temporal equality authority", leaf, r, err)
 		}

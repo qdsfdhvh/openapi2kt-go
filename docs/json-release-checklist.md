@@ -4,7 +4,7 @@
 
 交付一个离线、确定、失败保旧输出的 **OpenAPI JSON 3.0/3.1 → kotlinx.serialization 模型 + 有界 Ktor HTTP/SSE 客户端**生成器。规格由外部工具提供本地文件或 stdin；消费工程显式调用本地 CLI，不需要生成器 Gradle 插件。
 
-**这是收敛后的候选发布清单，不是“完整首版已完成”的报告。** `0.2.0-alpha.1` 有界候选已完成 R02–R05 的原生、完整 JVM profile、安全与固定工具链验收；R06–R08 发布门槛仍未全部关闭。既有 alpha 资产不包含近期全部能力。整理此表不批准版本、平台支持、发布操作，也不自动把广义规划项标为完成。
+**这是收敛后的候选发布清单，不是“完整首版已完成”的报告。** `0.2.0-alpha.1` 有界候选已完成 R01–R08 的范围、原生/JVM、安全、工具链、包安装、审查与发布门槛，并已发布。证据只绑定该 tag；既有 alpha 资产不包含近期全部能力。后续源码须重新绑定候选并验收，不自动扩大平台范围或把广义规划项标为完成。
 
 当前候选固定为现有合同的**有界 JSON profile**，按下节边界统一验收。原 [完整首版 DoD](development-plan.md#84-首个完整版本-definition-of-done)继续作为后续路线图；本候选不以补齐全部引用图为退出条件，也不替代 `1.0.0` 的 [版本策略](versioning.md)要求。
 
@@ -35,7 +35,7 @@ Q01–Q05 采用对应现有合同的上下文、Unknown、命名/锁、wire 与
 - **候选通过**：同一冻结源码、输入、CLI、消费者、工具链和选项有成功运行证据；缓存、失败尝试及未执行项须明确。
 - **待关闭**：缺实现、证据或范围决定。必须修复，或经明确批准后写入该候选的限制；不能删除负例、放宽检查或提高资源上限来“完成”。
 
-下方 R01–R05 已关闭；结果限于本候选和明确执行的 profile。完整本地 `all` 门禁已通过，覆盖 unit、fresh models、HTTP/SSE 和当前全部 83 个 feature routes。使用既有 Go 缓存和已准备的离线依赖，Kotlin 消费者从 fresh 输出编译运行；相关 source/input/consumer 内容校验不变，失败尝试与详细绑定记录保留在本地验收材料。[PR #6 CI](https://github.com/qdsfdhvh/openapi2kt-go/pull/6/checks)另验证三宿主原生 CLI 和包安装。发布门槛仍需单独复核。功能合同定义支持边界，本清单不扩张它们。
+下方 R01–R08 已关闭；结果限于本候选和明确执行的 profile。该候选的完整本地 `all` 门禁已通过，覆盖 unit、fresh models、HTTP/SSE 和冻结时的全部 83 个 feature routes；当前源码的入口以 `--list` 为准。使用既有 Go 缓存和已准备的离线依赖，Kotlin 消费者从 fresh 输出编译运行；相关 source/input/consumer 内容校验不变，失败尝试与详细绑定记录保留在本地验收材料。[PR #6 CI](https://github.com/qdsfdhvh/openapi2kt-go/pull/6/checks)另验证三宿主原生 CLI 和包安装。后续候选的发布门槛须重新复核。功能合同定义支持边界，本清单不扩张它们。
 
 ## 1. 产品门槛与证据入口
 
@@ -66,7 +66,7 @@ J02/J03/J06 的所有现有受支持 profile 均须保留；不能为了缩表�
 | P1 优化/锁生命周期 | 泛化 union/hierarchy/递归优化、partial/disjoint root move、一般partial/multiowner锁迁移仍未完整；详见 [D08–D09](remaining-work.md#2-尚未完成的功能覆盖) | exact/portable regex/literal suffix exclusions、CLI/config 锁持久化、显式 disable/reset 与 [named-owner rename](output-owner-rename.md) 及[完整 root move](output-root-move.md)与[完整同root v3→v4 adoption](ownership-migration.md#locked-owner-adoption) 已有合同，须纳入现有门禁。其他生命周期需独立迁移合同；不得删除或修改 manifest/锁绕过错误 |
 | P1 资源 | 独立宽度/深度探针不证明宽×深×选项×平台笛卡尔上界；未证明编译资源或性能收益 | 公布已执行的资源 profile 与硬限制；保留失败和 warnings，固定 compiler/heap/caps。不以分析通过承诺所有极端组合可编译；性能声明另按 [性能契约](validation-and-performance.md)测量 |
 | P1 平台 | 完整 feature 证据以 JVM 为主；[catalog 平台探针](../samples/kotlin-platform-smoke/README.md)已有 data/plain 的 JVM/JS/macOS Native 运行和 metadata/Android AAR 编译结果，但 Android 真机、跨平台完整 feature、最低依赖与其他 CLI 宿主未全部执行 | 先决定实际发布 targets；对要宣称的逐一跑。未执行者明确未验证，不借旧 alpha 的 CI 或六目标 cross-build 证明当前候选 |
-| P1 发布 | 源码已标识 `0.2.0-alpha.1`，原生包安装和候选模式扫描已有证据；最终发布审查、tag/包绑定和授权仍待关闭，旧 alpha 不自动更新 | 完成下节 R01–R08。内置下载移除是 CLI/config breaking change，需测试、migration 和正确版本分类，不覆盖旧资产 |
+| P1 发布 | `v0.2.0-alpha.1` 已发布，其审查、tag/包绑定和授权见下节 R01–R08；后续源码不自动包含在该 tag 中 | 后续候选须重新完成 R01–R08、版本分类、migration 与包绑定，不覆盖旧资产。内置下载移除的 CLI/config breaking change 保留既有迁移说明 |
 
 ## 3. 明确外置或不承诺的能力
 

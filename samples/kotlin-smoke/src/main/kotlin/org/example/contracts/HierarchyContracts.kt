@@ -1,8 +1,45 @@
 package org.example.contracts
 
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.*
-import org.example.hierarchy_unions.models.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
+import org.example.hierarchy_unions.models.AlphaNode
+import org.example.hierarchy_unions.models.BetaNode
+import org.example.hierarchy_unions.models.Channel
+import org.example.hierarchy_unions.models.ChannelPhase
+import org.example.hierarchy_unions.models.DeepFirst
+import org.example.hierarchy_unions.models.DeepInner
+import org.example.hierarchy_unions.models.DeepInnerPhase
+import org.example.hierarchy_unions.models.DeepMiddleStep
+import org.example.hierarchy_unions.models.DeepRoot
+import org.example.hierarchy_unions.models.DeepRootKind
+import org.example.hierarchy_unions.models.Flat
+import org.example.hierarchy_unions.models.FlatTag
+import org.example.hierarchy_unions.models.Flux
+import org.example.hierarchy_unions.models.Holder
+import org.example.hierarchy_unions.models.InferredGroupZone
+import org.example.hierarchy_unions.models.InferredRoot
+import org.example.hierarchy_unions.models.InferredRootFamily
+import org.example.hierarchy_unions.models.PinLeaf
+import org.example.hierarchy_unions.models.PlainGroup
+import org.example.hierarchy_unions.models.PlainLeft
+import org.example.hierarchy_unions.models.PlainRoot
+import org.example.hierarchy_unions.models.Quiet
+import org.example.hierarchy_unions.models.RangeLeaf
+import org.example.hierarchy_unions.models.Signal
+import org.example.hierarchy_unions.models.SignalFamily
+import org.example.hierarchy_unions.models.Status
+import org.example.hierarchy_unions.models.UnknownChannel
+import org.example.hierarchy_unions.models.UnknownDeepInner
+import org.example.hierarchy_unions.models.UnknownFlat
+import org.example.hierarchy_unions.models.UnknownInferredGroup
+import org.example.hierarchy_unions.models.UnknownSignal
 import org.example.hierarchy_unions_suffix.models.SignalDto
 import org.example.hierarchy_unions_suffix.models.FlatDto
 
@@ -56,11 +93,15 @@ fun main() {
         check(plainWire.getValue("type").jsonPrimitive.content == "plainleft")
         check(json.decodeFromJsonElement(PlainRoot.serializer(), plainWire) == plain)
         check(runCatching { json.decodeFromString(PlainRoot.serializer(), "{\"family\":\"plain\",\"type\":\"future\"}") }.exceptionOrNull() is SerializationException)
-        // The root content encoder delegates directly to the leaf serializer.
-        // A default-polymorphic intermediate needs its class discriminator on decode.
+        // The root must preserve the closed intermediate's subtype discriminator.
         val rootPlainWire = json.encodeToJsonElement(PlainRoot.serializer(), plain).jsonObject
-        check("type" !in rootPlainWire)
-        check(runCatching { json.decodeFromJsonElement(PlainRoot.serializer(), rootPlainWire) }.exceptionOrNull() is SerializationException)
+        check(rootPlainWire == plainWire)
+        check(json.decodeFromJsonElement(PlainRoot.serializer(), rootPlainWire) == plain)
+        val customJson = Json(json) { classDiscriminator = "_class" }
+        val customWire = customJson.encodeToJsonElement(PlainRoot.serializer(), plain).jsonObject
+        check(customWire.getValue("_class").jsonPrimitive.content == "plainleft" && "type" !in customWire)
+        check(customJson.decodeFromJsonElement(PlainRoot.serializer(), customWire) == plain)
+        check(customJson.decodeFromJsonElement(PlainGroup.serializer(), customWire) == plain)
         val deep = json.decodeFromString(DeepRoot.serializer(), "{\"kind\":\"deep\",\"step\":\"nested\",\"phase\":\"first\",\"extra\":true}")
         check(deep === DeepFirst)
         check(json.encodeToJsonElement(DeepRoot.serializer(), deep) == buildJsonObject { put("kind", "deep"); put("step", "nested"); put("phase", "first") })

@@ -201,6 +201,10 @@ func TestNestedNativeEnumCollectionDefaultsExcludedRolesAndNoDrop(t *testing.T) 
 		for _, checked := range []bool{false, true} {
 			r := request(fieldDoc(nestedDefaultChain(2, tc.leaf, `[]`)), "Dto")
 			r.Options.Validation = checked
+			if checked && (tc.leaf == `{"enum":["one"],"minLength":1}` || tc.leaf == `{"enum":["one"],"pattern":"^o"}`) {
+				nestedStringEnumBoundsGraduation(t, r.Document)
+				continue
+			}
 			nestedNativeEnumDefaultFailure(t, r, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Record/properties/value/items/items"+tc.tail)
 		}
 	}
