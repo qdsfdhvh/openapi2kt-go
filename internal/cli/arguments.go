@@ -32,7 +32,8 @@ type arguments struct {
 	reassignLockedOwners                                                        bool
 	projectNameLock                                                             bool // internal explicit split-adoption planning only
 	nameLockAction                                                              output.NameLockAction
-	moveOutputFrom                                                              string            // invocation-only complete root move
+	moveOutputFrom                                                              string            // invocation-only root move
+	moveOwners                                                                  []string          // invocation-only named owner selection
 	ownerRenames                                                                map[string]string // new -> old; invocation-only
 	explicit                                                                    map[string]bool
 }
@@ -94,9 +95,9 @@ func parse(args []string) (arguments, *display, bool) {
 			return result, &display{help(result.command)}, true
 		}
 		key, value, inline := strings.Cut(arg, "=")
-		allowed := key == "--config" || key == "--spec" || key == "--input" || key == "--input-format" || key == "--diagnostic-format" || key == "--package-name" || key == "--runtime-package" || key == "--model-style" || key == "--deduplicate-models" || key == "--merge-identical-models" || key == "--exclude-merge-model" || key == "--exclude-merge-model-pattern" || key == "--exclude-merge-model-suffix" || key == "--hoist-shared-shapes" || key == "--qualify-hoisted-names" || key == "--lock-hoisted-names" || key == "--name-lock-action" || key == "--move-output-from" || key == "--rename-owner" || key == "--adopt-locked-owner" || key == "--adopt-locked-owner-from" || key == "--retain-locked-owner" || key == "--reassign-locked-owners" || key == "--output" || key == "--model-name-suffix" || key == "--api-client-name" || key == "--exclude-api" || key == "--validation" || key == "--deny-warnings" || key == "--allow-warning" || key == "--metrics"
+		allowed := key == "--config" || key == "--spec" || key == "--input" || key == "--input-format" || key == "--diagnostic-format" || key == "--package-name" || key == "--runtime-package" || key == "--model-style" || key == "--deduplicate-models" || key == "--merge-identical-models" || key == "--exclude-merge-model" || key == "--exclude-merge-model-pattern" || key == "--exclude-merge-model-suffix" || key == "--hoist-shared-shapes" || key == "--qualify-hoisted-names" || key == "--lock-hoisted-names" || key == "--name-lock-action" || key == "--move-output-from" || key == "--move-owner" || key == "--rename-owner" || key == "--adopt-locked-owner" || key == "--adopt-locked-owner-from" || key == "--retain-locked-owner" || key == "--reassign-locked-owners" || key == "--output" || key == "--model-name-suffix" || key == "--api-client-name" || key == "--exclude-api" || key == "--validation" || key == "--deny-warnings" || key == "--allow-warning" || key == "--metrics"
 		allowed = allowed || result.command == "generate" && (key == "--output" || key == "--model-name-suffix" || key == "--check" || key == "--reconcile" || key == "--adopt-legacy")
-		if !allowed || seen[key] && key != "--exclude-api" && key != "--exclude-merge-model" && key != "--exclude-merge-model-pattern" && key != "--exclude-merge-model-suffix" && key != "--allow-warning" && key != "--rename-owner" {
+		if !allowed || seen[key] && key != "--exclude-api" && key != "--exclude-merge-model" && key != "--exclude-merge-model-pattern" && key != "--exclude-merge-model-suffix" && key != "--allow-warning" && key != "--rename-owner" && key != "--move-owner" {
 			return result, nil, false
 		}
 		seen[key] = true
@@ -157,6 +158,16 @@ func parse(args []string) (arguments, *display, bool) {
 			result.retainLockedOwner = value
 		case "--adopt-locked-owner-from":
 			result.adoptLockedOwnerFrom = value
+		case "--move-owner":
+			if !ownerRenameIdentifier(value) {
+				return result, nil, false
+			}
+			for _, owner := range result.moveOwners {
+				if owner == value {
+					return result, nil, false
+				}
+			}
+			result.moveOwners = append(result.moveOwners, value)
 		case "--move-output-from":
 			result.moveOutputFrom = value
 		case "--rename-owner":
@@ -242,6 +253,9 @@ func parse(args []string) (arguments, *display, bool) {
 	if result.adoptLockedOwner && (!seen["--config"] || result.adoptLegacy || result.reconcile || result.nameLockAction != "" || len(result.ownerRenames) != 0 || seen["--move-output-from"]) {
 		return result, nil, false
 	}
+	if seen["--move-owner"] && (!seen["--config"] || !seen["--move-output-from"] || seen["--spec"]) {
+		return result, nil, false
+	}
 	if seen["--move-output-from"] && (result.moveOutputFrom == "" || !seen["--output"] || result.output == "" || seen["--spec"] && !seen["--config"] || result.adoptLegacy || result.reconcile || result.nameLockAction != "" || len(result.ownerRenames) != 0 || result.adoptLockedOwner) {
 		return result, nil, false
 	}
@@ -320,6 +334,7 @@ Options:
 	text += "  --retain-locked-owner <NAME>       Adopt subsets while retaining full original locked ownership under NAME\n"
 	text += "  --reassign-locked-owners           Reassign complete locked v4 ownership with exact Kotlin/allocation preservation\n"
 	text += "  --move-output-from <SOURCE>        Move v1-v4 output to explicit --output; config --spec selects one owner\n"
+	text += "  --move-owner <NAME>                Select a source owner for config root move; repeatable, excludes --spec\n"
 	text += "  --rename-owner <OLD:NEW>             Exact v2/v4 config owner rename; repeat for every selected spec\n"
 	text += "  --merge-identical-models[=true|false] Merge eligible resolved DTO/enum roots; default false\n"
 	text += "  --exclude-merge-model <FQ_NAME>       Exact root classifier, neither absorbs nor is absorbed; repeatable\n"

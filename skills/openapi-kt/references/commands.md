@@ -384,6 +384,7 @@ Output arguments containing `..` are rejected. Packages must use valid ASCII Kot
 | `--retain-locked-owner NAME` | both, with --adopt-locked-owner/full candidate config | Retain complete original v3/v4 locked ownership under NAME while adopting exact subsets; no --spec/donor/action combinations |
 | `--reassign-locked-owners` | both, full config only | Atomic same-root fully locked v4 desired-owner redistribution; preserve exact Kotlin/historical allocation union; no spec/adoption/reconcile/rename/move/reset |
 | `--move-output-from SOURCE` | both, with explicit `--output TARGET` | One-shot complete same-version v1–v4 root move; direct or full original same-root config inventory, exact code/lock semantics, optional config --spec selection and compatible named owned target, no adoption/rename/action |
+| `--move-owner NAME` | both, with config and explicit root move | Repeat for each selected source owner; excludes `--spec`, preserves retained peers and validates the complete source inventory |
 | `--check` | generate | Read-only comparison |
 | `--validation` | both | Bare opt-in DTO/ref/element/container bounds flag; default off. Use consistently in generate/validate/check; no valued or repeated form |
 
@@ -426,9 +427,15 @@ Use the explicit binary path in subsequent commands. Consumers need no Go runtim
 
 ### Selected-owner root move
 
-For existing v2/v4 named output, add `--spec NAME` to the explicit root-move command. Supply the complete original single-root config and unchanged inputs/options: this migration reads every original input to bind exact Kotlin and lock semantics. The selected owner moves to an empty or [compatible owned target](#owned-target-root-merge); peers and their shared payloads stay at source. Review `moved_owners`, `retained_owners`, selected file/lock hashes and the original full-source manifest hash. The split rewrites manifest membership at the same version, preserving Kotlin/raw-lock bytes, modes and mtimes. A source or retained-peer change rejects under the same whole-source CAS/locks/rollback contract.
+For existing v2/v4 named output, add `--spec NAME` to move one owner, or repeat `--move-owner NAME` to move several in the same transaction. The selectors cannot be combined. Supply the complete original single-root config and unchanged inputs/options: this migration reads every original input to bind exact Kotlin and lock semantics. Selected owners move to an empty or [compatible owned target](#owned-target-root-merge); peers and their shared payloads stay at source. Review `moved_owners`, `retained_owners`, selected file/lock hashes and the original full-source manifest hash. The split rewrites manifest membership at the same version, preserving Kotlin/raw-lock bytes, modes and mtimes. A source or retained-peer change rejects under the same whole-source CAS/locks/rollback contract.
 
-After success, change only that spec's output_dir, retain peers at source, drop the action and run ordinary full config `--check`. Include shared Kotlin declarations once in a compilation. Explicit runtime_package owners must remain in one root; use a complete-root move for that inventory. Arbitrary owner subsets, incomplete source inventories, conflicting target payloads and adoption retain their separate restrictions.
+```bash
+openapi-kt generate --config ./openapi-kt.toml \
+  --move-output-from generated-old --output generated-new \
+  --move-owner a --move-owner b --check
+```
+
+After success, change only the moved specs' output_dir, retain peers at source, drop the action and run ordinary full config `--check`. Include shared Kotlin declarations once in a compilation. Explicit runtime_package owners must remain in one root; use a complete-root move for that inventory. Incomplete source inventories, conflicting target payloads and adoption retain their separate restrictions.
 
 ### Configured warning policy
 
@@ -498,7 +505,7 @@ For an existing locked v4 inventory, select the new spec and add `--adopt-locked
 
 ### Owned-target root merge
 
-The existing explicit `--move-output-from SOURCE --output TARGET` accepts same-version v2/v4 named targets for full or single-source-owner selection. Moved owner names must be disjoint from target. An exact existing target-owned Kotlin path may be shared only when original bytes match; keep target mode/mtime and list it in shared_target_files. Different bytes, case-only paths and unowned destinations still refuse. Complete original source generation remains required; all existing target Kotlin/raw locks/attributes are captured before source inputs and rechecked in both readonly and locked planning. Original target owners may remain configured at exactly TARGET without their inputs being read; other declared peers retain disjoint/stable binding requirements.
+The existing explicit `--move-output-from SOURCE --output TARGET` accepts same-version v2/v4 named targets for full or selected-source-owner moves, including a set selected by repeatable `--move-owner`. Moved owner names must be disjoint from target. An exact existing target-owned Kotlin path may be shared only when original bytes match; keep target mode/mtime and list it in shared_target_files. Different bytes, case-only paths and unowned destinations still refuse. Complete original source generation remains required; all existing target Kotlin/raw locks/attributes are captured before source inputs and rechecked in both readonly and locked planning. Original target owners may remain configured at exactly TARGET without their inputs being read; other declared peers retain disjoint/stable binding requirements.
 
 Review original source manifest and moved payload hashes plus `target_manifest_sha256` and sorted `target_owners`. The same-version union rewrites membership manifests only, preserving new payload source bytes/modes/mtimes and every existing target peer/raw lock, while shared existing target Kotlin retains target attributes. Combined target metadata must still fit original 256-lock/16MiB aggregate, per-lock and manifest limits. Both roots stage under sorted locks before apply, each manifest is last, and ordinary failures roll both back; recovery evidence and crash limits remain. Update moved output_dir values, drop the one-shot flag and run ordinary full config --check with normal inputs. Conflicting target payloads still refuse; owner redistribution/removal, version conversion and adoption remain separate.
 

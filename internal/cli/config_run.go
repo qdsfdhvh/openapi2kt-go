@@ -254,8 +254,13 @@ func executeConfig(args arguments, timer *metricCollector) (int, report) {
 		active[a.output] = append(active[a.output], s.Name)
 		settings[s.Name] = a
 	}
-	if err := validateRuntimeRoots(settings); err != nil {
-		return 1, failed("E_CONFIG_RUNTIME_ROOTS", "An explicit shared runtime package requires one declared output root across its configured specs.")
+	// A root move's output override is a destination, not the final placement of
+	// retained source owners or disjoint peers. Validate that placement using
+	// the observed source inventory in executeConfigRootMove instead.
+	if args.moveOutputFrom == "" {
+		if err := validateRuntimeRoots(settings); err != nil {
+			return 1, failed("E_CONFIG_RUNTIME_ROOTS", "An explicit shared runtime package requires one declared output root across its configured specs.")
+		}
 	}
 	if len(cfg.Specs) == 0 {
 		if args.reassignLockedOwners {
