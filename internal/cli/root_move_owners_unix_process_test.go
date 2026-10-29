@@ -19,100 +19,122 @@ func TestRootMoveOwnersNativeUnixFIFOExactManifestAndPeerStateCAS(t *testing.T) 
 	for _, mode := range []string{"apply", "check", "validate"} {
 		for _, mutation := range []string{"manifest", "peer-state", "code"} {
 			t.Run(mode+"/"+mutation, func(t *testing.T) {
-				base := t.TempDir()
-				names := []string{"alpha", "beta"}
-				lifecycleConfigInputs(t, base, names)
-				cfg := lifecycleConfig(t, base, names, true, false, false)
-				args := []string{"generate", "--config", cfg, "--diagnostic-format=json"}
-				result(t, invoke(t, base, args...), 0)
-				src, dst := filepath.Join(base, "generated"), filepath.Join(base, "new")
-				original := read(t, filepath.Join(base, "alpha.json"))
-				fifo := filepath.Join(base, "alpha.json")
-				if e := os.Remove(fifo); e != nil {
-					t.Fatal(e)
-				}
-				if e := syscall.Mkfifo(fifo, 0600); e != nil {
-					t.Fatal(e)
-				}
-				run := append(append([]string(nil), args...), "--output", dst, "--move-output-from", src, "--spec=alpha")
-				if mode == "check" {
-					run = append(run, "--check")
-				}
-				if mode == "validate" {
-					run = lifecycleValidate(run)
-				}
-				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-				defer cancel()
-				cmd := exec.CommandContext(ctx, binary, run...)
-				var stdout, stderr bytes.Buffer
-				cmd.Stdout = &stdout
-				cmd.Stderr = &stderr
-				if e := cmd.Start(); e != nil {
-					t.Fatal(e)
-				}
-				defer cmd.Process.Kill()
-				opened := make(chan *os.File, 1)
-				errs := make(chan error, 1)
-				go func() {
-					f, e := os.OpenFile(fifo, os.O_WRONLY, 0600)
-					if e != nil {
-						errs <- e
-					} else {
-						opened <- f
-					}
-				}()
-				var writer *os.File
-				select {
-				case writer = <-opened:
-				case e := <-errs:
-					t.Fatal(e)
-				case <-ctx.Done():
-					t.Fatal("FIFO state-read barrier timed out")
-				}
-				defer writer.Close()
-				code := "E_OUTPUT_ROOT_MOVE_STALE"
-				switch mutation {
-				case "manifest":
-					path := filepath.Join(src, ".openapi-kt-manifest.json")
-					put(t, path, append(read(t, path), ' '))
-				case "peer-state":
-					path := filepath.Join(src, namedLockPath("beta"))
-					put(t, path, append(read(t, path), ' '))
-					code = "E_NAME_LOCK_MODIFIED"
-				case "code":
-					before := snapshot(t, src)
-					for path := range before {
-						if filepath.Ext(path) == ".kt" && strings.Contains(path, "lockbeta") {
-							put(t, filepath.Join(src, path), []byte("edited concurrent code"))
-							break
-						}
-					}
-					code = "E_OUTPUT_MODIFIED"
-				}
-				before := snapshot(t, src)
-				if _, e := writer.Write(original); e != nil {
-					t.Fatal(e)
-				}
-				if e := writer.Close(); e != nil {
-					t.Fatal(e)
-				}
-				e := cmd.Wait()
-				exit := 0
-				if e != nil {
-					if status, ok := e.(*exec.ExitError); ok {
-						exit = status.ExitCode()
-					} else {
-						t.Fatal(e)
-					}
-				}
-				fails(t, invocation{Code: exit, Stdout: stdout.Bytes(), Stderr: stderr.Bytes()}, 4, code)
-				if !reflect.DeepEqual(before, snapshot(t, src)) {
-					t.Fatal("CAS destroyed intervening source")
-				}
-				if _, e := os.Stat(dst); !os.IsNotExist(e) {
-					t.Fatal("CAS rejection created target")
-				}
+				rootMoveOwnersNativeFIFOCAS(t, mode, mutation, false)
 			})
 		}
+	}
+}
+
+func TestRootMoveMultipleOwnersNativeUnixFIFOCAS(t *testing.T) {
+	for _, mode := range []string{"apply", "check", "validate"} {
+		t.Run(mode, func(t *testing.T) {
+			rootMoveOwnersNativeFIFOCAS(t, mode, "manifest", true)
+		})
+	}
+}
+
+func rootMoveOwnersNativeFIFOCAS(t *testing.T, mode, mutation string, multiple bool) {
+	base := t.TempDir()
+	names := []string{"alpha", "beta"}
+	peer := "beta"
+	if multiple {
+		names = append(names, "gamma")
+		peer = "gamma"
+	}
+	lifecycleConfigInputs(t, base, names)
+	cfg := lifecycleConfig(t, base, names, true, false, false)
+	args := []string{"generate", "--config", cfg, "--diagnostic-format=json"}
+	result(t, invoke(t, base, args...), 0)
+	src, dst := filepath.Join(base, "generated"), filepath.Join(base, "new")
+	original := read(t, filepath.Join(base, "alpha.json"))
+	fifo := filepath.Join(base, "alpha.json")
+	if e := os.Remove(fifo); e != nil {
+		t.Fatal(e)
+	}
+	if e := syscall.Mkfifo(fifo, 0600); e != nil {
+		t.Fatal(e)
+	}
+	run := append(append([]string(nil), args...), "--output", dst, "--move-output-from", src)
+	if multiple {
+		run = append(run, "--move-owner=beta", "--move-owner=alpha")
+	} else {
+		run = append(run, "--spec=alpha")
+	}
+	if mode == "check" {
+		run = append(run, "--check")
+	}
+	if mode == "validate" {
+		run = lifecycleValidate(run)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, binary, run...)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if e := cmd.Start(); e != nil {
+		t.Fatal(e)
+	}
+	defer cmd.Process.Kill()
+	opened := make(chan *os.File, 1)
+	errs := make(chan error, 1)
+	go func() {
+		f, e := os.OpenFile(fifo, os.O_WRONLY, 0600)
+		if e != nil {
+			errs <- e
+		} else {
+			opened <- f
+		}
+	}()
+	var writer *os.File
+	select {
+	case writer = <-opened:
+	case e := <-errs:
+		t.Fatal(e)
+	case <-ctx.Done():
+		t.Fatal("FIFO state-read barrier timed out")
+	}
+	defer writer.Close()
+	code := "E_OUTPUT_ROOT_MOVE_STALE"
+	switch mutation {
+	case "manifest":
+		path := filepath.Join(src, ".openapi-kt-manifest.json")
+		put(t, path, append(read(t, path), ' '))
+	case "peer-state":
+		path := filepath.Join(src, namedLockPath(peer))
+		put(t, path, append(read(t, path), ' '))
+		code = "E_NAME_LOCK_MODIFIED"
+	case "code":
+		before := snapshot(t, src)
+		for path := range before {
+			if filepath.Ext(path) == ".kt" && strings.Contains(path, "lock"+peer) {
+				put(t, filepath.Join(src, path), []byte("edited concurrent code"))
+				break
+			}
+		}
+		code = "E_OUTPUT_MODIFIED"
+	}
+	before := snapshot(t, src)
+	if _, e := writer.Write(original); e != nil {
+		t.Fatal(e)
+	}
+	if e := writer.Close(); e != nil {
+		t.Fatal(e)
+	}
+	e := cmd.Wait()
+	exit := 0
+	if e != nil {
+		if status, ok := e.(*exec.ExitError); ok {
+			exit = status.ExitCode()
+		} else {
+			t.Fatal(e)
+		}
+	}
+	fails(t, invocation{Code: exit, Stdout: stdout.Bytes(), Stderr: stderr.Bytes()}, 4, code)
+	if !reflect.DeepEqual(before, snapshot(t, src)) {
+		t.Fatal("CAS destroyed intervening source")
+	}
+	if _, e := os.Stat(dst); !os.IsNotExist(e) {
+		t.Fatal("CAS rejection created target")
 	}
 }

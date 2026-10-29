@@ -1,5 +1,12 @@
 # JSON 首期兼容矩阵
 
+[Multiple-owner output-root moves](output-root-move.md#selected-owner-moves)
+extend D09/O03/T01/T02 with repeatable `--move-owner` selection for a single
+normal-failure transaction. The original source group remains the generation
+and CAS authority; retained owners and shared payloads stay at source. Kotlin
+and raw locks preserve bytes and attributes, with no persisted-format change.
+Broader owner migration and platform acceptance remain open.
+
 [Component-root dictionary `allOf` wrappers](dictionary-allof-wrappers.md)
 extend D01/D02/D03/F04/F07/M03/M04/M07 to a single local reference through admitted
 named dictionary aliases, with neutral empty or documentation-only siblings.

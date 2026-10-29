@@ -1,5 +1,10 @@
 # 实现状态与剩余工作
 
+[多 owner 输出迁移](output-root-move.md#selected-owner-moves)支持用可重复的
+`--move-owner` 在一次事务中迁移源 root 的多个 owner，保留未选 peer、共享文件和
+原 Kotlin/锁属性；仍验证完整源 inventory，并执行双侧 CAS 与失败回滚。更广 D09
+迁移与平台验收仍开放。
+
 [组件根字典单引用 `allOf`](dictionary-allof-wrappers.md)新增 E02/E03 有界支持：
 可在引用前后包含空成员或仅有说明文字的成员，复用实际命名字典、别名和 value
 peers；符合目标默认值语法的包装和命名别名可各自持有独立工厂。保成员顺序、

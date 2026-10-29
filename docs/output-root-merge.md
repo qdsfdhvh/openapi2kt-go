@@ -3,8 +3,8 @@
 The invocation-only `--move-output-from SOURCE --output TARGET` action also
 accepts an already owned target for **same-version v2/v4 named inventories**.
 Use `--config FILE` with the complete original source owner group and unchanged
-inputs/options. Omit `--spec` to move that entire group, or select one existing
-source owner with `--spec NAME`. The ordinary [root-move contract](output-root-move.md)
+inputs/options. Omit both selectors to move that entire group, select one existing
+source owner with `--spec NAME`, or select a set for one atomic normal-failure transaction using repeatable `--move-owner NAME`. `--move-owner` requires config and the explicit SOURCE/TARGET pair, excludes `--spec`, and keeps the ordinary emission-override restriction. The ordinary [root-move contract](output-root-move.md)
 continues to define source generation, selection, canonical bindings, cooperative
 locks, normal rollback, reports and exit codes.
 
@@ -42,8 +42,7 @@ peers retained by a selected-owner move. Kotlin membership/bytes, lock modes,
 profiles, allocations and occurrences must remain exact. New source features or
 renames must be applied separately. Target settings still undergo ordinary
 configuration/dependency/path validation. Explicit `runtime_package` retains
-its existing same-declared-root requirement; this action does not distribute a
-shared runtime between roots.
+its existing same-root requirement, checked for both original declarations and actual post-move placement: selected source owners at TARGET, retained owners at SOURCE, and other configured peers at their declared roots. This action does not distribute a shared runtime between roots, even when original source declarations already name TARGET.
 
 ## State preservation and transactions
 
@@ -79,7 +78,7 @@ A merge additionally reports `target_manifest_sha256` for the exact observed
 target manifest and sorted `target_owners` for its original inventory. Sorted
 `shared_target_files` identifies moved Kotlin paths already owned by target;
 those paths retain target attributes. Existing
-`files`/`name_locks` describe moved payloads; selected moves retain `moved_owners`
+`files`/`name_locks` describe the distinct moved payload union; each file retains all original source owner references, including retained sharing peers. Selected moves report sorted `moved_owners`
 and source `retained_owners`. Text exposes the same target hash/owners. Reports
 omit absolute machine paths and do not bind a future command as an approval token.
 
@@ -87,6 +86,10 @@ omit absolute machine paths and do not bind a future command as an approval toke
 openapi-kt generate --config openapi-kt.toml \
   --move-output-from generated-old --output generated-existing \
   --check --diagnostic-format json
+# Move a and b together while retaining other original source owners.
+openapi-kt generate --config openapi-kt.toml \
+  --move-output-from generated-old --output generated-existing \
+  --move-owner a --move-owner b --check --diagnostic-format json
 openapi-kt generate --config openapi-kt.toml \
   --move-output-from generated-old --output generated-existing
 ```

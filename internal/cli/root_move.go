@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strconv"
@@ -184,6 +185,17 @@ func executeDirectRootMove(args arguments, timer *metricCollector) (int, report)
 	return finishRootMove(args, s, map[string]core.GenerationArtifacts{"": generated.Artifacts}, report{Status: "ok", Files: []string{}, Diagnostics: core.Diagnostics{}, Warnings: generated.Warnings}, timer, nil)
 }
 
+// rootMoveSelection leaves ordinary --spec parsing and emission override scope
+// unchanged. Only the move adapter interprets --move-owner as a set.
+func rootMoveSelection(args arguments) []string {
+	if args.spec != "" {
+		return []string{args.spec}
+	}
+	owners := append([]string(nil), args.moveOwners...)
+	sort.Strings(owners)
+	return owners
+}
+
 func executeConfigRootMove(args arguments, cfg config.Config, settings map[string]arguments, dir string, timer *metricCollector) (int, report) {
 	// Validate every declaration before state/input reads. The explicit pair
 	// selects one complete source inventory; other disjoint config roots remain
@@ -227,16 +239,21 @@ func executeConfigRootMove(args arguments, cfg config.Config, settings map[strin
 	if len(sourceSpecs) != len(s.Owners) || len(sourceRoots) != 1 {
 		return 4, failed("E_OUTPUT_ROOT_MOVE_INVALID", "Move requires every original source owner with unchanged names in one declared source or target root.")
 	}
-	if args.spec != "" && s.Owners[args.spec] == nil {
-		return 4, failed("E_OUTPUT_ROOT_MOVE_INVALID", "The selected owner must belong to the explicit source inventory.")
+	owners := rootMoveSelection(args)
+	selected := map[string]bool{}
+	for _, owner := range owners {
+		if _, ok := s.Owners[owner]; !ok {
+			return 4, failed("E_OUTPUT_ROOT_MOVE_INVALID", "Every selected owner must belong to the explicit source inventory.")
+		}
+		selected[owner] = true
 	}
 	declared := ""
 	for root := range sourceRoots {
 		declared = root
 	}
 
-	if args.spec != "" {
-		s, e = output.BindRootMoveOwnerTarget(s, args.output, declared, []string{args.spec})
+	if len(owners) != 0 {
+		s, e = output.BindRootMoveOwnerTarget(s, args.output, declared, owners)
 	} else {
 		s, e = output.BindRootMoveTarget(s, args.output, declared)
 	}
@@ -246,6 +263,32 @@ func executeConfigRootMove(args arguments, cfg config.Config, settings map[strin
 	s, e = output.BindRootMoveConfigPeers(s, otherRoots)
 	if e != nil {
 		return 4, report{Status: "error", Files: []string{}, Diagnostics: core.Diagnostics{*e}}
+	}
+	// All original declared/CLI spellings have passed storage validation and
+	// binding. Normalize only this comparison view; keep the raw declarations
+	// and captured bindings unchanged for subsequent CAS checks.
+	placement := map[string]arguments{}
+	source, sourceErr := filepath.Abs(args.moveOutputFrom)
+	target, targetErr := filepath.Abs(args.output)
+	if sourceErr != nil || targetErr != nil {
+		return 4, failed("E_OUTPUT_ROOT_MOVE_INVALID", "Move requires concrete source and target roots.")
+	}
+	for name, a := range settings {
+		root, err := filepath.Abs(declaredSettings[name].output)
+		if err != nil {
+			return 4, failed("E_OUTPUT_ROOT_MOVE_INVALID", "Move requires concrete declared roots.")
+		}
+		a.output = root
+		if _, owned := s.Owners[name]; owned {
+			a.output = source
+			if len(owners) == 0 || selected[name] {
+				a.output = target
+			}
+		}
+		placement[name] = a
+	}
+	if err := validateRuntimeRoots(placement); err != nil {
+		return 1, failed("E_CONFIG_RUNTIME_ROOTS", "An explicit shared runtime package requires one output root across its configured specs after the move.")
 	}
 	generated := map[string]core.GenerationArtifacts{}
 	counts := map[string]output.OwnerUpdate{args.output: {Generated: generated}}
@@ -298,26 +341,41 @@ func finishRootMove(args arguments, s output.RootMoveState, generated map[string
 	end := timer.phase(phase)
 	var changed bool
 	var e *core.Diagnostic
-	if args.spec != "" {
-		changed, e = output.MoveOutputOwners(args.moveOutputFrom, args.output, s, []string{args.spec}, readonly)
+	// Both raw roots have already passed output validation/binding. Equivalent
+	// absolute clean spellings are the same explicit no-op root; canonical
+	// aliases with different absolute paths still reach the storage refusal.
+	source := args.moveOutputFrom
+	if src, err := filepath.Abs(source); err == nil {
+		if dst, err := filepath.Abs(args.output); err == nil && filepath.Clean(src) == filepath.Clean(dst) {
+			source = args.output
+		}
+	}
+	owners := rootMoveSelection(args)
+	if len(owners) != 0 {
+		changed, e = output.MoveOutputOwners(source, args.output, s, owners, readonly)
 	} else {
-		changed, e = output.MoveOutputRoot(args.moveOutputFrom, args.output, s, readonly)
+		changed, e = output.MoveOutputRoot(source, args.output, s, readonly)
 	}
 	end()
 	if e != nil {
 		return 4, report{Status: "error", Files: []string{}, Diagnostics: core.Diagnostics{*e}}
 	}
 	inventory := s
-	if args.spec != "" {
-		inventory.Owners = map[string][]string{args.spec: s.Owners[args.spec]}
+	selected := map[string]bool{}
+	if len(owners) != 0 {
 		inventory.NameLocks = map[string][]byte{}
-		if payload, ok := s.NameLocks[args.spec]; ok {
-			inventory.NameLocks[args.spec] = payload
-		}
 		wanted := map[string]bool{}
-		for _, path := range s.Owners[args.spec] {
-			wanted[path] = true
+		for _, owner := range owners {
+			selected[owner] = true
+			if payload, ok := s.NameLocks[owner]; ok {
+				inventory.NameLocks[owner] = payload
+			}
+			for _, path := range s.Owners[owner] {
+				wanted[path] = true
+			}
 		}
+		// Keep full original membership authority for shared file reports, while
+		// selecting the distinct moved file/lock union.
 		inventory.Files = nil
 		for _, file := range s.Files {
 			if wanted[file.Path] {
@@ -326,14 +384,14 @@ func finishRootMove(args arguments, s output.RootMoveState, generated map[string
 		}
 	}
 	migration := rootMoveInventory(inventory)
-	if args.spec != "" {
-		migration.MovedOwners = []string{args.spec}
+	if len(owners) != 0 {
+		migration.MovedOwners = owners
 		for _, owner := range unionKeys(s.Owners, s.Owners) {
-			if owner != args.spec {
+			if !selected[owner] {
 				migration.RetainedOwners = append(migration.RetainedOwners, owner)
 			}
 		}
-		migration.Impact = "The selected named owner moves to the explicit empty target; peers remain at source. Shared payloads are copied to each retaining root. Kotlin and owned name-lock payload bytes, modes and mtimes stay unchanged; source and target manifests retain their version with their respective owner membership. Update configured output roots and consumer source directories. Both roots stage under sorted cooperative locks with ordinary rollback; no cross-root crash atomicity or automatic recovery."
+		migration.Impact = "The selected named owners move together to the explicit target; peers remain at source. Shared payloads are copied to each retaining root. Kotlin and owned name-lock payload bytes, modes and mtimes stay unchanged; source and target manifests retain their version with their respective owner membership. Update configured output roots and consumer source directories. Both roots stage under sorted cooperative locks with ordinary rollback; no cross-root crash atomicity or automatic recovery."
 	}
 	if s.MergeTarget != nil {
 		hash := sha256.Sum256(s.MergeTarget.Manifest)
@@ -368,6 +426,9 @@ func finishRootMove(args arguments, s output.RootMoveState, generated map[string
 
 func printRootMove(w io.Writer, r rootMoveReport) {
 	_, _ = fmt.Fprintf(w, "output root move (manifest v%d, identity=%t): SHA256=%s\n%s\n", r.Version, r.Identity, r.ManifestSHA256, r.Impact)
+	if len(r.MovedOwners) != 0 {
+		_, _ = fmt.Fprintf(w, "  moved owners=%s retained owners=%s\n", strconv.Quote(fmt.Sprint(r.MovedOwners)), strconv.Quote(fmt.Sprint(r.RetainedOwners)))
+	}
 	if r.TargetManifestSHA256 != "" {
 		_, _ = fmt.Fprintf(w, "  target manifest: SHA256=%s owners=%s\n", r.TargetManifestSHA256, strconv.Quote(fmt.Sprint(r.TargetOwners)))
 	}
