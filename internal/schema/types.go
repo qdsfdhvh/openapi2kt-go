@@ -192,6 +192,9 @@ type component struct {
 	ValueClass                  bool
 	Validation                  *PrimitiveValidation
 	Reference                   string
+	// A single-reference dictionary allOf root retains its physical wrapper
+	// and reference nodes while sharing the existing collection binding.
+	DictionaryAllOf *dictionaryAllOfSource
 	// BindingTarget retains a pure root alias's canonical declaration.
 	// Own schema/source stay original; the nearest explicit nullable override
 	// is separate from terminal spelling, admitted for collections, ordinary DTOs and plain String enums.
@@ -237,6 +240,7 @@ type component struct {
 }
 
 type analyzer struct {
+	dictionaryAllOfSources map[*component]*dictionaryAllOfSource
 	objectDefaultGraphUses *[]objectDefaultGraphUse
 	structuralUniqueUses   *[]structuralUniqueUse
 	options                Options
@@ -310,100 +314,105 @@ type analyzer struct {
 	// copy so it cannot leak into sibling roles.
 	objectDefaultPlainDTOMember bool
 
-	declarationOwners              map[Declaration]*component
-	unionOrigins                   map[Declaration]nominalOrigin
-	enumOrigins                    map[Declaration]nominalOrigin
-	valueClassOrigins              map[Declaration]nominalOrigin
-	temporalOrigins                map[Declaration]temporalOrigin
-	temporalUses                   map[*component]string
-	nativeEnumOrigins              map[*component]*nativeEnumOrigin
-	nativeEnumUses                 map[*component]string
-	builtinOrigins                 map[Declaration]builtinOrigin
-	builtinUses                    map[*component]string
-	namedCollectionOrigins         map[Declaration]namedCollectionOrigin
-	namedCollectionUses            map[*component]string
-	recursiveCoverOrigins          map[Declaration]recursiveCoverOrigin
-	recursiveCoverUses             map[*component]string
-	rawTrueOrigins                 map[Declaration]rawTrueOrigin
-	rawTrueUses                    map[*component]string
-	callerNativeOrigins            map[Declaration]callerNativeOrigin
-	callerNativeUses               map[*component]string
-	bytesOrigins                   map[Declaration]bytesOrigin
-	bytesUses                      map[*component]string
-	bigintOrigins                  map[Declaration]bigintOrigin
-	bigintUses                     map[*component]string
-	borrowedScalars                map[*document.Value]*borrowedScalarSource
-	borrowedRoots                  map[Declaration]borrowedRootOrigin
-	borrowedCollections            map[*document.Value]*borrowedCollectionSource
-	borrowedCollectionRoots        map[Declaration]borrowedCollectionRoot
-	borrowedDTOLeaves              map[*document.Value]*borrowedDTOLeafUse
-	borrowedEnumLeaves             map[*document.Value]*borrowedEnumLeafUse
-	checkedEnumSources             map[*document.Value]*checkedEnumSource
-	borrowedValueClassLeaves       map[*component]*borrowedValueClassLeafUse
-	borrowedAllOfLeaves            map[*document.Value]*borrowedAllOfLeafUse
-	borrowedCollectionPlanning     bool
-	tupleAllOfSources              *tupleAllOfSourceBudget
-	tupleNativeSources             *tupleNativeSourceRegistry
-	tupleBooleans                  *tupleBooleanRegistry
-	tupleObjects                   *tupleInlineDTOState
-	tupleSourceValidation          bool
-	tupleBooleanRefs               *tupleBooleanReferenceRegistry
-	tupleLiterals                  *tupleLiteralRegistry
-	tupleCovers                    *tupleCoverRegistry
-	tupleSpecials                  *tupleSpecialRegistry
-	falseRootSources               *falseRootSourceRegistry
-	falseValueOrigins              map[*FalseValue]falseValueOrigin
-	falseAliasOrigins              map[*ValueAlias]falseAliasOrigin
-	falseAliasFactories            map[*ValueAlias]falseCollectionFactoryOrigin
-	falseAbsentUses                map[*component]bool
-	falseFieldOrigins              map[*Model]falseFieldOrigin
-	literalFalseFieldOrigins       map[*Model]literalFalseFieldOrigin
-	literalFalseCollectionPlanning *literalFalseCollectionPlanning
-	literalFalseFieldUses          map[*Model]string
-	literalFalseObjectDefaultUses  map[*Model]bool
-	literalFalseObjectFactories    map[*Model]falseCollectionFactoryOrigin
-	falseObjectDefaultUses         map[*Model]bool
-	falseDTOFieldDefaultScope      *falseDTOFieldDefaultScope
-	falseDTOFieldDefaults          map[falseDTOFieldDefaultKey]falseDTOFieldDefaultOrigin
-	falseDTOFieldDefaultUses       map[falseDTOFieldDefaultKey]string
-	falseDTOConsumerSources        map[*Model][]borrowedAllOfNode
-	falseDTOOwnerDefaultScope      *falseDTOOwnerDefaultEdge
-	falseDTOOwnerDefaults          map[*Model]*falseDTOOwnerDefaultOrigin
-	falseDTOOwnerDefaultUses       map[falseDTOFieldDefaultKey]string
-	falseDTOOwnerAliasSources      map[*component][]borrowedAllOfNode
-	falseObjectFactories           map[*Model]falseCollectionFactoryOrigin
-	falseCollectionPlanning        *falseCollectionSource
-	falseInlineCollectionPlanning  *falseInlineCollectionSource
-	falseInlineCollectionOrigins   map[*Model]falseInlineCollectionOrigin
-	falseInlineCollectionUses      map[*Model]string
-	falseCollectionDefaultPlanning *falseCollectionDefaultSource
-	falseCollectionFactories       map[*ValueAlias]falseCollectionFactoryOrigin
-	falseCollectionOrigins         map[*ValueAlias]falseCollectionOrigin
-	intersectionCaptures           *intersectionCaptureBudget
-	borrowedUnionLeaves            map[*document.Value]*borrowedUnionLeafUse
-	borrowedHierarchyLeaves        map[*document.Value]*borrowedHierarchyLeafUse
-	borrowedBuiltinLeaves          map[*component]*borrowedBuiltinLeafUse
-	borrowedTemporalLeaves         map[*component]*borrowedTemporalLeafUse
-	borrowedBigintLeaves           map[*component]*borrowedBigintLeafUse
-	borrowedBytesLeaves            map[*component]*borrowedBytesLeafUse
-	borrowedCallerNativeLeaves     map[*component]*borrowedCallerNativeLeafUse
-	borrowedRawTrueLeaves          map[*component]*borrowedRawTrueLeafUse
-	borrowedRecursiveCoverLeaves   map[*component]*borrowedRecursiveCoverLeafUse
-	borrowedEnumAliasVisit         func(*component, int) *diagnostic.Diagnostic
-	borrowedDTOAliasEdges          map[*component]*borrowedDTOAliasEdge
-	deferredNominals               map[*document.Value]*deferredNominal
-	referencedDefaults             *[]referencedFieldDefault
-	collectionChildDefaults        map[*document.Value]*collectionReferenceChildDefault
-	collectionChildDefaultOrder    *[]*collectionReferenceChildDefault
-	collectionChildDefaultClient   *Client
-	inlineEnumChildDefaults        map[*document.Value]*inlineEnumCollectionChildDefault
-	inlineEnumChildDefaultOrder    *[]*inlineEnumCollectionChildDefault
-	inlineEnumChildProbe           bool
-	inlineBuiltinChildDefaults     map[*document.Value]*inlineBuiltinChildDefault
-	inlineBuiltinChildDefaultOrder *[]*inlineBuiltinChildDefault
-	internalEnumFactories          *internalEnumFactoryRegistry
-	referencedEnumFactories        []*referencedEnumCollectionFactory
-	nominalsLinked                 bool
+	declarationOwners               map[Declaration]*component
+	unionOrigins                    map[Declaration]nominalOrigin
+	enumOrigins                     map[Declaration]nominalOrigin
+	valueClassOrigins               map[Declaration]nominalOrigin
+	temporalOrigins                 map[Declaration]temporalOrigin
+	temporalUses                    map[*component]string
+	nativeEnumOrigins               map[*component]*nativeEnumOrigin
+	nativeEnumUses                  map[*component]string
+	builtinOrigins                  map[Declaration]builtinOrigin
+	builtinUses                     map[*component]string
+	namedCollectionOrigins          map[Declaration]namedCollectionOrigin
+	namedCollectionUses             map[*component]string
+	recursiveCoverOrigins           map[Declaration]recursiveCoverOrigin
+	recursiveCoverUses              map[*component]string
+	rawTrueOrigins                  map[Declaration]rawTrueOrigin
+	rawTrueUses                     map[*component]string
+	callerNativeOrigins             map[Declaration]callerNativeOrigin
+	callerNativeUses                map[*component]string
+	bytesOrigins                    map[Declaration]bytesOrigin
+	bytesUses                       map[*component]string
+	bigintOrigins                   map[Declaration]bigintOrigin
+	bigintUses                      map[*component]string
+	borrowedScalars                 map[*document.Value]*borrowedScalarSource
+	borrowedRoots                   map[Declaration]borrowedRootOrigin
+	borrowedCollections             map[*document.Value]*borrowedCollectionSource
+	borrowedCollectionRoots         map[Declaration]borrowedCollectionRoot
+	borrowedDTOLeaves               map[*document.Value]*borrowedDTOLeafUse
+	borrowedEnumLeaves              map[*document.Value]*borrowedEnumLeafUse
+	checkedEnumSources              map[*document.Value]*checkedEnumSource
+	borrowedValueClassLeaves        map[*component]*borrowedValueClassLeafUse
+	borrowedAllOfLeaves             map[*document.Value]*borrowedAllOfLeafUse
+	borrowedCollectionPlanning      bool
+	tupleAllOfSources               *tupleAllOfSourceBudget
+	tupleNativeSources              *tupleNativeSourceRegistry
+	tupleBooleans                   *tupleBooleanRegistry
+	tupleObjects                    *tupleInlineDTOState
+	tupleSourceValidation           bool
+	tupleBooleanRefs                *tupleBooleanReferenceRegistry
+	tupleLiterals                   *tupleLiteralRegistry
+	tupleCovers                     *tupleCoverRegistry
+	tupleSpecials                   *tupleSpecialRegistry
+	falseRootSources                *falseRootSourceRegistry
+	falseValueOrigins               map[*FalseValue]falseValueOrigin
+	falseAliasOrigins               map[*ValueAlias]falseAliasOrigin
+	falseAliasFactories             map[*ValueAlias]falseCollectionFactoryOrigin
+	falseAbsentUses                 map[*component]bool
+	falseFieldOrigins               map[*Model]falseFieldOrigin
+	literalFalseFieldOrigins        map[*Model]literalFalseFieldOrigin
+	literalFalseCollectionPlanning  *literalFalseCollectionPlanning
+	literalFalseFieldUses           map[*Model]string
+	literalFalseObjectDefaultUses   map[*Model]bool
+	literalFalseObjectFactories     map[*Model]falseCollectionFactoryOrigin
+	falseObjectDefaultUses          map[*Model]bool
+	falseDTOFieldDefaultScope       *falseDTOFieldDefaultScope
+	falseDTOFieldDefaults           map[falseDTOFieldDefaultKey]falseDTOFieldDefaultOrigin
+	falseDTOFieldDefaultUses        map[falseDTOFieldDefaultKey]string
+	falseDTOConsumerSources         map[*Model][]borrowedAllOfNode
+	falseDTOOwnerDefaultScope       *falseDTOOwnerDefaultEdge
+	falseDTOOwnerDefaults           map[*Model]*falseDTOOwnerDefaultOrigin
+	falseDTOOwnerDefaultUses        map[falseDTOFieldDefaultKey]string
+	falseDTOOwnerAliasSources       map[*component][]borrowedAllOfNode
+	falseObjectFactories            map[*Model]falseCollectionFactoryOrigin
+	falseCollectionPlanning         *falseCollectionSource
+	falseInlineCollectionPlanning   *falseInlineCollectionSource
+	falseInlineCollectionOrigins    map[*Model]falseInlineCollectionOrigin
+	falseInlineCollectionUses       map[*Model]string
+	falseCollectionDefaultPlanning  *falseCollectionDefaultSource
+	falseCollectionFactories        map[*ValueAlias]falseCollectionFactoryOrigin
+	falseCollectionOrigins          map[*ValueAlias]falseCollectionOrigin
+	intersectionCaptures            *intersectionCaptureBudget
+	borrowedUnionLeaves             map[*document.Value]*borrowedUnionLeafUse
+	borrowedHierarchyLeaves         map[*document.Value]*borrowedHierarchyLeafUse
+	borrowedBuiltinLeaves           map[*component]*borrowedBuiltinLeafUse
+	borrowedTemporalLeaves          map[*component]*borrowedTemporalLeafUse
+	borrowedBigintLeaves            map[*component]*borrowedBigintLeafUse
+	borrowedBytesLeaves             map[*component]*borrowedBytesLeafUse
+	borrowedCallerNativeLeaves      map[*component]*borrowedCallerNativeLeafUse
+	borrowedRawTrueLeaves           map[*component]*borrowedRawTrueLeafUse
+	borrowedRecursiveCoverLeaves    map[*component]*borrowedRecursiveCoverLeafUse
+	borrowedEnumAliasVisit          func(*component, int) *diagnostic.Diagnostic
+	borrowedDTOAliasEdges           map[*component]*borrowedDTOAliasEdge
+	deferredNominals                map[*document.Value]*deferredNominal
+	referencedDefaults              *[]referencedFieldDefault
+	collectionChildDefaults         map[*document.Value]*collectionReferenceChildDefault
+	collectionChildDefaultOrder     *[]*collectionReferenceChildDefault
+	collectionChildRevalidation     bool
+	collectionChildInlineScalar     bool
+	collectionChildInlineEnum       bool
+	collectionChildDefaultClient    *Client
+	scalarCollectionFactoryPlanning bool
+	inlineEnumChildDefaults         map[*document.Value]*inlineEnumCollectionChildDefault
+	inlineEnumChildDefaultOrder     *[]*inlineEnumCollectionChildDefault
+	inlineEnumChildProbe            bool
+	inlineBuiltinChildDefaults      map[*document.Value]*inlineBuiltinChildDefault
+	inlineBuiltinChildDefaultOrder  *[]*inlineBuiltinChildDefault
+	internalEnumFactories           *internalEnumFactoryRegistry
+	referencedEnumFactories         []*referencedEnumCollectionFactory
+	referencedScalarFactories       []*referencedScalarCollectionFactory
+	nominalsLinked                  bool
 }
 
 func (a *analyzer) warn(code, message, pointer string) {

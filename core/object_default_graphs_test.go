@@ -79,13 +79,22 @@ func TestObjectDefaultGraphMemberNearestNullability(t *testing.T) {
 
 func TestObjectDefaultGraphSourceAnnotationsAndBudgets(t *testing.T) {
 	base := string(objectGraphDocument(`{"$ref":"#/components/schemas/Rows"}`, `[]`, ""))
-	for _, tc := range []struct{ old, replacement, pointer string }{
-		{`"Rows":{"type":"array"`, `"Rows":{"default":[],"type":"array"`, "/components/schemas/Rows/default"},
-		{`"RowAlias":{"$ref":"#/components/schemas/Rows"}`, `"RowAlias":{"$ref":"#/components/schemas/Rows","default":[]}`, "/components/schemas/RowAlias/default"},
-		{`"items":{"$ref":"#/components/schemas/Values"}`, `"items":{"$ref":"#/components/schemas/Values","default":{}}`, "/components/schemas/Rows/items/default"},
+	for _, tc := range []struct{ old, replacement string }{
+		{`"Rows":{"type":"array"`, `"Rows":{"default":[],"type":"array"`},
+		{`"RowAlias":{"$ref":"#/components/schemas/Rows"}`, `"RowAlias":{"$ref":"#/components/schemas/Rows","default":[]}`},
+		{`"items":{"$ref":"#/components/schemas/Values"}`, `"items":{"$ref":"#/components/schemas/Values","default":{}}`},
 	} {
-		carrierDefaultFailure(t, []byte(strings.Replace(base, tc.old, tc.replacement, 1)), false, "E_SCHEMA_UNSUPPORTED", tc.pointer)
+		input := []byte(strings.Replace(base, tc.old, tc.replacement, 1))
+		for _, checked := range []bool{false, true} {
+			rq := request(input, "Dto")
+			rq.Options.Validation = checked
+			if _, err := core.GenerateWithDiagnostics(rq); err != nil {
+				t.Fatal("independent collection factory rejected", checked, err)
+			}
+		}
 	}
+	input := []byte(strings.Replace(base, `"items":{"$ref":"#/components/schemas/Values"}`, `"items":{"$ref":"#/components/schemas/Values","default":{"bad":false}}`, 1))
+	carrierDefaultFailure(t, input, false, "E_SCHEMA_INVALID", "/components/schemas/Rows/items/default/bad")
 	for _, width := range []int{240, 241} {
 		fields := make([]string, width)
 		for i := range fields {

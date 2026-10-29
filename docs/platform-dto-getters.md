@@ -34,8 +34,10 @@ bind the evidence to these exact inputs and generator source.
 Run `bash scripts/kotlin/platforms.sh TARGET [data_class|plain_class]` with the
 existing prerequisites in the [platform consumer guide](../samples/kotlin-platform-smoke/README.md).
 JVM/JS/Native runtime, metadata compilation and Android assembly are distinct.
-The fourth input has no Android device runtime evidence. Historical three-input
-API34 device results do not establish it. Full independent model/HTTP/SSE/engine
-matrices, other hosts, minimum dependencies and maximum resource combinations
-remain separate acceptance work. This probe changes no generator API, wire or
-persisted format.
+The historical four-input run did not include Android runtime. A later
+[five-input run](platform-enum-field-bounds.md) includes this consumer and
+passed on an API28 emulator for both styles; the historical three-input API34
+physical-device result does not establish the later profile. Full independent
+model/HTTP/SSE/engine matrices, other hosts, minimum dependencies and maximum
+resource combinations remain separate acceptance work. This probe changes no
+generator API, wire or persisted format.

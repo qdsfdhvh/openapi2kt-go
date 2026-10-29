@@ -58,10 +58,17 @@ func TestNestedComponentDefaultFactorySourceGuards(t *testing.T) {
 			if _, err := core.GenerateWithDiagnostics(r); err != nil {
 				t.Fatal("ordinary object collection factory rejected", annotation, checked, err)
 			}
+			r.Document = schemas(`{"T":{"type":"string"},"N":{"type":"array","nullable":true,"items":{"type":"array","items":{"$ref":"#/components/schemas/T"}},"default":` + annotation + `}}`)
+			if _, err := core.GenerateWithDiagnostics(r); err != nil {
+				t.Fatal("referenced scalar collection factory rejected", annotation, checked, err)
+			}
+			r.Document = schemas(`{"T":{"type":"string","nullable":"yes"},"N":{"type":"array","nullable":true,"items":{"type":"array","items":{"$ref":"#/components/schemas/T"}},"default":` + annotation + `}}`)
+			if report, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
+				t.Fatal("empty/null factory bypassed malformed referenced source", annotation, checked, err)
+			}
 		}
 	}
 	for _, leaf := range []string{
-		`{"$ref":"#/components/schemas/T"}`,
 		`{"allOf":[{"type":"string"}]}`,
 		`{"oneOf":[{"type":"string"},{"type":"integer"}]}`,
 		`{"type":"string","default":"one"}`,

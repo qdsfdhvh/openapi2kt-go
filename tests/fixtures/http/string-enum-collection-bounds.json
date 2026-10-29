@@ -6,9 +6,255 @@
   },
   "components": {
     "schemas": {
+      "ScalarRefCount": {
+        "type": "integer",
+        "default": 99
+      },
+      "ScalarRefLabel": {
+        "type": "string",
+        "default": "root"
+      },
+      "ScalarBytes": {
+        "type": "string",
+        "format": "byte",
+        "default": [1, 2]
+      },
+      "ScalarBytesRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ScalarBytes",
+          "default": [3, 4]
+        },
+        "default": [[5, 6]]
+      },
+      "ScalarFactoryRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ScalarRefCount",
+          "default": 7
+        },
+        "default": [1, 2]
+      },
+      "ScalarFactoryRowsAlias": {
+        "$ref": "#/components/schemas/ScalarFactoryRows",
+        "default": [3]
+      },
+      "ScalarFactoryMap": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ScalarRefLabel",
+          "default": "unused"
+        },
+        "default": {"map": "root-map"}
+      },
+      "ScalarNestedMap": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ScalarRefCount",
+          "default": 10
+        },
+        "default": {"inner": 11}
+      },
+      "ScalarNestedMapAlias": {
+        "$ref": "#/components/schemas/ScalarNestedMap",
+        "default": {"alias": 12}
+      },
+      "ScalarNestedRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ScalarNestedMapAlias",
+          "default": {"child": 42}
+        },
+        "default": [{"outer": 13}]
+      },
+      "ScalarNestedRowsAlias": {
+        "$ref": "#/components/schemas/ScalarNestedRows",
+        "default": [{"alias": 14}]
+      },
+      "MaybeScalarNestedRows": {
+        "$ref": "#/components/schemas/ScalarNestedRowsAlias",
+        "nullable": true,
+        "default": null
+      },
+      "InlineScalarValues": {
+        "type": "array",
+        "items": {"type": "integer"},
+        "default": [20]
+      },
+      "InlineScalarValuesAlias": {
+        "$ref": "#/components/schemas/InlineScalarValues",
+        "default": [21]
+      },
+      "InlineScalarRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/InlineScalarValuesAlias",
+          "default": [22]
+        }
+      },
+      "InlineDateValues": {
+        "type": "array",
+        "items": {"type": "string", "format": "date"},
+        "default": ["2024-02-29"]
+      },
+      "InlineDateValuesAlias": {
+        "$ref": "#/components/schemas/InlineDateValues",
+        "default": ["2024-03-01"]
+      },
+      "InlineDateRows": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/InlineDateValuesAlias", "default": ["2024-04-01"]}
+      },
+      "InlineInstantValues": {
+        "type": "array",
+        "items": {"type": "string", "format": "date-time"},
+        "default": ["2024-02-29T00:00:00Z"]
+      },
+      "InlineInstantValuesAlias": {
+        "$ref": "#/components/schemas/InlineInstantValues",
+        "default": ["2024-03-01T00:00:00Z"]
+      },
+      "InlineInstantRows": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/InlineInstantValuesAlias", "default": ["2024-04-01T00:00:00Z"]}
+      },
+      "InlineUuidValues": {
+        "type": "array",
+        "items": {"type": "string", "format": "uuid"},
+        "default": ["123e4567-e89b-12d3-a456-426614174000"]
+      },
+      "InlineUuidValuesAlias": {
+        "$ref": "#/components/schemas/InlineUuidValues",
+        "default": ["123e4567-e89b-12d3-a456-426614174001"]
+      },
+      "InlineUuidRows": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/InlineUuidValuesAlias", "default": ["123e4567-e89b-12d3-a456-426614174002"]}
+      },
+      "InlineByteValues": {
+        "type": "array",
+        "items": {"type": "string", "format": "byte"},
+        "default": [[1, 2]]
+      },
+      "InlineByteValuesAlias": {
+        "$ref": "#/components/schemas/InlineByteValues",
+        "default": [[3]]
+      },
+      "InlineByteRows": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/InlineByteValuesAlias", "default": [[4, 5]]}
+      },
+      "InlineWordValues": {
+        "type": "array",
+        "items": {"type": "string", "enum": ["one", "two"]},
+        "default": ["one"]
+      },
+      "InlineWordValuesAlias": {
+        "$ref": "#/components/schemas/InlineWordValues",
+        "default": ["two"]
+      },
+      "InlineWordRows": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/InlineWordValuesAlias", "default": ["one"]}
+      },
+      "InlineNativeValues": {
+        "type": "array",
+        "items": {"type": "integer", "enum": [1, 2]},
+        "default": [1]
+      },
+      "InlineNativeValuesAlias": {
+        "$ref": "#/components/schemas/InlineNativeValues",
+        "default": [2]
+      },
+      "InlineNativeRows": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/InlineNativeValuesAlias", "default": [1]}
+      },
+      "InlineBooleanValues": {
+        "type": "array",
+        "items": {"type": "boolean", "enum": [true, false]},
+        "default": [true]
+      },
+      "InlineBooleanValuesAlias": {
+        "$ref": "#/components/schemas/InlineBooleanValues",
+        "default": [false]
+      },
+      "InlineBooleanRows": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/InlineBooleanValuesAlias", "default": [true]}
+      },
+      "ReferencedWordRows": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/RootWordTreeAlias", "default": {"child": ["one"]}}
+      },
+      "ReferencedNativeRows": {
+        "additionalProperties": {"$ref": "#/components/schemas/FactoryIntRowsAlias", "default": [1]}
+      },
+      "ReferencedBooleanRows": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/FactoryBooleanRowsAlias", "default": [true]}
+      },
+      "ReferencedNestedValues": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/RootWordTreeAlias", "default": {"middle": ["two"]}},
+        "default": [{"root": ["one"]}]
+      },
+      "ReferencedNestedValuesAlias": {
+        "$ref": "#/components/schemas/ReferencedNestedValues",
+        "default": [{"alias": ["two"]}]
+      },
+      "ReferencedNestedRows": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/ReferencedNestedValuesAlias", "default": [{"child": ["one"]}]}
+      },
+      "ScalarFactoryHolder": {
+        "properties": {
+          "rows": {
+            "$ref": "#/components/schemas/ScalarFactoryRowsAlias",
+            "default": [4]
+          },
+          "labels": {
+            "$ref": "#/components/schemas/ScalarFactoryMap",
+            "default": {"field": "field"}
+          },
+          "unannotated": {
+            "$ref": "#/components/schemas/ScalarFactoryRows"
+          },
+          "inline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScalarRefCount",
+              "default": 7
+            },
+            "default": [6]
+          },
+          "bytes": {
+            "$ref": "#/components/schemas/ScalarBytesRows",
+            "default": [[7]]
+          },
+          "nested": {
+            "$ref": "#/components/schemas/ScalarNestedRowsAlias",
+            "default": [{"field": 15}]
+          }
+        },
+        "default": {"rows": [5], "labels": {"owner": "owner"}, "inline": [7], "bytes": [[8, 9]], "nested": [{"owner": 16}]}
+      },
       "Holder": {
         "type": "object",
         "properties": {
+          "inlineNested": {
+            "$ref": "#/components/schemas/InlineScalarRows"
+          },
+          "inlineDates": {"$ref": "#/components/schemas/InlineDateRows"},
+          "inlineInstants": {"$ref": "#/components/schemas/InlineInstantRows"},
+          "inlineUuids": {"$ref": "#/components/schemas/InlineUuidRows"},
+          "inlineBytes": {"$ref": "#/components/schemas/InlineByteRows"},
+          "inlineWords": {"$ref": "#/components/schemas/InlineWordRows"},
+          "inlineNativeEnums": {"$ref": "#/components/schemas/InlineNativeRows"},
+          "inlineBooleans": {"$ref": "#/components/schemas/InlineBooleanRows"},
+          "referencedWordRows": {"$ref": "#/components/schemas/ReferencedWordRows"},
+          "referencedNativeRows": {"$ref": "#/components/schemas/ReferencedNativeRows"},
+          "referencedBooleanRows": {"$ref": "#/components/schemas/ReferencedBooleanRows"},
+          "referencedNestedRows": {"$ref": "#/components/schemas/ReferencedNestedRows"},
           "required": {
             "type": "array",
             "minItems": 1,
@@ -675,6 +921,23 @@
               "$ref": "#/components/schemas/RootWordAlias",
               "default": "two"
             }
+          },
+          "scalarRefCounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScalarRefCount",
+              "default": 7
+            }
+          },
+          "scalarRefLabels": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ScalarRefLabel",
+              "default": "unused"
+            }
+          },
+          "scalarFactory": {
+            "$ref": "#/components/schemas/ScalarFactoryHolder"
           },
           "rootWordTree": {
             "$ref": "#/components/schemas/RootWordTree",

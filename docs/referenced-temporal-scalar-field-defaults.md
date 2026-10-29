@@ -17,7 +17,7 @@ Object-default properties that follow these existing temporal reference paths us
 
 ## Annotation, source and presence
 
-Only the consuming field's own annotation is admitted. Target, intermediate chain, component/root and container-child defaults remain rejected, even when the consumer also supplies a default. Nullable precedence never implies default inheritance. The nearest explicit true/false intent follows the existing resolver; incidental optional-field nullability does not legalize a null annotation.
+Only the consuming field's own annotation is admitted through this role. Target, intermediate chain and component/root defaults remain rejected, even when the consumer also supplies a default. Eligible collection reference children have a [separate independent annotation contract](scalar-reference-collection-child-defaults.md). Nullable precedence never implies default inheritance. The nearest explicit true/false intent follows the existing resolver; incidental optional-field nullability does not legalize a null annotation.
 
 Every original source, declaration, reference/cache height and check validates before default planning and optimization. Original physical nodes, real catalog membership, canonical RFC6901 Pointers, actual TypeRef and serializer remain authoritative. Forward refs and root bridges use the resolver's existing linked authority. Null, empty and wrong-kind values cannot mask malformed sources. Errors in a value identify the consuming escaped `/default` Pointer; source failures retain their original location. Warnings and warning policy are unchanged.
 

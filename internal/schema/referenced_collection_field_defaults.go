@@ -90,6 +90,7 @@ const (
 	referencedScalarOwnDefault
 	referencedCollectionOwnDefault
 	referencedNamedOwnDefault
+	referencedScalarChildOwnDefault
 )
 
 func (a *analyzer) referencedDefaultSchema(v *document.Value, pointer string, ty TypeRef, depth int, root bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
@@ -110,6 +111,10 @@ func (a *analyzer) referencedDefaultSchema(v *document.Value, pointer string, ty
 }
 
 func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string, ty TypeRef, depth int, root bool, role referencedDefaultSourceRole) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	return a.referencedDefaultSchemaRoleActual(v, pointer, ty, &ty, depth, root, role)
+}
+
+func (a *analyzer) referencedDefaultSchemaRoleActual(v *document.Value, pointer string, ty TypeRef, actualPtr *TypeRef, depth int, root bool, role referencedDefaultSourceRole) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	if err := depthCheck(depth, pointer); err != nil {
 		return nil, err
 	}
@@ -121,6 +126,20 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		return nil, err
 	}
 	if has(v, "$ref") {
+		if !root && !a.collectionChildRevalidation && role == referencedCollectionOwnDefault && a.collectionReferenceChildParent(v, pointer) != nil && a.scalarReferenceHasIndependentFactory(v, pointer) {
+			a.bindScalarReferenceCollectionOwner(pointer)
+		}
+		if !root && !a.collectionChildRevalidation && role == referencedCollectionOwnDefault && !has(v, "default") && a.collectionReferenceChildParent(v, pointer) != nil {
+			child, err := a.collectionReferenceChildSource(v, pointer, depth, true)
+			if err != nil {
+				return nil, err
+			}
+			if child != nil {
+				if err := a.bindCollectionReferenceChildDefault(v, pointer, actualPtr); err != nil {
+					return nil, err
+				}
+			}
+		}
 		// A collection factory can inspect its element before the collection
 		// planner reaches it. Validate that physical element's independent
 		// annotation here as well; the outer default never supplies its value.
@@ -138,7 +157,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 			}
 		}
 		keys := []string{"$ref", "nullable"}
-		if root || a.validatedCollectionReferenceChildDefault(v, pointer) || a.independentEnumComponentDefault(v, pointer) || a.independentObjectComponentDefault(v, pointer) || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer) {
+		if root || (role == referencedScalarChildOwnDefault || role == referencedCollectionOwnDefault) && a.independentScalarComponentDefault(v, pointer) || a.validatedCollectionReferenceChildDefault(v, pointer) || a.independentEnumComponentDefault(v, pointer) || a.independentObjectComponentDefault(v, pointer) || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer) || a.independentScalarCollectionComponentDefault(v, pointer) || a.independentInlineScalarCollectionChildTargetDefault(v, pointer) || a.independentInlineEnumCollectionChildTargetDefault(v, pointer) {
 			keys = append(keys, "default")
 		}
 		if err := checkKeys(v, keys, pointer); err != nil {
@@ -153,7 +172,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 			// collection leaves use their retained constructor role below.
 			return a.referencedAllOfObjectDefaultNode(source, p, defaultBacking(ty), depth+1)
 		}
-		return a.referencedDefaultSchemaRole(source, p, ty, depth+1, false, role)
+		return a.referencedDefaultSchemaRoleActual(source, p, ty, actualPtr, depth+1, false, role)
 	}
 	// This source grammar is deliberately narrower than the type planner. No
 	// target defaults, nominal wrappers or additional nullable folds are granted.
@@ -187,7 +206,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		// containers and target/reference sources retain their strict keys.
 		keys = append(keys, "default")
 	}
-	if edge != "" && (a.independentEnumComponentDefault(v, pointer) || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer)) {
+	if edge != "" && (a.independentEnumComponentDefault(v, pointer) || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer) || a.independentScalarCollectionComponentDefault(v, pointer) || a.independentInlineScalarCollectionChildTargetDefault(v, pointer) || a.independentInlineEnumCollectionChildTargetDefault(v, pointer)) {
 		keys = append(keys, "default")
 	}
 	if edge == "" && has(v, "enum") {
@@ -312,6 +331,9 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 	if edge == "" && a.options.Validation {
 		keys = append(keys, primitiveBoundKeys...)
 	}
+	if edge == "" && (role == referencedScalarChildOwnDefault || role == referencedCollectionOwnDefault) && a.independentScalarComponentDefault(v, pointer) {
+		keys = append(keys, "default")
+	}
 	if err := checkKeys(v, keys, pointer); err != nil {
 		return nil, err
 	}
@@ -327,7 +349,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		if role == referencedCollectionOwnDefault {
 			childRole = referencedCollectionOwnDefault
 		}
-		child, err := a.referencedDefaultSchemaRole(get(v, edge), naming.Pointer(pointer, edge), *bare.Element, depth+1, false, childRole)
+		child, err := a.referencedDefaultSchemaRoleActual(get(v, edge), naming.Pointer(pointer, edge), *bare.Element, bare.Element, depth+1, false, childRole)
 		if err != nil {
 			return nil, err
 		}
@@ -347,7 +369,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		// Own defaults use only the already-linked byte/binary backing. The
 		// source role is independent of coincident native/provider type names.
 		format := text(get(v, "format"))
-		if role != referencedScalarOwnDefault && role != referencedCollectionOwnDefault || kind != "string" || format != "byte" && format != "binary" {
+		if role != referencedScalarOwnDefault && role != referencedCollectionOwnDefault && role != referencedScalarChildOwnDefault || kind != "string" || format != "byte" && format != "binary" {
 			return nil, unsupported(pointer)
 		}
 	case "kotlin.time.Instant", "kotlinx.datetime.LocalDate":
@@ -372,7 +394,17 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 // Shared preflight and deferred consumers use the same original annotation
 // grammar, value budgets and literal rendering. Neither caller grants types.
 func (a *analyzer) referencedDefaultValue(f field, ty TypeRef) (*nestedDefaultNode, string, *diagnostic.Diagnostic) {
-	node, err := a.referencedDefaultSchema(f.Schema, f.Pointer, ty, f.Depth, true)
+	return a.referencedDefaultValueRole(f, ty, noReferencedDefaultRole)
+}
+
+func (a *analyzer) referencedDefaultValueRole(f field, ty TypeRef, role referencedDefaultSourceRole) (*nestedDefaultNode, string, *diagnostic.Diagnostic) {
+	var node *nestedDefaultNode
+	var err *diagnostic.Diagnostic
+	if role == noReferencedDefaultRole {
+		node, err = a.referencedDefaultSchema(f.Schema, f.Pointer, ty, f.Depth, true)
+	} else {
+		node, err = a.referencedDefaultSchemaRole(f.Schema, f.Pointer, ty, f.Depth, true, role)
+	}
 	if err != nil {
 		return nil, "", err
 	}

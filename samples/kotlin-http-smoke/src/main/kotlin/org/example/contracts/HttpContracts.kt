@@ -207,6 +207,7 @@ fun main() = runBlocking {
         nullableArrayComponentContracts()
         rootObjectAliasContracts()
         rootCollectionAliasContracts()
+        rootDictionaryAllOfWrapperContracts(checked = true)
         rootSpecialAliasContracts()
         rootUnionAliasContracts()
         rootHierarchyAliasContracts()

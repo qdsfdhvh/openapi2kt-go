@@ -34,8 +34,9 @@ The preparation command accepts the same target names, compiles a small syntheti
 | `js` | Node execution of freshly compiled Kotlin/JS and the same four JSON cases |
 | `native` | Actual macOS ARM64 executable and the same four JSON cases; requires that host and the matching Kotlin/Native toolchain |
 | `android` | Android library compilation/assembly with AGP 8.13.2, compile SDK 36 and min SDK 23; requires the Android SDK. No device/runtime assertion is implied |
+| `android-device` | Headless instrumentation APK build and common runtime assertions on the explicitly selected Android device or emulator |
 
-The earlier catalog-only probe passed the fixed Kotlin 2.4.10 / serialization 1.11.0 / Gradle 9.3.1 combination in both `data_class` and `plain_class`: JVM on JDK 21, JS/Node and macOS ARM64 Native execution, common metadata compilation, and Android AAR assembly with AGP 8.13.2 / SDK 36. These results establish this consumer profile only; Android device execution, other Native hosts, full platform feature matrices and minimum-version combinations remain unverified.
+The earlier catalog-only probe passed the fixed Kotlin 2.4.10 / serialization 1.11.0 / Gradle 9.3.1 combination in both `data_class` and `plain_class`: JVM on JDK 21, JS/Node and macOS ARM64 Native execution, common metadata compilation, and Android AAR assembly with AGP 8.13.2 / SDK 36. Those runs establish this consumer profile only; they do not establish Android device execution, other Native hosts, full platform feature matrices or minimum-version combinations.
 
 The expanded two-input probe requires its own execution evidence and does not inherit those historical results. The runtime assertions exercise required scalar fields, nullable collection elements, recursive nullable model references, nested objects and raw JSON retention, plus winning allOf defaults/retained validation, byte-tree wire/fresh instances/factories, and canonical self-alias assignment/serde/descriptors. They do not establish HTTP engines, SSE cancellation, directional operation DTOs, all supported model roles, Android device behavior or other Native targets. Android runtime acceptance requires a separately executed real-device consumer. Full JVM feature acceptance remains `bash scripts/test.sh all`.
 
@@ -98,9 +99,10 @@ getters, constructor defaults, actual decoded body values, nullable, floating
 zero/non-finite values and UUID/Instant equality. The exact four-input Data/Plain
 profile passed JVM/JS/macOS ARM64 Native runtime and metadata/Android AAR
 compilation with the [recorded fixed versions and inventories](../../docs/platform-dto-getters.md).
-The fourth input has no device runtime result; the earlier three-input API34
-result remains historical. Full feature/HTTP/engine/minimum-version acceptance
-is separate.
+That four-input run did not include device execution; the later five-input
+API28 emulator run below includes this consumer. The earlier three-input API34
+physical-device result remains historical. Full feature/HTTP/engine/minimum-version
+acceptance is separate.
 
 
 The runner also generates [enum-field-bounds.json](../../tests/fixtures/platform/enum-field-bounds.json)
@@ -126,22 +128,39 @@ The five-input Data/Plain probe has [separate fixed-combination evidence](../../
 JVM, JS/Node and macOS ARM64 Native common assertions execute under four Json
 configurations, and common metadata plus Android AAR compile. Kotlin/plugin2.4.10
 and serialization1.11.0 use Gradle9.3.1 for KMP and Gradle9.5.1 for Android.
-No fifth-input Android device or complete feature/HTTP/engine acceptance is
-implied.
+The expanded five-input probe also passed headless APK execution on an API28
+emulator in both styles and all four Json configurations. The APK builds emitted
+D8 Kotlin-metadata rewriting warnings despite passing their runtime assertions.
+This result does not establish physical-device, API23 or complete
+feature/HTTP/engine acceptance.
 
 The fifth input now additionally checks independent enum-reference List/Map
 factories for String and all five native enum mappings. The expanded Data/Plain
 profile passed JVM, JS/Node and macOS ARM64 Native runtime under four Json
 configurations, plus common metadata and Android AAR compilation, with the
 [recorded toolchain and scope](../../docs/platform-enum-field-bounds.md).
-Those AARs were not executed on an Android device for this profile.
+The later API28 emulator APK run also exercised this expanded input.
 
 The fifth input also exercises independent inline and referenced enum collection
-child annotations and direct builtin scalar, UUID, LocalDate and Instant
-List/Map child annotations. Its
+child annotations; direct builtin scalar, UUID, LocalDate and Instant List/Map
+child annotations; and referenced integer, LocalDate and byte-array child
+annotations. Its
 common consumer checks independent owner factories, fresh containers and
 missing and supplied collection values. This expanded
 input passed Data/Plain JVM, JS/Node and macOS ARM64 Native execution under all
 four Json configurations, plus common metadata and Android AAR compilation.
-Those AARs have no device runtime result; the broader platform matrix remains
-separate.
+The later API28 emulator APK run covers this input as well; the broader
+platform matrix and physical-device execution remain separate.
+
+The fifth input further covers collection-valued child annotations through
+named collections and aliases ending in scalar references, inline String
+enums, inline byte values, native enum references and nested String enum
+references. The common consumer checks independent factories, missing and
+supplied values, selected invalid values and JSON round trips. The expanded
+Data/Plain profile passed JVM, JS/Node, macOS ARM64 Native and API28 emulator
+execution under four Json configurations; common metadata and Android AAR
+compilation also passed in both styles. These runs used Gradle 9.5.1.
+Kotlin/Native reported cache-library open warnings while its executable and
+assertions passed; the Android APK builds separately reported the D8 metadata
+warnings noted above. This evidence does not establish actual API23 or
+physical-device behavior for the expanded inputs.

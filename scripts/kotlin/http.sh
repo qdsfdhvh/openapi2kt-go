@@ -5,6 +5,20 @@ mkdir -p build
 workspace="$(mktemp -d "$root/build/http-smoke-XXXXXX")"
 cp -R samples/kotlin-http-smoke "$workspace/project"
 openapi_kt_build_cli "$workspace/openapi-kt"
+python3 - "$workspace/root-dictionary-allof-wrappers.json" <<'PYDICTIONARYWRAPPER'
+from pathlib import Path
+import json, sys
+
+doc = json.loads(Path("tests/fixtures/http/root-dictionary-allof-wrappers.json").read_text())
+target = doc["components"]["schemas"]["ZMap"]
+target.update(minProperties=1, maxProperties=2)
+target["additionalProperties"]["minLength"] = 2
+Path(sys.argv[1]).write_text(json.dumps(doc, indent=2) + "\n")
+PYDICTIONARYWRAPPER
+"$workspace/openapi-kt" generate --validation --input "$workspace/root-dictionary-allof-wrappers.json" \
+  --output "$workspace/project/build/generated-limits/root-dictionary-allof-wrappers" --package-name org.example.dictionarywrapper --model-name-suffix Dto
+"$workspace/openapi-kt" generate --validation --input "$workspace/root-dictionary-allof-wrappers.json" \
+  --output "$workspace/project/build/generated-limits/root-dictionary-allof-wrappers" --package-name org.example.dictionarywrapper --model-name-suffix Dto --check
 "$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-special-references.json --output "$workspace/project/build/generated-limits/tuple-special-references" --package-name org.example.specialtuples --model-name-suffix Dto
 "$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-special-references.json --output "$workspace/project/build/generated-limits/tuple-special-references" --package-name org.example.specialtuples --model-name-suffix Dto --check
 "$workspace/openapi-kt" generate --input tests/fixtures/http/tuple-recursive-cover.json --output "$workspace/project/build/generated-limits/tuple-recursive-cover" --package-name org.example.covertuples --model-name-suffix Dto

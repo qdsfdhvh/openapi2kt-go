@@ -61,7 +61,7 @@ func TestReferencedCollectionFieldDefaultsSourceRolesAndNoDrop(t *testing.T) {
 	}
 	for _, body := range []string{
 		`{"Rows":{"type":"array","items":{"type":"string"}},"Holder":{"properties":{"value":{"allOf":[{"$ref":"#/components/schemas/Rows"}],"default":[]}}}}`,
-		`{"Rows":{"type":"array","items":{"type":"string"}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Rows","default":[]}}}}}`,
+		`{"Rows":{"type":"array","items":{"type":"string"}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Rows","default":[false]}}}}}`,
 		`{"Holder":{"properties":{"target":{"type":"array","items":{"type":"string"},"default":[]},"value":{"$ref":"#/components/schemas/Holder/properties/target","default":[]}}}}`,
 		`{"Rows":{"type":"array","items":{"type":"string"}},"Holder":{"allOf":[{"properties":{"value":{"$ref":"#/components/schemas/Rows","default":[1]}}},{"properties":{"value":{"type":"string"}}}]}}`,
 		`{"Unused":{"properties":{"value":{"$ref":"#/components/schemas/Rows","default":[false]}}},"Rows":{"type":"array","items":{"type":"integer"}}}`,
@@ -69,6 +69,12 @@ func TestReferencedCollectionFieldDefaultsSourceRolesAndNoDrop(t *testing.T) {
 		if got, err := core.GenerateWithDiagnostics(request(schemas(body), "Dto")); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 			t.Fatal("source lost", body, err)
 		}
+	}
+	// A child annotation on a named inline-scalar collection has independent
+	// validation and does not become an initializer for its consuming field.
+	validChild := `{"Rows":{"type":"array","items":{"type":"string"}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Rows","default":[]}}}}}`
+	if _, err := core.GenerateWithDiagnostics(request(schemas(validChild), "Dto")); err != nil {
+		t.Fatal("admitted collection child", err)
 	}
 	// A discarded valid annotation is checked, while its runtime identity is absent.
 	body := `{"Rows":{"type":"array","items":{"type":"integer"}},"Holder":{"allOf":[{"properties":{"value":{"$ref":"#/components/schemas/Rows","default":[1]}}},{"properties":{"value":{"type":"string"}}}]}}`

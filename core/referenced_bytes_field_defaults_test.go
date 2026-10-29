@@ -168,6 +168,15 @@ func TestReferencedBytesFieldDefaultNullabilityAndCounts(t *testing.T) {
 }
 
 func TestReferencedBytesFieldDefaultRolesStayBounded(t *testing.T) {
+	// A physical collection child may now annotate an admitted byte reference;
+	// its original signed-array value stays independent of the container.
+	referencedChild := `{"Bytes":{"type":"string","format":"byte"},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Bytes","default":[1]}}}}}`
+	for _, checked := range []bool{false, true} {
+		rq := request(schemas(referencedChild), "Dto")
+		rq.Options.Validation = checked
+		inlineBuiltinChildGraduation(t, rq, `,"default":[1]`, `,"default":[128]`,
+			"/components/schemas/Holder/properties/v/items/default/0")
+	}
 	for _, terminal := range []string{
 		`{"type":"string","format":"byte","default":[1]}`,
 		`{"type":"string","format":"binary","minLength":1}`,
@@ -187,7 +196,6 @@ func TestReferencedBytesFieldDefaultRolesStayBounded(t *testing.T) {
 	for _, body := range []string{
 		`{"Bytes":{"type":"string","format":"byte"},"Holder":{"properties":{"v":{"allOf":[{"$ref":"#/components/schemas/Bytes"}],"default":[1]}}}}`,
 		`{"Bytes":{"type":"string","format":"byte"},"Alias":{"$ref":"#/components/schemas/Bytes","default":[1]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias","default":[2]}}}}`,
-		`{"Bytes":{"type":"string","format":"byte"},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Bytes","default":[1]}}}}}`,
 	} {
 		if report, err := core.GenerateWithDiagnostics(request(schemas(body), "Dto")); err == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
 			t.Fatal(body, err)

@@ -99,6 +99,24 @@ func analyzeDocument(root *document.Value, options Options, tupleSourceValidatio
 	}
 	// Field-default and object-graph validation can add scratch uses after the
 	// first freeze. Recheck existing proofs before freezing only those later uses.
+	if err := a.validateFrozenCollectionReferenceChildDefaults(declarations, true); err != nil {
+		return nil, nil, err
+	}
+	if err := a.finalizeCollectionReferenceChildDefaults(declarations, client); err != nil {
+		return nil, nil, err
+	}
+	if err := a.validateCollectionReferenceChildDefaults(declarations); err != nil {
+		return nil, nil, err
+	}
+	if err := a.validateNamedCollectionBindings(declarations); err != nil {
+		return nil, nil, err
+	}
+	if err := a.validateDictionaryAllOfSources(declarations); err != nil {
+		return nil, nil, err
+	}
+	if err := a.validateTupleNativeSources(); err != nil {
+		return nil, nil, err
+	}
 	if err := a.validateInlineEnumCollectionChildDefaults(declarations, true); err != nil {
 		return nil, nil, err
 	}
@@ -524,7 +542,11 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 			c.NullableDTO, c.NullableRaw = false, false
 		}
 	}
+	a.prepareDictionaryAllOfSources()
 	if err := a.resolveScalarAliases(schemas); err != nil {
+		return nil, err
+	}
+	if err := a.captureDictionaryAllOfSources(); err != nil {
 		return nil, err
 	}
 	hierarchy, err := a.planHierarchy(used)
@@ -732,6 +754,9 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	if err := a.planComponentDefaultFactories(declarations); err != nil {
 		return nil, err
 	}
+	if err := a.captureDictionaryAllOfDeclarations(declarations); err != nil {
+		return nil, err
+	}
 	if err := a.validateBorrowedDTOLeaves(declarations); err != nil {
 		return nil, err
 	}
@@ -772,6 +797,9 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 		return nil, err
 	}
 	if err := a.validateNamedCollectionBindings(declarations); err != nil {
+		return nil, err
+	}
+	if err := a.validateDictionaryAllOfSources(declarations); err != nil {
 		return nil, err
 	}
 	if err := a.validateRecursiveCoverBindings(declarations); err != nil {
@@ -904,7 +932,11 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	// forward values become stable only after all aliases have been linked.
 	// Capture their actual values once here for the final/late authority barrier.
 	a.finalizeNamedCollectionOrigins()
+	a.finalizeDictionaryAllOfDeclarations()
 	a.finalizeReferencedEnumCollectionFactories()
+	if err := a.finalizeReferencedScalarCollectionFactories(declarations); err != nil {
+		return nil, err
+	}
 	a.finalizeBorrowedCollectionSources()
 	if err := a.finalizeCheckedEnumRootGetters(); err != nil {
 		return nil, err

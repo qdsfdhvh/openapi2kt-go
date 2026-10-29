@@ -192,6 +192,20 @@ The same original-node cycle, cumulative 48-schema, 16-checked-edge and 240-cons
 
 **Migration:** previously rejected direct nullable array components now generate native nullable aliases. For newly admitted inputs, explicit-false consumers use backing `List<T>` signatures; inherited/true consumers retain the exported alias. Existing non-null arrays, dictionaries and historical corpus artifacts are unchanged. This only graduates the direct nullable-array guard, not nullable object roots or document-root arrays. The [synthetic envelope](../tests/fixtures/http/nullable-array-components.json), [core contracts](../core/nullable_array_component_test.go), [native CLI preservation](../internal/cli/nullable_array_component_process_test.go) and [fresh Kotlin consumer](../samples/kotlin-http-smoke/src/main/kotlin/org/example/contracts/NullableArrayComponentContracts.kt) cover forward peers, source errors, required/default descriptors, four Json configurations, constructor/copy/serde/Patch, typed HTTP and fragmented live SSE. Independent 240 shallow nullable/narrow fields and one 16-edge narrowed consumer are compilation probes, not Android/KMP or Cartesian resource guarantees. Full F04/F07/M03/M07 remains open.
 
+## Component-root dictionary `allOf` wrappers
+
+A component with exactly one `allOf` reference may bind an admitted named
+dictionary through finite named aliases and wrappers. Empty or documentation-only
+siblings may precede or follow that reference. The original typed Map or
+`JsonObject`, value peers, nullable intent and independently owned target factory
+remain; the wrapper contributes two original source levels and does not inherit
+the factory. Eligible wrappers and named aliases may own independent validated
+default factories. Typed checked consumers retain existing bounds, while
+standalone aliases do not enforce them. Inline or non-neutral dictionary
+intersections remain separate. See the
+[bounded dictionary wrapper contract](dictionary-allof-wrappers.md) for
+nullable precedence, capture limits, migration and verification.
+
 ## Root object aliases
 
 A pure named-component `$ref` root whose terminal is an accepted non-null ordinary object DTO generates an exported native typealias. Forward chains use the canonical target's identity, constructor and serializer; they do not copy a DTO or introduce a wrapper:

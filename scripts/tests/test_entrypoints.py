@@ -29,6 +29,9 @@ def process_diagnostics(result, args):
             'stdout': clean(result.stdout), 'stderr': clean(result.stderr)}
 
 
+FEATURES += ('root-dictionary-allof-wrappers',)
+
+
 class EntrypointTests(unittest.TestCase):
     def test_list_contains_every_existing_feature_without_starting_tools(self):
         result = subprocess.run([bash_executable(), RUNNER.as_posix(), '--list'], cwd=ROOT.parent, capture_output=True, text=True, env=dict(os.environ, GO='must-not-execute'))

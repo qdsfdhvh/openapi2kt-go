@@ -32,7 +32,7 @@ Data and Plain styles retain array reference equality. Non-null byte defaults, i
 
 ## Scope and limits
 
-Only the consuming ordinary field's own annotation is admitted here. Target/intermediate defaults are neither inherited nor accepted through this role. Component and reference-wrapper factories, direct inline defaults and object-default members retain their [separate](bytes-component-defaults.md) [contracts](bytes-default-trees.md). Single-ref composition wrappers, child/element own annotations, caller-native/value-class/enum/const terminals and arbitrary new reference graphs receive no new permission.
+Only the consuming ordinary field's own annotation is admitted here. Target/intermediate defaults are neither inherited nor accepted through this role. Component and reference-wrapper factories, direct inline defaults and object-default members retain their [separate](bytes-component-defaults.md) [contracts](bytes-default-trees.md). Eligible byte reference children have a [separate independent annotation contract](scalar-reference-collection-child-defaults.md). Single-ref composition wrappers, caller-native/value-class/enum/const terminals and arbitrary new reference graphs receive no new permission.
 
 Existing collection counts remain opt-in and apply at their own container. Byte `minLength`/`maxLength`/pattern and ByteArray `uniqueItems:true` remain unsupported. Schema checks run even for empty/null annotations. Actual alias assignment and independent builtin codecs retain their existing validation behavior.
 

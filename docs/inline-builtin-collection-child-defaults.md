@@ -51,8 +51,10 @@ The permission is tied to the original component property and physical child
 node. It does not extend to component-root collections, nested container
 children, tuple members or tails, fixed-property extras, unadmitted owner
 factories, ordinary `$ref` children, bytes, enum, const, native or value-class
-children, or hierarchy-owned DTOs. Enum children have their own
-[bounded contract](collection-reference-child-defaults.md). Other source
+children, or hierarchy-owned DTOs through this inline role. Eligible scalar
+references and enum children have separate
+[reference](scalar-reference-collection-child-defaults.md) and
+[enum](collection-reference-child-defaults.md) contracts. Other source
 roles, reference graphs and general defaults keep their separate eligibility.
 
 The existing input 8 MiB, source depth 48, cumulative source work 16,384,

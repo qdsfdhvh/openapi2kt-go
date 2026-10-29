@@ -23,6 +23,15 @@ import org.example.platformenumbounds.models.FactoryConsumer
 import org.example.platformenumbounds.models.ChildAnnotationHolder
 import org.example.platformenumbounds.models.ChildAnnotationFactory
 import org.example.platformenumbounds.models.ChildAnnotationEmptyFactory
+import org.example.platformenumbounds.models.ScalarReferenceChildHolder
+import org.example.platformenumbounds.models.CollectionChildHolder
+import org.example.platformenumbounds.models.`ScalarChildValues default`
+import org.example.platformenumbounds.models.`ScalarChildValuesAlias default`
+import org.example.platformenumbounds.models.`InlineChildWordValues default`
+import org.example.platformenumbounds.models.`InlineChildWordValuesAlias default`
+import org.example.platformenumbounds.models.`InlineChildByteValues default`
+import org.example.platformenumbounds.models.`NestedChildWordValues default`
+import org.example.platformenumbounds.models.`NestedChildWordValuesAlias default`
 import org.example.platformenumbounds.models.RootWord
 import org.example.platformenumbounds.models.RootWordTreeAlias
 import org.example.platformenumbounds.models.RootWordTreeHolder
@@ -126,6 +135,47 @@ internal fun enumFieldBoundsContracts(json: Json) {
     check(`FactoryBoolean default`() && !`FactoryBooleanAlias default`())
     check(`FactoryBooleanRows default`() == listOf(true) && `FactoryBooleanRowsAlias default`() == listOf(false))
     check(`MaybeFactoryBooleanRows default`() == null && `FactoryBooleanRows default`() !== `FactoryBooleanRows default`())
+    check(`ScalarChildValues default`() == listOf(1) && `ScalarChildValuesAlias default`() == listOf(2))
+    check(`InlineChildWordValues default`().single().serialName == "one")
+    check(`InlineChildWordValuesAlias default`().single().serialName == "two")
+    check(`InlineChildByteValues default`().single().contentEquals(byteArrayOf(1, 2)))
+    check(`NestedChildWordValues default`().single()["root"] == listOf(RootWord.ONE))
+    check(`NestedChildWordValuesAlias default`().single()["alias"] == listOf(RootWord.TWO))
+    check(`NestedChildWordValues default`() !== `NestedChildWordValues default`())
+    val emptyCollections = CollectionChildHolder()
+    check(emptyCollections.scalar == null && emptyCollections.inlineWords == null && emptyCollections.bytes == null)
+    check(emptyCollections.nativeEnums == null && emptyCollections.nestedWords == null)
+    check(json.decodeFromString<CollectionChildHolder>("{}") == emptyCollections)
+    val suppliedCollections = json.decodeFromString<CollectionChildHolder>(
+        """{"scalar":[[4]],"inlineWords":{"wire":["two"]},"bytes":[[[5,6]]],"nativeEnums":[[2]],"nestedWords":{"wire":[{"a":["one"]}]}}"""
+    )
+    check(suppliedCollections.scalar == listOf(listOf(4)))
+    check(suppliedCollections.inlineWords?.get("wire")?.single()?.serialName == "two")
+    check(suppliedCollections.bytes?.single()?.single()?.contentEquals(byteArrayOf(5, 6)) == true)
+    check(suppliedCollections.nativeEnums == listOf(listOf(2)))
+    check(suppliedCollections.nestedWords?.get("wire")?.single()?.get("a") == listOf(RootWord.ONE))
+    val collectionRoundTrip = json.decodeFromString<CollectionChildHolder>(json.encodeToString(suppliedCollections))
+    check(collectionRoundTrip.scalar == suppliedCollections.scalar && collectionRoundTrip.inlineWords == suppliedCollections.inlineWords)
+    check(collectionRoundTrip.bytes?.single()?.single()?.contentEquals(byteArrayOf(5, 6)) == true)
+    check(collectionRoundTrip.nativeEnums == suppliedCollections.nativeEnums && collectionRoundTrip.nestedWords == suppliedCollections.nestedWords)
+    check(runCatching { json.decodeFromString<CollectionChildHolder>("""{"scalar":[[-1]]}""") }.isFailure)
+    check(runCatching { json.decodeFromString<CollectionChildHolder>("""{"nativeEnums":[[3]]}""") }.isFailure)
+    check(runCatching { json.decodeFromString<CollectionChildHolder>("""{"bytes":[[[128]]]}""") }.isFailure)
+    val scalarReferenceChildren = ScalarReferenceChildHolder()
+    check(scalarReferenceChildren.counts == null && scalarReferenceChildren.days == null && scalarReferenceChildren.blobs == null)
+    check(json.decodeFromString<ScalarReferenceChildHolder>("{}") == scalarReferenceChildren)
+    val suppliedScalars = json.decodeFromString<ScalarReferenceChildHolder>(
+        """{"counts":[1],"days":{"first":"2024-02-29"},"blobs":[[-128,127]]}"""
+    )
+    check(suppliedScalars.counts == listOf(1))
+    check(suppliedScalars.days == mapOf("first" to LocalDate.parse("2024-02-29")))
+    check(suppliedScalars.blobs?.single()?.contentEquals(byteArrayOf(-128, 127)) == true)
+    val scalarRoundTrip = json.decodeFromString<ScalarReferenceChildHolder>(json.encodeToString(suppliedScalars))
+    check(scalarRoundTrip.counts == suppliedScalars.counts && scalarRoundTrip.days == suppliedScalars.days)
+    check(scalarRoundTrip.blobs?.single()?.contentEquals(byteArrayOf(-128, 127)) == true)
+    check(runCatching { json.decodeFromString<ScalarReferenceChildHolder>("""{"counts":[-1]}""") }.isFailure)
+    check(runCatching { json.decodeFromString<ScalarReferenceChildHolder>("""{"days":{"first":"2023-02-29"}}""") }.isFailure)
+    check(runCatching { json.decodeFromString<ScalarReferenceChildHolder>("""{"blobs":[[128]]}""") }.isFailure)
     val childAnnotations = ChildAnnotationHolder()
     check(childAnnotations.inlineWords == null && childAnnotations.refWords == null)
     check(childAnnotations.counts == null && childAnnotations.labels == null)

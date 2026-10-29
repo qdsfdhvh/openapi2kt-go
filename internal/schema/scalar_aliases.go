@@ -15,6 +15,11 @@ func (a *analyzer) resolveScalarAliases(schemas *document.Value) *diagnostic.Dia
 	var visit func(*component, int) *diagnostic.Diagnostic
 	visit = func(c *component, depth int) *diagnostic.Diagnostic {
 		pointer := c.Pointer + "/$ref"
+		steps := 1
+		if c.DictionaryAllOf != nil {
+			pointer = c.DictionaryAllOf.Pointer
+			steps = 2
+		}
 		if depth+c.AliasHeight > MaxSchemaDepth {
 			return diagnostic.At("E_SCHEMA_DEPTH", "Scalar alias depth exceeds the supported limit.", pointer)
 		}
@@ -38,10 +43,10 @@ func (a *analyzer) resolveScalarAliases(schemas *document.Value) *diagnostic.Dia
 		if err != nil {
 			return err
 		}
-		if err := visit(target, depth+1); err != nil {
+		if err := visit(target, depth+steps); err != nil {
 			return err
 		}
-		c.AliasHeight = target.AliasHeight + 1
+		c.AliasHeight = target.AliasHeight + steps
 		if target.InternalModelTarget != nil {
 			if err := a.bindInternalRootAlias(c, target.InternalModelTarget, depth, c.AliasHeight, target.BindingNullable); err != nil {
 				return err
@@ -85,6 +90,9 @@ func (a *analyzer) resolveScalarAliases(schemas *document.Value) *diagnostic.Dia
 			c.BindingTarget = canonical
 			if collection || ordinary || lexicalEnum || canonical.ValueClass || temporal || bigint || bytes || callerNative || primitive || nativeEnum || structured || jsonRoot || emptyRoot || hierarchy || union {
 				c.BindingNullable = nullableOverride(c.Schema)
+				if c.DictionaryAllOf != nil {
+					c.BindingNullable = wrapperNullableOverride(c.Schema)
+				}
 				if c.BindingNullable == nil {
 					c.BindingNullable = target.BindingNullable
 					if c.BindingNullable == nil && (canonical.NullableDTO || canonical.NullableEnum || canonical.NullableValueClass || canonical.NullableTemporal || canonical.NullableBigint || canonical.NullableBytes || canonical.NullableCallerNative || canonical.NullableRaw || canonical.NullablePrimitive || canonical.NullableNativeEnum || canonical.NullableHierarchy || canonical.NullableStructuredConst) {

@@ -1,5 +1,10 @@
 # Kotlin integration
 
+- [Component-root dictionary `allOf` wrappers](dictionary-allof-wrappers.md)
+  retain the original named Map/JsonObject backing, nullable priority and
+  independent target factories. Checked typed consumers retain existing
+  validation; standalone alias serialization does not enforce checks.
+
 - [Discarded structured const declarations](../../../docs/discarded-structured-const.md) are validated without acquiring Kotlin fields/defaults/helpers. Extra keys keep existing Json unknown-key behavior; winning field codecs and actual body/dictionary values remain separate.
 
 - [Pinned structured const data](../../../docs/pinned-structured-const.md) uses non-null JSON body defaults in union/hierarchy data fields. Const-only structured variants are parameterless classes; same-kind decoded values persist. Scalar discriminators, Unknown policy and existing scalar-only singletons remain.
@@ -808,5 +813,7 @@ For [bounded lexical enum collection roots](checked-enum-collections.md#collecti
 [Borrowed enum collection defaults](checked-enum-collections.md#borrowed-collection-defaults) retain an original ordinary field annotation and independent factories on the actual collection alias/finite pure aliases. Test each own vocabulary/check/null rule and fresh state; unannotated consumers inherit no default. Factory binding/type/height and original graph/check identities remain authoritative. Eligible inline and enum-reference elements follow the separate [child-default guidance](collection-reference-child-defaults.md); general graphs remain separate.
 
 Eligible ordinary named DTO fields also admit independent inline builtin element annotations under the [builtin child-default guidance](inline-builtin-collection-child-defaults.md). Keep source and type authority, nullability, validation gates and budgets; the child never initializes its container.
+
+Eligible physical collection children may independently annotate scalar references under the [scalar reference child-default guidance](scalar-reference-collection-child-defaults.md). Preserve the actual source/binding, effective nullable view and checks; the annotation does not initialize the container.
 
 [Checked String enum roots](checked-enum-collections.md#checked-enum-roots) retain lexical classifiers and shared source checks through existing named aliases and typed List/Map/default/HTTP/SSE consumers. Standalone codecs and assignments remain open; defaults require original vocabulary plus checks. Verify root/alias/null factories, nearest nullable, required/Patch and actual runtime boundaries; root declarations and factory records must remain authoritative even without consumers.

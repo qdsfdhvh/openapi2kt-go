@@ -100,7 +100,7 @@ func TestReferencedNativeEnumCollectionFieldDefaultsExcludedSourceRolesAndNoDrop
 		`{"Codes":{"type":"array","items":{"type":"integer","format":"int32","enum":[1]},"default":[]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Codes","default":[]}}}}`,
 		`{"Codes":{"type":"array","items":{"type":"integer","format":"int32","enum":[1]}},"Alias":{"$ref":"#/components/schemas/Codes","default":[]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias","default":[]}}}}`,
 		`{"Codes":{"type":"array","items":{"type":"integer","format":"int32","enum":[1]}},"Holder":{"properties":{"v":{"allOf":[{"$ref":"#/components/schemas/Codes"}],"default":[]}}}}`,
-		`{"Codes":{"type":"array","items":{"type":"integer","format":"int32","enum":[1]}},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Codes","default":[]}}}}}`,
+		`{"Codes":{"type":"array","items":{"type":"integer","format":"int32","enum":[1]}},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Codes","default":[2]}}}}}`,
 		`{"Codes":{"type":"array","items":{"$ref":"#/components/schemas/Codes"}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Codes","default":[]}}}}`,
 		`{"Codes":{"type":"array","items":{"type":"integer","format":"int32","enum":[1]}},"Choice":{"oneOf":[{"properties":{"tag":{"const":"a"},"v":{"$ref":"#/components/schemas/Codes","default":[]}}},{"properties":{"tag":{"const":"b"}}}]}}`,
 	} {
@@ -110,6 +110,15 @@ func TestReferencedNativeEnumCollectionFieldDefaultsExcludedSourceRolesAndNoDrop
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("role", body, err)
 			}
+		}
+	}
+	// The original empty collection child now validates independently.
+	validChild := schemas(`{"Codes":{"type":"array","items":{"type":"integer","format":"int32","enum":[1]}},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Codes","default":[]}}}}}`)
+	for _, checked := range []bool{false, true} {
+		r := request(validChild, "Dto")
+		r.Options.Validation = checked
+		if _, err := core.GenerateWithDiagnostics(r); err != nil {
+			t.Fatal("admitted native enum collection child", checked, err)
 		}
 	}
 	// Float/Double membership is exact against the source token before rounding.

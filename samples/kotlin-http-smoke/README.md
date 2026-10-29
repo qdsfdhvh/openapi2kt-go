@@ -201,6 +201,13 @@ Root-special alias contracts call canonical wrapper constructors/serializers and
 
 Root-collection alias contracts preserve canonical forward List/Map/JsonObject targets and item peers, narrow nullable root views independently of values, and exercise four Json serde/Patch/HTTP/fragmented live SSE cold/error-close/reuse. Independent checked full-rule 240 shallow fields, count-only 240 fields, 16 checked edges and 48 cumulative source hops retain original budgets; no Cartesian guarantee. These tests derive checked terminal schemas from the synthetic root-collection fixture.
 
+Root dictionary single-reference `allOf` wrapper contracts additionally verify
+actual dictionary/peer aliases, nearest nullable views, independent target
+factories, checked DTO/JSON/Patch and controlled HTTP behavior. The dedicated
+feature route compiles Data/Plain with validation off/on and runs four Json
+configurations per profile; it does not establish general dictionary
+intersection or platform coverage.
+
 Root-object alias contracts compile exported native aliases and call their canonical DTO constructors/companion serializers. Four Json configurations cover forward chains, nominal recursion, canonical alias/direct HTTP overload suffixes, nested/list/map serde, Patch and fragmented still-open SSE malformed/strict-codec failure closure and client reuse. An independent opt-in checked-target fixture verifies alias constructor/copy/serde checks plus 240 shallow alias fields and a nominal consumer with 48 cumulative source hops. These do not prove other root binding or discriminator alias profiles.
 
 Nullable-array contracts additionally compile native nullable aliases and genuinely non-null backing views without exported companion aliases. Four Json configurations verify null roots versus nullable items, forward model/enum peer qualification, shared/request required-default descriptor differences, constructor/copy/serde and inherited ref-wrapper Patch states. Typed HTTP null/narrow body-response boundaries and fragmented still-open SSE null/invalid-data closure/client reuse are exercised with a separate strict stream Json. Independent 240 shallow mixed nullable/narrow fields and a single 16-edge narrowed consumer compile alongside the runtime fixture; nullable dictionaries retain their historical policy.
