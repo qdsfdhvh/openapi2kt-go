@@ -1,6 +1,8 @@
 package core_test
 
 import (
+	"bytes"
+	"encoding/json"
 	"os"
 	"reflect"
 	"strings"
@@ -34,7 +36,18 @@ func TestStringEnumCollectionBoundsFixturePresence(t *testing.T) {
 			}
 		}
 		// A valid runtime unknown remains an invalid default, including Patch.
-		r.Document = []byte(strings.Replace(string(input), `"default": ["one"]`, `"default": ["future"]`, 1))
+		var tree map[string]any
+		decoder := json.NewDecoder(bytes.NewReader(input))
+		decoder.UseNumber()
+		if err := decoder.Decode(&tree); err != nil {
+			t.Fatal(err)
+		}
+		patchSchema := tree["paths"].(map[string]any)["/patch"].(map[string]any)["patch"].(map[string]any)["requestBody"].(map[string]any)["content"].(map[string]any)["application/json"].(map[string]any)["schema"].(map[string]any)
+		patchSchema["properties"].(map[string]any)["codes"].(map[string]any)["default"] = []string{"future"}
+		r.Document, err = json.Marshal(tree)
+		if err != nil {
+			t.Fatal(err)
+		}
 		if _, err := core.GenerateWithDiagnostics(r); err == nil {
 			t.Fatal("Unknown default accepted")
 		}

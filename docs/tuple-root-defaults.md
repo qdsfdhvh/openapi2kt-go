@@ -31,9 +31,10 @@ source trees receive no component permission. Invalid values report their
 consuming `/default/<index>` Pointer. Original source depth and tuple work
 budgets, value16384/default32KiB, checked16 and JVMslots240 remain.
 
-Mixed raw prefix-only projections, reference/enum/DTO/composed members,
-unsupported/Boolean tails and member-own defaults keep their separate factory
-roles. A tuple default adds no positional or exact-length validation: generated
+Uniform [false Boolean tails](tuple-boolean-tails.md) reuse the selected direct
+scalar factory grammar. Mixed and true-tail projections use the implemented
+[raw tuple factory role](tuple-raw-defaults.md), including already admitted
+reference prefixes. Direct inline enum selected members use the [enum tuple default contract](tuple-inline-enums.md). Selected admitted reference elements use the [reference default contract](tuple-reference-defaults.md). Member-own defaults and unadmitted source roles keep their separate contracts. A tuple default adds no positional or exact-length validation: generated
 Lists retain the existing `W_TUPLE_APPROXIMATION`, scalar codecs and tail policy.
 It also adds no runtime validation to standalone List alias assignment.
 
@@ -54,3 +55,23 @@ independent evidence.
 produce factories. Accepted tuple declarations, source/wire behavior and
 persisted manifest/name-lock formats retain their contracts. Wider tuple and
 default roles remain separate.
+
+[Boolean positional sources](tuple-boolean-members.md) add uniform false empty-array factories and true/mixed raw factories, with actual selected codecs, independent nullable intent and unchanged required/Patch/no-inheritance/budgets.
+
+[Selected inline ordinary DTO tuples](tuple-inline-dto.md) have a separate field/root/independent alias own-default contract using actual final DTO codecs, strict existing object-default walks and complete discarded-source validation. Positional own annotations and general composed/default graphs remain separate.
+
+[Inline ordinary allOf tuple sources](tuple-inline-allof.md) have a separate actual-constructor and independent outer-default contract. Original source/nullable/required/count/default checks, isolated discarded validation and shared overlapping allOf budgets remain; general compositions stay independent.
+
+[List/typed Map tuple sources](tuple-collection-sources.md) retain actual finite collection codecs, strict independent outer annotations, original backing/source proof and erased-only cached source depth. General tuple/default graphs stay separate.
+
+[JsonNull tuple sources](tuple-null-sources.md) separately admit original plain/null enum/null const positions and accepted reference paths, with actual codecs, strict independent outer defaults, original source proof and existing limits. General const/graph and child default roles remain independent.
+
+[Scalar const tuple sources](tuple-scalar-const.md) separately admit existing scalar const codecs and strict independent outer defaults, preserving original literal/ref/backing identity, nearest nullable and cached/cumulative source budgets. Retained catalog-binding records count toward cumulative capture work; structured const/union/recursive roles remain independent.
+
+[Structured const tuple sources](tuple-structured-const.md) separately admit original JsonObject/JsonArray positions and existing references, with strict complete-literal outer annotations and data-only capture of const/default/enum payloads. Original identity, nullable/Patch and cumulative budgets remain; broader union/recursive/default graphs stay independent.
+
+[Union tuple sources](tuple-union-sources.md) extend D02/D03/D06/F08/M03/M07/Q05 with actual inline/reference union codecs, existing normalization/context projections and independent outer defaults. Original dispatch/pins/required/null/Unknown policies, source/declaration/backing/address proof and erased-source budgets remain. General composition/recursive/default/platform and final candidate acceptance stay open.
+
+[Product union tuple sources](tuple-product-union-sources.md) extend D02/D03/D06/F08/M03/M07/Q05 through actual Cartesian product declarations, original contribution/dispatch/null policies and strict outer own annotations. Original product/source/variant/origin/type/address/cache proof and budgets remain, including discarded validation and internal wrappers. General recursive/hierarchy/intersection/default/platform and final acceptance remain open.
+
+[Hierarchy tuple references](tuple-hierarchy-references.md) extend D01/D02/D03/D06/F08/M03/M07/Q05 through actual named root/intermediate/leaf codecs and strict outer own defaults. Original dispatch/inherited tags/Unknown/null adapters, actual lineage/leaf/source/type/address/cache proof and budgets remain. General inline/multiple-parent/recursive/default/platform and final acceptance stay open.

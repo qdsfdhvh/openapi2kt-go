@@ -9,14 +9,17 @@ UUID or standard temporal scalar already supported by the
 element type, nullable view, literal checks and typed default helper are reused.
 No schema tree is copied or synthesized.
 
+Uniform [false Boolean tails](tuple-boolean-tails.md) select their original scalar
+prefix and use the same own-default grammar. True-tail raw projections use the [raw tuple default role](tuple-raw-defaults.md).
+
 For example, a prefix of String and Int plus explicit Int `items` can have
 `default: [1, 2]`. The default is checked against the selected `List<Int>`
 approximation, without enforcing the original positional String slot. As with
 existing tuples, `W_TUPLE_APPROXIMATION` reports that positions and tuple length
 are not enforced and a typed List can narrow unrestricted tail values. Uniform
 prefix-only defaults likewise do not gain positional or exact-length validation.
-A mixed raw projection without a selected scalar remains unsupported for this
-own-default role.
+Mixed and true-tail raw projections have the separate implemented
+[raw tuple default role](tuple-raw-defaults.md).
 
 Optional fields receive an independently decoded typed default List. Missing
 keys use it, supplied values override it and explicit null follows the existing
@@ -41,8 +44,8 @@ behavior. The new tuple own-default role uses the existing whole-value
 mapped JSON size as well. Original source48/reference-work16384/checked16/
 constructor-slots240 limits remain.
 
-Root/wrapper/collection-element defaults, ref/nominal selected elements, raw mixed
-defaults, inline enum or structured prefix declarations, tuple-position
+Collection-element defaults and unadmitted ref/nominal selected elements,
+structured prefix declarations, tuple-position
 annotations and broader default/uniqueness roles remain separate. Referenced
 components' independent factories use the [target-default profile](tuple-target-defaults.md);
 they do not supply a missing tuple field or grant this field's annotation role.
@@ -63,3 +66,25 @@ independent evidence.
 **Migration:** formerly rejected eligible scalar tuple field defaults now
 generate. Existing accepted call sites, wire behavior, warnings and persisted
 formats retain their contracts. General tuple defaults and D03/D06 remain open.
+
+[Inline enum tuples](tuple-inline-enums.md) separately extend direct selected String/native enum field own defaults with original strict vocabularies and actual codecs.
+
+[Selected admitted references](tuple-reference-defaults.md) separately support tuple field/root/alias own defaults with actual scalar/enum/ordinary DTO/allOf codecs and original source/value budgets.
+
+[Selected inline ordinary DTO tuples](tuple-inline-dto.md) have a separate field/root/independent alias own-default contract using actual final DTO codecs, strict existing object-default walks and complete discarded-source validation. Positional own annotations and general composed/default graphs remain separate.
+
+[Inline ordinary allOf tuple sources](tuple-inline-allof.md) have a separate actual-constructor and independent outer-default contract. Original source/nullable/required/count/default checks, isolated discarded validation and shared overlapping allOf budgets remain; general compositions stay independent.
+
+[List/typed Map tuple sources](tuple-collection-sources.md) retain actual finite collection codecs, strict independent outer annotations, original backing/source proof and erased-only cached source depth. General tuple/default graphs stay separate.
+
+[JsonNull tuple sources](tuple-null-sources.md) separately admit original plain/null enum/null const positions and accepted reference paths, with actual codecs, strict independent outer defaults, original source proof and existing limits. General const/graph and child default roles remain independent.
+
+[Scalar const tuple sources](tuple-scalar-const.md) separately admit existing scalar const codecs and strict independent outer defaults, preserving original literal/ref/backing identity, nearest nullable and cached/cumulative source budgets. Retained catalog-binding records count toward cumulative capture work; structured const/union/recursive roles remain independent.
+
+[Structured const tuple sources](tuple-structured-const.md) separately admit original JsonObject/JsonArray positions and existing references, with strict complete-literal outer annotations and data-only capture of const/default/enum payloads. Original identity, nullable/Patch and cumulative budgets remain; broader union/recursive/default graphs stay independent.
+
+[Union tuple sources](tuple-union-sources.md) extend D02/D03/D06/F08/M03/M07/Q05 with actual inline/reference union codecs, existing normalization/context projections and independent outer defaults. Original dispatch/pins/required/null/Unknown policies, source/declaration/backing/address proof and erased-source budgets remain. General composition/recursive/default/platform and final candidate acceptance stay open.
+
+[Product union tuple sources](tuple-product-union-sources.md) extend D02/D03/D06/F08/M03/M07/Q05 through actual Cartesian product declarations, original contribution/dispatch/null policies and strict outer own annotations. Original product/source/variant/origin/type/address/cache proof and budgets remain, including discarded validation and internal wrappers. General recursive/hierarchy/intersection/default/platform and final acceptance remain open.
+
+[Hierarchy tuple references](tuple-hierarchy-references.md) extend D01/D02/D03/D06/F08/M03/M07/Q05 through actual named root/intermediate/leaf codecs and strict outer own defaults. Original dispatch/inherited tags/Unknown/null adapters, actual lineage/leaf/source/type/address/cache proof and budgets remain. General inline/multiple-parent/recursive/default/platform and final acceptance stay open.

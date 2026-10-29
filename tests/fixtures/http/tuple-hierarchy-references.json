@@ -1,0 +1,629 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Root": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Group"
+          },
+          {
+            "$ref": "#/components/schemas/Other"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "group": "#/components/schemas/Group",
+            "other": "#/components/schemas/Other"
+          }
+        }
+      },
+      "Group": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/First"
+          },
+          {
+            "$ref": "#/components/schemas/Second"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "sub",
+          "mapping": {
+            "first": "#/components/schemas/First",
+            "second": "#/components/schemas/Second"
+          }
+        }
+      },
+      "First": {
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Second": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "Other": {
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "Nullable": {
+        "$ref": "#/components/schemas/Root",
+        "nullable": true
+      },
+      "RootAlias": {
+        "$ref": "#/components/schemas/Root"
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Root"
+          }
+        ],
+        "default": [
+          {
+            "kind": "group",
+            "sub": "first",
+            "id": "ready"
+          }
+        ]
+      },
+      "ParentRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Group"
+          }
+        ],
+        "default": [
+          {
+            "kind": "group",
+            "sub": "second",
+            "name": "parent"
+          }
+        ]
+      },
+      "LeafRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/First"
+          }
+        ],
+        "default": [
+          {
+            "id": "leaf"
+          }
+        ]
+      },
+      "NullableRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Nullable"
+          }
+        ],
+        "default": [
+          null,
+          {
+            "kind": "other",
+            "value": "ready"
+          }
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Rows",
+        "default": []
+      },
+      "Repeated": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Root"
+          },
+          {
+            "$ref": "#/components/schemas/RootAlias"
+          }
+        ]
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Root"
+          },
+          {
+            "$ref": "#/components/schemas/Group"
+          }
+        ],
+        "default": [
+          {
+            "data": 1
+          },
+          null
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Root"
+          }
+        ],
+        "items": {
+          "type": "integer"
+        },
+        "default": [
+          7
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Root"
+              }
+            ],
+            "default": [
+              {
+                "kind": "group",
+                "sub": "first",
+                "id": "ready"
+              }
+            ]
+          },
+          "parents": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Group"
+              }
+            ],
+            "default": [
+              {
+                "kind": "group",
+                "sub": "second",
+                "name": "parent"
+              }
+            ]
+          },
+          "leaves": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/First"
+              }
+            ],
+            "default": [
+              {
+                "id": "leaf"
+              }
+            ]
+          },
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Root"
+              }
+            ],
+            "default": [
+              {
+                "kind": "group",
+                "sub": "first",
+                "id": "ready"
+              }
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Rows"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "CompoundRoot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CompoundGroup"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "family",
+          "mapping": {
+            "compound": "#/components/schemas/CompoundGroup"
+          }
+        }
+      },
+      "CompoundGroup": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Alpha"
+          },
+          {
+            "$ref": "#/components/schemas/Beta"
+          },
+          {
+            "$ref": "#/components/schemas/Gamma"
+          }
+        ]
+      },
+      "Alpha": {
+        "properties": {
+          "kind": {
+            "const": "note"
+          },
+          "mode": {
+            "const": "fast"
+          },
+          "payload": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payload"
+        ]
+      },
+      "Beta": {
+        "properties": {
+          "kind": {
+            "const": "note"
+          },
+          "mode": {
+            "const": "slow"
+          },
+          "payload": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payload"
+        ]
+      },
+      "Gamma": {
+        "properties": {
+          "kind": {
+            "const": "count"
+          },
+          "mode": {
+            "const": "fast"
+          },
+          "n": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "n"
+        ]
+      },
+      "CompoundRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/CompoundRoot"
+          }
+        ],
+        "default": [
+          {
+            "family": "compound",
+            "kind": "note",
+            "mode": "fast",
+            "payload": "ready"
+          }
+        ]
+      },
+      "ClosedRoot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ClosedGroup"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "family",
+          "mapping": {
+            "closed": "#/components/schemas/ClosedGroup"
+          }
+        }
+      },
+      "ClosedGroup": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ClosedLeft"
+          },
+          {
+            "$ref": "#/components/schemas/ClosedRight"
+          }
+        ]
+      },
+      "ClosedLeft": {
+        "properties": {
+          "v": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "v"
+        ]
+      },
+      "ClosedRight": {
+        "properties": {
+          "v": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "v"
+        ]
+      },
+      "ClosedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/ClosedRoot"
+          }
+        ],
+        "default": [
+          {
+            "family": "closed",
+            "type": "closedleft",
+            "v": "ready"
+          }
+        ]
+      },
+      "ClosedOuter": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ClosedRoot"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "top",
+          "mapping": {
+            "outer": "#/components/schemas/ClosedRoot"
+          }
+        }
+      },
+      "ClosedOuterRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/ClosedOuter"
+          }
+        ],
+        "default": [
+          {
+            "top": "outer",
+            "family": "closed",
+            "type": "closedleft",
+            "v": "ready"
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "get": {
+        "operationId": "inlineRows",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "$ref": "#/components/schemas/Root"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "$ref": "#/components/schemas/Root"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "$ref": "#/components/schemas/Root"
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      {
+                        "kind": "group",
+                        "sub": "first",
+                        "id": "ready"
+                      }
+                    ]
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "$ref": "#/components/schemas/Root"
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      {
+                        "kind": "group",
+                        "sub": "first",
+                        "id": "ready"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

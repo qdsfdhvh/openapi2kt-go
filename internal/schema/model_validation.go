@@ -125,6 +125,31 @@ func (a *analyzer) primitiveElementType(v *document.Value, pointer string, depth
 }
 
 func (a *analyzer) collectionElementType(v *document.Value, name, pointer string, nested *[]Declaration, used map[string]bool, depth int) (TypeRef, *diagnostic.Diagnostic) {
+	if ty, err := a.tupleSpecialElement(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
+	if ty, err := a.tupleCoverElement(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
+	if ty, err := a.tupleLiteralElementType(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
+	if ty, err := a.tupleBooleanReferenceElement(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
+	if ty, err := a.tupleFalseElementType(v, name, pointer, nested, used, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
 	if ty, err := a.literalFalseCollectionElementType(v, pointer, depth); err != nil {
 		return TypeRef{}, err
 	} else if ty != nil {
@@ -135,7 +160,7 @@ func (a *analyzer) collectionElementType(v *document.Value, name, pointer string
 	} else if ty != nil {
 		return *ty, nil
 	}
-	if a.borrowedCollectionPlanning && enumNominalCandidate(v) {
+	if a.borrowedCollectionPlanning && a.enumReferenceCandidate(v) {
 		target, err := a.lookupSchemaReference("#"+pointer, pointer)
 		if err != nil {
 			return TypeRef{}, err
@@ -184,6 +209,31 @@ func (a *analyzer) collectionElementType(v *document.Value, name, pointer string
 }
 
 func (a *analyzer) operationElementType(v *document.Value, name, pointer string, declarations *[]Declaration, used map[string]bool, depth int) (TypeRef, *diagnostic.Diagnostic) {
+	if ty, err := a.tupleSpecialElement(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
+	if ty, err := a.tupleCoverElement(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
+	if ty, err := a.tupleLiteralElementType(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
+	if ty, err := a.tupleBooleanReferenceElement(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
+	if ty, err := a.tupleFalseElementType(v, name, pointer, declarations, used, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
 	if ty, err := a.booleanValueType(v, pointer, depth); err != nil {
 		return TypeRef{}, err
 	} else if ty != nil {

@@ -14,10 +14,18 @@ import (
 // Analyze validates every component schema, including unreferenced definitions. Failure
 // returns neither declarations nor warnings; no consumer can emit partial files.
 func Analyze(root *document.Value, options Options) (*Plan, []diagnostic.Diagnostic, *diagnostic.Diagnostic) {
+	return analyzeDocument(root, options, false, nil)
+}
+
+// The source-validation branch owns a fresh analyzer and never returns an
+// emission candidate to its caller. It shares immutable document nodes only.
+func analyzeDocument(root *document.Value, options Options, tupleSourceValidation bool, tupleSourceProof **tupleNativeSourceRegistry) (*Plan, []diagnostic.Diagnostic, *diagnostic.Diagnostic) {
 	referencedDefaults := []referencedFieldDefault{}
 	structuralUniqueUses := []structuralUniqueUse{}
 	objectDefaultGraphUses := []objectDefaultGraphUse{}
 	a := &analyzer{referencedDefaults: &referencedDefaults, emissionHints: EmissionHints{}, options: options, root: root, components: map[string]*component{}, validationSources: map[*PrimitiveValidation]string{}, collectionSources: map[*CollectionValidation]string{}, aliasUses: map[collectionAliasUse]struct{}{}}
+	a.tupleSourceValidation = tupleSourceValidation
+	a.tupleObjects = &tupleInlineDTOState{Seen: map[*document.Value]string{}}
 	// HTTP-only documents can bypass component preparation. Share diagnostic
 	// locations before request/response contexts copy the analyzer; this grants
 	// no schema-origin or annotation permission.
@@ -34,6 +42,15 @@ func Analyze(root *document.Value, options Options) (*Plan, []diagnostic.Diagnos
 	if err != nil {
 		return nil, nil, err
 	}
+	if tupleSourceValidation {
+		declarations, err = a.attachTupleSourceModels(declarations, client)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+	if err := a.finalizeTupleCollectionUses(); err != nil {
+		return nil, nil, err
+	}
 	if err := a.validateInternalModels(declarations); err != nil {
 		return nil, nil, err
 	}
@@ -41,6 +58,9 @@ func Analyze(root *document.Value, options Options) (*Plan, []diagnostic.Diagnos
 		return nil, nil, err
 	}
 	plan := &Plan{Models: declarations, Client: client, EmissionHints: a.emissionHints, operationRoles: a.operationRoles, operationOrigins: a.operationOrigins, modelDiagnosticPointers: a.modelDiagnosticPointers, enumDiagnosticOrigins: a.enumDiagnosticOrigins}
+	if err := a.validateTuplePlan(plan); err != nil {
+		return nil, nil, err
+	}
 	if err := a.validationDepth(plan); err != nil {
 		return nil, nil, err
 	}
@@ -68,16 +88,47 @@ func Analyze(root *document.Value, options Options) (*Plan, []diagnostic.Diagnos
 	if err := a.validateObjectDefaultGraphUses(); err != nil {
 		return nil, nil, err
 	}
-	if err := a.runtimeCollisions(plan); err != nil {
-		return nil, nil, err
+	if !tupleSourceValidation {
+		if err := a.runtimeCollisions(plan); err != nil {
+			return nil, nil, err
+		}
+		if err := a.certainJVMSignatureOverflow(plan); err != nil {
+			return nil, nil, err
+		}
 	}
-	if err := a.certainJVMSignatureOverflow(plan); err != nil {
-		return nil, nil, err
+	if tupleSourceValidation {
+		if tupleSourceProof != nil {
+			*tupleSourceProof = a.tupleNativeSources
+		}
+		return nil, nil, nil
 	}
 	return plan, a.warnings, nil
 }
 
 func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Diagnostic) {
+	if a.checkedEnumSources == nil {
+		a.checkedEnumSources = map[*document.Value]*checkedEnumSource{}
+	}
+	// HTTP-only inputs return before component preparation. Operation models
+	// still need original source authority for directional views and defaults.
+	if a.modelOrigins == nil {
+		a.modelOrigins = map[*Model]*document.Value{}
+	}
+	if a.unionOrigins == nil {
+		a.unionOrigins = map[Declaration]nominalOrigin{}
+	}
+	a.initTupleInlineDTOs()
+	if a.tupleAllOfSources == nil {
+		a.tupleAllOfSources = &tupleAllOfSourceBudget{Seen: map[*document.Value]bool{}}
+	}
+	a.initTupleBooleanReferences()
+	a.initTupleLiterals()
+	a.initTupleCovers()
+	a.initTupleSpecials()
+	a.initTupleBooleans()
+	if a.tupleNativeSources == nil {
+		a.tupleNativeSources = &tupleNativeSourceRegistry{}
+	}
 	a.initDTOUnique()
 	if a.directionalModelSources == nil {
 		a.directionalModelSources = map[*Model]directionalModelSource{}
@@ -195,7 +246,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 		}
 		nullableStructuredConst := nullable && structuredLiteral(v)
 		nullableDTO := nullable && kind == "object" && nullableDTOCandidate(v)
-		nullableEnum := nullable && kind == "string" && plainStringEnumSchema(v)
+		nullableEnum := nullable && kind == "string" && lexicalStringEnumSchema(v)
 		nullableNativeEnum := a.options.Validation && nullable && nullableNativeEnumCandidate(v, kind)
 		nullableValueClass := nullable && nullableValueClassCandidate(v, kind, pointer)
 		nullableTemporal := nullable && nullableTemporalCandidate(v, kind)
@@ -288,6 +339,14 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 		}
 		a.components[wire] = &component{Wire: wire, Name: name, Scalar: scalar, Pointer: pointer, Schema: v, ValueClass: valueClass, Validation: validation, Reference: reference, NullableDTO: nullableDTO, NullableEnum: nullableEnum, NullableNativeEnum: nullableNativeEnum, NullableValueClass: nullableValueClass, NullableTemporal: nullableTemporal, NullableBigint: nullableBigint, NullableBytes: nullableBytes, NullableCallerNative: nullableCallerNative, NullableRaw: nullableRaw, NullablePrimitive: nullablePrimitive, NullableStructuredConst: nullableStructuredConst, BooleanRoot: booleanRoot, RecursiveJSON: recursiveJSON != 0}
 		a.components[wire].FalseRoot = falseRoot
+		if a.checkedStringEnumRoot(v, pointer) {
+			checks, failure := a.checkedEnumValidation(v, pointer)
+			if failure != nil {
+				return nil, failure
+			}
+			a.components[wire].Validation = checks
+			a.checkedEnumSources[v].Root = a.components[wire]
+		}
 		if booleanRoot {
 			a.components[wire].AliasType = TypeRef{Kind: JSON}
 		} else if recursiveJSON != 0 {
@@ -346,8 +405,6 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	a.borrowedEnumLeaves = map[*document.Value]*borrowedEnumLeafUse{}
 	a.borrowedValueClassLeaves = map[*component]*borrowedValueClassLeafUse{}
 	a.borrowedAllOfLeaves = map[*document.Value]*borrowedAllOfLeafUse{}
-	a.tupleAllOfSources = &tupleAllOfSourceBudget{Seen: map[*document.Value]bool{}}
-	a.tupleNativeSources = &tupleNativeSourceRegistry{}
 	a.falseRootSources = nil
 	a.falseValueOrigins = map[*FalseValue]falseValueOrigin{}
 	a.falseAliasOrigins = map[*ValueAlias]falseAliasOrigin{}
@@ -542,6 +599,9 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 				return nil, err
 			}
 			a.recordEnumOrigin(model, v, pointer, component.NullableEnum)
+			if a.checkedStringEnumRoot(v, pointer) {
+				a.checkedEnumSources[v].Declarations[model] = true
+			}
 			declarations = append(declarations, model)
 		case has(v, "oneOf") || has(v, "anyOf"):
 			model, err := a.rootUnion(v, component.Name, pointer, used)
@@ -579,7 +639,19 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 				context := *a
 				context.aliasPlanning = true
 				context.falseCollectionPlanning = a.falseCollectionRootSource(component)
-				ty, err := context.propertyType(v, component.Name, pointer, &peers, used, 0)
+				var ty TypeRef
+				var err *diagnostic.Diagnostic
+				if leaf := inlineStringEnumBoundsLeaf(v, 1); a.options.Validation && leaf != nil {
+					var node *nestedDefaultNode
+					// The actual original collection component owns these enum peers.
+					// Forward consumers retain the same linked AliasType/check objects.
+					node, err = context.nestedDefaultSchemaWithEnumBounds(v, component.Name, pointer, &peers, used, 0, true, leaf)
+					if err == nil {
+						ty = node.ty
+					}
+				} else {
+					ty, err = context.propertyType(v, component.Name, pointer, &peers, used, 0)
+				}
 				a.warnings = context.warnings
 				if err != nil {
 					return nil, err
@@ -709,7 +781,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 					continue
 				}
 			}
-			if _, ok := byName[c.BindingTarget.Name].(*StringEnum); ok && plainStringEnumBinding(c.BindingTarget) {
+			if _, ok := byName[c.BindingTarget.Name].(*StringEnum); ok && lexicalStringEnumBinding(c.BindingTarget) {
 				continue
 			}
 			if _, ok := byName[c.BindingTarget.Name].(*PrimitiveValueClass); ok && c.BindingTarget.ValueClass {
@@ -745,6 +817,7 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	// Final declarations, not object catalog syntax, define raw versus nominal
 	// identity. Link forward raw users before transparent alias validation.
 	a.linkRawProjections(declarations)
+	a.finalizeTupleCollectionWork()
 	sort.Slice(declarations, func(i, j int) bool { return declarations[i].Name() < declarations[j].Name() })
 	if err := a.validateAliases(declarations); err != nil {
 		return nil, err
@@ -784,13 +857,23 @@ func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Dia
 	// forward values become stable only after all aliases have been linked.
 	// Capture their actual values once here for the final/late authority barrier.
 	a.finalizeNamedCollectionOrigins()
+	a.finalizeReferencedEnumCollectionFactories()
 	a.finalizeBorrowedCollectionSources()
+	if err := a.finalizeCheckedEnumRootGetters(); err != nil {
+		return nil, err
+	}
 	a.finalizeBorrowedDTOAliasEdges()
 	a.finalizeBorrowedEnumLeaves()
+	if err := a.finalizeInternalEnumFactories(); err != nil {
+		return nil, err
+	}
 	a.finalizeBorrowedAllOfLeaves()
 	a.finalizeBorrowedUnionLeaves()
 	a.finalizeBorrowedHierarchyLeaves()
 	a.recordDTOReferenceDeclarations(declarations)
+	if err := a.finalizeTupleCollectionUses(); err != nil {
+		return nil, err
+	}
 	return declarations, nil
 }
 
@@ -913,6 +996,9 @@ func (a *analyzer) propertyType(v *document.Value, nestedName, pointer string, n
 			for _, d := range (*nested)[start:] {
 				if d.Name() == bare(ty).Name {
 					a.recordUnionOrigin(d, v, pointer, ty.Kind == Nullable)
+					if a.tupleObjects != nil && a.tupleObjects.Unions[v] != nil {
+						a.recordTupleUnionDeclaration(d, v, pointer)
+					}
 				}
 			}
 		}
@@ -1093,7 +1179,7 @@ func (a *analyzer) nonUnionPropertyType(v *document.Value, nestedName, pointer s
 					return TypeRef{}, err
 				}
 			}
-			ty, err = a.checkedCollection(TypeRef{Kind: List, Element: &item}, v, pointer)
+			ty, err = a.checkedArrayItems(item, v, pointer, decision)
 			if err != nil {
 				return TypeRef{}, err
 			}
@@ -1227,6 +1313,11 @@ func (a *analyzer) componentType(component *component) TypeRef {
 			return ty
 		}
 		ty := TypeRef{Kind: Named, Name: target.ModelName, deferredNominal: target.Deferred}
+		if a.checkedEnumReferenceCandidate(target.Schema) {
+			// Errors are reported by original source planning; valid forward
+			// aliases retain the same source check object before name linking.
+			ty.Validation, _ = a.checkedEnumValidation(target.Schema, target.Pointer)
+		}
 		if target.Deferred != nil {
 			ty.Name = target.Deferred.Name
 		}
@@ -1265,6 +1356,9 @@ func (a *analyzer) componentType(component *component) TypeRef {
 		return ty
 	}
 	ty := TypeRef{Kind: Named, Name: a.options.PackageName + ".models." + component.Name}
+	if a.checkedStringEnumRoot(component.Schema, component.Pointer) {
+		ty.Validation = component.Validation
+	}
 	if component.NullableDTO || component.NullableEnum || component.NullableHierarchy {
 		ty = ty.Null()
 	}

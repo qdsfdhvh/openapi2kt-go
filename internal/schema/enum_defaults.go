@@ -6,20 +6,26 @@ import (
 	"openapi-kt/internal/naming"
 )
 
-// Field-only permission preserves strict root/collection/reference grammar.
+// Each caller grants its own annotation role; vocabulary membership and
+// metadata validation preserve the original lexical model codec.
 func (a *analyzer) enumDefaultValue(v *document.Value, pointer string) *diagnostic.Diagnostic {
 	at := naming.Pointer(pointer, "default")
 	kind, nullable, err := schemaType(v, pointer)
 	if err != nil {
 		return err
 	}
-	for _, key := range []string{"$ref", "allOf", "oneOf", "anyOf", "const", "x-native-type", "x-kotlin-value-class"} {
+	for _, key := range []string{"$ref", "allOf", "oneOf", "anyOf", "const", "x-kotlin-value-class"} {
 		if has(v, key) {
 			return unsupported(at)
 		}
 	}
-	if (kind == "" || kind == "string") && has(v, "format") {
+	if has(v, "x-native-type") && (kind != "" && kind != "string" || !lexicalStringEnumSchema(v)) {
 		return unsupported(at)
+	}
+	if (kind == "" || kind == "string") && (has(v, "format") || has(v, "x-native-type")) && lexicalStringEnumSchema(v) {
+		if _, err := buildStringEnumKeys("Validation", v, pointer, true); err != nil {
+			return err
+		}
 	}
 	value := get(v, "default")
 	if kind == "null" {

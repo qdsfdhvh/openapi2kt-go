@@ -148,6 +148,14 @@ func TestReferencedStringEnumUniqueNoDropAndNoop(t *testing.T) {
 	for _, leaf := range []string{`{"type":"string","enum":["ready"],"format":"date"}`, `{"type":"string","enum":["ready"],"minLength":1}`, `{"type":"string","const":"ready"}`, `{"type":"string","x-kotlin-value-class":true}`, `{"type":"string","x-native-type":"org.example.State"}`, `{"anyOf":[{"enum":["ready"]},{"type":"string"}]}`} {
 		rq := request(schemas(`{"Code":`+leaf+`,"Record":{"properties":{"value":`+shape+`}}}`), "Dto")
 		rq.Options.Validation = true
+		if leaf == `{"type":"string","enum":["ready"],"minLength":1}` {
+			checkedStringEnumRootGraduation(t, rq)
+			continue
+		}
+		if metadataStringEnumFixture(leaf) {
+			metadataStringEnumGraduation(t, rq)
+			continue
+		}
 		if got, err := core.GenerateWithDiagnostics(rq); err == nil || len(got.Artifacts.Files) != 0 {
 			t.Fatal("excluded reference source acquired enum equality", leaf, err)
 		}

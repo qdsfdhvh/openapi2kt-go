@@ -19,6 +19,7 @@ type borrowedEnumLeafUse struct {
 	Actual                          *StringEnum
 	Origin                          nominalOrigin
 	Final                           bool
+	Checked                         *checkedEnumSource
 }
 
 // Forward nominal-source traversal shares the existing catalog DFS before a
@@ -47,7 +48,7 @@ func (a *analyzer) visitBorrowedSourceAlias(reference, source string, depth int,
 		seen[target.Schema] = true
 		kind, _, _ := schemaType(target.Schema, target.Pointer)
 		internalNativeEnum := a.options.Validation && target.Catalog == nil && has(target.Schema, "enum") && (kind == "integer" || kind == "number" || kind == "boolean")
-		if internalNativeEnum || enumNominalCandidate(target.Schema) || ordinaryDTO && directInternalModel(target.Schema, target.Pointer) || composedModelCandidate(target.Schema) || unionNominalCandidate(target.Schema) || a.hierarchySources[target.Schema] || target.Catalog != nil && (builtinPrimitiveBinding(target.Catalog) || a.options.Validation && nativeEnumBinding(target.Catalog) || temporalBinding(target.Catalog) || bigintBinding(target.Catalog) || bytesBinding(target.Catalog) || callerNativeBinding(target.Catalog) || a.rawTrueCandidate(target.Catalog) || target.Catalog.RecursiveJSON || target.Catalog.ValueClass && target.Catalog.Schema == target.Schema) {
+		if internalNativeEnum || a.enumReferenceCandidate(target.Schema) || ordinaryDTO && directInternalModel(target.Schema, target.Pointer) || composedModelCandidate(target.Schema) || unionNominalCandidate(target.Schema) || a.hierarchySources[target.Schema] || target.Catalog != nil && (builtinPrimitiveBinding(target.Catalog) || a.options.Validation && nativeEnumBinding(target.Catalog) || temporalBinding(target.Catalog) || bigintBinding(target.Catalog) || bytesBinding(target.Catalog) || callerNativeBinding(target.Catalog) || a.rawTrueCandidate(target.Catalog) || target.Catalog.RecursiveJSON || target.Catalog.ValueClass && target.Catalog.Schema == target.Schema) {
 			return a.borrowedEnumAliasVisit(declared, depth)
 		}
 		if !has(target.Schema, "$ref") {
@@ -70,7 +71,7 @@ func (a *analyzer) admitBorrowedNominalLeaf(target *resolvedSchema, source strin
 	if a.admitBorrowedRecursiveCover(target, source) || a.admitBorrowedRawTrue(target, source) || a.admitBorrowedCallerNative(target, source) || a.admitBorrowedBytes(target, source) || a.admitBorrowedBigint(target, source) || a.admitBorrowedTemporal(target, source) || a.admitBorrowedBuiltin(target, source) || a.admitBorrowedHierarchy(target, source) || a.admitBorrowedOrdinaryDTO(target, source) || a.admitBorrowedValueClass(target, source) || a.admitBorrowedProductUnion(target, source) || a.admitBorrowedAllOfModel(target, source) || a.admitBorrowedUnion(target, source) {
 		return true
 	}
-	if !enumNominalCandidate(target.Schema) {
+	if !a.enumReferenceCandidate(target.Schema) {
 		return false
 	}
 	bound := false
@@ -111,6 +112,12 @@ func (a *analyzer) admitBorrowedNominalLeaf(target *resolvedSchema, source strin
 	}
 	bytes, _ := target.Schema.MarshalJSON()
 	use := &borrowedEnumLeafUse{Owner: owner, OwnerSchema: owner.Schema, Schema: target.Schema, Pointer: target.Pointer, Source: source, Bytes: string(bytes), Vocabulary: get(target.Schema, "enum"), Members: append([]*document.Value{}, get(target.Schema, "enum").Items()...), SchemaMembers: append([]document.Member{}, target.Schema.Members()...)}
+	if a.checkedEnumReferenceCandidate(target.Schema) {
+		// Admission keeps original source errors for the typed/source planner;
+		// a malformed constraint must not become a generic ref diagnostic.
+		_, _ = a.checkedEnumValidation(target.Schema, target.Pointer)
+		use.Checked = a.checkedEnumSources[target.Schema]
+	}
 	if a.nominalsLinked {
 		use.Name, use.Final = a.physicalDTOName(target.Schema), true
 	}
@@ -134,6 +141,7 @@ func (a *analyzer) validateBorrowedEnumLeaves(ds []Declaration) *diagnostic.Diag
 		Name  string
 	}
 	matches := map[*document.Value][]occurrence{}
+	actualModels := map[*Model]bool{}
 	var visit func(Declaration, *component, string)
 	visit = func(d Declaration, owner *component, parent string) {
 		switch x := d.(type) {
@@ -143,6 +151,7 @@ func (a *analyzer) validateBorrowedEnumLeaves(ds []Declaration) *diagnostic.Diag
 				matches[origin.Schema] = append(matches[origin.Schema], occurrence{x, owner, parent + "." + x.ClassName})
 			}
 		case *Model:
+			actualModels[x] = true
 			for _, child := range x.Nested {
 				visit(child, owner, parent+"."+x.ClassName)
 			}
@@ -179,7 +188,7 @@ func (a *analyzer) validateBorrowedEnumLeaves(ds []Declaration) *diagnostic.Diag
 	for _, use := range uses {
 		owner := use.Owner
 		bytes, _ := use.Schema.MarshalJSON()
-		if owner == nil || a.components[owner.Wire] != owner || owner.Schema != use.OwnerSchema || string(bytes) != use.Bytes || !enumNominalCandidate(use.Schema) {
+		if owner == nil || a.components[owner.Wire] != owner || owner.Schema != use.OwnerSchema || string(bytes) != use.Bytes || !a.enumReferenceCandidate(use.Schema) {
 			return schemaReferenceUnsupported(use.Source)
 		}
 		found, err := a.lookupSchemaReference("#"+use.Pointer, use.Source)
@@ -213,7 +222,46 @@ func (a *analyzer) validateBorrowedEnumLeaves(ds []Declaration) *diagnostic.Diag
 		if a.componentDefaultSchemas[use.Schema] && a.componentRoot(use.Schema, use.Pointer) {
 			factorySource = a
 		}
-		expected, invalid := buildStringEnumKeysFor(actual.ClassName, use.Schema, use.Pointer, false, factorySource)
+		fieldDefault := a.internalEnumFactories != nil && a.internalEnumFactories.Terminals[use.Schema]
+		var expected *StringEnum
+		var invalid *diagnostic.Diagnostic
+		if use.Checked != nil {
+			checked := use.Checked
+			if checked.Failure != nil {
+				return checked.Failure
+			}
+			if a.checkedEnumSources[use.Schema] != checked || checked.Schema != use.Schema || checked.Pointer != use.Pointer || checked.Bytes != use.Bytes || checked.Checks == nil || !checked.Declarations[actual] || a.validationSources[checked.Checks] != use.Pointer || namedCollectionChecks(TypeRef{Validation: checked.Checks}) != checked.CheckKey {
+				return schemaReferenceUnsupported(use.Source)
+			}
+			getters := 0
+			for _, getter := range checked.Getters {
+				if getter.Provisional {
+					continue
+				}
+				if !actualModels[getter.Model] {
+					continue
+				}
+				if !checkedEnumGetterMatches(getter) {
+					return schemaReferenceUnsupported(use.Source)
+				}
+				getters++
+			}
+			// Direct collection roots already retain every actual backing/check
+			// address in their named-collection origin. Ordinary field sources
+			// must also retain an enforcing original getter.
+			if getters == 0 && inlineStringEnumBoundsLeaf(owner.Schema, 1) != use.Schema && !(checked.Root == owner && owner.Schema == use.Schema && a.checkedStringEnumRoot(use.Schema, use.Pointer)) {
+				return schemaReferenceUnsupported(use.Source)
+			}
+			keys := append([]string{"type", "nullable", "enum", "format", "x-native-type"}, primitiveBoundKeys...)
+			if has(use.Schema, "default") {
+				// The unique retained ordinary field declaration already validated
+				// its own annotation; borrowing does not inherit that value.
+				keys = append(keys, "default")
+			}
+			expected, invalid = buildStringEnumAllowedKeys(actual.ClassName, use.Schema, use.Pointer, keys)
+		} else {
+			expected, invalid = buildStringEnumKeysFor(actual.ClassName, use.Schema, use.Pointer, fieldDefault, factorySource)
+		}
 		if invalid != nil {
 			return invalid
 		}

@@ -45,7 +45,6 @@ func TestDTOValidationGuards(t *testing.T) {
 		{`{"maxLength":2}`, "E_SCHEMA_UNSUPPORTED", "maxLength"},
 		{`{"type":"string","format":"date","minLength":1}`, "E_SCHEMA_UNSUPPORTED", "minLength"},
 		{`{"type":"integer","x-native-type":"bigint","minimum":0}`, "E_SCHEMA_UNSUPPORTED", "x-native-type"},
-		{`{"type":"string","enum":["a"],"minLength":1}`, "E_SCHEMA_UNSUPPORTED", "enum"},
 		{`{"type":"string","const":"a","minLength":1}`, "E_SCHEMA_UNSUPPORTED", "minLength"},
 		{`{"type":"array","items":{"type":"integer","default":0}}`, "E_SCHEMA_UNSUPPORTED", "items/default"},
 		{`{"type":"object","additionalProperties":{"type":"string","default":"a"}}`, "E_SCHEMA_UNSUPPORTED", "additionalProperties/default"},

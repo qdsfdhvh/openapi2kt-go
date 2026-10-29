@@ -66,7 +66,7 @@ func TestTupleDTOReferenceNoDropGuards(t *testing.T) {
 			}
 		}
 	}
-	for _, target := range []string{`{}`, `{"properties":{"pin":{"const":"only"}}}`, `{"additionalProperties":{"type":"string"}}`, `{"oneOf":[{"type":"string"},{"type":"integer"}]}`} {
+	for _, target := range []string{`{}`, `{"properties":{"pin":{"const":"only"}}}`, `{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"integer"}}]}`} {
 		for _, tail := range []string{"", `,"items":{"type":"integer"}`} {
 			rq := request(schemas(`{"Item":`+target+`,"Probe":{"type":"array","prefixItems":[{"$ref":"#/components/schemas/Item"}]`+tail+`}}`), "Dto")
 			if r, err := core.GenerateWithDiagnostics(rq); err == nil || !reflect.DeepEqual(r, core.GenerationReport{}) {
@@ -108,6 +108,12 @@ func TestTupleDTOOwnDefaultAndUniqueRolesRemainSeparate(t *testing.T) {
 			rq := request(schemas(`{"Item":{"properties":{"value":{"type":"string"}},"required":["value"]},"Probe":`+tc.probe+`}`), "Dto")
 			rq.Options.Validation = checked
 			got, err := core.GenerateWithDiagnostics(rq)
+			if strings.Contains(tc.probe, `"default"`) {
+				if err != nil {
+					t.Fatal("former exact tuple default refusal remains", checked, err)
+				}
+				continue
+			}
 			if checked && strings.Contains(tc.probe, `"items":{"$ref":"#/components/schemas/Item"}`) && strings.Contains(tc.probe, `"uniqueItems":true`) {
 				if err != nil || len(got.Warnings) == 0 || !strings.Contains(source(t, got, "ProbeDto"), "List<org.example.models.models.ItemDto>") {
 					t.Fatal("originalhomogeneousDTOtail uniqueness", err)

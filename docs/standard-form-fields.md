@@ -25,11 +25,12 @@ SSE response codecs retain their separate existing contracts.
 
 UUID length/pattern checks retain their existing `--validation` gate and inspect
 canonical UUID text. Temporal string bounds remain unsupported. References,
-aliases, formatted String enums, native overrides, default/const annotations,
+aliases, formatted String enums, native overrides, const annotations,
 schema-nullable fields/roots, structured/composed values, projections, explicit
 Patch states and media encoding directives gain no permission. All original
 source/work/value/checked/JVM-slot caps remain, including 240 constructor slots.
-No source node, property binding or persisted identity is rewritten.
+No source node, property binding or persisted identity is rewritten. Direct
+field-own defaults use the [form default contract](form-field-defaults.md).
 
 `bash scripts/test.sh feature standard-form-fields` generates Data/Plain with
 validation off/on, baseline and combined dedup/hoist/merge/locked output, plus a

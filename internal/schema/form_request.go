@@ -56,7 +56,7 @@ func formRequestFields(v *document.Value, pointer string, declarations []Declara
 	}
 	for _, entry := range properties.Members() {
 		p := naming.Pointer(pointer+"/properties", entry.Name)
-		if err := operationKeys(entry.Value, []string{"type", "format", "enum", "title", "description", "minLength", "maxLength", "pattern", "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf"}, p); err != nil {
+		if err := operationKeys(entry.Value, []string{"type", "format", "enum", "default", "title", "description", "minLength", "maxLength", "pattern", "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf"}, p); err != nil {
 			return nil, err
 		}
 		if _, nullable, err := schemaType(entry.Value, p); err != nil {
@@ -75,7 +75,10 @@ func formRequestFields(v *document.Value, pointer string, declarations []Declara
 		} else if field.DefaultNull {
 			return nil, operationUnsupported(naming.Pointer(pointer+"/properties", field.WireName))
 		}
-		if field.Default != "" || ty.Serializer != "" {
+		// The ordinary planner validates each own annotation before presence
+		// wrapping and required suppression. Encode the actual getter: an
+		// optional constructor default sends a value; explicit null omits it.
+		if ty.Serializer != "" {
 			return nil, operationUnsupported(naming.Pointer(pointer+"/properties", field.WireName))
 		}
 		if ty.Kind == Named && enums[ty.Name] != nil {

@@ -84,6 +84,11 @@ func TestNestedStringEnumCollectionDefaultsNativeCoreParityReadonlyAndPreservati
 				{`"enum":["one","two"]`, `"enum":["one","one"]`, "E_SCHEMA_INVALID", "/additionalProperties/additionalProperties/enum/1"},
 				{`"enum":["one","two"]`, `"enum":["one","two"],"minLength":1`, "E_SCHEMA_UNSUPPORTED", "/additionalProperties/additionalProperties/minLength"},
 			} {
+				if checked && tc.replacement == `"enum":["one","two"],"minLength":1` {
+					// The formerly unsupported original is now accepted syntax, but
+					// its new retained check cannot reuse a frozen unbounded shape.
+					tc.code, tc.tail = "E_NAME_LOCK_CHANGED", ""
+				}
 				put(t, input, bytes.ReplaceAll(original, []byte(tc.old), []byte(tc.replacement)))
 				for _, command := range [][]string{args, append(append([]string(nil), args...), "--check"), validate} {
 					failure := fails(t, invoke(t, base, command...), 1, tc.code)

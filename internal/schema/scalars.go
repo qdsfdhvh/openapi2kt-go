@@ -319,6 +319,9 @@ func buildStringEnumKeysFor(name string, v *document.Value, pointer string, fiel
 	if fieldDefault || a != nil && a.componentDefaultSchemas[v] {
 		keys = append(keys, "default")
 	}
+	if a != nil && a.checkedStringEnumRoot(v, pointer) {
+		keys = append(keys, primitiveBoundKeys...)
+	}
 	return buildStringEnumAllowedKeys(name, v, pointer, keys)
 }
 

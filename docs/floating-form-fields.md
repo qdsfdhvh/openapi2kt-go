@@ -25,8 +25,8 @@ Unconstrained floating constructor values retain their existing behavior:
 standard text such as `NaN` and `Infinity` can be sent. Enabling validation does
 not create a global finite-number requirement. A field with admitted numeric
 constraints keeps the existing typed finite/bounds/multipleOf checks, including
-before callback/dispatch; optional null skips those checks. No source
-default, explicit schema-null, native, structured or Patch form role is granted.
+before callback/dispatch; optional null skips those checks. Explicit schema-null,
+native, structured and Patch form roles retain their independent boundaries.
 The existing required/default, JSON precedence, discarded-schema validation,
 callback, HTTP/SSE and failure-preservation contracts remain.
 
@@ -51,3 +51,5 @@ persisted manifest/name-lock formats retain their contracts.
 
 Direct String/native enum fields have the separate [enum form contract](enum-form-fields.md);
 open String serial names and opt-in mapped native membership retain their policies.
+
+Direct field-own defaults follow the [form default contract](form-field-defaults.md), reusing strict literal validation and mapped Float/Double values before form encoding.

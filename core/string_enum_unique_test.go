@@ -30,6 +30,10 @@ func TestDirectStringEnumUniqueSourceExclusions(t *testing.T) {
 	} {
 		rq := request(schemas(`{"Code":{"enum":["ready"]},"Record":{"properties":{"value":{"type":"array","items":`+leaf+`,"uniqueItems":true}}}}`), "Dto")
 		rq.Options.Validation = true
+		if metadataStringEnumFixture(leaf) {
+			metadataStringEnumGraduation(t, rq)
+			continue
+		}
 		if r, err := core.GenerateWithDiagnostics(rq); err == nil || len(r.Artifacts.Files) != 0 {
 			t.Fatal("projected or referenced leaf acquired enum uniqueness", leaf, r, err)
 		}

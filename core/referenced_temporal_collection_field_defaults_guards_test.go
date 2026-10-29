@@ -76,6 +76,10 @@ func TestReferencedTemporalCollectionFieldDefaultsExcludedSourceRolesAndNoDrop(t
 			for _, value := range []string{`[]`, `null`} {
 				r := request(referencedFieldDoc(`{"type":"array","items":`+leaf+`}`, value, `,"nullable":true`), "Dto")
 				r.Options.Validation = checked
+				if metadataStringEnumFixture(leaf) {
+					metadataStringEnumGraduation(t, r)
+					continue
+				}
 				got, err := core.GenerateWithDiagnostics(r)
 				if err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 					t.Fatal("excluded source", leaf, value, checked, err)

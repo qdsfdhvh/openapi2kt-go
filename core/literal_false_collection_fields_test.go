@@ -64,6 +64,12 @@ func TestLiteralFalseCollectionFieldClosedRolesAndKeyword(t *testing.T) {
 		`"Target":{"properties":{"rows":{"type":"array","items":false}}},"Consumer":{"properties":{"value":{"$ref":"#/components/schemas/Target","default":{}}}}`,
 	} {
 		report, err := core.GenerateWithDiagnostics(request(schemas(`{`+role+`}`), "Dto"))
+		if role == `"Holder":{"properties":{"rows":{"type":"array","prefixItems":[false],"items":false}}}` {
+			if err != nil || !strings.Contains(source(t, report, "HolderDto"), "sealed class RowsInner private constructor()") {
+				t.Fatal("original Boolean positional member refusal remains", err)
+			}
+			continue
+		}
 		if role == `"Holder":{"properties":{"rows":{"type":"array","items":false,"default":[]}}}` {
 			if err != nil || !strings.Contains(source(t, report, "HolderDto"), "openapi-kt default") {
 				t.Fatal("original89 ownouterdefault graduation", err)

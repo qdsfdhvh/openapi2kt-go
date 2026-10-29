@@ -132,6 +132,10 @@ func TestMapSpecialUniqueExcludedSources(t *testing.T) {
 	} {
 		rq := request(schemas(`{"Id":{"type":"string","format":"uuid"},"Holder":{"properties":{"v":{"type":"array","uniqueItems":true,"items":{"type":"object","additionalProperties":`+leaf+`}}}}}`), "Dto")
 		rq.Options.Validation = true
+		if metadataStringEnumFixture(leaf) {
+			metadataStringEnumGraduation(t, rq)
+			continue
+		}
 		if got, err := core.GenerateWithDiagnostics(rq); err == nil || len(got.Artifacts.Files) != 0 {
 			t.Fatal("excluded value source acquired equality", leaf, err)
 		}

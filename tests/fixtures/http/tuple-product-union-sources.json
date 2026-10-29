@@ -1,0 +1,1441 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Product": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "text"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "count"
+                  },
+                  "n": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "n"
+                ]
+              }
+            ]
+          },
+          {
+            "anyOf": [
+              {
+                "properties": {
+                  "mode": {
+                    "const": "fast"
+                  },
+                  "fast": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "fast"
+                ]
+              },
+              {
+                "properties": {
+                  "mode": {
+                    "const": "slow"
+                  },
+                  "slow": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "slow"
+                ]
+              }
+            ]
+          },
+          {
+            "properties": {
+              "common": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "common"
+            ]
+          }
+        ]
+      },
+      "ProductAlias": {
+        "$ref": "#/components/schemas/Product"
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "text"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "count"
+                      },
+                      "n": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "n"
+                    ]
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "fast"
+                      },
+                      "fast": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "fast"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "slow"
+                      },
+                      "slow": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "slow"
+                    ]
+                  }
+                ]
+              },
+              {
+                "properties": {
+                  "common": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "common"
+                ]
+              }
+            ]
+          }
+        ],
+        "default": [
+          {
+            "kind": "text",
+            "name": "ready",
+            "mode": "fast",
+            "fast": true,
+            "common": "shared"
+          }
+        ]
+      },
+      "RefRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Product"
+          }
+        ],
+        "default": [
+          {
+            "kind": "text",
+            "name": "ready",
+            "mode": "fast",
+            "fast": true,
+            "common": "shared"
+          }
+        ]
+      },
+      "NullableProduct": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "text"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "count"
+                  },
+                  "n": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "n"
+                ]
+              }
+            ]
+          },
+          {
+            "anyOf": [
+              {
+                "properties": {
+                  "mode": {
+                    "const": "fast"
+                  },
+                  "fast": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "fast"
+                ]
+              },
+              {
+                "properties": {
+                  "mode": {
+                    "const": "slow"
+                  },
+                  "slow": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "slow"
+                ]
+              }
+            ]
+          },
+          {
+            "properties": {
+              "common": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "common"
+            ]
+          }
+        ],
+        "nullable": true
+      },
+      "NullableView": {
+        "$ref": "#/components/schemas/NullableProduct",
+        "nullable": true
+      },
+      "NullableRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "text"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "count"
+                      },
+                      "n": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "n"
+                    ]
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "fast"
+                      },
+                      "fast": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "fast"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "slow"
+                      },
+                      "slow": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "slow"
+                    ]
+                  }
+                ]
+              },
+              {
+                "properties": {
+                  "common": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "common"
+                ]
+              }
+            ],
+            "nullable": true
+          }
+        ],
+        "default": [
+          null,
+          {
+            "kind": "text",
+            "name": "ready",
+            "mode": "fast",
+            "fast": true,
+            "common": "shared"
+          }
+        ]
+      },
+      "CarrierRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/NullableProduct"
+          }
+        ],
+        "default": [
+          null,
+          {
+            "kind": "text",
+            "name": "ready",
+            "mode": "fast",
+            "fast": true,
+            "common": "shared"
+          }
+        ]
+      },
+      "ViewRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/NullableView"
+          }
+        ],
+        "default": [
+          null,
+          {
+            "kind": "text",
+            "name": "ready",
+            "mode": "fast",
+            "fast": true,
+            "common": "shared"
+          }
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Rows",
+        "default": []
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "text"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "count"
+                      },
+                      "n": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "n"
+                    ]
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "fast"
+                      },
+                      "fast": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "fast"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "slow"
+                      },
+                      "slow": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "slow"
+                    ]
+                  }
+                ]
+              },
+              {
+                "properties": {
+                  "common": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "common"
+                ]
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "text"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "count"
+                      },
+                      "n": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "n"
+                    ]
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "fast"
+                      },
+                      "fast": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "fast"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "slow"
+                      },
+                      "slow": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "slow"
+                    ]
+                  }
+                ]
+              },
+              {
+                "properties": {
+                  "common": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "common"
+                ]
+              }
+            ]
+          }
+        ],
+        "default": [
+          {
+            "data": 1
+          },
+          null
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "text"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "count"
+                      },
+                      "n": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "n"
+                    ]
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "fast"
+                      },
+                      "fast": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "fast"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "slow"
+                      },
+                      "slow": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "slow"
+                    ]
+                  }
+                ]
+              },
+              {
+                "properties": {
+                  "common": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "common"
+                ]
+              }
+            ]
+          }
+        ],
+        "items": {
+          "type": "integer"
+        },
+        "default": [
+          7
+        ]
+      },
+      "Repeated": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Product"
+          },
+          {
+            "$ref": "#/components/schemas/ProductAlias"
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "allOf": [
+                  {
+                    "oneOf": [
+                      {
+                        "properties": {
+                          "kind": {
+                            "const": "text"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "kind": {
+                            "const": "count"
+                          },
+                          "n": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "n"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "mode": {
+                            "const": "fast"
+                          },
+                          "fast": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "fast"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "mode": {
+                            "const": "slow"
+                          },
+                          "slow": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "slow"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "common": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "common"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "default": [
+              {
+                "kind": "text",
+                "name": "ready",
+                "mode": "fast",
+                "fast": true,
+                "common": "shared"
+              }
+            ]
+          },
+          "refs": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Product"
+              }
+            ],
+            "default": [
+              {
+                "kind": "text",
+                "name": "ready",
+                "mode": "fast",
+                "fast": true,
+                "common": "shared"
+              }
+            ]
+          },
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "allOf": [
+                  {
+                    "oneOf": [
+                      {
+                        "properties": {
+                          "kind": {
+                            "const": "text"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "kind": {
+                            "const": "count"
+                          },
+                          "n": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "n"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "properties": {
+                          "mode": {
+                            "const": "fast"
+                          },
+                          "fast": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "fast"
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "mode": {
+                            "const": "slow"
+                          },
+                          "slow": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "slow"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "common": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "common"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "default": [
+              {
+                "kind": "text",
+                "name": "ready",
+                "mode": "fast",
+                "fast": true,
+                "common": "shared"
+              }
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Rows"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "Owner": {
+        "properties": {
+          "choice": {
+            "allOf": [
+              {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "text"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "count"
+                      },
+                      "n": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "n"
+                    ]
+                  }
+                ]
+              },
+              {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "fast"
+                      },
+                      "fast": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "fast"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "mode": {
+                        "const": "slow"
+                      },
+                      "slow": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "slow"
+                    ]
+                  }
+                ]
+              },
+              {
+                "properties": {
+                  "common": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "common"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "InternalRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Owner/properties/choice"
+          }
+        ],
+        "default": [
+          {
+            "kind": "count",
+            "n": 7,
+            "mode": "slow",
+            "slow": false,
+            "common": "internal"
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "get": {
+        "operationId": "inlineRows",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "allOf": [
+                        {
+                          "oneOf": [
+                            {
+                              "properties": {
+                                "kind": {
+                                  "const": "text"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "name"
+                              ]
+                            },
+                            {
+                              "properties": {
+                                "kind": {
+                                  "const": "count"
+                                },
+                                "n": {
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "n"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "anyOf": [
+                            {
+                              "properties": {
+                                "mode": {
+                                  "const": "fast"
+                                },
+                                "fast": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "fast"
+                              ]
+                            },
+                            {
+                              "properties": {
+                                "mode": {
+                                  "const": "slow"
+                                },
+                                "slow": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "slow"
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "properties": {
+                            "common": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "common"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "allOf": [
+                      {
+                        "oneOf": [
+                          {
+                            "properties": {
+                              "kind": {
+                                "const": "text"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "name"
+                            ]
+                          },
+                          {
+                            "properties": {
+                              "kind": {
+                                "const": "count"
+                              },
+                              "n": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "n"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "properties": {
+                              "mode": {
+                                "const": "fast"
+                              },
+                              "fast": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "fast"
+                            ]
+                          },
+                          {
+                            "properties": {
+                              "mode": {
+                                "const": "slow"
+                              },
+                              "slow": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "slow"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "properties": {
+                          "common": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "common"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "allOf": [
+                          {
+                            "oneOf": [
+                              {
+                                "properties": {
+                                  "kind": {
+                                    "const": "text"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "name"
+                                ]
+                              },
+                              {
+                                "properties": {
+                                  "kind": {
+                                    "const": "count"
+                                  },
+                                  "n": {
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "n"
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "mode": {
+                                    "const": "fast"
+                                  },
+                                  "fast": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "fast"
+                                ]
+                              },
+                              {
+                                "properties": {
+                                  "mode": {
+                                    "const": "slow"
+                                  },
+                                  "slow": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "slow"
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "properties": {
+                              "common": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "common"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      {
+                        "kind": "text",
+                        "name": "ready",
+                        "mode": "fast",
+                        "fast": true,
+                        "common": "shared"
+                      }
+                    ]
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "allOf": [
+                          {
+                            "oneOf": [
+                              {
+                                "properties": {
+                                  "kind": {
+                                    "const": "text"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "name"
+                                ]
+                              },
+                              {
+                                "properties": {
+                                  "kind": {
+                                    "const": "count"
+                                  },
+                                  "n": {
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "n"
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "anyOf": [
+                              {
+                                "properties": {
+                                  "mode": {
+                                    "const": "fast"
+                                  },
+                                  "fast": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "fast"
+                                ]
+                              },
+                              {
+                                "properties": {
+                                  "mode": {
+                                    "const": "slow"
+                                  },
+                                  "slow": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "slow"
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "properties": {
+                              "common": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "common"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      {
+                        "kind": "text",
+                        "name": "ready",
+                        "mode": "fast",
+                        "fast": true,
+                        "common": "shared"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

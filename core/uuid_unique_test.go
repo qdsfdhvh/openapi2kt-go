@@ -99,6 +99,10 @@ func TestUUIDUniqueBudgetsAndExclusions(t *testing.T) {
 	} {
 		rq := request(schemas(`{"Id":`+leaf+`,"Holder":{"properties":{"values":{"type":"array","items":{"$ref":"#/components/schemas/Id"},"uniqueItems":true}}}}`), "Dto")
 		rq.Options.Validation = true
+		if strings.Contains(leaf, `"enum"`) {
+			metadataStringEnumGraduation(t, rq)
+			continue
+		}
 		if got, err := core.GenerateWithDiagnostics(rq); err == nil || len(got.Artifacts.Files) != 0 {
 			t.Fatal("projected source acquired UUID equality", leaf, err)
 		}

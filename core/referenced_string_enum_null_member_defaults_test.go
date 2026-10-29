@@ -100,6 +100,14 @@ func TestReferencedStringEnumNullMemberDefaultsGrammarAndNullableViews(t *testin
 			for _, value := range []string{`null`, `"on"`} {
 				r := request(stringScalarDefaultDoc(leaf, value, ""), "Dto")
 				r.Options.Validation = checked
+				if leaf == `{"type":["string","null"],"enum":[null,"on"],"default":"on"}` {
+					independentEnumFactoryGraduation(t, r)
+					continue
+				}
+				if checked && (leaf == `{"type":["string","null"],"enum":[null,"on"],"minLength":1}` || leaf == `{"type":["string","null"],"enum":[null,"on"],"pattern":"on"}`) {
+					checkedStringEnumRootGraduation(t, r)
+					continue
+				}
 				if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 					t.Fatal("ungranted terminal", leaf, value, err)
 				}

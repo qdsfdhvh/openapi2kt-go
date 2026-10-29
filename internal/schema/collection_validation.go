@@ -136,9 +136,9 @@ func (a *analyzer) uniqueStringEnumSource(v *document.Value, pointer string, dep
 		if has(target.Schema, "$ref") {
 			return a.uniqueStringEnumSource(target.Schema, target.Pointer, depth+1)
 		}
-		return enumNominalCandidate(target.Schema) && a.admitBorrowedNominalLeaf(target, pointer+"/$ref")
+		return a.enumReferenceCandidate(target.Schema) && a.admitBorrowedNominalLeaf(target, pointer+"/$ref")
 	}
-	if !plainStringEnumSchema(v) {
+	if !lexicalStringEnumSchema(v) {
 		return false
 	}
 	kind, _, err := schemaType(v, pointer)

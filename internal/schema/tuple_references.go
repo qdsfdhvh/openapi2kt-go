@@ -9,6 +9,24 @@ import (
 // Tuple projection may borrow an already accepted builtin or nominal source.
 // Validate every original hop before allowing either a typed or raw projection.
 func (a *analyzer) tupleScalar(v *document.Value, pointer string, depth int, work *int) (tupleScalarSignature, *diagnostic.Diagnostic) {
+	if v.Kind() == document.Boolean {
+		return a.tupleBooleanMember(v, pointer, depth)
+	}
+	if !has(v, "$ref") && structuredLiteral(v) {
+		return a.tupleLiteralSourceType(v, pointer, v, pointer, depth, depth)
+	}
+	if a.tupleUnionCandidate(v) {
+		return a.tupleUnionSource(v, pointer, v, pointer, depth)
+	}
+	if tupleCollectionCandidate(v) {
+		return a.tupleCollectionSource(v, pointer, v, pointer, depth)
+	}
+	if !has(v, "$ref") && composedModelCandidate(v) {
+		return a.tupleInlineAllOf(v, pointer, depth)
+	}
+	if !has(v, "$ref") && directInternalModel(v, pointer) {
+		return a.tupleInlineDTO(v, pointer, depth)
+	}
 	original, source := v, pointer
 	start := depth
 	for has(v, "$ref") {
@@ -34,7 +52,7 @@ func (a *analyzer) tupleScalar(v *document.Value, pointer string, depth int, wor
 			return tupleScalarSignature{}, err
 		}
 		if owner := a.componentsByOriginalSchema(target); owner != nil {
-			if owner.Pointer != p || reference != "#"+p || a.components[owner.Wire] != owner || a.hierarchySources[target] {
+			if owner.Pointer != p || reference != "#"+p || a.components[owner.Wire] != owner {
 				return tupleScalarSignature{}, schemaReferenceUnsupported(pointer)
 			}
 		} else if err := a.internalDefaultMemberSource(target, p, reference); err != nil {
@@ -44,6 +62,30 @@ func (a *analyzer) tupleScalar(v *document.Value, pointer string, depth int, wor
 		depth++
 	}
 	if original != v {
+		if kind := a.tupleSpecialKind(v); kind != "" {
+			return a.tupleSpecialReference(original, source, v, pointer, start, depth-start, kind)
+		}
+		if c := a.componentsByOriginalSchema(v); c != nil && c.RecursiveJSON {
+			return a.tupleRecursiveCover(original, source, v, pointer, start)
+		}
+		if a.hierarchySources[v] {
+			return a.tupleUnionSource(original, source, v, pointer, start)
+		}
+		if a.tupleUnionCandidate(v) {
+			return a.tupleUnionSource(original, source, v, pointer, start)
+		}
+		if structuredLiteral(v) {
+			return a.tupleLiteralSourceType(original, source, v, pointer, start, depth)
+		}
+		if tupleCollectionCandidate(v) {
+			return a.tupleCollectionSource(original, source, v, pointer, start)
+		}
+		if v.Kind() == document.Boolean {
+			if err := depthCheck(depth, pointer); err != nil {
+				return tupleScalarSignature{}, err
+			}
+			return a.tupleBooleanReference(original, source, v, pointer, start)
+		}
 		if composedModelCandidate(v) && !a.hierarchySources[v] {
 			if err := depthCheck(depth, pointer); err != nil {
 				return tupleScalarSignature{}, err
@@ -63,7 +105,7 @@ func (a *analyzer) tupleScalar(v *document.Value, pointer string, depth int, wor
 		if kind == "array" || kind == "object" {
 			return tupleScalarSignature{}, unsupported(naming.Pointer(source, "$ref"))
 		}
-		if (kind == "" || kind == "string") && plainStringEnumSchema(v) {
+		if (kind == "" || kind == "string") && lexicalStringEnumSchema(v) {
 			if err := depthCheck(depth, pointer); err != nil {
 				return tupleScalarSignature{}, err
 			}
@@ -75,6 +117,12 @@ func (a *analyzer) tupleScalar(v *document.Value, pointer string, depth int, wor
 			}
 			return a.tupleNativeEnum(original, source, v, pointer, start)
 		}
+	}
+	if tupleNullCandidate(v) || tupleScalarConstCandidate(v) {
+		return a.tupleLiteralSourceType(original, source, v, pointer, start, depth)
+	}
+	if original == v && has(v, "enum") {
+		return a.tupleInlineEnum(v, pointer, depth)
 	}
 	signature, err := tupleScalarOwnDefault(v, pointer, depth, original != v && a.tupleSourceOwnDefault(v, pointer))
 	if err != nil {
@@ -111,7 +159,7 @@ func (a *analyzer) tupleScalar(v *document.Value, pointer string, depth int, wor
 // The existing borrowed-leaf authority verifies the actual retained declaration,
 // even when a later tail or mixed raw projection discards this typed member.
 func (a *analyzer) tupleStringEnum(original *document.Value, source string, terminal *document.Value, pointer string, depth int) (tupleScalarSignature, *diagnostic.Diagnostic) {
-	if err := checkKeys(terminal, a.tupleSourceKeys(terminal, pointer, []string{"type", "enum", "nullable"}), pointer); err != nil {
+	if err := checkKeys(terminal, a.tupleSourceKeys(terminal, pointer, []string{"type", "enum", "nullable", "format", "x-native-type"}), pointer); err != nil {
 		return tupleScalarSignature{}, err
 	}
 	if _, err := buildStringEnumKeysFor("TupleMember", terminal, pointer, false, a); err != nil {

@@ -22,7 +22,10 @@ Direct plain String vocabularies and native scalar enums have the separate
 [enum form contract](enum-form-fields.md), retaining their shared mappings and
 checks. Constraints retain their existing `--validation` requirement and checks.
 
-References, aliases, const/default annotations, schema-nullable fields,
+Direct field-own defaults use the [form default contract](form-field-defaults.md),
+including required annotation validation and optional getter initializers.
+
+References, aliases, const annotations, schema-nullable fields,
 arrays/maps, structured/composed values, readOnly/writeOnly projections, object
 counts and explicit media `encoding` are outside this profile. Unsupported
 selected forms fail with source diagnostics and produce no partial output.

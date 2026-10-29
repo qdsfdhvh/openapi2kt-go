@@ -74,6 +74,10 @@ func TestBorrowedCollectionEnumLeavesVocabularyGrammarAndExcludedRoles(t *testin
 	}
 	for _, node := range []string{`{"type":"string","enum":["ready",null]}`, `{"type":"string","enum":["ready","ready"]}`, `{"type":"string","enum":["ready"],"default":"ready"}`, `{"type":"integer","enum":[1,2]}`, `{"type":"string","enum":["ready"],"x-native-type":"org.example.State"}`, `{"type":"string","enum":["ready"],"format":"date"}`, `{"type":"string","x-kotlin-value-class":true}`, `{"oneOf":[{"type":"string"},{"type":"integer"}]}`} {
 		doc := schemas(`{"Source":{"properties":{"rows":{"type":"array","items":{"$ref":"#/components/schemas/State"}}}},"Bridge":{"$ref":"#/components/schemas/Source/properties/rows"},"State":` + node + `}`)
+		if metadataStringEnumFixture(node) {
+			metadataStringEnumGraduation(t, request(doc, "Dto"))
+			continue
+		}
 		got, err := core.GenerateWithDiagnostics(request(doc, "Dto"))
 		if node == `{"type":"string","enum":["ready"],"default":"ready"}` {
 			// Keep the exact former negative: the component's independently

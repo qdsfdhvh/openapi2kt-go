@@ -1,0 +1,376 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "default": [
+          null,
+          true,
+          {
+            "default": {
+              "description": "data",
+              "$ref": "literal"
+            }
+          },
+          [
+            "text",
+            1.0
+          ]
+        ]
+      },
+      "Closed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          }
+        ],
+        "items": false,
+        "default": [
+          false,
+          null
+        ]
+      },
+      "Open": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          }
+        ],
+        "items": true,
+        "default": [
+          null,
+          true,
+          {
+            "default": {
+              "description": "data",
+              "$ref": "literal"
+            }
+          },
+          [
+            "text",
+            1.0
+          ]
+        ]
+      },
+      "Maybe": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          }
+        ],
+        "items": true,
+        "nullable": true,
+        "default": null
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Mixed",
+        "default": [
+          2
+        ]
+      },
+      "Independent": {
+        "$ref": "#/components/schemas/Mixed"
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "Choice": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "done"
+        ]
+      },
+      "Referenced": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Item"
+          },
+          {
+            "$ref": "#/components/schemas/Choice"
+          }
+        ],
+        "default": [
+          true,
+          null
+        ]
+      },
+      "Holder": {
+        "type": "object",
+        "properties": {
+          "mixed": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "default": [
+              null,
+              true,
+              {
+                "default": {
+                  "description": "data",
+                  "$ref": "literal"
+                }
+              },
+              [
+                "text",
+                1.0
+              ]
+            ]
+          },
+          "open": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string"
+              }
+            ],
+            "items": true,
+            "default": [
+              null,
+              true,
+              {
+                "default": {
+                  "description": "data",
+                  "$ref": "literal"
+                }
+              },
+              [
+                "text",
+                1.0
+              ]
+            ]
+          },
+          "closed": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "items": false,
+            "default": [
+              false,
+              null
+            ]
+          },
+          "maybe": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string"
+              }
+            ],
+            "items": true,
+            "nullable": true,
+            "default": null
+          },
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string"
+              }
+            ],
+            "items": true,
+            "default": [
+              false
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Mixed"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "event": {
+                      "type": "string",
+                      "const": "message"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Holder"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "items": true,
+                    "nullable": true,
+                    "default": [
+                      true
+                    ]
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "items": true,
+                    "nullable": true,
+                    "default": [
+                      false
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/patch-copy": {
+      "patch": {
+        "operationId": "updateCopy",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "items": true,
+                    "nullable": true,
+                    "default": [
+                      true
+                    ]
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "items": true,
+                    "nullable": true,
+                    "default": [
+                      false
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  }
+}

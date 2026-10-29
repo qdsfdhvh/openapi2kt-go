@@ -67,6 +67,21 @@ func (a *analyzer) modelDefaultType(f field, ordinary bool, name string, nested 
 		ty, err := a.referencedDefaultType(f, ordinary)
 		return ty, nil, err
 	}
+	if has(f.Schema, "prefixItems") {
+		if !ordinary {
+			return TypeRef{}, nil, unsupported(naming.Pointer(f.Pointer, "default"))
+		}
+		if a.tupleCollectionDeferred(f.Schema) {
+			if a.objectDefaultSchemas == nil {
+				a.objectDefaultSchemas = map[*document.Value]bool{}
+			}
+			a.objectDefaultSchemas[f.Schema] = true
+			ty, checks, err := a.modelPropertyType(f.Schema, name, f.Pointer, nested, used, f.Depth)
+			return ty, checks, err
+		}
+		ty, _, err := a.primitiveArrayDefault(f.Schema, name, f.Pointer, nested, used, f.Depth)
+		return ty, nil, err
+	}
 	if a.inlineReferencedAllOfCollection(f.Schema) || a.inlineReferencedScalarCollection(f.Schema) {
 		return a.inlineReferencedAllOfDefaultType(f, ordinary, name, nested, used)
 	}
@@ -260,6 +275,18 @@ func (a *analyzer) modelDefault(f field, ty TypeRef, required bool) (string, *di
 		return "", nil // Final linked backing supplies the typed default plan.
 	}
 	pointer := naming.Pointer(f.Pointer, "default")
+	if has(f.Schema, "prefixItems") {
+		validation := *a
+		validation.warnings = nil
+		_, initializer, err := validation.primitiveArrayDefault(f.Schema, "Validation", f.Pointer, nil, nil, f.Depth)
+		if err != nil {
+			return "", err
+		}
+		if required || ty.Kind == PatchValue {
+			return "", nil
+		}
+		return initializer, nil
+	}
 	if has(f.Schema, "oneOf") || has(f.Schema, "anyOf") {
 		validation := *a
 		validation.warnings = nil // Type planning owns source warnings.
@@ -314,6 +341,18 @@ func (a *analyzer) modelDefault(f field, ty TypeRef, required bool) (string, *di
 		}
 		return initializer, nil
 	}
+	if leaf := nestedStringEnumBoundsLeaf(f.Schema); leaf != nil {
+		validation := *a
+		validation.warnings = nil
+		_, initializer, err := validation.nestedCollectionDefaultNamedWithEnumBounds(f.Schema, "Validation", f.Pointer, nil, nil, f.Depth, leaf)
+		if err != nil {
+			return "", err
+		}
+		if required || ty.Kind == PatchValue {
+			return "", nil
+		}
+		return initializer, nil
+	}
 	if nestedCollectionDefaultSchema(f.Schema) {
 		validation := *a
 		validation.warnings = nil // Type planning owns source warnings.
@@ -351,7 +390,17 @@ func (a *analyzer) modelDefault(f field, ty TypeRef, required bool) (string, *di
 		return initializer, nil
 	}
 	if has(f.Schema, "enum") {
-		if err := a.enumDefaultValue(f.Schema, f.Pointer); err != nil {
+		var err *diagnostic.Diagnostic
+		checked := ty
+		for checked.Kind == Nullable || checked.Kind == PatchValue {
+			checked = *checked.Element
+		}
+		if checked.Kind == Named && checked.Validation != nil && a.options.Validation && directStringEnumFieldBounds(f.Schema) {
+			err = a.checkedStringEnumDefault(f.Schema, f.Pointer, checked.Validation)
+		} else {
+			err = a.enumDefaultValue(f.Schema, f.Pointer)
+		}
+		if err != nil {
 			return "", err
 		}
 	} else if _, err := scalarSchemaDefault(f.Schema, f.Pointer); err != nil {

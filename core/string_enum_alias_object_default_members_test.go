@@ -102,6 +102,18 @@ func TestStringEnumAliasObjectDefaultMemberSourceAndSuppression(t *testing.T) {
 				input := stringEnumAliasMemberDocument(`{"type":"string","enum":["on"]`+extra+`}`, false, `{"$ref":"#/components/schemas/Bridge"}`, value)
 				r := request([]byte(strings.Replace(string(input), `"v":{"properties"`, `"v":{"nullable":true,"properties"`, 1)), "Dto")
 				r.Options.Validation = checked
+				if extra == `,"default":"on"` {
+					independentEnumFactoryGraduation(t, r)
+					continue
+				}
+				if checked && (extra == `,"minLength":1` || extra == `,"pattern":"on"`) {
+					checkedStringEnumRootGraduation(t, r)
+					continue
+				}
+				if extra == `,"format":"uuid"` || extra == `,"x-native-type":"kotlin.String"` {
+					metadataStringEnumGraduation(t, r)
+					continue
+				}
 				if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 					t.Fatal("source hidden by empty/null annotation", extra, err)
 				}

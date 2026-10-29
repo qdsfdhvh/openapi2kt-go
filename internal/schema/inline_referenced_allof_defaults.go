@@ -55,6 +55,9 @@ func (a *analyzer) inlineReferencedAllOfElement(v *document.Value) *document.Val
 }
 
 func (a *analyzer) deferredFieldDefault(v *document.Value) bool {
+	if has(v, "prefixItems") && !has(v, "$ref") {
+		return a.tupleCollectionDeferred(v)
+	}
 	return has(v, "$ref") || a.inlineReferencedAllOfCollection(v) || a.inlineReferencedScalarCollection(v)
 }
 

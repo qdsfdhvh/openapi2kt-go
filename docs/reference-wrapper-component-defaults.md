@@ -40,6 +40,7 @@ A wrapper is admitted exactly when the target's own root default role exists **a
 | builtin scalar (`string`/`integer`/`number`/`boolean`, including int32/int64/float/double) | factory only with validation enabled — a `$ref` to a plain scalar is itself a validation-opt-in alias |
 | `string` / `format: uuid` | Uuid/Uuid? factory with validation enabled; [UUID migration](nullable-uuid.md#migration) applies, and nearest nullable intent remains |
 | finite pure component alias chain (`S → M → T`) | factory on S when every intermediate node meets the rules below |
+| already admitted internal lexical String enum, directly or through finite pure aliases | independent wrapper factory under the [internal enum profile](#internal-string-enum-targets) |
 | explicit outer or intermediate `nullable: true` / `false` | factory follows the nearest explicit alias intent under the profile below |
 | target or intermediate alias with its own admitted `default` | separate factory on each original owner; no inheritance |
 | missing reference, union, `oneOf`/`anyOf`, `const` | `E_SCHEMA_UNSUPPORTED @ …/S/default` |
@@ -66,7 +67,7 @@ A wrapper may own a default through a finite chain of local component-root refer
 
 In this example only S carries a default and receives a factory. T, B, M and referencing fields retain their original output; the factory decodes through `serializer<SDto>()`. Each intermediate component may contain `$ref`, optional boolean `nullable`, its own admitted `default`, and otherwise accepted metadata. Intermediate and terminal defaults are validated independently at their original owners, as described below. The nearest explicit alias nullable intent follows the profile below. Existing target grammar and validation gates remain; plain scalar factories still require validation, and a chain without any explicit alias nullability retains its separate plain-scalar null-default rejection.
 
-Every hop must name `#/components/schemas/<Name>`. Missing targets, cycles, malformed references, internal/property references and chains over 48 hops are rejected. The ordinary resolver still counts the combined alias, target and consumer depth against its source-depth limit, including cached targets: 48 hops is a traversal cap, not a promise that a chain of that length is usable in every context. This adds no general reference graph or internal-reference support.
+Every hop in this named-root profile must name `#/components/schemas/<Name>`. Missing targets, cycles, malformed references, other internal/property references and chains over 48 hops are rejected. Eligible lexical enums have the separate [internal profile](#internal-string-enum-targets). The ordinary resolver still counts the combined alias, target and consumer depth against its source-depth limit, including cached targets: 48 hops is a traversal cap, not a promise that a chain of that length is usable in every context. This adds no general reference graph or internal-reference support.
 
 Target and intermediate source nodes are never rewritten. Value errors, including escaped dictionary keys, retain the outer annotation's Pointer. Original/canonical 32 KiB JSON and 16,384-node default budgets remain shared with direct wrappers. Factories return fresh structured values; runtime codecs and required/missing/null/supplied behavior remain the target's own.
 
@@ -94,7 +95,7 @@ Eligible terminals remain the existing ordinary object/disjoint ordinary `allOf`
 
 Factories return the actual alias through its serializer. Referencing fields do not inherit the annotation; shared nullable fields retain their existing default/required behavior, while required non-null aliases remain required. A narrowed raw `JsonElement` factory rejects an annotation of null, but its non-null runtime codec still represents JSON null as `JsonNull`; a nullable raw alias decodes it to Kotlin null.
 
-Cycles, internal/property references, unsupported siblings and excluded terminal roles keep their rejections. Independent intermediate/terminal defaults follow their own roles below. An outer override cannot hide malformed intermediate source. The source-depth cap remains 48 combined alias/terminal/consumer steps, including cached heights; original/canonical 32 KiB and 16,384-node value budgets remain. Previously valid input, Kotlin call sites, wire behavior and persisted lock formats require no migration. Bounded plain-scalar wrapper factories, including chains without explicit alias nullable intent, enforce retained primitive bounds on non-null annotations: values previously accepted because only the source was checked now fail with `E_SCHEMA_INVALID` at the wrapper's original `/default`. Correct those invalid annotations; valid defaults keep their bytes. This closes only this D03/M03/M04/M07 nullable-chain profile, not general reference graphs or defaults.
+Cycles, internal/property references outside the lexical enum profile, unsupported siblings and excluded terminal roles keep their rejections. Independent intermediate/terminal defaults follow their own roles below. An outer override cannot hide malformed intermediate source. The source-depth cap remains 48 combined alias/terminal/consumer steps, including cached heights; original/canonical 32 KiB and 16,384-node value budgets remain. Previously valid input, Kotlin call sites, wire behavior and persisted lock formats require no migration. Bounded plain-scalar wrapper factories, including chains without explicit alias nullable intent, enforce retained primitive bounds on non-null annotations: values previously accepted because only the source was checked now fail with `E_SCHEMA_INVALID` at the wrapper's original `/default`. Correct those invalid annotations; valid defaults keep their bytes. This closes only this D03/M03/M04/M07 nullable-chain profile, not general reference graphs or defaults.
 
 ## Raw JSON carrier targets
 
@@ -126,7 +127,51 @@ T's companion factory creates `z = "target"`; M's alias factory creates `z = "mi
 
 Traversal reads original sources and ignores another owner's value only when resolving shape. Each original component still passes its own source/annotation grammar and original/canonical 32 KiB / 16,384-node budgets. Structured and primitive enum validation plans retain original source annotations; other scalar/raw roles use the current owner's annotation in a throwaway view. Original target/intermediate nodes, declarations, warnings and factories are unchanged. Bad defaults report at their original `/components/schemas/<Owner>/default/...`, including when an outer annotation is valid or null. Failed generation returns no artifacts; the CLI preserves prior output. No annotation may authorize a target role that was previously unsupported, such as a value-class/union root default or unsupported element/child defaults. Constrained plain-scalar roots follow their [validation-only factory profile](component-default-factories.md#constrained-plain-scalar-roots). [Numeric builtin formats](component-default-factories.md#numeric-builtin-formats) retain mapped range/finite checks, even without bounds or explicit alias nullable intent; null uses effective target/nearest alias nullability. Numeric aliases keep the same validation opt-in. [Native UUID factories](component-default-factories.md#uuid-roots) also admit defaults on finite pure named aliases with validation enabled, retaining canonical-text constraints, original annotation Pointers and nearest explicit nullable intent. Intrinsic nullable UUID roots and own-nullable aliases use transparent Uuid? codecs; null defaults on narrowed non-null aliases remain invalid.
 
-Existing alias depth/cycle checks and nearest nullable precedence remain. This additive D03/M03/M04/M07 profile requires no migration for previously accepted input and changes no persisted lock format. It does not add default inheritance, internal references or general default roles.
+Existing alias depth/cycle checks and nearest nullable precedence remain. This additive D03/M03/M04/M07 profile requires no migration for previously accepted input and changes no persisted lock format. It does not add default inheritance or general default roles; eligible internal lexical enums use the profile below.
+
+## Internal String enum targets
+
+A component alias may own a factory through an already admitted internal lexical
+String enum reference. Property, nested property, List/typed Map leaf and
+composition-owned paths reuse their unique actual declaration. Finite named and
+internal pure reference hops retain the nearest explicit nullable intent.
+
+```json
+{"Owner":{"properties":{"state":{"enum":["ready","paused"],"default":"ready"}}},
+ "Alias":{"$ref":"#/components/schemas/Owner/properties/state","default":"paused"},
+ "Maybe":{"$ref":"#/components/schemas/Alias","nullable":true,"default":null},
+ "Narrow":{"$ref":"#/components/schemas/Maybe","nullable":false,"default":"ready"}}
+```
+
+Alias's top-level factory returns the original Owner enum with serialName
+`paused`; Maybe returns Kotlin null, and Narrow returns the nonnullable enum.
+The original field keeps its independent `ready` initializer. Unannotated
+aliases and consuming fields inherit no factory or initializer. Existing scalar,
+List/typed Map and object-default consumers may retain their own annotations;
+required arguments and Patch presence keep their existing suppression rules.
+
+Plain explicit/typeless String enums, their existing null-vocabulary rules and
+[supported format/native metadata](metadata-string-enums.md) retain lexical
+String codecs and open runtime unknown values. Each default is strict against
+its original vocabulary and effective nullable view. Invalid target, intermediate
+or consumer annotations still fail at their own original Pointer before
+suppression; a valid outer annotation cannot hide an invalid inner one.
+
+The ordinary typed resolver and retained lexical owner authorize the target.
+Discarded, duplicated, unowned or same-byte copied declarations, data beneath
+`default`/`enum`, cycles, unsupported siblings, native numeric/Boolean enum
+internal factories and new graph roles remain excluded. Element-owned defaults
+remain separate. Original sources, vocabulary nodes, actual binding/type,
+nullable intent and cached alias height are checked before optimization. The
+shared source depth48, cumulative source work16384/8MiB, default16384 nodes/32KiB,
+enum240, checked16 and JVM240 limits remain.
+
+This additive D01/D03/F04/F07/M03/M04/M07/M08 profile requires no migration for
+previously accepted input, wire codecs or persisted manifest/name-lock formats.
+[Core contracts](../core/internal_enum_alias_defaults_test.go),
+[original source/type guards](../internal/schema/internal_enum_alias_defaults_test.go)
+and the existing `tuple-inline-enums` fixture/native/four-profile Kotlin route
+cover factory ownership, strict values, nullable views and HTTP/SSE consumption.
 
 ## Runtime stays per-role
 
@@ -156,3 +201,5 @@ A typealias cannot reach nested classifiers, so `WrappedDto.Member` does not com
 [Scalar tuple component factories](tuple-root-defaults.md) extend D03/D06 for original direct scalar prefix/tail List sources and independent component aliases. Original nodes/Pointers, selected codec/nullability, strict annotations/temporal checks, no inheritance, required/Patch and source/value/slot budgets remain. Positional/length approximation and excluded nominal/raw/member-own roles retain their contracts. Formerly rejected eligible root annotations gain factories; accepted API/wire/state formats remain stable, and wider/default/platform work stays open.
 
 [JsonNull scalar component factories](null-component-factories.md) separately admit nonnullable plain/null-only enum component own default:null and eligible independent finite component aliases. Actual JsonNull singleton returns, marked original source/vocabulary authority, strict annotation Pointers and required/Patch/no inheritance remain; nullable/const/format/general graph roles stay separate.
+
+[Checked lexical enum borrowing](borrowed-checked-string-enums.md) separately admits already retained ordinary field/collection-root sources through existing references, with the original enforcing checks and independent eligible defaults. Standalone checked enum components and other source roles keep their own eligibility.

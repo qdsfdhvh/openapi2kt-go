@@ -59,6 +59,10 @@ func (a *analyzer) objectDefaultGraphNode(v *document.Value, pointer string, dep
 	if err != nil {
 		return nil, err
 	}
+	// A marked original collection/alias factory keeps its annotation while
+	// consumers borrow its shape. The final graph-use pass still proves each
+	// actual linked backing and retained declaration/check object.
+	own = own || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer) || a.independentEnumComponentDefault(v, pointer)
 	if has(v, "$ref") {
 		if !a.objectDefaultCollectionGraph(v, depth) {
 			// Existing leaf/DTO/allOf member roles retain their original authority,
@@ -116,6 +120,9 @@ func (a *analyzer) objectDefaultGraphNode(v *document.Value, pointer string, dep
 		*a.objectDefaultGraphUses = append(*a.objectDefaultGraphUses, objectDefaultGraphUse{v, pointer, ty, depth, own})
 		return node, nil
 	}
+	if leaf := inlineStringEnumBoundsLeaf(v, 1); a.options.Validation && leaf != nil && a.componentRoot(v, pointer) {
+		return a.nestedDefaultSchemaWithEnumBounds(v, "Validation", pointer, nil, nil, depth, own, leaf)
+	}
 	kind, _, err := schemaType(v, pointer)
 	if err != nil {
 		return nil, err
@@ -129,6 +136,9 @@ func (a *analyzer) objectDefaultGraphNode(v *document.Value, pointer string, dep
 		keys = []string{"type", "nullable", "properties", "required", edge}
 	}
 	if edge == "" {
+		if a.checkedEnumReferenceCandidate(v) {
+			return a.nestedDefaultSchemaWithEnumBounds(v, "Validation", pointer, nil, nil, depth, own || a.independentCheckedEnumFieldDefault(v, pointer) || a.independentEnumComponentDefault(v, pointer), v)
+		}
 		if has(v, "allOf") {
 			return a.inlineAllOfObjectDefaultMember(v, pointer, depth, own)
 		}

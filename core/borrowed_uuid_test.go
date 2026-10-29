@@ -149,6 +149,10 @@ func TestBorrowedUUIDDepthAndSourceGuards(t *testing.T) {
 	} {
 		r := request(schemas(`{"Bridge":{"$ref":"#/components/schemas/Source/properties/id"},"Source":{"properties":{"id":{"type":"string","format":"uuid"`+tc.extra+`}}}}`), "Dto")
 		r.Options.Validation = true
+		if tc.extra == `,"enum":["a"]` {
+			metadataStringEnumGraduation(t, r)
+			continue
+		}
 		got, err := core.GenerateWithDiagnostics(r)
 		ds, ok := err.(core.Diagnostics)
 		if !ok || len(ds) == 0 || ds[0].Code != tc.code || ds[0].Pointer == nil || *ds[0].Pointer != tc.pointer || !reflect.DeepEqual(got, core.GenerationReport{}) {

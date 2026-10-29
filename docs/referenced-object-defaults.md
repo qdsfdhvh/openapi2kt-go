@@ -13,7 +13,7 @@ The property keeps the resolver's actual public type (`org.example.models.models
 
 ## Annotation and presence
 
-Only the consuming field's own `default` is accepted. A default on the referenced target, an intermediate reference, a target root or a property's own container child is not inherited or used; target-root defaults are rejected outright. No target value is inherited, discarded or selected by a collision rule.
+The consuming field owns its annotation. An original admitted plain DTO component or pure named alias may also own an independent factory, under the [object-default ownership contract](bounded-enum-object-defaults.md). Each annotation validates at its original owner; an unannotated field inherits no factory or initializer. Internal/unmarked/unsupported target and container-child annotation roles remain separate.
 
 Nullable intent follows the existing reference contracts: nearest explicit consumer/alias true or false, terminal intent. Optional presence alone does not legalize a null annotation; a `null` default on a nearest `nullable:false` view is rejected, while an explicitly nullable target accepts it as a literal `null`. Optional ordinary fields get a typed constructor/decoding initializer, a supplied value replaces the default and omitted nested keys use the target DTO's own property defaults. Required fields validate the annotation and keep required constructor arguments, including required nullable fields. Optional explicitly nullable inline request fields retain `Patch.Absent`, with separate Null and Value wire states. A missing request key never becomes a default update.
 

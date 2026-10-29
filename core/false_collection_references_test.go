@@ -64,6 +64,15 @@ func TestFalseCollectionReferenceOptionsAndRoles(t *testing.T) {
 			rq := request(schemas(`{"Blocked":false,`+role+`}`), "Dto")
 			rq.Options.Validation = checked
 			got, e := core.GenerateWithDiagnostics(rq)
+			if role == `"Rows":{"type":"array","prefixItems":[{"$ref":"#/components/schemas/Blocked"}]}` {
+				if e != nil {
+					t.Fatal("original named tuple reference input", e)
+				}
+				if !strings.Contains(source(t, got, "RowsDto"), "List<org.example.models.models.BlockedDto>") {
+					t.Fatal("named tuple reference lost actual rejecting root")
+				}
+				continue
+			}
 			if e == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("unrelated false role admitted", role, e)
 			}

@@ -55,7 +55,6 @@ func TestHTTPFormRequestSelectedOnlyBoundary(t *testing.T) {
 		`true`, `{"type":"string"}`, `{"type":"object"}`,
 		`{"type":"object","nullable":true,"required":["v"],"properties":{"v":{"type":"string"}}}`,
 		`{"type":"object","required":["v"],"properties":{"v":{"type":["string","null"]}}}`,
-		`{"type":"object","required":["v"],"properties":{"v":{"type":"string","default":"a"}}}`,
 		`{"type":"object","required":["v"],"properties":{"v":{"type":"array","items":{"type":"string"}}}}`,
 		`{"allOf":[{"properties":{"v":{"type":"string"}},"required":["v"]}]}`,
 		`{"type":"object","required":["v"],"properties":{"v":{"type":"string","readOnly":true}}}`,
@@ -125,7 +124,7 @@ func TestHTTPFormRequestValidationAndExcludedSources(t *testing.T) {
 	if _, err := core.Generate(rq); err != nil {
 		t.Fatal(err)
 	}
-	bad := formRequestDocument(`{"type":"object","required":["v"],"properties":{"v":{"type":"string","default":"a"}}}`, true)
+	bad := formRequestDocument(`{"type":"object","required":["v"],"properties":{"v":{"type":"string","default":null}}}`, true)
 	rq = request(bad, "")
 	rq.Options.ExcludeAPIs = []string{"DefaultApi"}
 	if _, err := core.Generate(rq); err == nil {

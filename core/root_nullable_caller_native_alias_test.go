@@ -147,6 +147,10 @@ func TestRootNullableCallerNativeAliasSourceAndGuards(t *testing.T) {
 			pointer = "/components/schemas/Z/x-native-type"
 		}
 		input := schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":` + terminal + `}`)
+		if metadataStringEnumFixture(terminal) {
+			metadataStringEnumGraduation(t, request(input, "Dto"))
+			continue
+		}
 		_, err := core.GenerateWithDiagnostics(request(input, "Dto"))
 		if err == nil {
 			t.Fatal("excluded caller-native profile accepted", terminal)

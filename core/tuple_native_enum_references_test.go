@@ -147,12 +147,17 @@ func TestTupleNativeEnumIndependentFactoryAndOwnDefaultRoles(t *testing.T) {
 	}
 	for _, schema := range []string{
 		`{"Code":{"type":"integer","enum":[1,2]},"Probe":{"type":"array","prefixItems":[{"$ref":"#/components/schemas/Code"}],"default":[1]}}`,
-		`{"Probe":{"type":"array","prefixItems":[{"type":"integer","enum":[1,2]}]}}`,
 	} {
 		for _, checked := range []bool{false, true} {
 			rq := request(schemas(schema), "Dto")
 			rq.Options.Validation = checked
 			got, e := core.GenerateWithDiagnostics(rq)
+			if checked {
+				if e != nil {
+					t.Fatal("former selected native enum reference default refusal remains", e)
+				}
+				continue
+			}
 			if e == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("tuple broadened unrelated own/default role", checked, e)
 			}

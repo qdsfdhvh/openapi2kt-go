@@ -38,9 +38,13 @@ fun rootHierarchyAliasBackendContracts(codec: Json) {
     val groupWire=codec.encodeToJsonElement(AliasPlainGroupDto.serializer(),plain)
     check(codec.decodeFromJsonElement(AliasPlainRootDto.serializer(),groupWire)==plain)
     val ancestorWire=codec.encodeToJsonElement(AliasPlainRootDto.serializer(),plain) as JsonObject
-    check("type" !in ancestorWire)
-    try {codec.decodeFromJsonElement(AliasPlainRootDto.serializer(),ancestorWire);error("Ancestor invented intermediate class discriminator")}
-    catch (_: SerializationException) { }
+    check(ancestorWire==groupWire)
+    check(codec.decodeFromJsonElement(AliasPlainRootDto.serializer(),ancestorWire)==plain)
+    val custom=Json(codec){classDiscriminator="category"}
+    val customWire=custom.encodeToJsonElement(AliasPlainRootDto.serializer(),plain)
+    check(customWire==custom.encodeToJsonElement(AliasPlainGroupDto.serializer(),plain))
+    check(custom.decodeFromJsonElement(AliasPlainRootDto.serializer(),customWire)==plain)
+    check(runCatching { codec.decodeFromString(AliasPlainRootDto.serializer(),"{\"family\":\"plain\",\"type\":\"future\"}") }.exceptionOrNull() is SerializationException)
     val deep=codec.decodeFromString(AliasDeepRootDto.serializer(),"{\"kind\":\"deep\",\"step\":\"nested\",\"phase\":\"first\",\"extra\":true}")
     check(deep===AliasDeepFirstDto)
     val deepRaw=codec.parseToJsonElement("{\"kind\":\"deep\",\"step\":\"nested\",\"phase\":\"future\",\"extra\":9}")

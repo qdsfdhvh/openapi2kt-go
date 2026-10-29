@@ -51,6 +51,9 @@ func (a *analyzer) resolveInternalRootAlias(c *component, depth int, visit func(
 }
 
 func (a *analyzer) bindInternalRootAlias(c *component, target *resolvedSchema, depth, height int, inherited *bool) *diagnostic.Diagnostic {
+	if a.checkedEnumReferenceCandidate(target.Schema) && !a.admitBorrowedNominalLeaf(target, c.Pointer+"/$ref") {
+		return schemaReferenceUnsupported(c.Pointer + "/$ref")
+	}
 	graphHeight := 0
 	if target.CanonicalCover != nil {
 		graphHeight = a.recursiveJSONHeights[target.CanonicalCover.Schema]

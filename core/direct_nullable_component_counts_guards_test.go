@@ -37,7 +37,7 @@ func TestDirectNullableComponentCountsOriginalGrammar(t *testing.T) {
 	for _, tc := range []struct{ field, tail, code string }{
 		{`{"type":"string","minLength":-1}`, "/properties/value/minLength", "E_SCHEMA_INVALID"},
 		{`{"type":"string","default":false}`, "/properties/value/default", "E_SCHEMA_INVALID"},
-		{`{"type":"string","enum":["a"],"minLength":1}`, "/properties/value/enum", "E_SCHEMA_UNSUPPORTED"},
+		{`{"type":"string","enum":["a"],"minLength":-1}`, "/properties/value/minLength", "E_SCHEMA_INVALID"},
 		{`{"$ref":"#/components/schemas/Missing"}`, "/properties/value", "E_REF_MISSING"},
 	} {
 		input := schemas(`{"Record":{"type":["object","null"],"minProperties":0,"properties":{"value":` + tc.field + `}}}`)

@@ -1,0 +1,611 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Choice": {
+        "enum": [
+          "ready",
+          "paused"
+        ],
+        "default": "ready"
+      },
+      "ChoiceAlias": {
+        "$ref": "#/components/schemas/Choice"
+      },
+      "Integer": {
+        "type": "integer"
+      },
+      "Long": {
+        "type": "integer",
+        "format": "int64"
+      },
+      "Float": {
+        "type": "number",
+        "format": "float"
+      },
+      "Double": {
+        "type": "number"
+      },
+      "Flag": {
+        "type": "boolean"
+      },
+      "Date": {
+        "type": "string",
+        "format": "date"
+      },
+      "Instant": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "Uuid": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "Item": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "n": {
+            "type": "integer",
+            "default": 7
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "default": {
+          "name": "target"
+        }
+      },
+      "ItemAlias": {
+        "$ref": "#/components/schemas/Item",
+        "nullable": true
+      },
+      "Composed": {
+        "allOf": [
+          {
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          {
+            "properties": {
+              "n": {
+                "type": "integer",
+                "default": 7
+              }
+            }
+          }
+        ],
+        "default": {
+          "name": "target"
+        }
+      },
+      "Source": {
+        "properties": {
+          "state": {
+            "enum": [
+              "ready",
+              "paused"
+            ]
+          },
+          "item": {
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "n": {
+                "type": "integer",
+                "default": 7
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "product": {
+            "allOf": [
+              {
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              {
+                "properties": {
+                  "n": {
+                    "type": "integer",
+                    "default": 7
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/ChoiceAlias"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "Ints": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Integer"
+          }
+        ],
+        "default": [
+          1
+        ]
+      },
+      "Longs": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Long"
+          }
+        ],
+        "default": [
+          9007199254740993
+        ]
+      },
+      "Floats": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Float"
+          }
+        ],
+        "default": [
+          0.1
+        ]
+      },
+      "Doubles": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Double"
+          }
+        ],
+        "default": [
+          2.5
+        ]
+      },
+      "Flags": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Flag"
+          }
+        ],
+        "default": [
+          true
+        ]
+      },
+      "Dates": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Date"
+          }
+        ],
+        "default": [
+          "2026-10-27"
+        ]
+      },
+      "Instants": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Instant"
+          }
+        ],
+        "default": [
+          "2026-10-27T12:30:00Z"
+        ]
+      },
+      "Uuids": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        ],
+        "default": [
+          "550e8400-e29b-41d4-a716-446655440000"
+        ]
+      },
+      "Objects": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Item"
+          }
+        ],
+        "default": [
+          {
+            "name": "root"
+          }
+        ]
+      },
+      "Products": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Composed"
+          }
+        ],
+        "default": [
+          {
+            "name": "root"
+          }
+        ]
+      },
+      "InternalRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Source/properties/state"
+          }
+        ],
+        "default": [
+          "paused"
+        ]
+      },
+      "NullableItems": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/ItemAlias"
+          }
+        ],
+        "default": [
+          null,
+          {
+            "name": "nullable"
+          }
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Integer"
+          }
+        ],
+        "default": [
+          "paused"
+        ],
+        "items": {
+          "$ref": "#/components/schemas/Choice"
+        }
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Rows",
+        "default": [
+          "paused"
+        ]
+      },
+      "Maybe": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Choice"
+          }
+        ],
+        "default": null,
+        "nullable": true
+      },
+      "Holder": {
+        "properties": {
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Item"
+              }
+            ],
+            "default": [
+              {
+                "name": "ignored"
+              }
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/ChoiceAlias"
+              }
+            ],
+            "default": [
+              "paused"
+            ]
+          },
+          "objects": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Item"
+              }
+            ],
+            "default": [
+              {
+                "name": "field"
+              }
+            ]
+          },
+          "products": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Composed"
+              }
+            ],
+            "default": [
+              {
+                "name": "field"
+              }
+            ]
+          },
+          "ints": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Integer"
+              }
+            ],
+            "default": [
+              2
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "internalObjects": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Source/properties/item"
+              }
+            ],
+            "default": [
+              {
+                "name": "internal"
+              }
+            ]
+          },
+          "internalProducts": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Source/properties/product"
+              }
+            ],
+            "default": [
+              {
+                "name": "internal"
+              }
+            ]
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "InternalObjects": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Source/properties/item"
+          }
+        ],
+        "default": [
+          {
+            "name": "internal"
+          }
+        ]
+      },
+      "InternalProducts": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Source/properties/product"
+          }
+        ],
+        "default": [
+          {
+            "name": "internal"
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "$ref": "#/components/schemas/Choice"
+                      }
+                    ],
+                    "default": [
+                      "ready"
+                    ],
+                    "nullable": true
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "$ref": "#/components/schemas/Item"
+                      }
+                    ],
+                    "default": [
+                      {
+                        "name": "ignored"
+                      }
+                    ],
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic result"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "operationId": "shapeA",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "$ref": "#/components/schemas/Choice"
+                        }
+                      ],
+                      "default": [
+                        "ready"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "operationId": "shapeB",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "$ref": "#/components/schemas/Choice"
+                        }
+                      ],
+                      "default": [
+                        "ready"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

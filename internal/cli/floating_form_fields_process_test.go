@@ -62,6 +62,13 @@ func TestFloatingFormFieldsNativeParityAndPreservation(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
+				if bad == "field-default" {
+					formFieldDefaultMigration(t, data, checked, style)
+					if !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("default migration changed original no-default output")
+					}
+					continue
+				}
 				put(t, p.Input, data)
 				for _, cmd := range commands {
 					failure := fails(t, invoke(t, p.Root, cmd...), 1, "E_OPERATIONS_UNSUPPORTED")

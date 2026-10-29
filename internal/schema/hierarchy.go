@@ -18,6 +18,9 @@ type HierarchyTagRule struct {
 	Child   string
 }
 type Hierarchy struct {
+	// Original typed mapping bodies retained for strict annotation validation.
+	// Runtime emission continues to use the actual Leaf constants.
+	tagBodies map[string]string
 	// Type data without scalar selectors must not use a conflicting class discriminator.
 	RawOnly                     bool
 	Plain                       bool
@@ -32,6 +35,9 @@ type Hierarchy struct {
 	// New nullable hierarchy views require their physical singleton codecs to
 	// reject null; historical non-null singleton behavior remains unchanged.
 	NonNullSingletonCodec bool
+	// Content-dispatched parents must encode through these actual child
+	// serializers to retain a closed descendant's class discriminator.
+	SerializeVia []string `json:",omitempty"`
 }
 
 func (n *Hierarchy) Name() string { return n.ClassName }
@@ -790,6 +796,12 @@ func (p *hierarchyPlanner) build(key string, context map[string]hierarchyInfo, p
 			}
 		}
 		result.Leaf = model
+		result.tagBodies = map[string]string{}
+		for wire, field := range mapped {
+			if field.Body != nil {
+				result.tagBodies[wire] = *field.Body
+			}
+		}
 		for owner := key; owner != ""; owner = p.parents[owner] {
 			if p.a.components[owner].MemberNullableHierarchy {
 				result.NonNullSingletonCodec = true
@@ -809,6 +821,7 @@ func (p *hierarchyPlanner) build(key string, context map[string]hierarchyInfo, p
 	if p.a.hierarchyOrigins != nil {
 		p.a.hierarchyOrigins[result] = aOrigin
 	}
+	p.a.recordTupleUnionDeclaration(result, c.Schema, c.Pointer)
 	return nil
 }
 
@@ -890,6 +903,26 @@ func (a *analyzer) planHierarchy(used map[string]bool) (map[string]*Hierarchy, *
 			if err := p.build(key, map[string]hierarchyInfo{}, false, used, out); err != nil {
 				return nil, err
 			}
+		}
+	}
+	var routes func(string)
+	routes = func(key string) {
+		h := out[key]
+		if h == nil || h.Leaf != nil {
+			return
+		}
+		for _, edge := range p.graph[key].Edges {
+			routes(edge.Key)
+			child := out[edge.Key]
+			if h.Content() && child != nil && child.Leaf == nil && (!child.Content() || len(child.SerializeVia) != 0) {
+				h.SerializeVia = append(h.SerializeVia, child.Name())
+			}
+		}
+		p.a.recordTupleUnionDeclaration(h, p.a.components[key].Schema, p.a.components[key].Pointer)
+	}
+	for _, key := range candidates {
+		if _, owned := p.parents[key]; !owned {
+			routes(key)
 		}
 	}
 	return out, nil

@@ -116,7 +116,7 @@ func composedModelCandidate(v *document.Value) bool {
 func enumNominalCandidate(v *document.Value) bool {
 	// Direct DTO collection bounds belong to that field use, not the open
 	// vocabulary codec. Borrowing this leaf would erase its enforcing slot.
-	if v == nil || v.Kind() != document.Object || has(v, "$ref") || hasPrimitiveBounds(v) || !plainStringEnumSchema(v) {
+	if v == nil || v.Kind() != document.Object || has(v, "$ref") || hasPrimitiveBounds(v) || !lexicalStringEnumSchema(v) {
 		return false
 	}
 	kind, _, err := schemaType(v, "")
@@ -177,10 +177,10 @@ func (a *analyzer) nominalSourceNullable(target *resolvedSchema) (bool, *diagnos
 func (a *analyzer) bindInternalModel(target *resolvedSchema, source string) bool {
 	name := a.internalModels[target.Schema]
 	lexicalHierarchy := target.SourceCatalog != nil && target.DirectLexical && a.hierarchySources[target.SourceCatalog.Schema]
-	lexicalComposed := target.SourceCatalog != nil && (target.ComposedLexical || target.DirectLexical && (unionNominalCandidate(target.Schema) || enumNominalCandidate(target.Schema)))
-	if lexicalHierarchy || composedModelCandidate(target.Schema) || unionNominalCandidate(target.Schema) || enumNominalCandidate(target.Schema) || name == "" {
+	lexicalComposed := target.SourceCatalog != nil && (target.ComposedLexical || target.DirectLexical && (unionNominalCandidate(target.Schema) || a.enumReferenceCandidate(target.Schema)))
+	if lexicalHierarchy || composedModelCandidate(target.Schema) || unionNominalCandidate(target.Schema) || a.enumReferenceCandidate(target.Schema) || name == "" {
 		binding := a.deferredNominals[target.Schema]
-		if (!lexicalHierarchy && !lexicalComposed && (binding == nil || binding.Owner != target.SourceCatalog || !target.DirectLexical)) || !directInternalModel(target.Schema, target.Pointer) && !composedModelCandidate(target.Schema) && !unionNominalCandidate(target.Schema) && !enumNominalCandidate(target.Schema) {
+		if (!lexicalHierarchy && !lexicalComposed && (binding == nil || binding.Owner != target.SourceCatalog || !target.DirectLexical)) || !directInternalModel(target.Schema, target.Pointer) && !composedModelCandidate(target.Schema) && !unionNominalCandidate(target.Schema) && !a.enumReferenceCandidate(target.Schema) {
 			return false
 		}
 		if a.deferredNominals == nil || a.nominalsLinked && (binding == nil || binding.Name == "") {
@@ -265,7 +265,7 @@ func (a *analyzer) bindNamedChainModel(target *resolvedSchema, source string) bo
 			return false
 		}
 	}
-	if name == "" && (composedModelCandidate(target.Schema) || unionNominalCandidate(target.Schema) || enumNominalCandidate(target.Schema)) {
+	if name == "" && (composedModelCandidate(target.Schema) || unionNominalCandidate(target.Schema) || a.enumReferenceCandidate(target.Schema)) {
 		binding := a.deferredNominals[target.Schema]
 		if a.nominalsLinked && (binding == nil || binding.Name == "") {
 			return false
@@ -296,6 +296,9 @@ func (a *analyzer) bindNamedChainModel(target *resolvedSchema, source string) bo
 // Syntax is not enough to invent a classifier. Check each used owner against
 // final shared declarations, after all components and operation uses validate.
 func (a *analyzer) validateInternalModels(declarations []Declaration) *diagnostic.Diagnostic {
+	if err := a.validateTupleInlineDTOProof(); err != nil {
+		return err
+	}
 	if err := a.validateFalseDTOOwnerDefaults(declarations); err != nil {
 		return err
 	}
@@ -327,6 +330,12 @@ func (a *analyzer) validateInternalModels(declarations []Declaration) *diagnosti
 		return err
 	}
 	if err := a.validateBorrowedEnumLeaves(declarations); err != nil {
+		return err
+	}
+	if err := a.validateCheckedStringEnumRoots(declarations); err != nil {
+		return err
+	}
+	if err := a.validateInternalEnumFactories(declarations); err != nil {
 		return err
 	}
 	if err := a.validateBorrowedValueClassLeaves(declarations); err != nil {
@@ -425,6 +434,9 @@ func (a *analyzer) validateInternalModels(declarations []Declaration) *diagnosti
 		return err
 	}
 	if err := a.validateNamedCollectionBindings(declarations); err != nil {
+		return err
+	}
+	if err := a.validateReferencedEnumCollectionFactories(declarations); err != nil {
 		return err
 	}
 	if err := a.validateRecursiveCoverBindings(declarations); err != nil {

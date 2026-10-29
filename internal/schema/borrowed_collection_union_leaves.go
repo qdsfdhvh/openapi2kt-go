@@ -155,16 +155,20 @@ func (a *analyzer) borrowedUnionSource(v *document.Value, pointer string) ([]bor
 			}
 		}
 		for _, member := range v.Members() {
-			if role != "properties" && slices.Contains(metadata, member.Name) {
+			if role != "properties" && role != "literal" && slices.Contains(metadata, member.Name) {
 				continue
 			}
 			at := naming.Pointer(p, member.Name)
 			childRole := "schema"
-			if role != "properties" {
+			if role == "literal" {
+				childRole = "literal"
+			} else if role != "properties" {
 				if member.Name == "oneOf" || member.Name == "anyOf" || member.Name == "allOf" {
 					childRole = "branches"
 				} else if member.Name == "properties" {
 					childRole = "properties"
+				} else if member.Name == "const" || member.Name == "default" || member.Name == "enum" {
+					childRole = "literal"
 				}
 			}
 			if err := walk(member.Value, at, depth, childRole); err != nil {
@@ -176,7 +180,9 @@ func (a *analyzer) borrowedUnionSource(v *document.Value, pointer string) ([]bor
 		if v.Kind() == document.Array {
 			for i, item := range v.Items() {
 				childRole, childDepth := "schema", depth
-				if role == "branches" {
+				if role == "literal" {
+					childRole = "literal"
+				} else if role == "branches" {
 					childRole, childDepth = "shape", depth+1
 				}
 				if err := walk(item, naming.Pointer(p, strconv.Itoa(i)), childDepth, childRole); err != nil {

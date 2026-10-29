@@ -26,7 +26,6 @@ func TestOptionalFlatFormFieldSourceGuards(t *testing.T) {
 	for _, field := range []string{
 		`{"type":["string","null"]}`,
 		`{"type":"string","nullable":true}`,
-		`{"type":"string","default":"value"}`,
 		`{"type":"array","items":{"type":"string"}}`,
 	} {
 		rq := request(formRequestDocument(`{"type":"object","properties":{"value":`+field+`}}`, true), "Dto")

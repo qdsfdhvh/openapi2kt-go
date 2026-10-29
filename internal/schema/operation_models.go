@@ -155,7 +155,7 @@ func (a *analyzer) operationResponseSchema(v *document.Value, owner, pointer str
 		}
 	}
 	name := "Response"
-	if local {
+	if local || tupleFalseContainerCandidate(v) || tupleInlineAllOfContainerCandidate(v) || tupleCollectionContainerCandidate(v) || tupleUnionContainerCandidate(v) {
 		name, err = a.operationModelName(owner, role, pointer)
 		if err != nil {
 			return TypeRef{}, nil, err
@@ -180,7 +180,7 @@ func (a *analyzer) operationResponseSchema(v *document.Value, owner, pointer str
 	}
 	// Top-level unions/compositions and enum response declarations have separate
 	// legacy projection rules. Do not accidentally expose a new sealed API.
-	if len(declarations) > 0 && (!local || !foldedObject && (has(schema, "anyOf") || has(schema, "oneOf") || has(schema, "allOf"))) {
+	if len(declarations) > 0 && !a.onlyTupleFalsePeers(declarations) && !a.onlyTupleInlineAllOfPeers(declarations) && !a.onlyTupleCollectionPeers(declarations) && !a.onlyTupleUnionPeers(declarations) && (!local || !foldedObject && (has(schema, "anyOf") || has(schema, "oneOf") || has(schema, "allOf"))) {
 		return TypeRef{}, nil, operationUnsupported(source)
 	}
 	if itemObject {
@@ -194,7 +194,12 @@ func (a *analyzer) operationResponseSchema(v *document.Value, owner, pointer str
 		target := ty
 		ty = TypeRef{Kind: Named, Name: name, Element: &target}
 	}
-	ty = qualifyOperationType(ty, name, a.options.PackageName+".api.models."+name)
+	ty = a.qualifyTupleOperationType(ty, name, a.options.PackageName+".api.models."+name)
+	if a.onlyTupleFalsePeers(declarations) || a.onlyTupleInlineAllOfPeers(declarations) || a.onlyTupleCollectionPeers(declarations) || a.onlyTupleUnionPeers(declarations) {
+		for _, d := range declarations {
+			ty = a.qualifyTupleOperationType(ty, d.Name(), a.options.PackageName+".api.models."+d.Name())
+		}
+	}
 	if folded != nil {
 		ty = ty.Null()
 	}

@@ -26,6 +26,10 @@ func TestNestedTemporalCollectionDefaultsKeepExcludedRolesAndNoDrop(t *testing.T
 		for _, checked := range []bool{false, true} {
 			r := request(fieldDoc(field), "Dto")
 			r.Options.Validation = checked
+			if tc.tail == "/enum" && metadataStringEnumFixture(tc.leaf) {
+				metadataStringEnumGraduation(t, r)
+				continue
+			}
 			got, err := core.GenerateWithDiagnostics(r)
 			if err == nil || err.(core.Diagnostics)[0].Code != "E_SCHEMA_UNSUPPORTED" || *err.(core.Diagnostics)[0].Pointer != "/components/schemas/Record/properties/value/items/additionalProperties"+tc.tail || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal(tc, checked, err)

@@ -1,0 +1,1529 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ]
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "NullableRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "enum": [
+              null,
+              "ready",
+              "null"
+            ]
+          }
+        ],
+        "default": [
+          null,
+          "ready"
+        ]
+      },
+      "Ints": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "integer",
+            "enum": [
+              1,
+              2
+            ]
+          }
+        ],
+        "default": [
+          1
+        ]
+      },
+      "Longs": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "enum": [
+              9007199254740993,
+              9007199254740996
+            ]
+          }
+        ],
+        "default": [
+          9007199254740993
+        ]
+      },
+      "Floats": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number",
+            "format": "float",
+            "enum": [
+              0.1,
+              0.10000000149011612
+            ]
+          }
+        ],
+        "default": [
+          0.1
+        ]
+      },
+      "Doubles": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number",
+            "enum": [
+              -0.0,
+              2.5
+            ]
+          }
+        ],
+        "default": [
+          2.5
+        ]
+      },
+      "Flags": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "boolean",
+            "enum": [
+              true,
+              false
+            ]
+          }
+        ],
+        "default": [
+          true
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          }
+        ],
+        "items": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "paused"
+          ]
+        },
+        "default": [
+          "paused"
+        ]
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ]
+          }
+        ],
+        "items": false,
+        "default": [
+          null,
+          {
+            "enum": "data"
+          }
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Rows",
+        "default": [
+          "paused"
+        ]
+      },
+      "Maybe": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ]
+          }
+        ],
+        "nullable": true,
+        "default": null
+      },
+      "Holder": {
+        "properties": {
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "paused"
+                ]
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "paused"
+                ]
+              }
+            ],
+            "default": [
+              "paused"
+            ]
+          },
+          "ints": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2
+                ]
+              }
+            ],
+            "default": [
+              2
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          },
+          "ordinary": {
+            "$ref": "#/components/schemas/OrdinaryMetadata"
+          },
+          "internalDefaults": {
+            "$ref": "#/components/schemas/MetaInternalHolder"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "ShapeA": {
+        "properties": {
+          "detail": {
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "ShapeB": {
+        "properties": {
+          "detail": {
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "MetaDate": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "paused"
+        ],
+        "format": "date",
+        "default": "ready"
+      },
+      "MetaDateAlias": {
+        "$ref": "#/components/schemas/MetaDate",
+        "default": "paused"
+      },
+      "MetaDateInlineRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "format": "date"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaDateNamedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/MetaDateAlias"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaTimestamp": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "paused"
+        ],
+        "format": "date-time",
+        "default": "ready"
+      },
+      "MetaTimestampAlias": {
+        "$ref": "#/components/schemas/MetaTimestamp",
+        "default": "paused"
+      },
+      "MetaTimestampInlineRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "format": "date-time"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaTimestampNamedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/MetaTimestampAlias"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaByte": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "paused"
+        ],
+        "format": "byte",
+        "default": "ready"
+      },
+      "MetaByteAlias": {
+        "$ref": "#/components/schemas/MetaByte",
+        "default": "paused"
+      },
+      "MetaByteInlineRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "format": "byte"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaByteNamedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/MetaByteAlias"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaBinary": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "paused"
+        ],
+        "format": "binary",
+        "default": "ready"
+      },
+      "MetaBinaryAlias": {
+        "$ref": "#/components/schemas/MetaBinary",
+        "default": "paused"
+      },
+      "MetaBinaryInlineRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "format": "binary"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaBinaryNamedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/MetaBinaryAlias"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaUuid": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "paused"
+        ],
+        "format": "uuid",
+        "default": "ready"
+      },
+      "MetaUuidAlias": {
+        "$ref": "#/components/schemas/MetaUuid",
+        "default": "paused"
+      },
+      "MetaUuidInlineRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "format": "uuid"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaUuidNamedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/MetaUuidAlias"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaNativeDate": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "paused"
+        ],
+        "x-native-type": "date",
+        "default": "ready"
+      },
+      "MetaNativeDateAlias": {
+        "$ref": "#/components/schemas/MetaNativeDate",
+        "default": "paused"
+      },
+      "MetaNativeDateInlineRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "x-native-type": "date"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaNativeDateNamedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/MetaNativeDateAlias"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaBigint": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "paused"
+        ],
+        "x-native-type": "bigint",
+        "default": "ready"
+      },
+      "MetaBigintAlias": {
+        "$ref": "#/components/schemas/MetaBigint",
+        "default": "paused"
+      },
+      "MetaBigintInlineRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "x-native-type": "bigint"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaBigintNamedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/MetaBigintAlias"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaProvider": {
+        "type": "string",
+        "enum": [
+          "ready",
+          "paused"
+        ],
+        "x-native-type": "org.example.scalarvalues.Money",
+        "default": "ready"
+      },
+      "MetaProviderAlias": {
+        "$ref": "#/components/schemas/MetaProvider",
+        "default": "paused"
+      },
+      "MetaProviderInlineRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "x-native-type": "org.example.scalarvalues.Money"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "MetaProviderNamedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/MetaProviderAlias"
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "Metadata": {
+        "properties": {
+          "dateInline": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "format": "date"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "dateNamed": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/MetaDateAlias"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "timestampInline": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "format": "date-time"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "timestampNamed": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/MetaTimestampAlias"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "byteInline": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "format": "byte"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "byteNamed": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/MetaByteAlias"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "binaryInline": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "format": "binary"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "binaryNamed": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/MetaBinaryAlias"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "uuidInline": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "format": "uuid"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "uuidNamed": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/MetaUuidAlias"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "nativeDateInline": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "x-native-type": "date"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "nativeDateNamed": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/MetaNativeDateAlias"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "bigintInline": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "x-native-type": "bigint"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "bigintNamed": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/MetaBigintAlias"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "providerInline": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "x-native-type": "org.example.scalarvalues.Money"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "providerNamed": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/MetaProviderAlias"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "nullableWords": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string",
+                "format": "date",
+                "enum": [
+                  "ready"
+                ],
+                "nullable": true
+              }
+            ],
+            "default": [
+              null,
+              "ready"
+            ]
+          }
+        }
+      },
+      "MetaAliasRows": {
+        "$ref": "#/components/schemas/MetaDateNamedRows",
+        "default": [
+          "paused"
+        ]
+      },
+      "MetaMaybe": {
+        "$ref": "#/components/schemas/MetaDate",
+        "nullable": true,
+        "default": null
+      },
+      "MetaNarrow": {
+        "$ref": "#/components/schemas/MetaMaybe",
+        "nullable": false,
+        "default": "paused"
+      },
+      "MetaIntrinsic": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          "ready",
+          "paused"
+        ],
+        "format": "uuid",
+        "default": null
+      },
+      "MetaOwner": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "format": "byte",
+            "default": "ready"
+          }
+        }
+      },
+      "MetaBorrowed": {
+        "$ref": "#/components/schemas/MetaOwner/properties/value"
+      },
+      "OrdinaryRows": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "paused"
+          ],
+          "format": "date"
+        },
+        "default": [
+          "ready"
+        ]
+      },
+      "OrdinaryObject": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/MetaDateAlias"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "default": {
+          "state": "ready"
+        }
+      },
+      "OrdinaryMetadata": {
+        "properties": {
+          "required": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "format": "date",
+            "default": "ready"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "paused"
+            ],
+            "x-native-type": "date",
+            "default": "paused"
+          },
+          "named": {
+            "$ref": "#/components/schemas/MetaDateAlias",
+            "default": "ready"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ready",
+                "paused"
+              ],
+              "x-native-type": "org.example.scalarvalues.Money"
+            },
+            "default": [
+              "ready"
+            ]
+          },
+          "map": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "ready",
+                "paused"
+              ],
+              "format": "binary",
+              "nullable": true
+            },
+            "default": {
+              "first": "ready",
+              "second": null
+            }
+          },
+          "nested": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "paused"
+                ],
+                "format": "date-time"
+              }
+            },
+            "default": {
+              "first": [
+                "ready"
+              ]
+            }
+          },
+          "refRows": {
+            "$ref": "#/components/schemas/OrdinaryRows",
+            "default": [
+              "paused"
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/MetaBorrowed",
+            "default": "ready"
+          },
+          "maybe": {
+            "$ref": "#/components/schemas/MetaMaybe"
+          },
+          "narrow": {
+            "$ref": "#/components/schemas/MetaNarrow",
+            "default": "ready"
+          },
+          "unannotated": {
+            "$ref": "#/components/schemas/MetaDate"
+          },
+          "uniqueRows": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "enum": [
+                "ready",
+                "paused"
+              ]
+            },
+            "default": [
+              "ready",
+              "paused"
+            ]
+          },
+          "uniqueObjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UniqueMeta"
+            }
+          },
+          "uniqueMaps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "format": "uuid",
+                "enum": [
+                  "ready",
+                  "paused"
+                ]
+              }
+            },
+            "default": [
+              {
+                "first": "ready"
+              },
+              {
+                "first": "paused"
+              }
+            ]
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "UniqueMeta": {
+        "properties": {
+          "state": {
+            "type": "string",
+            "format": "uuid",
+            "enum": [
+              "ready",
+              "paused"
+            ]
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "MetaIntrinsicPeer": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          "ready",
+          "paused"
+        ],
+        "format": "uuid",
+        "default": null
+      },
+      "MetaInternalDefault": {
+        "$ref": "#/components/schemas/MetaOwner/properties/value",
+        "default": "paused"
+      },
+      "MetaInternalMaybe": {
+        "$ref": "#/components/schemas/MetaInternalDefault",
+        "nullable": true,
+        "default": null
+      },
+      "MetaInternalNarrow": {
+        "$ref": "#/components/schemas/MetaInternalMaybe",
+        "nullable": false,
+        "default": "ready"
+      },
+      "MetaInternalHolder": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/MetaInternalDefault",
+            "default": "ready"
+          },
+          "required": {
+            "$ref": "#/components/schemas/MetaInternalNarrow",
+            "default": "paused"
+          },
+          "unannotated": {
+            "$ref": "#/components/schemas/MetaInternalDefault"
+          },
+          "maybe": {
+            "$ref": "#/components/schemas/MetaInternalMaybe"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetaInternalDefault"
+            },
+            "default": [
+              "ready",
+              "paused"
+            ]
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "MetaInternalObject": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/MetaInternalDefault"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "default": {
+          "state": "ready"
+        }
+      },
+      "PlainInternalOwner": {
+        "properties": {
+          "state": {
+            "enum": [
+              "ready",
+              "paused"
+            ]
+          }
+        }
+      },
+      "PlainInternalDefault": {
+        "$ref": "#/components/schemas/PlainInternalOwner/properties/state",
+        "default": "paused"
+      },
+      "MetaListOwner": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "date",
+          "enum": [
+            "ready",
+            "paused"
+          ]
+        }
+      },
+      "MetaListDefault": {
+        "$ref": "#/components/schemas/MetaListOwner/items",
+        "default": "ready"
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "get": {
+        "operationId": "inlineRows",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "ready",
+                        "paused"
+                      ],
+                      "format": "date"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "ready",
+                          "paused"
+                        ],
+                        "format": "date"
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      "ready"
+                    ]
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "ready",
+                          "paused"
+                        ],
+                        "format": "date"
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      "ready"
+                    ]
+                  },
+                  "ordinaryOptional": {
+                    "type": "string",
+                    "x-native-type": "date",
+                    "enum": [
+                      "ready",
+                      "paused"
+                    ],
+                    "nullable": true,
+                    "default": "ready"
+                  },
+                  "ordinaryRequired": {
+                    "type": "string",
+                    "format": "uuid",
+                    "enum": [
+                      "ready",
+                      "paused"
+                    ],
+                    "nullable": true,
+                    "default": "ready"
+                  }
+                },
+                "required": [
+                  "required",
+                  "ordinaryRequired"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic result"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "type": "string",
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "operationId": "shapeA",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "enum": [
+                            "ready",
+                            "paused"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "operationId": "shapeB",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "enum": [
+                            "ready",
+                            "paused"
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/meta-byte": {
+      "get": {
+        "operationId": "metaByte",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "format": "byte",
+                      "enum": [
+                        "ready"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/meta-native": {
+      "get": {
+        "operationId": "metaNative",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "x-native-type": "bigint",
+                      "enum": [
+                        "ready"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/meta-named": {
+      "get": {
+        "operationId": "metaNamed",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "$ref": "#/components/schemas/MetaDateAlias"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/meta-uuid": {
+      "get": {
+        "operationId": "metaUuid",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "enum": [
+                        "ready"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/meta-timestamp": {
+      "get": {
+        "operationId": "metaTimestamp",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "x-native-type": "date",
+                      "enum": [
+                        "ready"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/meta-provider": {
+      "get": {
+        "operationId": "metaProvider",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "x-native-type": "org.example.scalarvalues.Money",
+                      "enum": [
+                        "ready"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

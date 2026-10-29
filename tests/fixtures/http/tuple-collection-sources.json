@@ -1,0 +1,541 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Numbers": {
+        "type": "array",
+        "items": {
+          "type": "integer"
+        },
+        "default": [
+          9
+        ]
+      },
+      "AliasNumbers": {
+        "$ref": "#/components/schemas/Numbers"
+      },
+      "Child": {
+        "properties": {
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label"
+        ]
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "default": [
+          [
+            1,
+            2
+          ],
+          []
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Rows",
+        "default": [
+          [
+            3
+          ]
+        ]
+      },
+      "Maps": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          }
+        ],
+        "default": [
+          {
+            "default": 7
+          }
+        ]
+      },
+      "NullableRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "integer",
+              "nullable": true
+            }
+          }
+        ],
+        "default": [
+          null,
+          [
+            null,
+            1
+          ]
+        ]
+      },
+      "RefRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/AliasNumbers"
+          }
+        ],
+        "default": [
+          [
+            4
+          ]
+        ]
+      },
+      "Enums": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "array",
+            "items": {
+              "enum": [
+                "ready",
+                "paused"
+              ]
+            }
+          }
+        ],
+        "default": [
+          [
+            "ready"
+          ]
+        ]
+      },
+      "Objects": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "array",
+            "items": {
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "state": {
+                  "enum": [
+                    "ready",
+                    "paused"
+                  ],
+                  "default": "ready"
+                },
+                "child": {
+                  "$ref": "#/components/schemas/Child",
+                  "default": {
+                    "label": "inner"
+                  }
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          }
+        ],
+        "default": [
+          [
+            {
+              "name": "root"
+            }
+          ]
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          false,
+          {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "items": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "default": [
+          {
+            "x": 1
+          }
+        ]
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "default": [
+          null,
+          {
+            "items": "data"
+          }
+        ]
+      },
+      "Maybe": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "nullable": true,
+        "default": null
+      },
+      "Holder": {
+        "properties": {
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            ],
+            "default": [
+              [
+                9
+              ]
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            ],
+            "default": [
+              [
+                1
+              ]
+            ]
+          },
+          "refs": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Numbers"
+              }
+            ],
+            "default": [
+              [
+                2
+              ]
+            ]
+          },
+          "objects": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "array",
+                "items": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "enum": [
+                        "ready",
+                        "paused"
+                      ],
+                      "default": "ready"
+                    },
+                    "child": {
+                      "$ref": "#/components/schemas/Child",
+                      "default": {
+                        "label": "inner"
+                      }
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            ],
+            "default": [
+              [
+                {
+                  "name": "field"
+                }
+              ]
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "nested": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "required"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "get": {
+        "operationId": "inlineRows",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic result"
+          }
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "$ref": "#/components/schemas/Numbers"
+                      }
+                    ],
+                    "default": [
+                      [
+                        9
+                      ]
+                    ],
+                    "nullable": true
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "integer"
+                        }
+                      }
+                    ],
+                    "default": [
+                      [
+                        9
+                      ]
+                    ],
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "synthetic result"
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "operationId": "shapeA",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "operationId": "shapeB",
+        "responses": {
+          "200": {
+            "description": "synthetic result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

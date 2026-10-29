@@ -47,12 +47,15 @@ func (a *analyzer) tupleNativeEnum(original *document.Value, source string, term
 }
 
 type tupleNativeSourceRegistry struct {
-	Root        *document.Value
-	Nodes       map[*document.Value]borrowedAllOfNode
-	Terminals   map[*document.Value]string
-	Catalogs    map[*component]borrowedAllOfShapeRef
-	Sources     []tupleNativeSourcePath
-	Work, Bytes int
+	Root         *document.Value
+	Nodes        map[*document.Value]borrowedAllOfNode
+	Terminals    map[*document.Value]string
+	Catalogs     map[*component]borrowedAllOfShapeRef
+	Sources      []tupleNativeSourcePath
+	Work, Bytes  int
+	Constructors map[*document.Value]tupleInlineConstructorFact
+	Collections  map[*document.Value]tupleCollectionFact
+	Unions       map[*document.Value]tupleUnionFact
 }
 
 type tupleNativeSourcePath struct {
@@ -62,7 +65,7 @@ type tupleNativeSourcePath struct {
 
 func (r *tupleNativeSourceRegistry) charge(work, bytes int, source string) *diagnostic.Diagnostic {
 	if work > 16384-r.Work || bytes > (8<<20)-r.Bytes {
-		return diagnostic.At("E_MODEL_LIMIT", "Tuple native enum sources exceed the cumulative work or byte budget.", source)
+		return diagnostic.At("E_MODEL_LIMIT", "Tuple enum sources exceed the cumulative work or byte budget.", source)
 	}
 	r.Work += work
 	r.Bytes += bytes
@@ -177,15 +180,22 @@ func (a *analyzer) captureTupleNativeSource(original *document.Value, source str
 		if owner == nil {
 			return schemaReferenceUnsupported(source)
 		}
-		if old, ok := r.Catalogs[owner]; ok {
-			if old.Schema != owner.Schema || old.Pointer != owner.Pointer || old.Reference != owner.Reference {
-				return schemaReferenceUnsupported(source)
+		// Resolution can expose the canonical owner while the actual physical
+		// target is a named alias. Retain both catalog identities and heights.
+		for _, binding := range []*component{owner, a.componentsByOriginalSchema(target)} {
+			if binding == nil {
+				continue
 			}
-		} else {
-			if err := r.charge(1, 0, source); err != nil {
-				return err
+			if old, ok := r.Catalogs[binding]; ok {
+				if old.Schema != binding.Schema || old.Pointer != binding.Pointer || old.Reference != binding.Reference || old.Height != binding.AliasHeight {
+					return schemaReferenceUnsupported(source)
+				}
+			} else {
+				if err := r.charge(1, 0, source); err != nil {
+					return err
+				}
+				r.Catalogs[binding] = borrowedAllOfShapeRef{Owner: binding, Schema: binding.Schema, Pointer: binding.Pointer, Reference: binding.Reference, Height: binding.AliasHeight}
 			}
-			r.Catalogs[owner] = borrowedAllOfShapeRef{Owner: owner, Schema: owner.Schema, Pointer: owner.Pointer, Reference: owner.Reference}
 		}
 		v, p = target, location
 	}
@@ -205,7 +215,14 @@ func (a *analyzer) captureTupleNativeSource(original *document.Value, source str
 	if err := r.charge(0, len(bytes), source); err != nil {
 		return err
 	}
-	nodes, _, err := a.borrowedAllOfSourceBudget(terminal, pointer, source, nil)
+	role := "shape"
+	if has(terminal, "$ref") {
+		// A captured intermediate wrapper is a source use, not an allOf
+		// shape operand. Its actual target/path is admitted and captured by
+		// the caller; internal refs must not enter catalog-only shape lookup.
+		role = "schema"
+	}
+	nodes, _, err := a.borrowedAllOfSourceBudgetRole(terminal, pointer, source, nil, role)
 	if err != nil {
 		return err
 	}
@@ -232,7 +249,7 @@ func (a *analyzer) validateTupleNativeSources() *diagnostic.Diagnostic {
 		}
 	}
 	for c, old := range r.Catalogs {
-		if a.components[c.Wire] != c || old.Schema != c.Schema || old.Pointer != c.Pointer || old.Reference != c.Reference {
+		if a.components[c.Wire] != c || old.Schema != c.Schema || old.Pointer != c.Pointer || old.Reference != c.Reference || old.Height != c.AliasHeight {
 			return schemaReferenceUnsupported(r.Sources[0].Pointer)
 		}
 	}

@@ -162,6 +162,10 @@ func TestIntrinsicNullableTemporalBudgetsAndNoDrop(t *testing.T) {
 		if strings.Contains(terminal, `"nullable":true`) {
 			pointer = "/components/schemas/Z"
 		}
+		if metadataStringEnumFixture(terminal) {
+			metadataStringEnumGraduation(t, request(schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":`+terminal+`}`), "Dto"))
+			continue
+		}
 		aliasFailure(t, schemas(`{"A":{"$ref":"#/components/schemas/Z","nullable":true},"Z":`+terminal+`}`), "E_SCHEMA_UNSUPPORTED", pointer)
 	}
 

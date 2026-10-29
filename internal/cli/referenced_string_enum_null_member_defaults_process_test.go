@@ -43,7 +43,7 @@ func TestReferencedStringEnumNullMemberDefaultsNativeLockAndPreservation(t *test
 			{`"default":[null,"on"]`, `"default":[null,"future"]`, "E_SCHEMA_INVALID"},
 			{`"default":"on"`, `"default":"future"`, "E_SCHEMA_INVALID"},
 			{`"enum":[null,"on","off","null"]`, `"enum":[null,"on",null,"off","null"]`, "E_SCHEMA_INVALID"},
-			{`"enum":[null,"on","off","null"]`, `"enum":[null,"on","off","null"],"default":null`, "E_SCHEMA_UNSUPPORTED"},
+			{`"enum":[null,"on","off","null"]`, `"enum":[null,"on","off","null"],"default":"future"`, "E_SCHEMA_INVALID"},
 		} {
 			put(t, input, bytes.ReplaceAll(original, []byte(tc.old), []byte(tc.replacement)))
 			for _, command := range [][]string{args, append(append([]string{}, args...), "--check"), validate} {
@@ -60,6 +60,24 @@ func TestReferencedStringEnumNullMemberDefaultsNativeLockAndPreservation(t *test
 		result(t, invoke(t, base, args...), 0)
 		if !reflect.DeepEqual(before, snapshot(t, output)) {
 			t.Fatal("equivalent String spelling changed identity")
+		}
+		// The original null factory refusal now composes with consuming defaults.
+		put(t, input, bytes.ReplaceAll(original, []byte(`"enum":[null,"on","off","null"]`), []byte(`"enum":[null,"on","off","null"],"default":null`)))
+		factoryOutput := filepath.Join(base, "factory-out")
+		factoryArgs := lockArgs(input, factoryOutput)
+		factoryArgs = append(factoryArgs, "--model-style="+string(style))
+		factoryValidate := append([]string{}, factoryArgs...)
+		factoryValidate[0] = "validate"
+		for _, command := range [][]string{factoryValidate, factoryArgs, append(append([]string{}, factoryArgs...), "--check")} {
+			result(t, invoke(t, base, command...), 0)
+		}
+		if !bytes.Contains(read(t, filepath.Join(factoryOutput, "org/example/dedup/models/StatusDto.kt")), []byte("StatusDto default")) {
+			t.Fatal("independent nullable component factory missing")
+		}
+		put(t, input, original)
+		result(t, invoke(t, base, args...), 0)
+		if !reflect.DeepEqual(before, snapshot(t, output)) {
+			t.Fatal("independent null factory changed original consumers or lock")
 		}
 	}
 }

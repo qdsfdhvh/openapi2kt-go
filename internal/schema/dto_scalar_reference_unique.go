@@ -295,7 +295,7 @@ func (a *analyzer) dtoUniqueScalarReference(f field, annotation, actual TypeRef,
 		proof.EnumSchema, proof.EnumPointer = v, p
 	}
 	if uniqueStringEnumType(annotation) {
-		if !plainStringEnumSchema(v) {
+		if !lexicalStringEnumSchema(v) {
 			return nil, unsupported(source)
 		}
 		proof.EnumSchema = v

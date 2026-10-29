@@ -1,5 +1,15 @@
 # Component default factories
 
+[Enum-reference collection component factories](referenced-enum-collection-factories.md) retain independent root/alias annotations and existing enum-component annotations through accepted finite List/typed Map paths. Actual serializers, strict original defaults, nearest nullable, required/Patch and original source/export/backing/check/height proof remain; no inheritance or child role is added. General graphs, complete platforms and final acceptance remain open.
+
+
+[Bounded lexical enums in object defaults](bounded-enum-object-defaults.md) extend D03/D05/M01/M03/M04/M07/M08/M12 to existing ordinary factory/field/DTO-collection walks. Exact direct enum sources retain String checks and strict original vocabularies; original plain DTO component/alias factories and consuming annotations remain independent. Required/Patch, actual serializers/optimization, original Pointer/owner and budgets remain. Generic graphs, other root/child/composition roles, platforms and final acceptance stay separate.
+
+[Internal String enum alias factories](reference-wrapper-component-defaults.md#internal-string-enum-targets) extend D01/D03/F04/F07/M03/M04/M07/M08 to existing actual lexical property/collection/composition-owned paths and finite pure aliases. Each original factory, field and consumer annotation remains independent; nearest nullable, strict vocabulary, required/Patch, source/declaration/type/height proof and shared budgets remain. Generic graphs, platforms and final acceptance stay open.
+
+[Model String enum metadata](metadata-string-enums.md) extends nullable roots/aliases, actual internal lexical references, existing independent scalar/collection/object default roles and serialName uniqueness. Original ownership, source/null-vocabulary boundaries, presence and budgets remain. Equivalent enum merges now retain each component-owned factory; generic graphs, platforms and final acceptance remain open.
+
+
 A **component schema's own `default`** describes the value a server or client applies when the whole value is absent. Unlike a property default there is no call site: the generated class keeps its normal constructor, and the generator adds an explicit factory that decodes the annotation into the class.
 
 ```json
@@ -231,3 +241,5 @@ The [JsonNull default extension](null-value-defaults.md) adds original direct pl
 Direct ordinary named shared DTO-reference fields may own object defaults using actual retained false-reference target getters, with no component default on consumer or target; required annotations validate before initializer suppression, and optional annotations decode fresh target state. Pure target aliases keep this field behavior. Source/value/depth/work limits and strict false codecs remain; nested/container/composed/directional/inline/internal roles and general defaults stay separate. See [DTO field defaults with false members](false-dto-field-defaults.md). Validation-on [target property counts](false-dto-field-counts.md) also validate original supplied keys against the actual retained target serializer; caller JSON omission and runtime wire counts remain. [Independent target root and consuming field annotations](false-dto-independent-defaults.md) also validate separately through the actual target factory and field initializer; no annotation is inherited.
 
 [Own defaults on inline false collection fields](false-inline-collection-defaults.md) additionally validate actual ordinary named Shared outer field annotations, retaining canonical literal/initializer identity, required suppression, fresh decoding and original budgets. Empty containers and logically nullable false leaves are admitted; no owner-root/child/wrapper/composed/internal/directional inheritance is added.
+
+[Bounded lexical enum List/Map roots](bounded-enum-collection-roots.md) retain independent component and pure-alias factories alongside consuming field/object annotations. Their actual typed consumers check serialName; standalone alias codecs retain their existing open policy.

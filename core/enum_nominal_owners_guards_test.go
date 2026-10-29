@@ -17,7 +17,9 @@ func TestEnumNominalOwnerAndSourceGuards(t *testing.T) {
 		{`{"properties":{"state":{"type":"integer","enum":[1,2]}}}`, "Owner/properties/state"},
 	} {
 		input := schemas(`{"Owner":` + tc.owner + `,"Alias":{"$ref":"#/components/schemas/` + tc.path + `"}}`)
-		if strings.Contains(tc.owner, `"type":"integer"`) {
+		if strings.Contains(tc.owner, `"format":"uuid"`) {
+			metadataStringEnumGraduation(t, request(input, "Dto"))
+		} else if strings.Contains(tc.owner, `"type":"integer"`) {
 			// Preserve the original Pointer input as a validation-only scalar
 			// bridge graduation with source membership, never a nominal enum.
 			r := request(input, "Dto")
@@ -31,7 +33,9 @@ func TestEnumNominalOwnerAndSourceGuards(t *testing.T) {
 			aliasFailure(t, input, "E_REF_UNSUPPORTED", "/components/schemas/Alias/$ref")
 		}
 		late := []byte(`{"openapi":"3.1.0","components":{"schemas":{"Owner":` + tc.owner + `}},"paths":{"/enum":{"get":{"responses":{"200":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/` + tc.path + `"}}}}}}}}}`)
-		if strings.Contains(tc.owner, `"type":"integer"`) {
+		if strings.Contains(tc.owner, `"format":"uuid"`) {
+			metadataStringEnumGraduation(t, request(late, "Dto"))
+		} else if strings.Contains(tc.owner, `"type":"integer"`) {
 			r := request(late, "Dto")
 			r.Options.Validation = true
 			got, err := core.GenerateWithDiagnostics(r)

@@ -48,7 +48,9 @@ func TestTupleFieldDefaultsTailAndOriginalValuePointers(t *testing.T) {
 		failure(t, input, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Holder/properties/values/prefixItems/0")
 	}
 	input := schemas(`{"Holder":{"properties":{"values":{"type":"array","prefixItems":[{"type":"string"},{"type":"integer"}],"default":[]}}}}`)
-	failure(t, input, "E_SCHEMA_UNSUPPORTED", "/components/schemas/Holder/properties/values/prefixItems")
+	if _, err := core.Generate(request(input, "Dto")); err != nil {
+		t.Fatal("former mixed raw field default refusal remains", err)
+	}
 	input = schemas(`{"Holder":{"properties":{"values":{"type":"array","prefixItems":[{"type":"string"}],"default":["` + strings.Repeat("x", 32769) + `"]}}}}`)
 	failure(t, input, "E_MODEL_LIMIT", "/components/schemas/Holder/properties/values/default/0")
 }

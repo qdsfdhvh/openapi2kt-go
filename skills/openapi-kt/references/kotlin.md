@@ -12,7 +12,7 @@
 
 - [Referenced ordinary DTO object field own defaults](../../../docs/referenced-object-defaults.md) extend the same own-`default` role to ordinary direct local `$ref` fields whose target is an already accepted plain named ordinary DTO (transparent aliases collapse to the canonical type). [Disjoint ordinary allOf DTOs](../../../docs/allof-object-defaults.md) also accept the consuming field's own annotation through admitted named aliases/internal hops to named or unique internal constructor Models; use the actual final lexical owner and serializer. Keep the actual nominal type and emit-time helper binding, target original nodes, nearest nullable, required/Patch, per-leaf checks and whole-tree budgets. Target/chain/root defaults, repeated-field aggregation and hierarchy sources/owners remain separate.
 - [Inline primitive union field own defaults](../../../docs/union-field-defaults.md) accept an ordinary DTO field's own `default` when its inline `oneOf`/`anyOf` is plain String/Integer/Number/Boolean branches and the shared plan emits the native primitive-union declaration. Keep the token (the runtime selector picks its wrapper by token kind in String→Boolean→Integer→Number order) and the emit-time helper binding; required/Patch remain. `enum`/`const` pins are enforced at generation time against the matched branch vocabulary while runtime wrappers still do not enforce membership. String formats, object/`$ref`/nullable branches, same-kind folds, `ObjectUnion`, request-context unions and root/component defaults stay separate, and an ordinary field `$ref` to a root union component is admitted and validated like an inline union.
-- [Referenced ordinary DTO elements in collection field own defaults](../../../docs/referenced-object-collection-defaults.md) cover an inline `array`/typed `Map` field whose element is a direct local `$ref` to an already accepted plain named DTO, and a field `$ref` to a named collection whose elements resolve to such a DTO. Keep the actual collection/alias type, emit-time helper binding, element original nodes, nearest nullable, required/Patch, per-leaf checks/counts and whole-tree budgets. Target-root defaults, alias/internal chains, scalar/enum elements, `$ref`/composition target properties and union/hierarchy fields stay separate.
+- [Referenced ordinary DTO elements in collection field own defaults](../../../docs/referenced-object-collection-defaults.md) cover an inline `array`/typed `Map` field whose element is a direct local `$ref` to an already accepted plain named DTO, and a field `$ref` to a named collection whose elements resolve to such a DTO. Keep the actual collection/alias type, emit-time helper binding, element original nodes, nearest nullable, required/Patch, per-leaf checks/counts and whole-tree budgets. Other target/root annotation roles, alias/internal graphs, scalar/enum elements, `$ref`/composition target properties and union/hierarchy fields stay separate. Original plain DTO target/alias factories have the independent object-default ownership profile below.
 - [Direct inline List/typed Map of ordinary DTO objects field own defaults](../../../docs/nested-object-collection-defaults.md) accept the same own-`default` role on a direct inline `array`/typed `Map` tree whose element tree contains an already accepted plain object leaf, including longer finite mixed paths like `List<Map<String, DTO>>`. Scalar-only collections keep the existing builtin/temporal/enum helpers. Keep the actual collection type and emit-time helper binding per wrapper, per-layer nullability, required/Patch, per-leaf checks, container counts and whole-tree budgets. Element-owned/container-child defaults, `$ref`/composition/dictionaries/const/enum-object/native/empty and referenced named-DTO elements stay separate.
 - Object-containing default walks share a [16,384-step source planning budget](../../../docs/nested-object-defaults.md#object-source-planning-budget), independently of JSON value size. Repeated reference expansion, including empty/null and required/Patch/discarded annotations, returns `E_MODEL_LIMIT` at an original schema Pointer when over budget. Each annotation starts a fresh walk; typed reference admission is unchanged.
 - [Direct inline ordinary DTO object field own defaults](../../../docs/nested-object-defaults.md) accept an ordinary field's own `default` when its inline plain object schema (explicit `object` or inferred from non-empty `properties`) is already accepted. The shared object planner still owns the field type and nested declarations; required arguments, `Patch.Absent`, per-layer nullability, canonical keys, original diagnostics and whole-tree budgets remain. `$ref`/named DTO, union/allOf, dictionary/fixed extras, const, empty objects and List/Map-of-object defaults stay separate.
@@ -52,7 +52,7 @@
 
 - Validation-enabled direct JSON-value arrays support recursive `uniqueItems` using exact JSON semantics and explicit runtime bounds. See [JSON uniqueness](../../../docs/json-unique.md); typed nominal/projection equality remains separate.
 
-- With `--validation`, ordinary DTO direct inline plain String enum List/typed Map leaves accept builtin String lengths and portable patterns, with or without an outer default. Check actual `serialName` at DTO constructor/copy/automatic decoding boundaries, including typed HTTP/SSE; valid Unrecognized values remain open. Defaults must be original members and satisfy constraints; required/Patch annotations validate before initializer suppression. Keep actual lexical enum owners after optimization. Roots/ref/nested trees, union/hierarchy fields and numeric bounds retain their exclusions. Direct enum list uniqueness follows the [serialName contract](../../../docs/string-enum-unique.md): compare known and Unrecognized payloads, preserve open runtime Strings and strict default membership; already admitted named/internal enum leaf references and aliases use the same equality and original declaration authority. Use actual canonical owners for singleton access after explicit merging; wider graphs and projected vocabularies remain excluded. See [String enum collection bounds](../../../docs/string-enum-collection-bounds.md).
+- With `--validation`, ordinary DTO direct inline plain String enum List/typed Map leaves accept builtin String lengths and portable patterns, with or without an outer default. Check actual `serialName` at DTO constructor/copy/automatic decoding boundaries, including typed HTTP/SSE; valid Unrecognized values remain open. Defaults must be original members and satisfy constraints; required/Patch annotations validate before initializer suppression. Keep actual lexical enum owners after optimization. [Finite inline nested trees](checked-enum-collections.md#nested-inline-bounds) separately retain the same bounds through actual enum terminals, outer defaults and existing object walks. Roots/ref, union/hierarchy fields and numeric bounds retain their exclusions. Direct enum list uniqueness follows the [serialName contract](../../../docs/string-enum-unique.md): compare known and Unrecognized payloads, preserve open runtime Strings and strict default membership; already admitted named/internal enum leaf references and aliases use the same equality and original declaration authority. Use actual canonical owners for singleton access after explicit merging; wider graphs and projected vocabularies remain excluded. See [String enum collection bounds](../../../docs/string-enum-collection-bounds.md).
 
 - Direct plain String/typeless and native scalar enum DTO fields accept vocabulary-checked defaults. Actual enum classifier/codec and required/Patch presence remain; unknown String values retain Unrecognized. See [enum DTO defaults](../../../docs/enum-defaults.md).
 
@@ -130,7 +130,7 @@ Every non-null annotation leaf must be a JSON String in the original vocabulary 
 
 Optional ordinary missing fields use fresh typed trees, including typed empty containers; explicit null stays null and supplied collections replace the default. Required fields retain required arguments after complete annotation validation. Optional explicitly nullable ordinary inline request fields retain Patch.Absent, Null and Value; defaults never turn missing keys into updates, and inner nullable nodes never create entry-level Patch. Discarded allOf annotations validate before override. With `--validation`, original per-layer List/Map counts apply to defaults and typed constructor/copy/serde/HTTP/SSE values. Keep `explicitNulls=false` missing-required-null inference separate from required-key validation.
 
-This scope retains rejection of nested enum String length/pattern and numeric bounds, container-element `uniqueItems:true`, formatted/numeric/native/provider/const/value-class/DTO/union/hierarchy terminals and ref/named/root/wrapper/child/target/chain defaults. It adds no inheritance, recursive tree or general intersection admission. Original direct plain String enum list leaves admit [serialName uniqueness](../../../docs/string-enum-unique.md), including these nested default paths. Single-layer String enum bounds and existing builtin6/temporal checks retain their separate contracts; `uniqueItems:false` is only the existing opt-in no-op on otherwise supported arrays.
+The separate [finite inline bounds contract](checked-enum-collections.md#nested-inline-bounds) accepts nested String lengths/patterns and supported lexical metadata under validation. Typed container uniqueness follows [structural equality](checked-enum-collections.md#structural-equality). Numeric bounds, other codec families and ref/named/root/wrapper/child/target/chain annotation roles keep their own eligibility. It adds no inheritance, recursive tree or general intersection admission. Original direct plain String enum list leaves admit [serialName uniqueness](../../../docs/string-enum-unique.md), including these nested default paths. Single-layer String enum bounds and existing builtin6/temporal checks retain their separate contracts; `uniqueItems:false` is only the existing opt-in no-op on otherwise supported arrays.
 
 Preserve errors at original source `/default/<index>/<escaped-key>/...` Pointers. Each Map validates in source order and sorts keys only after success; `$ref`, `type`, `/` and `~` keys remain opaque data. Actual default/type/check/nullability identity participates in optimization and frozen locks, with every Map level ignoring key order. Required/Patch annotations without an initializer add no runtime default identity. Original/canonical defaults each retain 32 KiB caps, whole trees 16,384 values, source depth48, checked edges16, enum/slots240, work16,384 and input8MiB. A default never exempts malformed schema or lost checks.
 
@@ -267,7 +267,7 @@ The repository smoke is verified with Gradle 9.3.1 / JDK 21 (JVM 17 bytecode). I
 
 OpenAPI3.1 nonempty `prefixItems` remains a List approximation. Finite local references to already admitted plain String enum declarations (named/internal/alias) retain typed enum Lists only when original terminal source and effective nullability match. Different original enums, enum versus scalar or differing nullable views become `List<JsonElement>`; explicit admitted scalar/enum `items` wins after every prefix validates. No positional enums are synthesized. Use ordinary list construction and reified serializers, with the physical enum's known/fromSerialName/Unrecognized API. Nullable enum elements distinguish JSON null from String `"null"`.
 
-Read `W_TUPLE_APPROXIMATION`: Lists do not preserve positions/tuple length, typed Lists can narrow unrestricted tails, raw Lists do not check positional membership and String enums remain open. Direct inline enum, bounds/default-bearing tuple members, formatted/native/valueclass enum, structured/composed/Boolean tails and general graphs remain excluded. Keep original source/depth/work/ownership diagnostics; do not replace a rejected member with a plain String to suppress semantics. Compile freshly generated sources in the actual target; JVM feature evidence does not prove KMP or Android.
+Read `W_TUPLE_APPROXIMATION`: Lists do not preserve positions/tuple length, typed Lists can narrow unrestricted tails, raw Lists do not check positional membership and String enums remain open. Direct inline enums follow [their own profile](#inline-enum-tuples); bounds/default-bearing tuple members, valueclass enum and general graphs retain separate admission. String format/native metadata follows the inline enum tuple profile below, including actual named lexical enums and pure aliases. Boolean tails follow the [Boolean tail guidance](#boolean-tuple-tails). Keep original source/depth/work/ownership diagnostics; do not replace a rejected member with a plain String to suppress semantics. Compile freshly generated sources in the actual target; JVM feature evidence does not prove KMP or Android.
 
 ## Merged primitive union roots
 
@@ -379,7 +379,7 @@ Validated ordinary allOf DTO uniqueness uses actual inherited getters and the or
 
 With validation, admitted ordinary allOf default walks accept complete same-kind/format/nullable primitive override groups when earlier occurrences have no bounds. Original own annotations remain strict; outer values and omissions use the winning checks/default, without new emitted aggregation or default inheritance. See [allOf default overrides](../../../docs/allof-default-overrides.md) for supported scalar and source roles.
 
-For validation-on positional arrays referencing existing numeric/Boolean enum sources, see [native enum tuple references](../../../docs/tuple-native-enum-references.md). Same original source/nullability yields typed Lists; distinct or mixed sources remain JsonElement Lists. Codecs keep existing standalone-alias versus typed-consumer check boundaries, approximation warnings and independent default roles. Unchecked/direct inline enum positions and general tuples remain separate.
+For validation-on positional arrays referencing existing numeric/Boolean enum sources, see [native enum tuple references](../../../docs/tuple-native-enum-references.md). Same original source/nullability yields typed Lists; distinct or mixed sources remain JsonElement Lists. Codecs keep existing standalone-alias versus typed-consumer check boundaries, approximation warnings and independent default roles. Unchecked native enum references remain excluded; inline enums use [their own profile](#inline-enum-tuples), and general tuples remain separate.
 
 For [nullable recursive JSON cover edges](../../../docs/nullable-recursive-cover-edges.md), graph item/value nulls remain JsonNull inside JsonElement; exported nullable aliases/typed consumers keep nearest intent and may decode Kotlin null. Original SCC/source budgets, source node/member authority and approximation warnings remain. This is not general nullable recursion.
 
@@ -424,3 +424,387 @@ Direct ordinary named shared DTO-reference fields may own object defaults using 
 [Owner-root defaults borrowing false DTO members](../../../docs/false-dto-owner-root-defaults.md) extend D03/E03 for original ordinary named Shared root annotations and direct unannotated reference members. Actual owner/getter/ref/target/helper/type/count identity and complete canonical literal capture remain bound; independent target factories validate after the full factory loop regardless of component naming order. Required keys, nearest nullable, strict false absence, normal collection presence and no default inheritance retain their contracts. All source/work/value/default/checked/slot/member caps and accepted API/wire/state formats remain; broader graph/source/platform roles stay independent.
 
 [Pure DTO aliases in owner-root defaults](../../../docs/false-dto-owner-alias-defaults.md) extend D03/E03 through original finite named component paths. Canonical target/getter/serializer identity, nearest alias nullable then field override, original binding/height/cache/source snapshots and late independent factory/count/literal proof remain. Repeated members share immutable alias captures within the existing cumulative budget; source depth counts every hop. Existing caps and accepted API/wire/state formats remain, with alias-own/default-graph/context/platform roles independent.
+
+## Form field defaults
+
+Flat form DTOs accept own defaults on existing direct scalar/enum properties. Omitted optional constructor arguments use their own defaults and send those getter values; explicit Kotlin null omits a key. Required annotations validate without supplying an argument. Caller Json settings do not control form omission. Validate annotations against original scalar kinds, enum vocabularies and retained checks before required suppression. References, schema-nullable fields, const and structured form fields keep their separate eligibility.
+
+## Boolean tuple tails
+
+OpenAPI3.1 prefixItems arrays accept Boolean items tails. True uses List<JsonElement>; false keeps the uniform original prefix type or mixed raw projection. W_TUPLE_APPROXIMATION explicitly reports lost positional/closed-tail length checks. All original prefix sources still validate, and existing scalar own-default roles remain independent. Positions and false-tail maximum length remain approximate. Review the warning before generation; deny it when that loss is unacceptable. Compile fresh sources and test the actual target, separating JVM evidence from Android/KMP evidence.
+
+## Raw tuple defaults
+
+Already admitted mixed or true-tail `List<JsonElement>` tuples may own field or
+component/alias defaults. Validate each original prefix source before inspecting
+the literal, including references discarded by the raw projection. Default arrays
+retain JsonNull and arbitrary JSON data keys. Null containers need source nullable
+intent. Optional fields initialize from their own annotation; required arguments
+and Patch.Absent remain explicit, and consumers inherit no target annotation.
+Independently annotated alias factories use nearest nullable intent and return
+fresh decoded values. The List approximation retains its warning and does not
+enforce positional membership or closed-tail length.
+
+Keep the original whole-literal 16,384-node/32KiB/depth48 budgets. Existing opt-in
+counts and literal true-tail JSON uniqueness also validate annotations: objects
+ignore key order, exact decimal equivalents conflict, strings/Booleans/null stay
+distinct, and numeric precision/exponent bounds apply even to singletons. Report
+the original failing default Pointer and preserve output on failure. Compile fresh
+sources on the actual target; JVM results do not establish other platforms.
+
+## Inline enum tuples
+
+OpenAPI3.1 tuple prefixes and schema tails accept direct String or native
+Int/Long/Float/Double/Boolean enum sources. A single enum prefix retains the
+actual collection element codec. Distinct original enum nodes stay distinct even
+with equal vocabularies, so a mixed prefix becomes List<JsonElement>. Explicit
+admitted tails win after all prefixes validate; true tails use raw JSON and false
+tails retain the prefix decision. Read W_TUPLE_APPROXIMATION for lost positions,
+length checks and narrowing of unrestricted tails.
+
+Model String enums retain lexical classifiers and open Unrecognized strings;
+simple inline HTTP String enums retain the existing scalar projection selected by
+format/native metadata. Native
+typed consumers check membership with validation, while unchecked consumers
+retain approximation warnings. Native null vocabulary members require the
+existing validation-on nullable profile. List aliases add no new check barrier.
+
+Outer field, component root and independent alias own defaults validate strict
+original vocabularies, including native numeric membership before rounding.
+Containers and elements keep independent null intent. Required arguments have
+no initializer, Patch stays Absent, factories decode fresh and consumers inherit
+no target default. Raw projected defaults retain arbitrary JSON data. Member-own
+annotations, bounds, valueclass String vocabularies and general graphs retain
+separate roles.
+
+Keep original physical paths/vocabulary/literal identities, enum240, cumulative
+source16384/8MiB and existing source/default/checked/JVM limits. Invalid discarded
+sources still fail. Preserve output on failure and compile fresh target sources.
+With merge/hoist, use the actual canonical enum classifier for nested constants;
+old aliases retain companion APIs such as fromSerialName. JVM smoke evidence
+does not prove Android or other KMP targets.
+
+### String metadata in tuples
+
+Direct String vocabularies accept existing empty/uuid/date/date-time/byte/binary
+formats and safe x-native-type metadata. Model enums keep their lexical String
+codec, known/Unrecognized API and strict original String default membership;
+metadata never parses words such as "ready" as dates/bytes/provider values.
+Actual named metadata enum components and pure named aliases keep this lexical
+codec in model and HTTP collections. Consumer nullable views remain independent.
+Direct simple HTTP inline enums instead use the operation scalar codec (for
+example LocalDate, signed ByteArray JSON arrays or numeric Long) with the existing
+membership approximation warning. Keep these contexts when integrating clients.
+
+Outer field/root/independent tuple-alias defaults are strict, fresh and never
+inherited; required/Patch annotations validate before suppression. Original
+vocabularies, retained declarations, alias heights and actual consumer types
+remain authoritative even for discarded prefixes. Model enum roles below additionally admit nullable components/aliases, actual
+internal lexical references and independent existing default roles. Null vocabulary
+inference, bounds, valueclass and general graphs retain separate permissions. Reject malformed metadata at its original Pointer and preserve old
+output. The tuple-inline-enums feature includes actual JVM codec/HTTP/Patch/SSE
+contracts; additional target platforms need their own execution evidence.
+
+## Selected tuple reference defaults
+
+OpenAPI3.1 positional array fields, original component roots and independent
+component aliases may own defaults when the selected element follows an already
+admitted local reference to a builtin/UUID/temporal scalar, plain String enum,
+validation-on native enum or ordinary DTO/allOf constructor. Named/internal and
+alias paths retain their original gates; a default grants no new reference role.
+Uniform prefixes use their original source, and an admitted schema tail wins only
+after every prefix validates. Boolean tails/raw defaults retain their own rules.
+
+Use the actual emitted List type/serializer. Optional arguments use their own
+annotation, required arguments remain explicit, Patch stays Absent and factories
+decode fresh. Target/alias defaults validate independently and are never inherited.
+Scalar codecs/null intent, strict original enum vocabulary before float rounding,
+DTO declared/required keys and existing ordinary counts/constraints govern values.
+Nested properties keep the existing object-default source roles. Runtime String
+enums remain open; standalone transparent aliases add no constructor check barrier.
+
+Read W_TUPLE_APPROXIMATION: positions and exact lengths are lost, and typed Lists
+can narrow unrestricted tails. Own annotations add no prefix-only uniqueness.
+Retain original physical selected reference/ancestor/vocabulary/literal identities,
+nearest nullable, source48/work16384/capture16384+8MiB/default16384+32KiB/checked16/
+enum240/JVM240 limits and original error Pointers. Preserve output on failure.
+Field helpers bind the final actual nominal leaf after optional hoist/merge;
+canonical classifier migration remains separate. Position-owned/child defaults,
+unadmitted sources and general recursive/default graphs remain independent.
+Compile fresh sources on the actual target; JVM evidence does not prove KMP or
+Android acceptance.
+
+## Boolean positional members
+
+OpenAPI3.1 prefixItems accepts literal true/false through the shared tuple
+planner. A uniform false prefix with absent/false tail uses a real nested or
+collection-peer uninhabited classifier: empty arrays work and every supplied
+element, including JSON null, fails. A nullable outer container separately
+allows null. True and mixed prefixes use JsonElement; explicit admitted schema
+tails win after all original members validate. Read W_TUPLE_APPROXIMATION,
+including its explicit warning when false positional restrictions are discarded.
+
+Fields, roots and independent aliases keep own defaults: selected false Lists
+allow empty arrays, nullable containers may own null, raw projections keep JSON
+data and explicit tails use their actual codec. Required arguments stay explicit,
+Patch stays Absent and annotations are not inherited. Existing typed counts and
+uniqueItems source gates remain; aliases gain no new count validation barrier.
+
+Actual model/operation peers and serializers retain original schema/member/path,
+allocated name, unique declaration and element-type proof. Matching spelling or
+copied helpers grant no role. Existing source48/refwork16384/capture16384+8MiB/
+default16384+32KiB/checked16/JVM240 limits hold, including HTTP-only contexts.
+Boolean additionalProperties and ordinary non-tuple false fields keep their own
+keyword/presence roles. General Boolean references, structured/composed/recursive
+positions and enclosing default graphs remain independent. Compile freshly
+generated sources in the target; JVM smoke does not prove other platforms.
+
+## Inline DTO tuples
+
+OpenAPI 3.1 positional members and explicit schema tails accept direct ordinary
+DTO objects with constructor properties and type/nullable/properties/required/
+property-count grammar. Use the selected context's actual element type: peer
+DTOs for model roots, nested DTOs for owner fields, and the existing raw Map
+projection with `W_HTTP_VALUE_PROJECTION` for simple inline HTTP object values.
+Distinct original inline DTO sources stay mixed raw Lists even if structurally
+equal. Explicit tails win only after every original member validates.
+
+Outer field/root/independent alias own defaults reuse eligible ordinary object
+walks, strict required/unknown keys, nullable/check/count rules and fresh actual
+final serializers. Required arguments keep no initializer; Patch stays Absent;
+no target/alias/member/child default is inherited. Position-owned defaults and
+composed/union/hierarchy/dictionary/const/empty-object sources retain separate
+admission. Empty/null outer annotations cannot hide invalid discarded source
+annotations, including deferred reference defaults.
+
+Original physical nodes/paths/bytes remain authoritative. Source depth48,
+cumulative capture16384 work/8MiB, value16384/32KiB, checked16 and JVM240 limits
+remain. `W_TUPLE_APPROXIMATION` still means Lists do not enforce position or exact
+length and may narrow unrestricted tails. Check fresh constructor/serde/Patch/
+HTTP/SSE call sites after optimization, including nested enum access through the
+actual canonical classifier. Existing API/wire/state formats retain their
+contracts; new platform and complete candidate acceptance need separate evidence.
+
+## Named Boolean tuple references
+
+OpenAPI 3.1 positional members and explicit schema tails may reference existing
+named literal true/false components through pure named aliases. Uniform false
+references with the same original root and effective nullability use that real
+uninhabited root classifier: empty Lists are valid, each non-null leaf rejects,
+and nullable aliases admit null elements only. Nearest nullable overrides apply.
+Distinct false roots, direct-versus-referenced false and mixed signatures retain
+raw List projection. True references use JsonElement; its nullable wrapper can
+collapse JsonNull wire values to Kotlin null. Named true aliases gain no new
+constructor or serializer API.
+
+Explicit tails win after complete original prefix validation. Outer field/root/
+independent alias own defaults use actual final codecs, strict null/count/value
+checks and existing uniqueness eligibility. Required annotations validate before
+initializer suppression; Patch stays Absent, and target/alias/child defaults are
+not inherited. Direct tuple-array HTTP and typed SSE reuse those codecs; direct
+false operation roots and general internal/composed/recursive/default roles
+remain separate.
+
+Review `W_TUPLE_APPROXIMATION`, including lost false-prefix restrictions, and the
+true root's original `W_BOOLEAN_SCHEMA_PROJECTION`. Lists do not enforce position
+or exact length. Original alias/path/node/declaration and retained element/type
+identity authorize the role. Erased prefix references still count toward cached
+incoming source depth48; reference16384, cumulative capture16384/8MiB,
+value16384/32KiB, checked16 and JVM240 remain. Compile fresh ctor/serde/default/
+Patch/HTTP/SSE consumers, including optimized and locked output; additional
+platforms and complete candidate acceptance need their own evidence.
+
+## Inline allOf tuples
+
+OpenAPI 3.1 positional members and explicit schema tails accept inline ordinary
+allOf sources with a real nonempty retained DTO constructor. Header syntax is
+type/nullable/allOf/properties/required/property counts plus descriptive metadata.
+Use the actual selected peer/nested classifier and codec. Existing later-field
+overrides, required union, supported bounds/count aggregation and member null
+intersection remain; `W_ALL_OF_APPROXIMATION` is not a full intersection promise.
+Distinct original sources remain mixed raw Lists, and explicit tails win only
+after every original prefix validates. `W_TUPLE_APPROXIMATION` retains position/
+length/tail and discarded-false restrictions.
+
+Outer field/root/independent alias own defaults use the existing eligible allOf
+walk, actual final codec and strict original literals/keys/required/null/counts.
+Required initializers remain suppressed, Patch stays Absent, and target/alias/
+child annotations are not inherited. Wider default/overlap roles remain separate.
+Simple HTTP tuple arrays generate actual operation-owned DTO peers with ordinary
+required/default/check and Json unknown-key behavior. Plain inline DTO Map
+projection, direct allOf/union HTTP roots and non-tuple rules remain separate.
+
+Discarded sources complete isolated ordinary/deferred validation; temporary
+constructors and registrations are not emitted. Source node/path/Pointer facts,
+unique actual constructor and retained element/type/check identity authorize the
+role. Empty/const-only/dictionary/product/hierarchy sources do not gain that
+constructor role. Repeated original captures reuse snapshots, while distinct
+allOf sources borrowing one Base pay shared overlap work: tuple allOf16384/8MiB,
+general source48/capture16384, value16384/32KiB, checked16 and JVM240 remain.
+Erased allOf contribution depths remain in incoming/forward collection caches.
+Compile fresh ctor/serde/default/Patch/HTTP/SSE and directional consumers after
+optimization; additional platforms, option Cartesian products and final candidate
+acceptance require their own evidence.
+
+## Collection tuple sources
+
+OpenAPI 3.1 positional members and explicit schema tails accept existing finite
+List/typed Map sources, inline or through admitted named/internal references.
+Use the actual context codec and collection backing. Uniform references reaching
+one original source/null view can stay typed; distinct inline equal shapes stay
+mixed raw Lists. Explicit tails win only after every original source validates.
+Tuple position/length/tail approximation and original warning policies remain.
+
+Outer field/root/independent alias annotations use the actual selected tree,
+strict original literals/enum vocabularies/required keys and existing nullable/
+counts/checks. Forward named backings link before field annotation validation.
+Required/Patch annotations validate before initializer suppression; Patch stays
+Absent and target/alias/child defaults are not inherited. Metadata-looking JSON
+keys remain data. Helpers bind actual final DTO/enum types after optimization.
+
+Discarded sources complete isolated ordinary/deferred validation without emitted
+temporary declarations. Original nodes/paths/catalogs, final type/check and
+retained element/backing addresses authorize the role. Preserved typed edges pay
+their ordinary source height; only erased work is added after alias linking.
+Source48/capture16384/8MiB, value16384/32KiB, checked16 and JVM240 remain independent
+bounds. Generic resolver/recursive/union/const/Boolean leaf roles and context HTTP
+projections retain their own gates. Compile fresh JSON/Patch/HTTP/SSE consumers;
+source scans and PREPARE_ONLY do not prove runtime, platform or final acceptance.
+
+## JsonNull tuple sources
+
+OpenAPI3.1 positional members/schema tails accept plain type:null, singleton null enums and null consts, including inferred sources and existing named/pure-alias references. Equal effective nullable views share the actual JsonNull singleton codec; nonnullable List<JsonNull> decodes null as JsonNull, nullable leaves decode null as Kotlin null. Mixed domains use existing raw List projection and explicit tails win after all prefixes validate. Tuple position/length and unrestricted tails remain approximated.
+
+Outer field/root/independent alias defaults validate original null domains: [null] is valid without nullable:true; wrong kinds reject. Required arguments and Patch.Absent remain after validation, and target/chain defaults are not inherited. Positional own annotations, unsupported format/native/vocabulary/default roles still reject before erasure. Actual source/ref/catalog/backing/element/type proof and source48/capture16384+8MiB/value16384+32KiB/checked16/JVM240 limits remain. Compile fresh Data/Plain x validation consumers, exercise four Json settings and actual HTTP/SSE, including invalid-value rejection and stream closure; PREPARE_ONLY is not runtime evidence. Direct null success roots retain their existing Unit projection. General const/union/recursive graphs and platform/final candidate acceptance remain independent.
+
+## Scalar const tuple sources
+
+OpenAPI3.1 positional members/schema tails accept existing scalar const sources and admitted named/pure-alias references. Builtin/numeric-format/UUID/date/Instant/native-bigint codecs retain their grammar; no enforcing wrapper is introduced. Same original terminal plus nullable view may be uniform; separate inline sources or const-versus-ordinary values remain raw. Explicit tails win only after complete original source validation. Retained scalar const warning and tuple lost-membership warnings remain; runtime accepts nonliteral values fitting its scalar codec.
+
+Outer field/root/independent alias annotations must equal the original pin before Float rounding or native wire conversion, then fit the actual codec. Native bigint string pins validate original string membership and encode the helper payload for actual Long values. Required/Patch suppression follows validation; no target/child default is inherited. Source/literal/ref/catalog/backing/element/type snapshots remain authoritative, and retained overlapping alias-binding records count against shared16384work/8MiB; source48/default16384+32KiB/checked16/JVM240 remain. Compile fresh Data/Plain x validation baseline/optimized/locked consumers and exercise fourJson, nonliteral runtime values, defaults/Patch/HTTP/SSE failure and closure. PREPARE_ONLY is not runtime evidence. Structured const, union, recursive and general default roles remain independent.
+
+## Structured const tuple sources
+
+OpenAPI3.1 positional members/schema tails accept original object/array consts and existing named/pure aliases. Use actual JsonObject/JsonArray codecs, not ordinary List schemas for explicit array consts. Same original terminal/nullable may be uniform; distinct inline pins or mixed domains retain raw projection. Typed runtime accepts different data of the same JSON kind, with structured-const and tuple lost-membership warnings; position/length/tail approximation remains.
+
+Outer field/root/independent alias defaults compare complete literal JSON: object order independent, array order/kinds retained and bounded exact decimal identity (256 numeric characters/±512 exponent), before decoding fresh values through the final codec. Null requires actual nullable intent; required/Patch suppression follows validation and no target/child annotation is inherited. Const/default/enum data keys such as $ref/allOf/properties/description/items remain data at every level and retain original node snapshots. Actual source/ref/catalog/backing/element/type and canonical-key proof, source48/capture16384+8MiB/default16384+32KiB/checked16/JVM240 remain. Canonical keys and literal edges pay shared budgets. Compile fresh Data/Plain x validation baseline/optimized/locked consumers and exercise metadata-shaped data, nonliteral same-kind runtime values, defaults/Patch/HTTP/live SSE failure and closure. PREPARE_ONLY is not runtime evidence; general union/recursive/default and platform/final acceptance remain independent.
+
+For oneOf/anyOf tuple sources, references, normalization, context codecs and outer own defaults, read [union tuple sources](tuple-union-sources.md). Preserve actual root versus inline dispatch and strict annotations; runtime Unknown is not a default escape.
+
+For allOf products in positional arrays, read [product union tuple sources](tuple-product-union-sources.md); preserve original conjunction/required/Unknown/null policies, actual final nominal ownership and independent outer annotations.
+
+For hierarchy references inside positional arrays, read [hierarchy tuple references](tuple-hierarchy-references.md); root/parent/leaf and nullable adapters retain actual route-specific codecs and strict independent outer defaults.
+
+## Metadata String enums in models
+
+String enum empty/uuid/date/date-time/byte/binary formats and safe x-native-type
+metadata preserve lexical String codecs in model contexts. Nullable component
+roots, nearest explicit alias/reference intent and already eligible internal
+lexical declarations share the existing String enum planners. Keep the actual
+unique retained owner/classifier; JSON null is independent from the word "null".
+Metadata adds no plain-enum null-member inference or general graph ownership.
+
+Existing direct/referenced scalar, finite collection and object-default roles
+use strict original String membership and final lexical serializers. Original
+components and named aliases may each own a factory; consuming fields and outer
+annotations remain independent, fresh and never inherit target defaults.
+Required/Patch/discarded annotations validate before initializer suppression.
+Reject child-owned annotations, unsupported bounds/valueclasses, malformed
+metadata/vocabularies or unowned targets at their original Pointers.
+
+Validation uses serialName for admitted metadata enum uniqueness, including
+existing references, finite container trees and ordinary DTO getter keys.
+Known and same-name Unrecognized values collide; differently cased UUID-looking
+words remain distinct Strings. Simple direct HTTP inline enum projections keep
+their actual scalar/provider codec and approximation warning. Model enum refs
+keep their lexical codec in HTTP/SSE.
+
+Merged equivalent component enums keep each original named `<ClassName> default`
+function; null factories return nullable values while the physical classifier
+stays non-null. Object component factories keep companion default(). Regenerate
+owned output when adopting the corrected merged enum factories; persisted
+formats remain. Original depth/work/default/member/slot limits and source/cached
+alias/declaration identities still apply. Compile and run the target consumer;
+feature tuple-inline-enums provides JVM profiles, not full platform acceptance.
+
+### Internal String enum alias factories
+
+A component alias may own `default` through an already admitted internal lexical
+String enum property, nested property, List/typed Map leaf or composition-owned
+path, including finite pure named/internal aliases. For example, an alias to
+`#/components/schemas/Owner/properties/state` with `default:"paused"` receives
+its own top-level `<AliasName> default` factory returning the actual Owner enum.
+The nearest explicit nullable intent applies: a nullable alias may own null,
+and `nullable:false` narrows the next alias's own factory.
+
+Original field, intermediate factory and consuming scalar/collection/object
+annotations are independent and strict against their original vocabularies.
+Unannotated aliases and fields inherit no default. Required arguments and
+Patch.Absent remain after annotation validation. Format/native metadata keeps
+lexical String codecs; runtime unknown words still use Unrecognized. Reuse the
+canonical physical enum owner for nested singleton access through typealiases.
+
+Unique actual declaration/source/type/nullable/alias-height authority and shared
+depth/work/value budgets remain. Cloned/discarded/ambiguous declarations, literal
+`default`/`enum` data, cycles, unsupported metadata/bounds, numeric/Boolean enum
+internal factories, child-owned defaults and general reference graphs retain
+their exclusions. Run `bash scripts/test.sh feature tuple-inline-enums` for fresh
+Data/Plain × validation, baseline/optimized locks, four Json settings and
+HTTP/SSE contracts. This additive role changes no wire or lock format and does
+not close broader defaults, platform or release acceptance.
+
+### Direct String enum field bounds
+
+With validation, ordinary direct scalar String enum fields accept minLength,
+maxLength and portable pattern, with optional own defaults. Existing direct
+List/typed Map enum leaf bounds also accept supported format/native metadata.
+These remain lexical enum types: check actual serialName in DTO construction,
+Data copy and automatic decoding, while standalone enum lookup/serialization
+and runtime Unrecognized stay open. Metadata creates no provider/date/UUID codec.
+
+Defaults must belong to the original vocabulary and satisfy checks. Validate
+required/Patch annotations before suppressing initializers; preserve missing,
+null and supplied values, and Patch.Absent/Null/Value. Constraints require
+validation, including empty/null annotations; off must reject the original
+bounded source. Keep original vocabulary/check Pointers, codepoint length,
+portable regex/default ASCII policy and original limits.
+
+Use canonical enum owners after optimization and verify frozen check/default
+identity. Enum roots, referenced/borrowed checked leaves, nested collection-bound
+trees, hierarchy/union/cross-contribution roles, const,
+value classes and numeric bounds retain their separate boundaries. Run
+`bash scripts/test.sh feature string-enum-collection-bounds` for fresh four
+profiles, four Json settings, optimization/locks, independent240 collection and
+scalar probes and HTTP/SSE behavior. No new wire/lock format or broader platform
+acceptance is implied.
+
+### Bounded enums in object defaults
+
+With validation, existing ordinary object-default walks accept their original
+direct String enum fields and direct List/typed Map enum leaves with lengths
+and portable patterns. Metadata remains lexical String. Each supplied annotation
+leaf must satisfy original membership and retained checks; runtime Unrecognized
+stays open. Preserve original source/value Pointers, required/Patch validation
+before suppression, nullable intent and all source/default/width budgets.
+
+Original admitted plain DTO components and pure named aliases can keep their
+own independent factories while field/collection annotations borrow the shape.
+A valid outer value cannot hide a bad target or intermediate factory; unannotated
+consumers inherit no initializer. Decode fresh state through the final actual
+serializer after optimization. No copied/unmarked/internal source gains a new
+annotation or resolver role.
+
+Checked enum roots/references, deeper collection-bound trees, child-owned
+annotations and unadmitted composition/hierarchy/union/general graphs remain
+separate. Run `bash scripts/test.sh feature string-enum-collection-bounds` for
+fresh Data/Plain × validation, four Json settings, root/alias/inline/ref/DTO-list
+factories, optimization/locks, Patch and HTTP/SSE behavior. Other target platform
+and final-candidate acceptance retain their own requirements.
+
+For [bounded lexical enum collection roots](checked-enum-collections.md#collection-roots), use the actual root alias and original enum peer. Check independent root/alias/field/object annotations, nearest nullable and Patch. Typed DTO/HTTP/SSE consumers impose serialName checks; standalone alias assignments/codecs stay open. Preserve original backing/source/check proof and report actual runtime evidence.
+
+[Checked lexical enum borrowing](checked-enum-collections.md#checked-references) uses original ordinary field/collection-root check objects and actual lexical classifiers through existing internal/named chains. Check source getters and strict independent factories/consuming annotations, nullable/required/Patch and typed HTTP/SSE; preserve standalone codec openness and existing resource/source-role boundaries.
+
+[Borrowed enum collection defaults](checked-enum-collections.md#borrowed-collection-defaults) retain an original ordinary field annotation and independent factories on the actual collection alias/finite pure aliases. Test each own vocabulary/check/null rule and fresh state; unannotated consumers inherit no default. Factory binding/type/height and original graph/check identities remain authoritative; child defaults and general graphs stay separate.
+
+[Checked String enum roots](checked-enum-collections.md#checked-enum-roots) retain lexical classifiers and shared source checks through existing named aliases and typed List/Map/default/HTTP/SSE consumers. Standalone codecs and assignments remain open; defaults require original vocabulary plus checks. Verify root/alias/null factories, nearest nullable, required/Patch and actual runtime boundaries; root declarations and factory records must remain authoritative even without consumers.

@@ -73,6 +73,10 @@ func TestBytesAliasObjectDefaultMemberSourceAndPresence(t *testing.T) {
 		for _, extra := range []string{`,"enum":["x"]`, `,"x-native-type":"kotlin.ByteArray"`, `,"x-kotlin-value-class":true`, `,"default":[0]`, `,"minLength":2`} {
 			r := request(scalarAliasMemberDocument(`{"type":"string","format":"byte"`+extra+`}`, allOfMemberHops, `{"$ref":"#/components/schemas/Bridge"}`, `{}`), "Dto")
 			r.Options.Validation = checked
+			if extra == `,"enum":["x"]` {
+				metadataStringEnumGraduation(t, r)
+				continue
+			}
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || len(got.Artifacts.Files) != 0 {
 				t.Fatal("source hidden by omission", extra, err)
 			}

@@ -63,6 +63,12 @@ fi
 "$workspace/openapi-kt" generate --input tests/fixtures/platform/dto-getters.json \
   --output "$workspace/project/generated-getters" --package-name org.example.platformgetters \
   --model-style "$model_style" --validation --deduplicate-models --hoist-shared-shapes --merge-identical-models --lock-hoisted-names --check
+"$workspace/openapi-kt" generate --input tests/fixtures/platform/enum-field-bounds.json \
+  --output "$workspace/project/generated-enum-bounds" --package-name org.example.platformenumbounds \
+  --model-style "$model_style" --validation --deduplicate-models --hoist-shared-shapes --merge-identical-models --lock-hoisted-names
+"$workspace/openapi-kt" generate --input tests/fixtures/platform/enum-field-bounds.json \
+  --output "$workspace/project/generated-enum-bounds" --package-name org.example.platformenumbounds \
+  --model-style "$model_style" --validation --deduplicate-models --hoist-shared-shapes --merge-identical-models --lock-hoisted-names --check
 "${GRADLE:-gradle}" --offline --no-daemon --no-build-cache --rerun-tasks \
   -p "$workspace/project" -PplatformTarget="$platform_target" "${gradle_options[@]}" "$task"
 if [[ "$platform_target" == android-device ]]; then

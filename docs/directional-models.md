@@ -45,3 +45,12 @@ The former `unsupported-writeonly` corpus case is now the reviewed `writeonly-an
 - `bash scripts/test.sh feature directional-models`; the consumer is also included in `bash scripts/test.sh http` and the feature route in `all`. These JVM checks do not establish Android/KMP or minimum dependency versions.
 
 [Ordinary allOf directional HTTP DTOs](allof-directional-models.md) extend D07/A02/A03 to operation-owned request/public-response views from already validated winning original fields and merged required entries. Private analyzer source metadata stays outside Model identity; copies gain no original-source authority or new graph admission. Later overrides, hidden/discarded validation, required/Patch/default/check/recursion and original Pointers remain; shared DTO/API/wire/locks stay stable. Hierarchy/union/product/raw/count and changed-nominal default boundaries, source48/checked16/JVM240/clone/default/value budgets and broader platform/graph completion remain separate.
+
+Documents without a `components` section use the same original model-source
+registration before their early analysis return. This fixes previously missed
+inline response `writeOnly` projection: affected methods now return the ordinary
+operation-owned PublicResponse DTO (and nested numbered peers), omitting those
+properties. Callers naming the old Response DTO must update that response type;
+request read-only Patch behavior remains. See the [HTTP-only tuple and scalar
+regressions](../core/tuple_inline_dto_test.go) and the
+[inline tuple migration](tuple-inline-dto.md#source-validation-and-limits).

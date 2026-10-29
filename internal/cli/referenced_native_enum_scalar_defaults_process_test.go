@@ -40,7 +40,7 @@ func TestReferencedNativeEnumScalarFieldDefaultsNativeLockAndPreservation(t *tes
 		{`"default":1`, `"default":2`, "E_NAME_LOCK_CHANGED"},
 		{`"default":1`, `"default":9`, "E_SCHEMA_INVALID"},
 		{`"default":1`, `"default":null`, "E_SCHEMA_INVALID"},
-		{`"enum":[1,2]`, `"enum":[1,2],"default":1`, "E_SCHEMA_UNSUPPORTED"},
+		{`"enum":[1,2]`, `"enum":[1,2],"default":9`, "E_SCHEMA_INVALID"},
 	} {
 		put(t, input, bytes.ReplaceAll(original, []byte(tc.old), []byte(tc.replacement)))
 		for _, command := range [][]string{args, append(append([]string{}, args...), "--check"), validate} {
@@ -54,5 +54,22 @@ func TestReferencedNativeEnumScalarFieldDefaultsNativeLockAndPreservation(t *tes
 	result(t, invoke(t, base, args...), 0)
 	if !reflect.DeepEqual(before, snapshot(t, output)) {
 		t.Fatal("no-op changed output")
+	}
+	// Preserve the exact former refusal as an independent root-factory positive.
+	put(t, input, bytes.ReplaceAll(original, []byte(`"enum":[1,2]`), []byte(`"enum":[1,2],"default":1`)))
+	factoryOutput := filepath.Join(base, "factory-out")
+	factoryArgs := lockArgs(input, factoryOutput)
+	factoryValidate := append([]string{}, factoryArgs...)
+	factoryValidate[0] = "validate"
+	for _, command := range [][]string{factoryValidate, factoryArgs, append(append([]string{}, factoryArgs...), "--check")} {
+		result(t, invoke(t, base, command...), 0)
+	}
+	if !bytes.Contains(read(t, filepath.Join(factoryOutput, "org/example/dedup/models/CodeDto.kt")), []byte("CodeDto default")) {
+		t.Fatal("independent native component factory missing")
+	}
+	put(t, input, original)
+	result(t, invoke(t, base, args...), 0)
+	if !reflect.DeepEqual(before, snapshot(t, output)) {
+		t.Fatal("independent root factory changed original consumers or lock")
 	}
 }

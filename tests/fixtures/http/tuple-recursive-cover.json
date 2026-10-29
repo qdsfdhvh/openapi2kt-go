@@ -1,0 +1,483 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Value": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Value"
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Value"
+            }
+          }
+        ]
+      },
+      "Left": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Right"
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Right"
+            }
+          }
+        ]
+      },
+      "Right": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Left"
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Left"
+            }
+          }
+        ]
+      },
+      "Maybe": {
+        "$ref": "#/components/schemas/Value",
+        "nullable": true
+      },
+      "Narrow": {
+        "$ref": "#/components/schemas/Maybe",
+        "nullable": false
+      },
+      "Hops": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Maybe"
+          }
+        }
+      },
+      "Bridge": {
+        "$ref": "#/components/schemas/Hops/properties/value"
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Value"
+          }
+        ],
+        "default": [
+          null,
+          {
+            "description": {
+              "$ref": "data",
+              "allOf": [
+                1
+              ]
+            },
+            "text": "值"
+          },
+          [
+            true,
+            "ready"
+          ]
+        ]
+      },
+      "NullableRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Bridge"
+          }
+        ],
+        "default": [
+          null,
+          7
+        ]
+      },
+      "NarrowRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Narrow"
+          }
+        ],
+        "default": [
+          null
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Rows",
+        "default": []
+      },
+      "MutualRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Left"
+          }
+        ],
+        "default": [
+          {
+            "graph": [
+              null,
+              {
+                "value": 7
+              }
+            ]
+          }
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Left"
+          }
+        ],
+        "items": {
+          "type": "integer"
+        },
+        "default": [
+          7
+        ]
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Value"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "default": [
+          {
+            "data": 1
+          },
+          null
+        ]
+      },
+      "Repeated": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Value"
+          },
+          {
+            "$ref": "#/components/schemas/Value"
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Value"
+              }
+            ],
+            "default": [
+              null,
+              {
+                "description": {
+                  "$ref": "data",
+                  "allOf": [
+                    1
+                  ]
+                },
+                "text": "值"
+              },
+              [
+                true,
+                "ready"
+              ]
+            ]
+          },
+          "nullableRows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Bridge"
+              }
+            ],
+            "default": [
+              null,
+              7
+            ]
+          },
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Value"
+              }
+            ],
+            "default": [
+              null
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Rows"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "get": {
+        "operationId": "inlineRows",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "$ref": "#/components/schemas/Value"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "$ref": "#/components/schemas/Value"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "$ref": "#/components/schemas/Value"
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      {
+                        "kind": "group",
+                        "sub": "first",
+                        "id": "ready"
+                      }
+                    ]
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "$ref": "#/components/schemas/Value"
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      {
+                        "kind": "group",
+                        "sub": "first",
+                        "id": "ready"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "Synthetic recursive cover tuple contract",
+    "version": "1.0"
+  }
+}

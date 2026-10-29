@@ -50,7 +50,7 @@ func (a *analyzer) dtoUniqueContainerCandidate(v *document.Value, p string, dept
 		return a.dtoUniqueContainerCandidate(get(v, edge), naming.Pointer(p, edge), depth+1, false)
 	}
 	if has(v, "enum") && kind != "null" {
-		if !root && plainStringEnumSchema(v) && (kind == "string" || kind == "") {
+		if !root && lexicalStringEnumSchema(v) && (kind == "string" || kind == "") {
 			_, err := buildStringEnumKeys("DTOUnique", v, p, false)
 			return err == nil, err
 		}

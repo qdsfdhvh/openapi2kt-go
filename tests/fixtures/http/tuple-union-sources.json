@@ -1,0 +1,697 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Choice": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      },
+      "Tagged": {
+        "oneOf": [
+          {
+            "properties": {
+              "kind": {
+                "const": "text"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          {
+            "properties": {
+              "kind": {
+                "const": "count"
+              },
+              "n": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "n"
+            ]
+          }
+        ]
+      },
+      "ChoiceAlias": {
+        "$ref": "#/components/schemas/Choice"
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        ],
+        "default": [
+          "ready",
+          1,
+          1.5,
+          true
+        ]
+      },
+      "RefRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Choice"
+          }
+        ],
+        "default": [
+          "ready",
+          1
+        ]
+      },
+      "ObjectRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "text"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "count"
+                  },
+                  "n": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "n"
+                ]
+              }
+            ]
+          }
+        ],
+        "default": [
+          {
+            "kind": "text",
+            "name": "ready"
+          }
+        ]
+      },
+      "RefObjectRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Tagged"
+          }
+        ],
+        "default": [
+          {
+            "kind": "count",
+            "n": 7
+          }
+        ]
+      },
+      "FoldRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          }
+        ],
+        "default": [
+          7
+        ]
+      },
+      "EnumRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ready"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        ],
+        "default": [
+          "ready"
+        ]
+      },
+      "NullableRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ],
+            "nullable": true
+          }
+        ],
+        "default": [
+          null,
+          "ready"
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Rows",
+        "default": []
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        ],
+        "default": [
+          {
+            "data": 1
+          },
+          null
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        ],
+        "items": {
+          "type": "integer"
+        },
+        "default": [
+          7
+        ]
+      },
+      "Repeated": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Choice"
+          },
+          {
+            "$ref": "#/components/schemas/ChoiceAlias"
+          }
+        ]
+      },
+      "Holder": {
+        "properties": {
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              }
+            ],
+            "default": [
+              "ready",
+              1,
+              1.5,
+              true
+            ]
+          },
+          "objects": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "text"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "count"
+                      },
+                      "n": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "n"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "default": [
+              {
+                "kind": "text",
+                "name": "ready"
+              }
+            ]
+          },
+          "refs": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/Choice"
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              }
+            ],
+            "default": [
+              "ready"
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Rows"
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "Closed": {
+        "oneOf": [
+          {
+            "properties": {
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          {
+            "properties": {
+              "value": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        ]
+      },
+      "ClosedRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/Closed"
+          }
+        ],
+        "default": [
+          {
+            "type": "Variant1",
+            "value": "ready"
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "get": {
+        "operationId": "inlineRows",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "oneOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "boolean"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "boolean"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "boolean"
+                          }
+                        ]
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      "ready"
+                    ]
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "boolean"
+                          }
+                        ]
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      "ready"
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

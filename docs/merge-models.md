@@ -1,5 +1,8 @@
 # Resolved model merging
 
+[Model String enum metadata](metadata-string-enums.md) extends nullable roots/aliases, actual internal lexical references, existing independent scalar/collection/object default roles and serialName uniqueness. Original ownership, source/null-vocabulary boundaries, presence and budgets remain. Equivalent enum merges now retain each component-owned factory; generic graphs, platforms and final acceptance remain open.
+
+
 `--merge-identical-models` (core `MergeIdenticalModels`, configuration `merge_identical_models`) is opt-in and defaults to false. It compares already validated ordinary DTO and plain String-enum owned root trees across components, shared hoisted models and operation models. Pure [primitive JSON-kind union roots](#primitive-json-kind-union-roots) have a separate bounded eligibility rule. Unlike operation-only [deduplication](deduplicate-models.md), eligible acyclic references and [owned self references](#owned-self-references) are compared by their resolved typed shape, not just their classifier spelling.
 
 ```sh

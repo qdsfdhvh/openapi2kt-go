@@ -10,11 +10,9 @@ import (
 
 func TestReferencedObjectCollectionDefaultsGuards(t *testing.T) {
 	for name, input := range map[string]string{
-		"element missing required":            `{"Item":{"type":"object","required":["name"],"properties":{"name":{"type":"string"}}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":[{}]}}}}`,
-		"element unknown key":                 `{"Item":{"type":"object","properties":{"name":{"type":"string"}}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":[{"zz":1}]}}}}`,
-		"target own default":                  `{"Item":{"type":"object","properties":{"name":{"type":"string"}},"default":{"name":"t"}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":[{"name":"x"}]}}}}`,
-		"named collection dto target default": `{"Item":{"type":"object","properties":{"name":{"type":"string"}},"default":{"name":"t"}},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Item"}},"Holder":{"properties":{"value":{"$ref":"#/components/schemas/Rows","default":[{"name":"x"}]}}}}`,
-		"dict element wrong kind":             `{"Item":{"type":"object","properties":{"name":{"type":"string"}}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":{"name":"x"}}}}}`,
+		"element missing required": `{"Item":{"type":"object","required":["name"],"properties":{"name":{"type":"string"}}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":[{}]}}}}`,
+		"element unknown key":      `{"Item":{"type":"object","properties":{"name":{"type":"string"}}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":[{"zz":1}]}}}}`,
+		"dict element wrong kind":  `{"Item":{"type":"object","properties":{"name":{"type":"string"}}},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Item"},"default":{"name":"x"}}}}}`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			for _, checked := range []bool{false, true} {

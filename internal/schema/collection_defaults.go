@@ -24,6 +24,9 @@ func (a *analyzer) collectionDefaultElement(v *document.Value, name, pointer str
 	if typeErr == nil && slices.Contains([]string{"", "string", "boolean", "integer", "number"}, kind) {
 		keys = append(keys, "enum")
 	}
+	if (kind == "" || kind == "string") && lexicalStringEnumSchema(v) {
+		keys = append(keys, "x-native-type")
+	}
 	if a.options.Validation {
 		keys = append(keys, primitiveBoundKeys...)
 	}
@@ -34,9 +37,6 @@ func (a *analyzer) collectionDefaultElement(v *document.Value, name, pointer str
 		return TypeRef{}, typeErr
 	}
 	if has(v, "enum") && (kind == "" || kind == "string") {
-		if has(v, "format") {
-			return TypeRef{}, unsupported(naming.Pointer(pointer, "enum"))
-		}
 		if hasPrimitiveBounds(v) {
 			return a.stringEnumCollectionLeaf(v, name, pointer, nested, used, depth)
 		}

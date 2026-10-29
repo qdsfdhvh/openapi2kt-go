@@ -1,0 +1,306 @@
+{
+  "openapi": "3.1.0",
+  "components": {
+    "schemas": {
+      "Record": {
+        "properties": {
+          "required": {
+            "type": "string",
+            "enum": [
+              "one",
+              "two",
+              "x"
+            ],
+            "minLength": 2,
+            "maxLength": 6,
+            "pattern": "^[a-z]+$",
+            "default": "one"
+          },
+          "state": {
+            "type": "string",
+            "format": "date",
+            "enum": [
+              "one",
+              "two",
+              "x"
+            ],
+            "minLength": 2,
+            "maxLength": 6,
+            "pattern": "^[a-z]+$",
+            "default": "one"
+          },
+          "nullableWord": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "x-native-type": "org.example.UnusedProvider",
+            "enum": [
+              "one",
+              "two",
+              "x"
+            ],
+            "minLength": 2,
+            "default": null
+          },
+          "words": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "enum": [
+                "one",
+                "two",
+                "x"
+              ],
+              "minLength": 2,
+              "maxLength": 6,
+              "pattern": "^[a-z]+$"
+            },
+            "default": [
+              "one"
+            ]
+          },
+          "labels": {
+            "additionalProperties": {
+              "type": "string",
+              "x-native-type": "org.example.UnusedProvider",
+              "enum": [
+                "one",
+                "two",
+                "x"
+              ],
+              "minLength": 2,
+              "maxLength": 6,
+              "pattern": "^[a-z]+$"
+            },
+            "default": {
+              "first": "one"
+            }
+          },
+          "trees": {
+            "type": "array",
+            "nullable": true,
+            "maxItems": 3,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "nullable": true,
+              "maxProperties": 2,
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "enum": [
+                  "one",
+                  "two",
+                  "x",
+                  "toolong",
+                  "BAD"
+                ],
+                "minLength": 2,
+                "maxLength": 6,
+                "pattern": "^[a-z]+$"
+              }
+            },
+            "default": [
+              null,
+              {
+                "a/~": "one",
+                "$ref": null
+              }
+            ]
+          },
+          "rootTrees": {
+            "$ref": "#/components/schemas/EnumTreeAlias",
+            "default": [
+              {
+                "field": "one"
+              }
+            ]
+          },
+          "borrowableTree": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "string",
+                "format": "date",
+                "enum": [
+                  "one",
+                  "two",
+                  "x"
+                ],
+                "minLength": 2,
+                "maxLength": 6,
+                "pattern": "^[a-z]+$"
+              }
+            }
+          },
+          "borrowedWord": {
+            "$ref": "#/components/schemas/BorrowedWord",
+            "default": "one"
+          },
+          "borrowedWords": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/BorrowedWord"
+            },
+            "default": [
+              "one"
+            ]
+          },
+          "borrowedTree": {
+            "$ref": "#/components/schemas/BorrowedTree",
+            "default": {
+              "field": {
+                "a": "one"
+              }
+            }
+          },
+          "unannotatedWord": {
+            "$ref": "#/components/schemas/BorrowedWord"
+          }
+        },
+        "required": [
+          "required"
+        ],
+        "default": {
+          "required": "one",
+          "state": "one",
+          "words": [
+            "one"
+          ],
+          "labels": {
+            "first": "one"
+          },
+          "trees": [
+            null,
+            {
+              "a/~": "one",
+              "$ref": null
+            }
+          ],
+          "rootTrees": [
+            {
+              "field": "one"
+            }
+          ]
+        }
+      },
+      "RecordAlias": {
+        "$ref": "#/components/schemas/Record",
+        "default": {
+          "required": "two",
+          "state": "two",
+          "trees": [
+            {
+              "alias": "two"
+            }
+          ],
+          "rootTrees": [
+            {
+              "alias": "two"
+            }
+          ]
+        }
+      },
+      "MaybeAlias": {
+        "$ref": "#/components/schemas/RecordAlias",
+        "nullable": true,
+        "default": null
+      },
+      "Consumer": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/RecordAlias",
+            "default": {
+              "required": "one",
+              "state": "one"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecordAlias"
+            },
+            "default": [
+              {
+                "required": "one",
+                "state": "two",
+                "rootTrees": [
+                  {
+                    "outer": "two"
+                  }
+                ]
+              }
+            ]
+          },
+          "unannotated": {
+            "$ref": "#/components/schemas/RecordAlias"
+          }
+        }
+      },
+      "EnumTree": {
+        "type": "array",
+        "nullable": true,
+        "maxItems": 3,
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "nullable": true,
+          "maxProperties": 2,
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "enum": [
+              "one",
+              "two",
+              "x",
+              "toolong",
+              "BAD"
+            ],
+            "minLength": 2,
+            "maxLength": 6,
+            "pattern": "^[a-z]+$"
+          }
+        },
+        "default": [
+          {
+            "root": "one"
+          }
+        ]
+      },
+      "EnumTreeAlias": {
+        "$ref": "#/components/schemas/EnumTree",
+        "nullable": false,
+        "default": [
+          {
+            "alias": "two"
+          }
+        ]
+      },
+      "MaybeEnumTree": {
+        "$ref": "#/components/schemas/EnumTreeAlias",
+        "nullable": true,
+        "default": null
+      },
+      "BorrowedWord": {
+        "$ref": "#/components/schemas/Record/properties/state",
+        "default": "two"
+      },
+      "MaybeBorrowedWord": {
+        "$ref": "#/components/schemas/BorrowedWord",
+        "nullable": true,
+        "default": null
+      },
+      "BorrowedTree": {
+        "$ref": "#/components/schemas/Record/properties/borrowableTree"
+      }
+    }
+  }
+}

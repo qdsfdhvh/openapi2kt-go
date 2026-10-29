@@ -33,8 +33,6 @@ func TestScalarTupleComponentDefaultGuards(t *testing.T) {
 		{`{"type":"array","prefixItems":[{"type":"string","format":"date"}],"default":["2023-02-29"]}`, "E_SCHEMA_INVALID", "/default/0"},
 		{`{"type":"array","prefixItems":[{"type":"string","format":"date-time"}],"default":["2024-02-29T2:03:04Z"]}`, "E_SCHEMA_INVALID", "/default/0"},
 		{`{"type":"array","prefixItems":[{"type":"integer","default":1}],"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/default"},
-		{`{"type":"array","prefixItems":[{"type":"string"},{"type":"integer"}],"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/default"},
-		{`{"type":"array","prefixItems":[{"type":"integer"}],"items":false,"default":[]}`, "E_SCHEMA_UNSUPPORTED", "/default"},
 	} {
 		rq := request(schemas(`{"Rows":`+tc.schema+`}`), "Dto")
 		if report, err := core.GenerateWithDiagnostics(rq); err == nil || len(report.Artifacts.Files) != 0 || err.(core.Diagnostics)[0].Code != tc.code || *err.(core.Diagnostics)[0].Pointer != "/components/schemas/Rows"+tc.pointer {

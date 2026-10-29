@@ -41,7 +41,7 @@ func (a *analyzer) admitInternalSchemaAt(v *document.Value, pointer, source stri
 	}
 	active[v] = true
 	defer delete(active, v)
-	if enumNominalCandidate(v) {
+	if a.enumReferenceCandidate(v) {
 		// Inline vocabulary leaves still belong to their original lexical
 		// declaration. Resolve that exact node instead of planning a new enum
 		// under the borrowed container's name.
@@ -73,7 +73,11 @@ func (a *analyzer) admitInternalSchemaAt(v *document.Value, pointer, source stri
 	var location string
 	switch kind {
 	case "array":
-		if err := checkKeys(v, a.collectionKeys([]string{"type", "nullable", "items"}), pointer); err != nil {
+		keys := a.collectionKeys([]string{"type", "nullable", "items"})
+		if a.independentBorrowedEnumCollectionFieldDefault(v, pointer) {
+			keys = append(keys, "default")
+		}
+		if err := checkKeys(v, keys, pointer); err != nil {
 			return err
 		}
 		var ok bool

@@ -1,0 +1,455 @@
+{
+  "openapi": "3.1.0",
+  "paths": {
+    "/echo": {
+      "post": {
+        "operationId": "echo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Holder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inline": {
+      "get": {
+        "operationId": "inlineRows",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "const": [
+                        1,
+                        2
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send": {
+      "post": {
+        "operationId": "send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "const": {
+                      "fixed": 1
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "update",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "optional": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "const": {
+                          "fixed": 1
+                        }
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      {
+                        "fixed": 1
+                      }
+                    ]
+                  },
+                  "required": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "const": {
+                          "fixed": 1
+                        }
+                      }
+                    ],
+                    "nullable": true,
+                    "default": [
+                      {
+                        "fixed": 1
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "description": "synthetic events",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "event": {
+                          "const": "message"
+                        },
+                        "data": {
+                          "$ref": "#/components/schemas/Holder"
+                        }
+                      },
+                      "required": [
+                        "event",
+                        "data"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-a": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shape-b": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Only": {
+        "const": {
+          "fixed": 1
+        }
+      },
+      "OnlyAlias": {
+        "$ref": "#/components/schemas/Only"
+      },
+      "Rows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "const": {
+              "fixed": 1
+            }
+          }
+        ],
+        "default": [
+          {
+            "fixed": 1
+          }
+        ]
+      },
+      "Alias": {
+        "$ref": "#/components/schemas/Rows",
+        "default": []
+      },
+      "RefRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "#/components/schemas/OnlyAlias"
+          }
+        ],
+        "default": [
+          {
+            "fixed": 1
+          }
+        ]
+      },
+      "ArrayRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "array",
+            "const": [
+              1,
+              2
+            ]
+          }
+        ],
+        "default": [
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "NullableRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "const": {
+              "fixed": 1
+            },
+            "nullable": true
+          }
+        ],
+        "default": [
+          null,
+          {
+            "fixed": 1
+          }
+        ]
+      },
+      "Mixed": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "const": {
+              "fixed": 1
+            }
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "default": [
+          {
+            "$ref": "data"
+          },
+          null
+        ]
+      },
+      "Tail": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "const": {
+              "fixed": 1
+            }
+          }
+        ],
+        "items": {
+          "type": "integer"
+        },
+        "default": [
+          7
+        ]
+      },
+      "Maybe": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "const": {
+              "fixed": 1
+            }
+          }
+        ],
+        "nullable": true,
+        "default": null
+      },
+      "Holder": {
+        "properties": {
+          "required": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "const": {
+                  "fixed": 1
+                }
+              }
+            ],
+            "default": [
+              {
+                "fixed": 1
+              }
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "const": {
+                  "fixed": 1
+                }
+              }
+            ],
+            "default": [
+              {
+                "fixed": 1
+              }
+            ]
+          },
+          "refs": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/components/schemas/OnlyAlias"
+              }
+            ],
+            "default": [
+              {
+                "fixed": 1
+              }
+            ]
+          },
+          "borrowed": {
+            "$ref": "#/components/schemas/Rows"
+          },
+          "nested": {
+            "type": "array",
+            "items": {
+              "additionalProperties": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "const": {
+                      "fixed": 1
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "MetadataRows": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "const": {
+              "allOf": [
+                {
+                  "$ref": "#/data-only"
+                }
+              ],
+              "properties": {
+                "description": {
+                  "default": {
+                    "const": [
+                      1
+                    ],
+                    "enum": [
+                      null
+                    ],
+                    "items": true
+                  }
+                }
+              },
+              "description": "data"
+            }
+          }
+        ],
+        "default": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/data-only"
+              }
+            ],
+            "properties": {
+              "description": {
+                "default": {
+                  "const": [
+                    1
+                  ],
+                  "enum": [
+                    null
+                  ],
+                  "items": true
+                }
+              }
+            },
+            "description": "data"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -147,6 +147,10 @@ func TestNativeEnumAliasObjectDefaultMemberSourceAndSuppression(t *testing.T) {
 				input := scalarAliasMemberDocument(target, nativeEnumMemberNamedHops, `{"$ref":"#/components/schemas/Bridge"}`, value)
 				r := request([]byte(strings.Replace(string(input), `"v":{"properties"`, `"v":{"nullable":true,"properties"`, 1)), "Dto")
 				r.Options.Validation = checked
+				if target == `{"type":"integer","enum":[1],"default":1}` {
+					independentEnumFactoryGraduation(t, r)
+					continue
+				}
 				if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 					t.Fatal("source hidden by omission/null", target, err)
 				}
