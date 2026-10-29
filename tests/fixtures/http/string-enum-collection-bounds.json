@@ -23,7 +23,8 @@
               ],
               "minLength": 2,
               "maxLength": 6,
-              "pattern": "^[a-z]+$"
+              "pattern": "^[a-z]+$",
+              "default": "two"
             },
             "default": [
               "one"
@@ -47,7 +48,8 @@
               ],
               "minLength": 2,
               "maxLength": 6,
-              "pattern": "^[a-z]+$"
+              "pattern": "^[a-z]+$",
+              "default": null
             },
             "default": [
               "one",
@@ -67,7 +69,8 @@
               ],
               "minLength": 2,
               "maxLength": 6,
-              "pattern": "^[a-z]+$"
+              "pattern": "^[a-z]+$",
+              "default": "no"
             },
             "default": {
               "a/~": "yes",
@@ -82,7 +85,8 @@
                 "x"
               ],
               "minLength": 2,
-              "maxLength": 6
+              "maxLength": 6,
+              "default": "one"
             }
           },
           "bareLabels": {
@@ -644,11 +648,33 @@
             "type": "array",
             "uniqueItems": true,
             "items": {
-              "$ref": "#/components/schemas/RootWordAlias"
+              "$ref": "#/components/schemas/RootWordAlias",
+              "default": "one"
             },
             "default": [
               "two"
             ]
+          },
+          "childOnly": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RootWordAlias",
+              "default": "two"
+            }
+          },
+          "nullableChildOnly": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RootWordAlias",
+              "nullable": true,
+              "default": null
+            }
+          },
+          "mapChildOnly": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/RootWordAlias",
+              "default": "two"
+            }
           },
           "rootWordTree": {
             "$ref": "#/components/schemas/RootWordTree",
@@ -674,6 +700,22 @@
           },
           "nativeFactoryUnannotated": {
             "$ref": "#/components/schemas/FactoryIntRowsAlias"
+          },
+          "inlineNative": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "enum": [1, 2],
+              "default": 2
+            },
+            "default": [1]
+          },
+          "inlineNativeOnly": {
+            "additionalProperties": {
+              "type": "boolean",
+              "enum": [true, false],
+              "default": false
+            }
           }
         },
         "required": [
@@ -980,7 +1022,8 @@
             ],
             "minLength": 2,
             "maxLength": 6,
-            "pattern": "^[a-z]+$"
+            "pattern": "^[a-z]+$",
+            "default": "two"
           }
         },
         "default": [
@@ -1104,7 +1147,8 @@
         "additionalProperties": {
           "type": "array",
           "items": {
-            "$ref": "#/components/schemas/RootWordAlias"
+            "$ref": "#/components/schemas/RootWordAlias",
+            "default": "two"
           }
         },
         "default": {
@@ -1167,7 +1211,8 @@
       "FactoryIntRows": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/FactoryIntAlias"
+          "$ref": "#/components/schemas/FactoryIntAlias",
+          "default": 2
         },
         "default": [
           1
@@ -1200,7 +1245,8 @@
       "FactoryLongRows": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/FactoryLongAlias"
+          "$ref": "#/components/schemas/FactoryLongAlias",
+          "default": 2
         },
         "default": [
           1
@@ -1233,7 +1279,8 @@
       "FactoryFloatRows": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/FactoryFloatAlias"
+          "$ref": "#/components/schemas/FactoryFloatAlias",
+          "default": 2
         },
         "default": [
           1
@@ -1266,7 +1313,8 @@
       "FactoryDoubleRows": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/FactoryDoubleAlias"
+          "$ref": "#/components/schemas/FactoryDoubleAlias",
+          "default": 2
         },
         "default": [
           1
@@ -1298,7 +1346,8 @@
       "FactoryBooleanRows": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/FactoryBooleanAlias"
+          "$ref": "#/components/schemas/FactoryBooleanAlias",
+          "default": false
         },
         "default": [
           true

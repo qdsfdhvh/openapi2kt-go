@@ -79,7 +79,7 @@ func (a *analyzer) recordDTOAllOfGetters(model *Model, fields []field) {
 	for i := range model.Properties {
 		p := &model.Properties[i]
 		f := byWire[p.WireName]
-		deferred := has(f.Schema, "default") && a.deferredFieldDefault(f.Schema)
+		deferred := has(f.Schema, "default") && a.deferredFieldDefault(f.Schema, f.Pointer)
 		a.dtoAllOfGetters[model][p.WireName] = dtoAllOfGetterSnapshot{Property: p, Name: p.Name, Wire: p.WireName, Checks: namedCollectionChecks(TypeRef{Validation: p.Validation}), Validation: p.Validation, Types: dtoOriginalGetterTypes(&p.Type), Default: p.Default, DefaultNull: p.DefaultNull, Deferred: deferred}
 	}
 }

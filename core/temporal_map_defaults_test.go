@@ -60,6 +60,11 @@ func TestTemporalMapDefaultsOriginalMemberDiagnosticsAndExcludedRoles(t *testing
 				metadataStringEnumGraduation(t, r)
 				continue
 			}
+			if tc.field == `{"type":"object","additionalProperties":{"type":"string","format":"date","default":"2024-02-29"},"default":{}}` {
+				inlineBuiltinChildGraduation(t, r, `,"default":"2024-02-29"`, `,"default":"2023-02-29"`,
+					"/components/schemas/Record/properties/value/additionalProperties/default")
+				continue
+			}
 			got, err := core.GenerateWithDiagnostics(r)
 			if err == nil || err.(core.Diagnostics)[0].Code != tc.code || err.(core.Diagnostics)[0].Pointer == nil || *err.(core.Diagnostics)[0].Pointer != "/components/schemas/Record/properties/value"+tc.tail || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal(tc, validation, err)

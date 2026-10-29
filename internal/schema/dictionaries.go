@@ -85,7 +85,17 @@ func (a *analyzer) dictionaryType(v *document.Value, name, pointer string, neste
 	if bare(item).Kind == JSON {
 		return a.checkedCollection(TypeRef{Kind: JSONObject}, v, pointer)
 	}
-	return a.checkedCollection(TypeRef{Kind: Map, Element: &item}, v, pointer)
+	ty := TypeRef{Kind: Map, Element: &item}
+	if err := a.bindCollectionReferenceChildDefault(ap, location, ty.Element); err != nil {
+		return TypeRef{}, err
+	}
+	if err := a.bindInlineEnumCollectionChildDefault(ap, location, ty.Element); err != nil {
+		return TypeRef{}, err
+	}
+	if err := a.bindInlineBuiltinChildDefault(ap, location, ty.Element); err != nil {
+		return TypeRef{}, err
+	}
+	return a.checkedCollection(ty, v, pointer)
 }
 
 func (a *analyzer) warnAdditionalProperties(pointer string) {

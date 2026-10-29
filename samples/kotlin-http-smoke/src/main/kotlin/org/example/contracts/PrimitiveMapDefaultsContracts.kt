@@ -19,6 +19,7 @@ import io.ktor.utils.io.ByteChannel
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.writeFully
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -79,6 +80,7 @@ suspend fun primitiveMapDefaultsContracts(checked: Boolean = true) {
     check(value.longs == mapOf("min" to Long.MIN_VALUE))
     check(value.floats == mapOf("one" to 1f) && value.doubles == mapOf("half" to 0.5))
     check(value.flags == mapOf("yes" to true) && value.empty == emptyMap<String, String>() && value.nullable == null)
+    check(value.childOnly == null && value.uuidOnly == null)
     val day = LocalDate.parse("2024-02-29")
     val stamp = Instant.parse("2024-02-29T10:04:56.123456789Z")
     check(value.dates == mapOf("a/~" to day, "nil" to null))
@@ -107,6 +109,12 @@ suspend fun primitiveMapDefaultsContracts(checked: Boolean = true) {
         val codec = Json { encodeDefaults = defaults; explicitNulls = nulls }
         val missing = codec.decodeFromString<HolderDto>("""{"required":{"count":2}}""")
         check(missing.values == value.values && missing.names == value.names)
+        check(missing.childOnly == null && missing.uuidOnly == null && missing.empty == emptyMap<String, String>())
+        check(codec.decodeFromString<HolderDto>("""{"required":{"count":2},"childOnly":{"chosen":3}}""").childOnly == mapOf("chosen" to 3))
+        val suppliedUuid = codec.decodeFromString<HolderDto>(
+            """{"required":{"count":2},"uuidOnly":{"chosen":"550E8400E29B41D4A716446655440000"}}"""
+        )
+        check(suppliedUuid.uuidOnly == mapOf("chosen" to Uuid.parse("550e8400-e29b-41d4-a716-446655440000")))
         check(missing.dates == value.dates && missing.times == value.times && missing.edgeTimes == value.edgeTimes)
         check(codec.decodeFromString<HolderDto>("""{"required":{"count":2},"dates":null,"times":null}""").let { it.dates == null && it.times == null })
         val replaced = codec.decodeFromString<HolderDto>("""{"required":{"count":2},"dates":{"new":"2024-03-01"},"times":{"new":"2024-02-29T12:34:56+02:30"}}""")

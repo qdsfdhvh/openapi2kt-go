@@ -38,12 +38,13 @@ height and final TypeRef. A copied binding, duplicate export or changed factory
 initializer cannot authorize output. Checked sources additionally retain their
 original enum/getter checks under the [checked borrowing contract](borrowed-checked-string-enums.md).
 
-This adds no child-owned annotation, new reference graph or standalone checked
-enum-root role. An alias can own a factory for an already admitted nested
-collection source without granting that source a child `default`. Standalone
-alias codecs remain open; typed DTO/HTTP/SSE consumers retain their existing
-checks. Source48, checked16, value/source16384, default32KiB, enum240 and JVM240
-limits remain. No persisted-format change or default inheritance is introduced.
+This factory profile adds no new reference graph or standalone checked
+enum-root role. Eligible physical enum-reference children may independently own
+an annotation under the separate [child contract](collection-reference-child-defaults.md);
+a collection factory never supplies it. Standalone alias codecs remain open;
+typed DTO/HTTP/SSE consumers retain their existing checks. Source48, checked16,
+value/source16384, default32KiB, enum240 and JVM240 limits remain. No
+persisted-format change or default inheritance is introduced.
 
 **Compatibility:** eligible formerly rejected source/factory inputs now
 generate. Existing accepted call sites, wire behavior and ownership/lock formats

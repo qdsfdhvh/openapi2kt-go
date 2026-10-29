@@ -387,10 +387,11 @@ func (a *analyzer) collectionComponentDefaultCandidate(c *component) bool {
 	probe := *a
 	probe.warnings = nil
 	probe.objectDefaultWork = nil
+	probe.inlineEnumChildProbe = true
 	// Scalar collection probing needs no object-annotation permission. Keep
 	// the existing caller table untouched on both successful and failed probes.
 	_, failure := probe.nestedDefaultSchema(c.Schema, c.Name, c.Pointer, nil, nil, 0, true)
-	return failure == nil
+	return failure == nil || a.inlineEnumChildDefaultFailure(c.Schema, c.Pointer, failure)
 }
 
 func componentDeclaration(declarations []Declaration, name string) Declaration {

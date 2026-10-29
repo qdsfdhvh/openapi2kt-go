@@ -63,6 +63,10 @@ func TestNativeEnumCollectionDefaultsOriginalDiagnostics(t *testing.T) {
 		for _, validation := range []bool{false, true} {
 			r := request(fieldDoc(tc.field), "Dto")
 			r.Options.Validation = validation
+			if tc.field == `{"type":"array","items":{"type":"integer","enum":[1],"default":1},"default":[]}` {
+				inlineEnumChildGraduation(t, r, `,"default":1`, `,"default":2`, "/components/schemas/Record/properties/value/items/default")
+				continue
+			}
 			got, err := core.GenerateWithDiagnostics(r)
 			if err == nil || err.(core.Diagnostics)[0].Code != tc.code || err.(core.Diagnostics)[0].Pointer == nil || *err.(core.Diagnostics)[0].Pointer != "/components/schemas/Record/properties/value"+tc.tail || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal(tc, validation, err)

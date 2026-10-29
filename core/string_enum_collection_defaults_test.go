@@ -71,6 +71,10 @@ func TestStringEnumCollectionDefaultsOriginalDiagnostics(t *testing.T) {
 		for _, checked := range []bool{false, true} {
 			r := request(fieldDoc(tc.field), "Dto")
 			r.Options.Validation = checked
+			if tc.field == `{"type":"array","items":{"enum":["one"],"default":"one"},"default":[]}` {
+				inlineEnumChildGraduation(t, r, `,"default":"one"`, `,"default":"other"`, "/components/schemas/Record/properties/value/items/default")
+				continue
+			}
 			if tc.field == `{"type":"array","items":{"enum":["one",null]},"default":[]}` {
 				implicitStringEnumGraduation(t, fieldDoc(tc.field), checked)
 				continue

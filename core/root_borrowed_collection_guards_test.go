@@ -77,6 +77,10 @@ func TestRootBorrowedCollectionGrammarCyclesAndExcludedNamedLeaves(t *testing.T)
 		doc := schemas(`{"ABridge":{"$ref":"#/components/schemas/Source/properties/list"},"Named":{"properties":{"id":{"type":"string"}}},"Source":{"properties":{"list":` + tc.leaf + `}}}`)
 		r := request(doc, "Dto")
 		r.Options.Validation = true
+		if tc.leaf == `{"type":"array","items":{"type":"string","default":"x"}}` {
+			inlineBuiltinChildGraduation(t, r, `,"default":"x"`, `,"default":true`, tc.pointer)
+			continue
+		}
 		got, err := core.GenerateWithDiagnostics(r)
 		if strings.Contains(tc.leaf, `"#/components/schemas/Named"`) {
 			// Preserve original input as the new actual ordinary DTO leaf profile.

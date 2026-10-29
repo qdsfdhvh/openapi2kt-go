@@ -82,7 +82,7 @@ func (a *analyzer) modelDefaultType(f field, ordinary bool, name string, nested 
 		ty, _, err := a.primitiveArrayDefault(f.Schema, name, f.Pointer, nested, used, f.Depth)
 		return ty, nil, err
 	}
-	if a.inlineReferencedAllOfCollection(f.Schema) || a.inlineReferencedScalarCollection(f.Schema) {
+	if a.inlineReferencedAllOfCollection(f.Schema) || a.inlineReferencedScalarCollection(f.Schema, f.Pointer) {
 		return a.inlineReferencedAllOfDefaultType(f, ordinary, name, nested, used)
 	}
 	if has(f.Schema, "oneOf") || has(f.Schema, "anyOf") {
@@ -271,7 +271,7 @@ func (a *analyzer) modelDefault(f field, ty TypeRef, required bool) (string, *di
 	if !exists {
 		return "", nil
 	}
-	if a.deferredFieldDefault(f.Schema) {
+	if a.deferredFieldDefault(f.Schema, f.Pointer) {
 		return "", nil // Final linked backing supplies the typed default plan.
 	}
 	pointer := naming.Pointer(f.Pointer, "default")

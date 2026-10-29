@@ -23,7 +23,10 @@ kotlin {
         kotlin.srcDir("generated-roadmap")
         kotlin.srcDir("generated-getters")
         kotlin.srcDir("generated-enum-bounds")
-        dependencies { implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0") }
+        dependencies {
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+        }
     }
 }
 

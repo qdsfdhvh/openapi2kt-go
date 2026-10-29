@@ -14,7 +14,7 @@ bash scripts/kotlin/platforms.sh android
 bash scripts/kotlin/platforms.sh jvm plain_class
 ```
 
-Each invocation builds the local CLI, generates into a fresh ignored workspace, verifies `--check`, and runs Gradle offline without the build cache. It retains the original `tests/fixtures/catalog.json` with default options and separately generates [model-increments.json](../../tests/fixtures/platform/model-increments.json) with validation and model merging enabled. The second input checks allOf winning defaults, signed-byte default trees/factories and owned self-recursive aliases. Both outputs compile as common sources. Dependencies are Kotlin/serialization plugin 2.4.10 and kotlinx.serialization 1.11.0. JVM bytecode targets Java 17. Prepare dependencies explicitly before invoking the offline check; missing caches are failures, not skipped tests. `GRADLE_USER_HOME` can select an isolated cache. The JS probe uses already installed Node and Yarn executables, disables their downloads, and passes `--offline --ignore-scripts` to dependency installation. `YARN_CACHE_FOLDER` can select a prepared cache; missing npm packages fail before Node execution.
+Each invocation builds the local CLI, generates into a fresh ignored workspace, verifies `--check`, and runs Gradle offline without the build cache. It retains the original `tests/fixtures/catalog.json` with default options and separately generates [model-increments.json](../../tests/fixtures/platform/model-increments.json) with validation and model merging enabled. The second input checks allOf winning defaults, signed-byte default trees/factories and owned self-recursive aliases. Both outputs compile as common sources. Dependencies are Kotlin/serialization plugin 2.4.10, kotlinx.serialization 1.11.0 and kotlinx-datetime 0.7.1. JVM bytecode targets Java 17. Prepare dependencies explicitly before invoking the offline check; missing caches are failures, not skipped tests. `GRADLE_USER_HOME` can select an isolated cache. The JS probe uses already installed Node and Yarn executables, disables their downloads, and passes `--offline --ignore-scripts` to dependency installation. `YARN_CACHE_FOLDER` can select a prepared cache; missing npm packages fail before Node execution.
 
 Explicit preparation is separate from verification:
 
@@ -68,7 +68,7 @@ With the [JVM-name correction](../../docs/jvm-names.md), the same three-input Da
 
 Select an authorized connected device explicitly with `ANDROID_SERIAL`, and set
 `ANDROID_HOME` (or `ANDROID_SDK_ROOT`) to an existing SDK. The `android-device`
-target freshly generates/checks the current four inputs, builds a min SDK23 test
+target freshly generates/checks the current five inputs, builds a min SDK23 test
 APK offline, audits its final manifest, runs the common assertions without
 launching an Activity, and uninstalls only the package installed by that run.
 It refuses to replace a preexisting probe package. The selected device must
@@ -109,8 +109,8 @@ field bounds and metadata on existing direct List/typed Map enum leaf bounds.
 Known members and Unrecognized keep open standalone enum codecs; actual DTO
 constructor/automatic decoding checks, strict compile-time defaults, nullable
 views, required fields and fresh containers retain the product contract under
-four Json configurations. Metadata uses String words without date/UUID/provider
-dependencies. Original DTO root/alias/null factories and consuming object/DTO-list annotations
+four Json configurations. Enum metadata stays String-valued; separate child
+annotation cases use UUID and date/time types. Original DTO root/alias/null factories and consuming object/DTO-list annotations
 also retain independent values, no inheritance and fresh state. Both KMP and
 Android projects include this source root.
 
@@ -128,3 +128,20 @@ configurations, and common metadata plus Android AAR compile. Kotlin/plugin2.4.1
 and serialization1.11.0 use Gradle9.3.1 for KMP and Gradle9.5.1 for Android.
 No fifth-input Android device or complete feature/HTTP/engine acceptance is
 implied.
+
+The fifth input now additionally checks independent enum-reference List/Map
+factories for String and all five native enum mappings. The expanded Data/Plain
+profile passed JVM, JS/Node and macOS ARM64 Native runtime under four Json
+configurations, plus common metadata and Android AAR compilation, with the
+[recorded toolchain and scope](../../docs/platform-enum-field-bounds.md).
+Those AARs were not executed on an Android device for this profile.
+
+The fifth input also exercises independent inline and referenced enum collection
+child annotations and direct builtin scalar, UUID, LocalDate and Instant
+List/Map child annotations. Its
+common consumer checks independent owner factories, fresh containers and
+missing and supplied collection values. This expanded
+input passed Data/Plain JVM, JS/Node and macOS ARM64 Native execution under all
+four Json configurations, plus common metadata and Android AAR compilation.
+Those AARs have no device runtime result; the broader platform matrix remains
+separate.

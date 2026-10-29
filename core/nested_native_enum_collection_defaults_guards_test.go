@@ -201,6 +201,10 @@ func TestNestedNativeEnumCollectionDefaultsExcludedRolesAndNoDrop(t *testing.T) 
 		for _, checked := range []bool{false, true} {
 			r := request(fieldDoc(nestedDefaultChain(2, tc.leaf, `[]`)), "Dto")
 			r.Options.Validation = checked
+			if tc.leaf == `{"type":"integer","enum":[1],"default":1}` {
+				inlineEnumChildGraduation(t, r, `,"default":1`, `,"default":2`, "/components/schemas/Record/properties/value/items/items/default")
+				continue
+			}
 			if checked && (tc.leaf == `{"enum":["one"],"minLength":1}` || tc.leaf == `{"enum":["one"],"pattern":"^o"}`) {
 				nestedStringEnumBoundsGraduation(t, r.Document)
 				continue

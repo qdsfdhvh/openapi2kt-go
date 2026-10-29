@@ -133,9 +133,7 @@ func TestBoundedEnumObjectDefaultsSourceBeforeEmptyOrNull(t *testing.T) {
 	} {
 		rq := request(schemas(`{"Value":{"properties":{"state":{"enum":["one"],"minLength":2},"bad":`+field+`},"default":{"state":"one"}}}`), "Dto")
 		rq.Options.Validation = true
-		if got, err := core.GenerateWithDiagnostics(rq); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
-			t.Fatal("object annotation granted excluded checked leaf/default role", field, err)
-		}
+		inlineEnumChildGraduation(t, rq, `,"default":"one"`, `,"default":"other"`, "/components/schemas/Value/properties/bad/items/default")
 	}
 }
 

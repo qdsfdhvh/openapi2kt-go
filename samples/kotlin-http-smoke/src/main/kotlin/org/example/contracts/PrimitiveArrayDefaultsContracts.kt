@@ -78,6 +78,7 @@ suspend fun primitiveArrayDefaultsContracts() {
     check(value.names==listOf("quote \" and \$value","line\nnext"))
     check(value.longs==listOf(Long.MIN_VALUE,Long.MAX_VALUE))
     check(value.floats==listOf(1.25f,null) && value.flags==null && value.empty==emptyList<Int>())
+    check(value.childOnly == null)
     val day = LocalDate.parse("2024-02-29")
     val instant = Instant.parse("2024-02-29T10:04:56.123456789Z")
     check(value.dates == listOf(day) && value.times == listOf(instant, null))
@@ -94,6 +95,8 @@ suspend fun primitiveArrayDefaultsContracts() {
         val codec=Json {encodeDefaults=defaults;explicitNulls=nulls}
         val missing=codec.decodeFromString<HolderDto>("{\"required\":[]}")
         check(missing.names==value.names && missing.longs==value.longs && missing.floats==value.floats && missing.empty==value.empty)
+        check(missing.childOnly == null)
+        check(codec.decodeFromString<HolderDto>("""{"required":[],"childOnly":[4]}""").childOnly == listOf(4))
         check(missing.dates == value.dates && missing.times == value.times && missing.emptyDates == value.emptyDates && missing.timeEdges == value.timeEdges)
         check(codec.decodeFromString<HolderDto>("""{"required":[],"dates":null,"times":null}""").dates == null)
         val supplied = codec.decodeFromString<HolderDto>("""{"required":[],"dates":["2024-03-01"],"times":[null]}""")

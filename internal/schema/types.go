@@ -393,6 +393,14 @@ type analyzer struct {
 	borrowedDTOAliasEdges          map[*component]*borrowedDTOAliasEdge
 	deferredNominals               map[*document.Value]*deferredNominal
 	referencedDefaults             *[]referencedFieldDefault
+	collectionChildDefaults        map[*document.Value]*collectionReferenceChildDefault
+	collectionChildDefaultOrder    *[]*collectionReferenceChildDefault
+	collectionChildDefaultClient   *Client
+	inlineEnumChildDefaults        map[*document.Value]*inlineEnumCollectionChildDefault
+	inlineEnumChildDefaultOrder    *[]*inlineEnumCollectionChildDefault
+	inlineEnumChildProbe           bool
+	inlineBuiltinChildDefaults     map[*document.Value]*inlineBuiltinChildDefault
+	inlineBuiltinChildDefaultOrder *[]*inlineBuiltinChildDefault
 	internalEnumFactories          *internalEnumFactoryRegistry
 	referencedEnumFactories        []*referencedEnumCollectionFactory
 	nominalsLinked                 bool

@@ -26,7 +26,8 @@ codecs remain open, and native numeric/Boolean codecs keep scalar wire values.
 Use `--validation` for supported String/native/container checks; ordinary
 unchecked named native roots retain scalar factories without granting new
 internal or borrowed graph admission. Nearest nullable intent controls each
-layer. Container-child and reference-edge defaults remain separate roles.
+layer. Eligible physical enum-reference child annotations follow the separate
+[child-default guidance](collection-reference-child-defaults.md).
 
 Run `validate`, then `generate` and `generate --check` with the same input/options.
 Compile the freshly generated Kotlin and exercise the actual factories and

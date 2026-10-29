@@ -300,6 +300,372 @@
       },
       "BorrowedTree": {
         "$ref": "#/components/schemas/Record/properties/borrowableTree"
+      },
+      "RootWord": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date",
+        "enum": [
+          "one",
+          "two",
+          "x",
+          "toolong",
+          "BAD"
+        ],
+        "minLength": 2,
+        "maxLength": 6,
+        "pattern": "^[a-z]+$",
+        "default": "one"
+      },
+      "RootWordAlias": {
+        "$ref": "#/components/schemas/RootWord",
+        "nullable": false,
+        "default": "two"
+      },
+      "MaybeRootWord": {
+        "$ref": "#/components/schemas/RootWordAlias",
+        "nullable": true,
+        "default": null
+      },
+      "RootWordTree": {
+        "additionalProperties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/RootWordAlias",
+            "default": "two"
+          }
+        },
+        "default": {
+          "factory": [
+            "one"
+          ]
+        }
+      },
+      "RootWordTreeAlias": {
+        "$ref": "#/components/schemas/RootWordTree",
+        "default": {
+          "alias": [
+            "two"
+          ]
+        }
+      },
+      "MaybeRootWordTree": {
+        "$ref": "#/components/schemas/RootWordTreeAlias",
+        "nullable": true,
+        "default": null
+      },
+      "RootWordTreeHolder": {
+        "properties": {
+          "tree": {
+            "$ref": "#/components/schemas/RootWordTreeAlias"
+          }
+        },
+        "default": {
+          "tree": {
+            "outer": [
+              "two"
+            ]
+          }
+        }
+      },
+      "FactoryInt": {
+        "type": "integer",
+        "enum": [
+          1,
+          2
+        ],
+        "default": 1,
+        "format": "int32"
+      },
+      "FactoryIntAlias": {
+        "$ref": "#/components/schemas/FactoryInt",
+        "default": 2
+      },
+      "FactoryIntRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FactoryIntAlias"
+        },
+        "default": [
+          1
+        ]
+      },
+      "FactoryIntRowsAlias": {
+        "$ref": "#/components/schemas/FactoryIntRows",
+        "default": [
+          2
+        ]
+      },
+      "MaybeFactoryIntRows": {
+        "$ref": "#/components/schemas/FactoryIntRowsAlias",
+        "nullable": true,
+        "default": null
+      },
+      "FactoryLong": {
+        "type": "integer",
+        "enum": [
+          1,
+          2
+        ],
+        "default": 1,
+        "format": "int64"
+      },
+      "FactoryLongAlias": {
+        "$ref": "#/components/schemas/FactoryLong",
+        "default": 2
+      },
+      "FactoryLongRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FactoryLongAlias"
+        },
+        "default": [
+          1
+        ]
+      },
+      "FactoryLongRowsAlias": {
+        "$ref": "#/components/schemas/FactoryLongRows",
+        "default": [
+          2
+        ]
+      },
+      "MaybeFactoryLongRows": {
+        "$ref": "#/components/schemas/FactoryLongRowsAlias",
+        "nullable": true,
+        "default": null
+      },
+      "FactoryFloat": {
+        "type": "number",
+        "enum": [
+          1,
+          2
+        ],
+        "default": 1,
+        "format": "float"
+      },
+      "FactoryFloatAlias": {
+        "$ref": "#/components/schemas/FactoryFloat",
+        "default": 2
+      },
+      "FactoryFloatRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FactoryFloatAlias"
+        },
+        "default": [
+          1
+        ]
+      },
+      "FactoryFloatRowsAlias": {
+        "$ref": "#/components/schemas/FactoryFloatRows",
+        "default": [
+          2
+        ]
+      },
+      "MaybeFactoryFloatRows": {
+        "$ref": "#/components/schemas/FactoryFloatRowsAlias",
+        "nullable": true,
+        "default": null
+      },
+      "FactoryDouble": {
+        "type": "number",
+        "enum": [
+          1,
+          2
+        ],
+        "default": 1,
+        "format": "double"
+      },
+      "FactoryDoubleAlias": {
+        "$ref": "#/components/schemas/FactoryDouble",
+        "default": 2
+      },
+      "FactoryDoubleRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FactoryDoubleAlias"
+        },
+        "default": [
+          1
+        ]
+      },
+      "FactoryDoubleRowsAlias": {
+        "$ref": "#/components/schemas/FactoryDoubleRows",
+        "default": [
+          2
+        ]
+      },
+      "MaybeFactoryDoubleRows": {
+        "$ref": "#/components/schemas/FactoryDoubleRowsAlias",
+        "nullable": true,
+        "default": null
+      },
+      "FactoryBoolean": {
+        "type": "boolean",
+        "enum": [
+          true,
+          false
+        ],
+        "default": true
+      },
+      "FactoryBooleanAlias": {
+        "$ref": "#/components/schemas/FactoryBoolean",
+        "default": false
+      },
+      "FactoryBooleanRows": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FactoryBooleanAlias"
+        },
+        "default": [
+          true
+        ]
+      },
+      "FactoryBooleanRowsAlias": {
+        "$ref": "#/components/schemas/FactoryBooleanRows",
+        "default": [
+          false
+        ]
+      },
+      "MaybeFactoryBooleanRows": {
+        "$ref": "#/components/schemas/FactoryBooleanRowsAlias",
+        "nullable": true,
+        "default": null
+      },
+      "FactoryConsumer": {
+        "properties": {
+          "wordTree": {
+            "$ref": "#/components/schemas/RootWordTreeAlias",
+            "default": {
+              "field": [
+                "one"
+              ]
+            }
+          },
+          "intRows": {
+            "$ref": "#/components/schemas/FactoryIntRowsAlias",
+            "default": [
+              1
+            ]
+          },
+          "unannotatedWordTree": {
+            "$ref": "#/components/schemas/RootWordTree"
+          },
+          "unannotatedIntRows": {
+            "$ref": "#/components/schemas/FactoryIntRows"
+          }
+        }
+      },
+      "ChildAnnotationHolder": {
+        "properties": {
+          "inlineWords": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["one", "two"],
+              "default": "two"
+            }
+          },
+          "refWords": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RootWord",
+              "default": "two"
+            }
+          },
+          "counts": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "default": 7
+            }
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "default": "guest"
+            }
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "default": "123E4567E89B12D3A456426614174000"
+            }
+          },
+          "dates": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "format": "date",
+              "default": "2000-01-01"
+            }
+          },
+          "instants": {
+            "type": "array",
+            "items": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "default": null
+            }
+          }
+        }
+      },
+      "ChildAnnotationFactory": {
+        "properties": {
+          "counts": {
+            "type": "array",
+            "items": {"type": "integer", "default": 7}
+          },
+          "labels": {
+            "type": "object",
+            "additionalProperties": {"type": "string", "default": "guest"}
+          },
+          "days": {
+            "type": "array",
+            "items": {"type": "string", "format": "date", "default": "2000-01-01"}
+          },
+          "ids": {
+            "type": "object",
+            "additionalProperties": {"type": "string", "format": "uuid", "default": "123E4567E89B12D3A456426614174000"}
+          },
+          "instants": {
+            "type": "array",
+            "items": {"type": ["string", "null"], "format": "date-time", "default": null}
+          }
+        },
+        "default": {
+          "counts": [2],
+          "labels": {"first": "field"},
+          "days": ["2024-03-01"],
+          "ids": {"chosen": "550e8400-e29b-41d4-a716-446655440000"},
+          "instants": ["2024-02-29T12:34:56+02:30", null]
+        }
+      },
+      "ChildAnnotationEmptyFactory": {
+        "properties": {
+          "counts": {
+            "type": "array",
+            "items": {"type": "integer", "default": 7}
+          },
+          "days": {
+            "type": "array",
+            "items": {"type": "string", "format": "date", "default": "2000-01-01"}
+          },
+          "ids": {
+            "type": "object",
+            "additionalProperties": {"type": "string", "format": "uuid", "default": "123E4567E89B12D3A456426614174000"}
+          },
+          "instants": {
+            "type": "array",
+            "items": {"type": "string", "format": "date-time", "default": "2000-01-01T00:00:00Z"}
+          }
+        },
+        "default": {}
       }
     }
   }

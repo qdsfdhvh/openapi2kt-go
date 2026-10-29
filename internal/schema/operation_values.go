@@ -38,6 +38,12 @@ func (a *analyzer) operationStructuralType(v *document.Value, name, pointer stri
 			}
 			if bare(item).Kind != JSON {
 				ty = TypeRef{Kind: Map, Element: &item}
+				if err := a.bindCollectionReferenceChildDefault(value, pointer+"/additionalProperties", ty.Element); err != nil {
+					return TypeRef{}, err
+				}
+				if err := a.bindInlineEnumCollectionChildDefault(value, pointer+"/additionalProperties", ty.Element); err != nil {
+					return TypeRef{}, err
+				}
 			}
 		}
 	} else {
@@ -150,7 +156,11 @@ func (a *analyzer) operationValueType(v *document.Value, name, pointer string, d
 		return TypeRef{}, err
 	}
 	if !has(v, "$ref") && has(v, "enum") && (kind == "string" || kind == "") {
-		if _, err := buildStringEnum("$OperationEnum", v, pointer); err != nil {
+		own, err := a.inlineEnumCollectionChildDefault(v, pointer, depth)
+		if err != nil {
+			return TypeRef{}, err
+		}
+		if _, err := buildStringEnumKeys("$OperationEnum", v, pointer, own); err != nil {
 			return TypeRef{}, err
 		}
 		a.warn("W_ENUM_NATIVE_APPROXIMATION", "An operation enum uses its scalar wire type without enforcing membership.", naming.Pointer(pointer, "enum"))

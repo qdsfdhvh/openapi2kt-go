@@ -25,6 +25,21 @@
   },
   "components": {
     "schemas": {
+      "BuiltinChildFactory": {
+        "properties": {
+          "counts": {"type": "array", "items": {"type": "integer", "default": 7}},
+          "labels": {"type": "object", "additionalProperties": {"type": "string", "default": "guest"}},
+          "days": {"type": "array", "items": {"type": "string", "format": "date", "default": "2000-01-01"}}
+        },
+        "default": {"counts": [2], "labels": {"first": "field"}, "days": ["2024-03-01"]}
+      },
+      "EmptyBuiltinChildFactory": {
+        "properties": {
+          "counts": {"type": "array", "items": {"type": "integer", "default": 7}},
+          "instants": {"type": "object", "additionalProperties": {"type": "string", "format": "date-time", "default": "2000-01-01T00:00:00Z"}}
+        },
+        "default": {}
+      },
       "NilName": {"type": ["string", "null"], "default": null},
       "NilFlag": {"type": "boolean", "nullable": true, "default": null},
       "NilCount": {"type": "integer", "nullable": true, "default": null},

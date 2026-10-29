@@ -94,7 +94,7 @@ const (
 
 func (a *analyzer) referencedDefaultSchema(v *document.Value, pointer string, ty TypeRef, depth int, root bool) (*nestedDefaultNode, *diagnostic.Diagnostic) {
 	role := noReferencedDefaultRole
-	if root && has(v, "default") && (has(v, "$ref") || a.inlineReferencedAllOfCollection(v) || a.inlineReferencedScalarCollection(v)) {
+	if root && has(v, "default") && (has(v, "$ref") || a.inlineReferencedAllOfCollection(v) || a.inlineReferencedScalarCollection(v, pointer)) {
 		switch defaultBacking(ty).WithoutRootNull().Kind {
 		case Scalar:
 			role = referencedScalarOwnDefault
@@ -116,9 +116,29 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 	if err := object(v, pointer); err != nil {
 		return nil, err
 	}
+	inlineChild, err := a.inlineEnumCollectionChildDefault(v, pointer, depth)
+	if err != nil {
+		return nil, err
+	}
 	if has(v, "$ref") {
+		// A collection factory can inspect its element before the collection
+		// planner reaches it. Validate that physical element's independent
+		// annotation here as well; the outer default never supplies its value.
+		// The recursive validation starts at this reference as a root, so it
+		// cannot enter this preflight again.
+		if !root && has(v, "default") && !a.validatedCollectionReferenceChildDefault(v, pointer) {
+			child, err := a.collectionReferenceChildDefault(v, pointer, depth)
+			if err != nil {
+				return nil, err
+			}
+			if child != nil {
+				if err := a.bindCollectionReferenceChildDefault(v, pointer, &ty); err != nil {
+					return nil, err
+				}
+			}
+		}
 		keys := []string{"$ref", "nullable"}
-		if root || a.independentEnumComponentDefault(v, pointer) || a.independentObjectComponentDefault(v, pointer) || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer) {
+		if root || a.validatedCollectionReferenceChildDefault(v, pointer) || a.independentEnumComponentDefault(v, pointer) || a.independentObjectComponentDefault(v, pointer) || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer) {
 			keys = append(keys, "default")
 		}
 		if err := checkKeys(v, keys, pointer); err != nil {
@@ -162,7 +182,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 		keys = a.collectionKeys([]string{"type", "nullable", "properties", "required", "additionalProperties"})
 		edge = "additionalProperties"
 	}
-	if edge != "" && root && role == referencedCollectionOwnDefault && (a.inlineReferencedAllOfCollection(v) || a.inlineReferencedScalarCollection(v)) {
+	if edge != "" && root && role == referencedCollectionOwnDefault && (a.inlineReferencedAllOfCollection(v) || a.inlineReferencedScalarCollection(v, pointer)) {
 		// Only the consuming inline container owns this annotation. Inner
 		// containers and target/reference sources retain their strict keys.
 		keys = append(keys, "default")
@@ -185,7 +205,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 				// Type/reference admission and final named-collection provenance
 				// retain the actual classifier/check objects. Revalidate the complete
 				// original vocabulary and check grammar without declaring a copy.
-				checked, err := a.checkedStringEnumLeaf(v, "Validation", pointer, nil, nil, depth, a.independentCheckedEnumFieldDefault(v, pointer) || a.independentEnumComponentDefault(v, pointer))
+				checked, err := a.checkedStringEnumLeaf(v, "Validation", pointer, nil, nil, depth, inlineChild || a.independentCheckedEnumFieldDefault(v, pointer) || a.independentEnumComponentDefault(v, pointer))
 				if err != nil {
 					return nil, err
 				}
@@ -199,7 +219,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 			if a.independentEnumComponentDefault(v, pointer) {
 				factorySource = a
 			}
-			fieldDefault := a.internalEnumFactories != nil && a.internalEnumFactories.Terminals[v]
+			fieldDefault := inlineChild || a.internalEnumFactories != nil && a.internalEnumFactories.Terminals[v]
 			if _, err := buildStringEnumKeysFor("Validation", v, pointer, fieldDefault, factorySource); err != nil {
 				return nil, err
 			}
@@ -236,7 +256,7 @@ func (a *analyzer) referencedDefaultSchemaRole(v *document.Value, pointer string
 			return nil, unsupported(naming.Pointer(pointer, "enum"))
 		}
 		terminalKeys := []string{"type", "nullable", "format", "enum"}
-		if a.independentEnumComponentDefault(v, pointer) {
+		if inlineChild || a.independentEnumComponentDefault(v, pointer) {
 			terminalKeys = append(terminalKeys, "default")
 		}
 		if a.options.Validation {

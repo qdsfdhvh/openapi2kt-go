@@ -106,6 +106,10 @@ func TestDTOCollectionUniqueOriginalSourceFailures(t *testing.T) {
 		input := schemas(`{"Holder":{"properties":{"values":{"type":"array","uniqueItems":true,"items":{"$ref":"#/components/schemas/Item"}}}},"Item":{"properties":{"id":{"type":"string"},"values":` + tc.field + `}}}`)
 		rq := request(input, "Dto")
 		rq.Options.Validation = true
+		if tc.field == `{"type":"array","items":{"type":"integer","default":0}}` {
+			inlineBuiltinChildGraduation(t, rq, `,"default":0`, `,"default":true`, "/components/schemas/Item/properties/values/items/default")
+			continue
+		}
 		r, e := core.GenerateWithDiagnostics(rq)
 		ds, ok := e.(core.Diagnostics)
 		if !ok || len(ds) != 1 || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/Item/properties/values"+tc.pointer || len(r.Artifacts.Files) != 0 {

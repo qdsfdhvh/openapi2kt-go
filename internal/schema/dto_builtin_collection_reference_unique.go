@@ -45,7 +45,7 @@ func (a *analyzer) dtoUniqueCollectionReferenceTreeSource(v *document.Value, p s
 	defer delete(active, v)
 	if has(v, "$ref") {
 		keys := []string{"$ref", "nullable"}
-		if field || a.independentEnumComponentDefault(v, p) {
+		if field || a.independentEnumComponentDefault(v, p) || has(v, "default") && a.collectionReferenceChildParent(v, p) != nil {
 			keys = append(keys, "default")
 		}
 		if checkKeys(v, keys, p) != nil {

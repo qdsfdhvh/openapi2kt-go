@@ -51,6 +51,14 @@ func TestDTOValidationGuards(t *testing.T) {
 	} {
 		req := request(fieldDoc(tc.field), "")
 		req.Options.Validation = true
+		if tc.field == `{"type":"array","items":{"type":"integer","default":0}}` {
+			inlineBuiltinChildGraduation(t, req, `,"default":0`, `,"default":true`, "/components/schemas/Record/properties/value/items/default")
+			continue
+		}
+		if tc.field == `{"type":"object","additionalProperties":{"type":"string","default":"a"}}` {
+			inlineBuiltinChildGraduation(t, req, `,"default":"a"`, `,"default":true`, "/components/schemas/Record/properties/value/additionalProperties/default")
+			continue
+		}
 		r, err := core.GenerateWithDiagnostics(req)
 		ds, ok := err.(core.Diagnostics)
 		if !ok || len(ds) != 1 || ds[0].Code != tc.code || ds[0].Pointer == nil || *ds[0].Pointer != "/components/schemas/Record/properties/value/"+tc.pointer || len(r.Artifacts.Files) != 0 {

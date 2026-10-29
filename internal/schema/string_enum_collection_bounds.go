@@ -63,7 +63,11 @@ func inlineStringEnumCollectionLeaf(v *document.Value, minimumEdges int) *docume
 }
 
 func (a *analyzer) stringEnumCollectionLeaf(v *document.Value, name, pointer string, nested *[]Declaration, used map[string]bool, depth int) (TypeRef, *diagnostic.Diagnostic) {
-	return a.checkedStringEnumLeaf(v, name, pointer, nested, used, depth, false)
+	own, err := a.inlineEnumCollectionChildDefault(v, pointer, depth)
+	if err != nil {
+		return TypeRef{}, err
+	}
+	return a.checkedStringEnumLeaf(v, name, pointer, nested, used, depth, own)
 }
 
 func directStringEnumFieldBounds(v *document.Value) bool {
@@ -169,6 +173,9 @@ func (a *analyzer) stringEnumCollectionField(f field, name string, nested *[]Dec
 	ty.Element = &item
 	ty, err = a.checkedCollection(ty, v, f.Pointer)
 	if err != nil {
+		return TypeRef{}, err
+	}
+	if err := a.bindInlineEnumCollectionChildDefault(get(v, key), naming.Pointer(f.Pointer, key), ty.Element); err != nil {
 		return TypeRef{}, err
 	}
 	if nullable {

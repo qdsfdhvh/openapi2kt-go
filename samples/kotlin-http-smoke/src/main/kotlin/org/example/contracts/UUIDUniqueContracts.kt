@@ -84,7 +84,7 @@ suspend fun uuidUniqueContracts(checked: Boolean = true) = withTimeout(20000) {
         check(codec.decodeFromString<HolderDto>(encoded) == holder)
         val bridged = HolderDto(directValues, bridged = listOf(id, Uuid.NIL))
         check(codec.decodeFromString<HolderDto>(codec.encodeToString(bridged)) == bridged)
-        check(holder.defaultDirectValues == listOf(directId, null))
+        check(holder.defaultDirectValues == listOf(directId, null) && holder.defaultDirectValues != listOf(Uuid.NIL))
         check(holder.defaultValues == listOf(id, null))
         check(holder.defaultNested == listOf(listOf(id, null)))
         check(`DefaultValuesDto default`() == listOf(id, null))

@@ -323,6 +323,12 @@ func (a *analyzer) validateInternalModels(declarations []Declaration) *diagnosti
 	if err := a.validateTupleNativeSources(); err != nil {
 		return err
 	}
+	if err := a.validateCollectionReferenceChildDefaults(declarations); err != nil {
+		return err
+	}
+	if err := a.validateInlineEnumCollectionChildDefaults(declarations, false); err != nil {
+		return err
+	}
 	if err := a.validateNativeEnumBindings(declarations); err != nil {
 		return err
 	}

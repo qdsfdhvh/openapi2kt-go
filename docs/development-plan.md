@@ -339,6 +339,8 @@ P0 固定 Go toolchain、Kotlin、serialization、Ktor、datetime、Gradle、JDK
 
 完整路线图的开放范围以[剩余工作 D01–D10](remaining-work.md#2-尚未完成的功能覆盖)为准。下面将开发、资源和平台验收排成可独立检查的任务；每个任务可分多次增量实现，不能因为一个增量通过就关闭整个方向。既有合同明确接受的输入必须保留，明确的范围外能力不因本表成为交付承诺。
 
+E03 的[枚举集合子节点默认值](collection-reference-child-defaults.md)已限定在原物理 List/typed Map 的直接内联枚举或已准入枚举引用元素上独立校验；[普通标量子节点默认值](inline-builtin-collection-child-defaults.md)另限普通 named DTO 的直接内联 builtin6、UUID 和 date/date-time 元素。其他默认值角色和该任务的整体关闭仍需逐项验收。
+
 | 顺序 | 任务 | 完成所需产物与证据 |
 |---|---|---|
 | E01 | 建立当前源码基线 | 绑定 source、fixture、consumer、binary 和工具链；执行完整 `all` 门禁并保存结果。旧 alpha 的运行记录不作为新源码通过证据 |

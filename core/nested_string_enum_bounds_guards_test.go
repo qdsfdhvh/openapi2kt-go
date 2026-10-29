@@ -51,6 +51,12 @@ func TestNestedStringEnumBoundsSourceBeforeEmptyDefaults(t *testing.T) {
 	} {
 		for _, value := range []string{`[]`, `null`} {
 			field := `{"type":"array","nullable":true,"items":{"additionalProperties":` + tc.leaf + `},"default":` + value + `}`
+			if tc.leaf == `{"enum":["one"],"minLength":1,"default":"one"}` {
+				rq := request(fieldDoc(field), "Dto")
+				rq.Options.Validation = true
+				inlineEnumChildGraduation(t, rq, `,"default":"one"`, `,"default":"other"`, "/components/schemas/Record/properties/value/items/additionalProperties/default")
+				continue
+			}
 			enumBoundsDiagnostic(t, fieldDoc(field), true, tc.code, "/components/schemas/Record/properties/value/items/additionalProperties"+tc.tail)
 		}
 	}

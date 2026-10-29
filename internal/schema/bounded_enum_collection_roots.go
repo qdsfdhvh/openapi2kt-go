@@ -101,7 +101,11 @@ func (a *analyzer) validateBoundedEnumCollectionRoots(declarations []Declaration
 			if !ok || a.enumOrigins[enum].Schema != leaf || a.enumOrigins[enum].Pointer != pointer || strings.TrimPrefix(ty.Name, a.options.PackageName+".models.") != enum.ClassName {
 				continue
 			}
-			expected, err := buildStringEnumAllowedKeys(enum.ClassName, leaf, pointer, append([]string{"type", "nullable", "enum", "format", "x-native-type"}, primitiveBoundKeys...))
+			keys := append([]string{"type", "nullable", "enum", "format", "x-native-type"}, primitiveBoundKeys...)
+			if a.validatedInlineEnumCollectionChildDefault(leaf, pointer) {
+				keys = append(keys, "default")
+			}
+			expected, err := buildStringEnumAllowedKeys(enum.ClassName, leaf, pointer, keys)
 			if err != nil {
 				return err
 			}

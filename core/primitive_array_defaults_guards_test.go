@@ -22,6 +22,10 @@ func TestPrimitiveArrayDefaultsValidateOriginalMembersAndExcludedGrammar(t *test
 		for _, validation := range []bool{false, true} {
 			r := request(fieldDoc(tc.schema), "Dto")
 			r.Options.Validation = validation
+			if tc.schema == `{"type":"array","items":{"type":"string","default":"x"},"default":[]}` {
+				inlineBuiltinChildGraduation(t, r, `,"default":"x"`, `,"default":true`, "/components/schemas/Record/properties/value/items/default")
+				continue
+			}
 			got, err := core.GenerateWithDiagnostics(r)
 			if err == nil || err.(core.Diagnostics)[0].Code != tc.code || err.(core.Diagnostics)[0].Pointer == nil || *err.(core.Diagnostics)[0].Pointer != "/components/schemas/Record/properties/value"+tc.tail || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal(tc, validation, err)
