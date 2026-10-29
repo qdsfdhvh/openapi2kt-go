@@ -1,5 +1,13 @@
 # openapi2kt-go 开发计划
 
+[Component-root dictionary `allOf` wrappers](dictionary-allof-wrappers.md)
+advance E02/E03 for a single named dictionary reference, finite named alias chains
+and neutral empty or documentation-only siblings. Eligible wrappers and aliases
+can own independent default factories. Actual backing, target factories, member
+order and source identity, nullable priority, checked
+consumers and source/capture budgets remain; non-neutral/inline intersections
+and broader E02 remain open.
+
 [Checked lexical String enum roots](checked-string-enum-roots.md) retain actual component declarations and shared String checks through named aliases and existing typed reference/default/collection/HTTP/SSE roles. Independent strict root/alias annotations, open standalone codecs, nearest nullable and original declaration/check/factory/binding/height proof remain; general graphs, platforms and final acceptance stay separate.
 
 
@@ -339,7 +347,7 @@ P0 固定 Go toolchain、Kotlin、serialization、Ktor、datetime、Gradle、JDK
 
 完整路线图的开放范围以[剩余工作 D01–D10](remaining-work.md#2-尚未完成的功能覆盖)为准。下面将开发、资源和平台验收排成可独立检查的任务；每个任务可分多次增量实现，不能因为一个增量通过就关闭整个方向。既有合同明确接受的输入必须保留，明确的范围外能力不因本表成为交付承诺。
 
-E03 的[枚举集合子节点默认值](collection-reference-child-defaults.md)已限定在原物理 List/typed Map 的直接内联枚举或已准入枚举引用元素上独立校验；[普通标量子节点默认值](inline-builtin-collection-child-defaults.md)另限普通 named DTO 的直接内联 builtin6、UUID 和 date/date-time 元素。其他默认值角色和该任务的整体关闭仍需逐项验收。
+E03 的[枚举集合子节点默认值](collection-reference-child-defaults.md)已限定在原物理 List/typed Map 的直接内联枚举或已准入枚举引用元素上独立校验，也支持引用以直接内联枚举或命名枚举引用为叶的已准入命名集合或别名；后者可经过已准入命名集合及别名。[普通标量子节点默认值](inline-builtin-collection-child-defaults.md)另限普通 named DTO 的直接内联 builtin6、UUID 和 date/date-time 元素。[已准入标量引用子节点](scalar-reference-collection-child-defaults.md)分别支持 builtin6、UUID、date/date-time 和 byte/binary 的独立注解，已准入标量及有限集合组件、命名别名和外层字段/对象可各自保有独立默认值，集合路径可经过已准入命名集合及别名；物理子节点引用以已准入标量引用或直接内联 builtin/UUID/temporal/byte 为叶的命名集合或别名时也能独立校验集合值注解。内部中间集合引用、其他默认值角色和该任务的整体关闭仍需逐项验收。
 
 | 顺序 | 任务 | 完成所需产物与证据 |
 |---|---|---|

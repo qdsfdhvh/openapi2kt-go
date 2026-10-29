@@ -72,7 +72,7 @@ func TestNullableComponentNullFactories(t *testing.T) {
 func TestNullableComponentNullFactorySchemaIsNotSkipped(t *testing.T) {
 	for _, checked := range []bool{false, true} {
 		for _, body := range []string{
-			`{"T":{"type":"string"},"N":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/T"},"default":null}}`,
+			`{"T":{"type":"string","nullable":"yes"},"N":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/T"},"default":null}}`,
 			`{"N":{"type":"string","nullable":true,"x-native-type":"org.example.Money","default":null}}`,
 			`{"N":{"type":"string","nullable":true,"x-kotlin-value-class":true,"default":null}}`,
 			`{"N":{"type":"string","nullable":true,"const":"a","default":null}}`,
@@ -84,6 +84,11 @@ func TestNullableComponentNullFactorySchemaIsNotSkipped(t *testing.T) {
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("null bypassed source", checked, body, err)
 			}
+		}
+		r := request(schemas(`{"T":{"type":"string"},"N":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/T"},"default":null}}`), "Dto")
+		r.Options.Validation = checked
+		if got, err := core.GenerateWithDiagnostics(r); err != nil || !strings.Contains(source(t, got, "NDto"), "fun `NDto default`") {
+			t.Fatal("nullable referenced scalar factory rejected", checked, err)
 		}
 	}
 	for _, tc := range []struct{ body, pointer string }{

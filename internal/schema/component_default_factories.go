@@ -47,6 +47,9 @@ func (a *analyzer) componentDefaultShape(c *component) bool {
 	if a.falseAliasOwnDefaultCandidate(c) {
 		return true
 	}
+	if c.DictionaryAllOf != nil {
+		return a.referenceWrapperDefaultCandidate(c)
+	}
 	if has(c.Schema, "$ref") {
 		return a.referenceWrapperDefaultCandidate(c)
 	}
@@ -199,6 +202,9 @@ func (a *analyzer) planComponentDefaultFactories(declarations []Declaration) *di
 			if err := a.recordReferencedEnumCollectionFactory(declaration, c, encoded, declarations); err != nil {
 				return err
 			}
+			if err := a.recordReferencedScalarCollectionFactory(declaration, c, encoded); err != nil {
+				return err
+			}
 			if err := a.recordCheckedEnumRootFactory(declaration, c, encoded); err != nil {
 				return err
 			}
@@ -238,7 +244,7 @@ func (a *analyzer) componentDefaultEncoded(c *component) (string, *diagnostic.Di
 	if a.falseAliasOwnDefaultCandidate(c) {
 		return a.falseAliasDefaultEncoded(c)
 	}
-	if has(c.Schema, "$ref") {
+	if has(c.Schema, "$ref") || c.DictionaryAllOf != nil {
 		return a.referenceWrapperDefaultEncoded(c, &validation)
 	}
 
@@ -315,6 +321,9 @@ func (a *analyzer) componentDefaultNode(c *component) (*nestedDefaultNode, *diag
 		if a.referencedEnumCollectionSource(c.Schema, c.Pointer) != nil {
 			return a.referencedEnumCollectionFactoryNode(c)
 		}
+		if a.referencedScalarCollectionSource(c.Schema, c.Pointer) {
+			return a.referencedScalarCollectionFactoryNode(c)
+		}
 		if leaf := inlineStringEnumBoundsLeaf(c.Schema, 1); a.options.Validation && leaf != nil {
 			return a.nestedDefaultSchemaWithEnumBounds(c.Schema, c.Name, c.Pointer, nil, nil, 0, true, leaf)
 		}
@@ -364,6 +373,9 @@ func (a *analyzer) scalarComponentDefaultCandidate(c *component) bool {
 // child-default, composition, reference and resource boundaries.
 func (a *analyzer) collectionComponentDefaultCandidate(c *component) bool {
 	if a.referencedEnumCollectionSource(c.Schema, c.Pointer) != nil {
+		return true
+	}
+	if a.referencedScalarCollectionSource(c.Schema, c.Pointer) {
 		return true
 	}
 	if a.falseCollectionOwnDefaultCandidate(c) {
@@ -596,10 +608,10 @@ func isBytesScalarRoot(v *document.Value, kind string) bool {
 	return false
 }
 
-// referenceWrapperDefaultCandidate admits a `$ref`-only component when the
-// reference names a finite local target whose own root default role exists and
-// whose alias role is itself admitted. The wrapper keeps its alias identity and
-// its own Pointer; the target gains nothing.
+// referenceWrapperDefaultCandidate admits a pure `$ref` component or an
+// admitted dictionary allOf wrapper when the finite local target has an
+// existing root default role and its alias role is admitted. The wrapper keeps
+// its alias identity and its own Pointer; the target gains nothing.
 //
 // This runs during markComponentDefaultSource, before a.components exists, so the
 // target is read from the source document instead of the catalog.
@@ -608,7 +620,10 @@ func (a *analyzer) referenceWrapperDefaultCandidate(c *component) bool {
 		has(c.Schema, "oneOf") || has(c.Schema, "anyOf") || has(c.Schema, "const") {
 		return false
 	}
-	target := a.referenceWrapperDefaultTarget(c)
+	target := a.dictionaryAllOfDefaultTarget(c)
+	if target == nil {
+		target = a.referenceWrapperDefaultTarget(c)
+	}
 	if target == nil {
 		return false
 	}
@@ -677,6 +692,67 @@ func (a *analyzer) referenceWrapperDefaultTarget(c *component) *wrapperDefaultSo
 			intent = nullableOverride(target)
 		}
 		reference, ok = get(target, "$ref").Text()
+		if !ok {
+			return nil
+		}
+	}
+	return nil
+}
+
+// dictionaryAllOfDefaultTarget follows the same admitted named dictionary
+// wrapper chain before catalog binding, retaining every original source and
+// the nearest root/member nullable intent. It grants no non-dictionary allOf
+// or internal-reference default role.
+func (a *analyzer) dictionaryAllOfDefaultTarget(c *component) *wrapperDefaultSource {
+	if c == nil {
+		return nil
+	}
+	current, pointer := c.Schema, c.Pointer
+	var intent *bool
+	seen := map[*document.Value]bool{}
+	sawAllOf, steps := false, 0
+	for current != nil && !seen[current] {
+		seen[current] = true
+		var reference string
+		switch {
+		case has(current, "$ref"):
+			if checkKeys(current, []string{"$ref", "nullable", "default"}, pointer) != nil {
+				return nil
+			}
+			if _, _, err := schemaType(current, pointer); err != nil {
+				return nil
+			}
+			if intent == nil {
+				intent = nullableOverride(current)
+			}
+			reference, _ = get(current, "$ref").Text()
+			steps++
+		case has(current, "allOf"):
+			view, err := parseReferenceWrapper(current, pointer, true)
+			if err != nil || view == nil {
+				return nil
+			}
+			if _, eligible := dictionaryAllOfReferenceIndex(get(current, "allOf").Items()); !eligible {
+				return nil
+			}
+			if intent == nil {
+				intent = wrapperNullableOverride(current)
+			}
+			reference = view.Reference
+			sawAllOf = true
+			steps += 2
+		default:
+			if !sawAllOf || !dictionarySchema(current) || has(current, "const") ||
+				has(current, "enum") || has(current, "x-native-type") || has(current, "x-kotlin-value-class") {
+				return nil
+			}
+			return &wrapperDefaultSource{Pointer: pointer, Schema: current, Nullable: intent}
+		}
+		if reference == "" || steps > MaxSchemaDepth {
+			return nil
+		}
+		var ok bool
+		pointer, current, ok = a.componentSchemaAtReference(reference)
 		if !ok {
 			return nil
 		}
@@ -762,7 +838,10 @@ func (a *analyzer) referenceWrapperDefaultEncoded(c *component, validation *anal
 	if err := nestedDefaultBudget(value, at, 0, &work, &bytes); err != nil {
 		return "", err
 	}
-	target := a.referenceWrapperDefaultTarget(c)
+	target := a.dictionaryAllOfDefaultTarget(c)
+	if target == nil {
+		target = a.referenceWrapperDefaultTarget(c)
+	}
 	if target == nil {
 		return "", unsupported(at)
 	}

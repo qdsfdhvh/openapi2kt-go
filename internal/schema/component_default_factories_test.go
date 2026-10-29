@@ -194,7 +194,6 @@ func TestComponentDefaultFactoryCollectionAuthority(t *testing.T) {
 func TestComponentDefaultFactoryCollectionExclusionAuthority(t *testing.T) {
 	for _, tc := range []struct{ name, schemas string }{
 		{"allOf wrapped", `{"S":{"allOf":[{"type":"array","items":{"type":"string"}}],"default":["a"]}}`},
-		{"ref element", `{"T":{"type":"string"},"S":{"type":"array","items":{"$ref":"#/components/schemas/T"},"default":["a"]}}`},
 		{"bad element", `{"S":{"type":"array","items":{"type":"integer"},"default":["a"]}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -202,6 +201,13 @@ func TestComponentDefaultFactoryCollectionExclusionAuthority(t *testing.T) {
 				t.Fatal("excluded collection role admitted")
 			}
 		})
+	}
+	plan, _, err := Analyze(loadComponentDocument(t, `{"T":{"type":"string"},"S":{"type":"array","items":{"$ref":"#/components/schemas/T"},"default":["a"]}}`), Options{PackageName: "org.example.defaults", Suffix: "Dto", Validation: true})
+	if err != nil {
+		t.Fatal("referenced scalar element rejected", err)
+	}
+	if alias, ok := componentDeclaration(plan.Models, "SDto").(*ValueAlias); !ok || alias.ComponentDefault != `["a"]` {
+		t.Fatal("referenced scalar collection lost its factory", alias)
 	}
 }
 

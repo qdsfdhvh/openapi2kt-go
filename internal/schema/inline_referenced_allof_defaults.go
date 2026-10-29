@@ -65,7 +65,7 @@ func (a *analyzer) deferredFieldDefault(v *document.Value, pointer string) bool 
 // terminal. The ordinary field, shared type planner and strict default walk
 // still authorize its actual type and original annotation.
 func (a *analyzer) inlineReferencedScalarCollection(v *document.Value, pointer string) bool {
-	return !has(v, "$ref") && a.dtoUniqueBuiltinCollectionReferenceSource(v, pointer)
+	return !has(v, "$ref") && (a.dtoUniqueBuiltinCollectionReferenceSource(v, pointer) || a.inlineScalarFactoryReference(v, pointer))
 }
 
 // Plan the original inline collection type without validating the value yet.

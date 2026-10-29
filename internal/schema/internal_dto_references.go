@@ -445,6 +445,9 @@ func (a *analyzer) validateInternalModels(declarations []Declaration) *diagnosti
 	if err := a.validateReferencedEnumCollectionFactories(declarations); err != nil {
 		return err
 	}
+	if err := a.validateReferencedScalarCollectionFactories(declarations); err != nil {
+		return err
+	}
 	if err := a.validateRecursiveCoverBindings(declarations); err != nil {
 		return err
 	}

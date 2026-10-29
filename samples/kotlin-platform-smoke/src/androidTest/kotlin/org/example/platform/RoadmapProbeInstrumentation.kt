@@ -16,7 +16,7 @@ class RoadmapProbeInstrumentation : Instrumentation() {
         try {
             main()
             result.putString("roadmap_result", "passed")
-            result.putString("stream", "Three input model contracts passed, four Json settings")
+            result.putString("stream", "Platform model contracts passed, four Json settings")
             finish(Activity.RESULT_OK, result)
         } catch (failure: Throwable) {
             result.putString("roadmap_result", "failed")

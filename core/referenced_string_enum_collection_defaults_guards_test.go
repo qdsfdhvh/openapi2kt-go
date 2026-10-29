@@ -111,9 +111,8 @@ func TestReferencedStringEnumCollectionFieldDefaultsExcludedSourceRolesAndNoDrop
 	}
 	for _, body := range []string{
 		`{"Statuses":{"type":"array","items":{"type":"string","enum":["on"]}},"Holder":{"properties":{"v":{"allOf":[{"$ref":"#/components/schemas/Statuses"}],"default":[]}}}}`,
-		`{"Statuses":{"type":"array","items":{"type":"string","enum":["on"]}},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Statuses","default":[]}}}}}`,
+		`{"Statuses":{"type":"array","items":{"type":"string","enum":["on"]}},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Statuses","default":["unknown"]}}}}}`,
 		`{"Statuses":{"type":"array","items":{"$ref":"#/components/schemas/Statuses"}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Statuses","default":[]}}}}`,
-		`{"Status":{"type":"string","enum":["on"]},"Statuses":{"type":"array","items":{"$ref":"#/components/schemas/Status"}},"Holder":{"properties":{"v":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Statuses","default":[]}}}}}}`,
 		`{"Statuses":{"type":"array","items":{"type":"string","enum":["on"]}},"Choice":{"oneOf":[{"properties":{"tag":{"const":"a"},"v":{"$ref":"#/components/schemas/Statuses","default":[]}}},{"properties":{"tag":{"const":"b"}}}]}}`,
 	} {
 		for _, checked := range []bool{false, true} {
@@ -123,6 +122,22 @@ func TestReferencedStringEnumCollectionFieldDefaultsExcludedSourceRolesAndNoDrop
 				t.Fatal("role", body, err)
 			}
 		}
+	}
+	// The original empty collection child now validates independently.
+	validChild := schemas(`{"Statuses":{"type":"array","items":{"type":"string","enum":["on"]}},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Statuses","default":[]}}}}}`)
+	for _, checked := range []bool{false, true} {
+		r := request(validChild, "Dto")
+		r.Options.Validation = checked
+		if _, err := core.GenerateWithDiagnostics(r); err != nil {
+			t.Fatal("admitted String enum collection child", checked, err)
+		}
+	}
+	nestedReferencedChild := `{"Status":{"type":"string","enum":["on"]},"Statuses":{"type":"array","items":{"$ref":"#/components/schemas/Status"}},"Holder":{"properties":{"v":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Statuses","default":[]}}}}}}`
+	for _, checked := range []bool{false, true} {
+		r := request(schemas(nestedReferencedChild), "Dto")
+		r.Options.Validation = checked
+		inlineBuiltinChildGraduation(t, r, `,"default":[]`, `,"default":["unknown"]`,
+			"/components/schemas/Holder/properties/v/items/items/default/0")
 	}
 	stringEnumUniqueGraduation(t, referencedFieldDoc(`{"type":"array","uniqueItems":true,"items":{"type":"string","enum":["on"]}}`, `[]`, ""))
 	for _, checked := range []bool{false, true} {

@@ -79,7 +79,6 @@ func TestNullableCollectionLeafFactoryGuards(t *testing.T) {
 			{"enum vocabulary", `{"N":{"type":"array","items":{"type":"string","nullable":true,"enum":["a"]},"default":[null,"z"]}}`, "E_SCHEMA_INVALID", "/components/schemas/N/default/1"},
 			{"temporal lexeme", `{"N":{"type":"array","items":{"type":"string","format":"date","nullable":true},"default":[null,"2023-02-30"]}}`, "E_SCHEMA_INVALID", "/components/schemas/N/default/1"},
 			{"byte range", `{"N":{"type":"array","items":{"type":"string","format":"byte","nullable":true},"default":[null,[128]]}}`, "E_SCHEMA_INVALID", "/components/schemas/N/default/1/0"},
-			{"ref element", `{"T":{"type":"string"},"N":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/T","nullable":true},"default":null}}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/N/default"},
 			{"child default", `{"N":{"type":"array","nullable":true,"items":{"type":"string","nullable":true,"default":null},"default":null}}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/N/default"},
 			{"composition leaf", `{"N":{"type":"array","nullable":true,"items":{"nullable":true,"oneOf":[{"type":"string"},{"type":"integer"}]},"default":null}}`, "E_SCHEMA_UNSUPPORTED", "/components/schemas/N/default"},
 			{"wrapper wrong leaf", `{"T":{"type":"array","items":{"type":"string","nullable":true}},"N":{"$ref":"#/components/schemas/T","default":[null,1]}}`, "E_SCHEMA_INVALID", "/components/schemas/N/default/1"},
@@ -93,6 +92,12 @@ func TestNullableCollectionLeafFactoryGuards(t *testing.T) {
 					t.Fatalf("want %s @ %s, got %v", tc.code, tc.pointer, err)
 				}
 			})
+		}
+		r := request(schemas(`{"T":{"type":"string"},"N":{"type":"array","nullable":true,"items":{"$ref":"#/components/schemas/T","nullable":true},"default":null}}`), "Dto")
+		r.Options.Validation = checked
+		got, err := core.GenerateWithDiagnostics(r)
+		if err != nil || !strings.Contains(source(t, got, "NDto"), "fun `NDto default`") {
+			t.Fatal("nullable referenced scalar factory rejected", checked, err)
 		}
 		// Null outer values must still validate malformed nullable leaf sources.
 		for _, leaf := range []string{

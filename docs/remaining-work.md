@@ -1,5 +1,15 @@
 # 实现状态与剩余工作
 
+[组件根字典单引用 `allOf`](dictionary-allof-wrappers.md)新增 E02/E03 有界支持：
+可在引用前后包含空成员或仅有说明文字的成员，复用实际命名字典、别名和 value
+peers；符合目标默认值语法的包装和命名别名可各自持有独立工厂。保成员顺序、
+nullable 优先级、目标默认工厂独立性、约束检查和来源预算。
+非中性成员或内联字典交集、一般 E02 及平台验收仍开放。
+
+[普通标量引用集合子节点默认值](scalar-reference-collection-child-defaults.md)在已准入物理 List/typed Map 的 `$ref` 子节点独立校验 builtin6、UUID、date/date-time 和 byte/binary 注解；已准入标量组件、命名别名与外层字段、对象和有限集合工厂可各自持有独立默认值，包括经过已准入命名集合及别名的路径。物理子节点指向以已准入标量引用或直接内联 builtin/UUID/temporal/byte 为叶的命名集合或别名时，也可独立校验集合值注解。保实际来源、声明、nullable、checks 与预算，不填充容器或继承。内部中间集合引用、其他角色、general D03 和平台验收仍开放。
+
+[枚举集合子节点默认值](collection-reference-child-defaults.md)也支持物理子节点引用已准入命名集合与别名，其有限内联集合树可直接以 String 或 native 数值/Boolean 枚举为叶；以物理枚举引用为叶的路径也可经过已准入命名集合及别名。集合、枚举、别名及子节点注解分别校验，实际词表和声明绑定不变。内部集合或枚举引用及其他默认值角色仍独立。
+
 [普通标量集合元素默认值](inline-builtin-collection-child-defaults.md)支持普通 named DTO 直接 List/typed Map 字段的原始 inline builtin6、UUID 与 date/date-time 子节点独立注解，及已准入 owner root 默认工厂与子节点注解的独立校验；保原 literal/nullable/check/source/type 和预算，不初始化容器或继承。其他来源角色、general D03 和平台验收仍开放。
 
 [Enum-reference collection component factories](referenced-enum-collection-factories.md) retain independent root/alias annotations and existing enum-component annotations through accepted finite List/typed Map paths. Eligible physical inline enum and enum-reference children separately validate their [own annotations](collection-reference-child-defaults.md) without inheritance or generated-output changes. Actual serializers, strict original defaults, nearest nullable, required/Patch and original source/export/backing/check/height proof remain. General graphs, complete platforms and final acceptance remain open.
@@ -19,7 +29,7 @@
 
 [Bounded lexical enums in object defaults](bounded-enum-object-defaults.md) extend D03/D05/M01/M03/M04/M07/M08/M12 to existing ordinary factory/field/DTO-collection walks. Exact direct enum sources retain String checks and strict original vocabularies; original plain DTO component/alias factories and consuming annotations remain independent. Required/Patch, actual serializers/optimization, original Pointer/owner and budgets remain. Generic graphs, other root/child/composition roles, platforms and final acceptance stay separate.
 
-[Five-input lexical enum platform probe](platform-enum-field-bounds.md) adds the direct enum field/metadata collection subset to existing common consumers. Data/Plain JVM, JS/Node and macOS ARM64 Native execute four Json configurations; common metadata and Android AAR compile with their fixed combinations. Device/API23, complete feature/HTTP/engine/minimum-version and final acceptance remain open.
+[Five-input lexical enum platform probe](platform-enum-field-bounds.md) adds the direct enum field/metadata collection subset and collection-valued child annotations through admitted scalar, inline enum, byte and referenced enum collections to existing common consumers. Data/Plain JVM, JS/Node, macOS ARM64 Native and Android API28 emulator execute four Json configurations; common metadata and Android AAR compile with their fixed combinations. Physical-device/API23, complete feature/HTTP/engine/minimum-version and final acceptance remain open.
 
 [Direct lexical String enum field bounds](string-enum-field-bounds.md) extend D03/D05/M03/M04/M07/M08/M12/V05 to ordinary scalar fields and supported metadata on existing direct collection leaves. Actual serialName checks retain open runtime words, strict own defaults, nullable/required/Patch, original source/check/type and optimization identities, and existing budgets. Enum-root/reference/composition/platform and final acceptance remain separate.
 
@@ -115,7 +125,7 @@
 
 [Raw JSON carrier 引用工厂](reference-wrapper-component-defaults.md#raw-json-carrier-targets)另支持纯 `$ref` wrapper 对已准入 JsonElement/JsonObject target 持有 default；沿用 raw 值与 target 显式 nullable 语义，保 source/原 Pointer/warning/预算、required 和不继承。一般未准入 default 与更广 D03 仍开放。
 
-[有限嵌套集合组件工厂](nested-component-defaults.md)另支持组件自身 outer default 与准入纯 `$ref` wrapper 的 finite inline List/typed Map 树，沿用既有叶类型、逐层 nullable、原 source/default Pointer、检查与预算；引用 consumer 不继承。ref/composition element、child default 和更广 D03 仍开放。
+[有限嵌套集合组件工厂](nested-component-defaults.md)另支持组件自身 outer default 与准入纯 `$ref` wrapper 的 finite inline List/typed Map 树，沿用既有叶类型、逐层 nullable、原 source/default Pointer、检查与预算；引用 consumer 不继承。标量引用叶及独立子注解使用上述有界合同；其他 ref/composition element 和更广 D03 仍开放。
 
 [单层集合组件工厂](component-default-factories.md)另支持既有叶类型的 nullable 元素/值，外层与叶 nullability 独立，纯 `$ref` wrapper 同步沿用该 target 准入；保原 source/default Pointer、预算、serializer 与不继承。ref/composition element、child default 和更广 D03 仍开放；finite nested container 工厂见上方合同。
 
@@ -197,15 +207,15 @@
 |---|---|---|
 | 同一源码的完整本地门禁 | 固定 source/input/consumer/binary/工具链；运行 `bash scripts/test.sh all`，保留失败与缓存说明。包含 unit、fresh models、HTTP/SSE、当前所有 feature routes | P0–P5；R02–R04 |
 | 选项交互与资源 | 已声明单项、pairwise、全开 profile；独立宽度/深度与相应编译证据。`all` 不证明完整选项笛卡尔积或宽×深最大组合，也不证明性能收益 | P2–P4；R03–R05；[验证与性能](validation-and-performance.md) |
-| 平台与依赖组合 | 已发布候选固定 macOS ARM64 CLI + Kotlin/JVM。[限定输入平台探针](../samples/kotlin-platform-smoke/README.md)另有 Data/Plain 的 JVM、JS/Node、macOS ARM64 Native 运行及 metadata/Android AAR 编译证据，其中三输入已有 Android API34 真机运行；新增输入按各自记录核验，不能外推到完整 feature 矩阵。另有[较低 JVM 依赖组合](dependency-combinations.md)和[CLI 宿主输入探针](cli-host-probes.md)。当前源码的完整平台/引擎矩阵、API23 实际运行、全部最低依赖与其他宿主仍需独立验收 | P6；R05；[候选边界](json-release-checklist.md) |
+| 平台与依赖组合 | 已发布候选固定 macOS ARM64 CLI + Kotlin/JVM。[限定输入平台探针](../samples/kotlin-platform-smoke/README.md)另有 Data/Plain 的 JVM、JS/Node、macOS ARM64 Native 运行及 metadata/Android AAR 编译证据，其中三输入已有 Android API34 真机运行，五输入已有 API28 模拟器运行；各结果按记录核验，不能外推到完整 feature 矩阵。另有[较低 JVM 依赖组合](dependency-combinations.md)和[CLI 宿主输入探针](cli-host-probes.md)。当前源码的完整平台/引擎矩阵、API23 实际运行、全部最低依赖与其他宿主仍需独立验收 | P6；R05；[候选边界](json-release-checklist.md) |
 | 精确候选审查 | 对将发布的 tree/history/package 分别检查 attribution、依赖、安全和包成员；工作区扫描不替代这些证据 | P7；R06；[发布检查](publication.md) |
 | 版本与安装 | 确定新版本分类与 migration；CLI/tag/README/RELEASE.json/archives 一致；checksum、从包安装→help/file/stdin/validate/generate/check，不依赖外部 checkout | P7；R07；[next-alpha](releases/next-alpha.md) |
 | 发布操作 | 对具体 Git/tag/push/upload/发布操作的明确授权；历史 alpha 不自动包含近期源码 | P7；R08；[发布合同](releases.md) |
 
 [枚举引用集合工厂的平台探针](platform-enum-field-bounds.md)已在 Data/Plain
-两种风格下执行 JVM、JS/Node 和 macOS ARM64 Native 运行，并完成 metadata
-与 Android AAR 编译。它覆盖固定输入和工具链，不能替代完整平台矩阵或
-Android 真机运行。
+两种风格下执行 JVM、JS/Node、macOS ARM64 Native 和 Android API28 模拟器
+运行，并完成 metadata 与 Android AAR 编译。它覆盖固定输入和工具链，不能替代
+完整平台矩阵或该五输入版本的 Android 真机运行。
 
 R01 只表示候选范围已冻结。R02–R08 的勾选状态由[发布候选关闭表](json-release-checklist.md#4-发布候选关闭表)维护；新增功能测试或一次文档更新不关闭这些门槛。`OPENAPI_KT_PREPARE_ONLY=1` 仅表示 native generation/check 与消费项目准备，不能替代实际 Kotlin compilation/runtime，也不关闭新候选、平台和发布验收。
 
@@ -320,7 +330,7 @@ R01 只表示候选范围已冻结。R02–R08 的勾选状态由[发布候选�
 
 [DTO scalar const-body uniqueness](dto-const-unique.md) extends ordinary mapped DTO keys to actual direct builtin scalar body getters. Existing decoding can preserve non-literal values, so keys include actual body values alongside constructor getters; literal defaults never replace runtime getter equality. Original source/member/actual body name/type/wire/initializer proof, constructor-aware default keys, scalar codec approximation, nullable/required/Patch and all source/default/serialized-slot caps remain. Structured/null/native-extension/reference/const-only/composed/projected roles and broader graph/platform completion remain separate. Existing accepted API/wire/locks remain stable.
 
-[DTO getter portability](platform-dto-getters.md) records the exact four-input Data/Plain platform profile: JVM/JS/macOS ARM64 Native runtime under four Json settings, common metadata and Android AAR compilation. Direct scalar/enum/const getters, constructor defaults, decoded body values, nullable and mapped Float/UUID/Instant equality are bound to input/consumer/source hashes. No fourth-input Android device, complete feature/HTTPengine, other-host or minimum-version claim is implied.
+[DTO getter portability](platform-dto-getters.md) records the historical four-input Data/Plain profile: JVM/JS/macOS ARM64 Native runtime under four Json settings, common metadata and Android AAR compilation. Direct scalar/enum/const getters, constructor defaults, decoded body values, nullable and mapped Float/UUID/Instant equality are bound to input/consumer/source hashes. The later five-input profile also runs this consumer on an API28 emulator; physical-device, complete feature/HTTP engine, other-host and minimum-version acceptance remain separate.
 
 [DTO JsonNull getter uniqueness](dto-null-unique.md) extends ordinary DTO mapped keys to direct plain/null-only enum constructor fields and explicit/inferred null const bodies. Actual JsonNull and Kotlin null getter states remain distinct despite existing nullable wire collapse. Original vocabulary/default/source/member/actual getter/body proof, required/Patch/codecs and all source/default/serialized-slot caps hold; no fabricated type/enum or global raw/structural authority is introduced. Nested/reference/composed/projected/count/const-only and broader platform/graph roles remain separate. Existing accepted API/wire/locks remain stable.
 

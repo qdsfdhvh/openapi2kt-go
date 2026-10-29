@@ -19,6 +19,8 @@ import io.ktor.utils.io.ByteChannel
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.writeFully
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.time.Instant
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +30,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
@@ -65,6 +68,38 @@ import org.example.stringenumbounds.models.`MaybeBoundedTreeDto default`
 import org.example.stringenumbounds.models.BorrowedTreeDto
 import org.example.stringenumbounds.models.BorrowedWordDto
 import org.example.stringenumbounds.models.RequiredBorrowedDto
+import org.example.stringenumbounds.models.`ScalarRefCountDto default`
+import org.example.stringenumbounds.models.`ScalarRefLabelDto default`
+import org.example.stringenumbounds.models.ScalarFactoryHolderDto
+import org.example.stringenumbounds.models.`ScalarFactoryRowsDto default`
+import org.example.stringenumbounds.models.`ScalarFactoryRowsAliasDto default`
+import org.example.stringenumbounds.models.`ScalarFactoryMapDto default`
+import org.example.stringenumbounds.models.`ScalarNestedMapDto default`
+import org.example.stringenumbounds.models.`ScalarNestedMapAliasDto default`
+import org.example.stringenumbounds.models.ScalarNestedRowsDto
+import org.example.stringenumbounds.models.`ScalarNestedRowsDto default`
+import org.example.stringenumbounds.models.`ScalarNestedRowsAliasDto default`
+import org.example.stringenumbounds.models.`MaybeScalarNestedRowsDto default`
+import org.example.stringenumbounds.models.InlineScalarRowsDto
+import org.example.stringenumbounds.models.`InlineScalarValuesDto default`
+import org.example.stringenumbounds.models.`InlineScalarValuesAliasDto default`
+import org.example.stringenumbounds.models.`InlineDateValuesDto default`
+import org.example.stringenumbounds.models.`InlineDateValuesAliasDto default`
+import org.example.stringenumbounds.models.`InlineInstantValuesDto default`
+import org.example.stringenumbounds.models.`InlineInstantValuesAliasDto default`
+import org.example.stringenumbounds.models.`InlineUuidValuesDto default`
+import org.example.stringenumbounds.models.`InlineUuidValuesAliasDto default`
+import org.example.stringenumbounds.models.`InlineByteValuesDto default`
+import org.example.stringenumbounds.models.`InlineByteValuesAliasDto default`
+import org.example.stringenumbounds.models.InlineWordValuesDtoInner
+import org.example.stringenumbounds.models.`InlineWordValuesDto default`
+import org.example.stringenumbounds.models.`InlineWordValuesAliasDto default`
+import org.example.stringenumbounds.models.`InlineNativeValuesDto default`
+import org.example.stringenumbounds.models.`InlineNativeValuesAliasDto default`
+import org.example.stringenumbounds.models.`InlineBooleanValuesDto default`
+import org.example.stringenumbounds.models.`InlineBooleanValuesAliasDto default`
+import org.example.stringenumbounds.models.`ScalarBytesDto default`
+import org.example.stringenumbounds.models.`ScalarBytesRowsDto default`
 import org.example.stringenumbounds.models.`BorrowedWordDto default`
 import org.example.stringenumbounds.models.`MaybeBorrowedWordDto default`
 import org.example.stringenumbounds.models.`BorrowedTreeDto default`
@@ -99,6 +134,57 @@ private fun stringEnumBoundsBody(body: OutgoingContent): String = when (body) {
 
 suspend fun stringEnumCollectionBoundsContracts(checked: Boolean) {
     val value = HolderDto(required = listOf(HolderDto.RequiredInner.TWO), kotlin = "shadow", kotlinx = "shadow", labelsInner = "shadow")
+    check(value.scalarRefCounts == null && value.scalarRefLabels == null && value.inlineNested == null)
+    check(`ScalarRefCountDto default`() == 99 && `ScalarRefLabelDto default`() == "root")
+    check(`ScalarFactoryRowsDto default`() == listOf(1, 2))
+    check(`ScalarFactoryRowsAliasDto default`() == listOf(3))
+    check(`ScalarFactoryMapDto default`() == mapOf("map" to "root-map"))
+    check(`ScalarNestedMapDto default`() == mapOf("inner" to 11))
+    check(`ScalarNestedMapAliasDto default`() == mapOf("alias" to 12))
+    check(`ScalarNestedRowsDto default`() == listOf(mapOf("outer" to 13)))
+    check(`ScalarNestedRowsAliasDto default`() == listOf(mapOf("alias" to 14)))
+    check(`MaybeScalarNestedRowsDto default`() == null)
+    check(`InlineScalarValuesDto default`() == listOf(20))
+    check(`InlineScalarValuesAliasDto default`() == listOf(21))
+    check(`InlineScalarValuesDto default`() !== `InlineScalarValuesDto default`())
+    check(`InlineDateValuesDto default`() == listOf(LocalDate.parse("2024-02-29")))
+    check(`InlineDateValuesAliasDto default`() == listOf(LocalDate.parse("2024-03-01")))
+    check(`InlineInstantValuesDto default`() == listOf(Instant.parse("2024-02-29T00:00:00Z")))
+    check(`InlineInstantValuesAliasDto default`() == listOf(Instant.parse("2024-03-01T00:00:00Z")))
+    check(`InlineUuidValuesDto default`() == listOf(Uuid.parse("123e4567-e89b-12d3-a456-426614174000")))
+    check(`InlineUuidValuesAliasDto default`() == listOf(Uuid.parse("123e4567-e89b-12d3-a456-426614174001")))
+    check(`InlineByteValuesDto default`().single().contentEquals(byteArrayOf(1, 2)))
+    check(`InlineByteValuesAliasDto default`().single().contentEquals(byteArrayOf(3)))
+    val inlineBytes = `InlineByteValuesDto default`()
+    val otherInlineBytes = `InlineByteValuesDto default`()
+    check(inlineBytes !== otherInlineBytes && inlineBytes.single() !== otherInlineBytes.single())
+    check(`InlineWordValuesDto default`() == listOf(InlineWordValuesDtoInner.ONE))
+    check(`InlineWordValuesAliasDto default`() == listOf(InlineWordValuesDtoInner.TWO))
+    check(`InlineWordValuesDto default`() !== `InlineWordValuesDto default`())
+    check(`InlineNativeValuesDto default`() == listOf(1) && `InlineNativeValuesAliasDto default`() == listOf(2))
+    check(`InlineBooleanValuesDto default`() == listOf(true) && `InlineBooleanValuesAliasDto default`() == listOf(false))
+    val nestedRows = `ScalarNestedRowsDto default`()
+    val otherNestedRows = `ScalarNestedRowsDto default`()
+    check(nestedRows !== otherNestedRows && nestedRows.single() !== otherNestedRows.single())
+    check(`ScalarFactoryRowsDto default`() !== `ScalarFactoryRowsDto default`())
+    check(`ScalarFactoryMapDto default`() !== `ScalarFactoryMapDto default`())
+    check(`ScalarBytesDto default`().contentEquals(byteArrayOf(1, 2)))
+    val byteRows = `ScalarBytesRowsDto default`()
+    val otherByteRows = `ScalarBytesRowsDto default`()
+    check(byteRows.single().contentEquals(byteArrayOf(5, 6)))
+    check(byteRows !== otherByteRows && byteRows.single() !== otherByteRows.single())
+    check(ScalarFactoryHolderDto().rows == listOf(4))
+    check(ScalarFactoryHolderDto().labels == mapOf("field" to "field"))
+    check(ScalarFactoryHolderDto().unannotated == null)
+    check(ScalarFactoryHolderDto().inline == listOf(6))
+    check(ScalarFactoryHolderDto().bytes?.single()?.contentEquals(byteArrayOf(7)) == true)
+    check(ScalarFactoryHolderDto().nested == listOf(mapOf("field" to 15)))
+    check(ScalarFactoryHolderDto.default().rows == listOf(5))
+    check(ScalarFactoryHolderDto.default().labels == mapOf("owner" to "owner"))
+    check(ScalarFactoryHolderDto.default().unannotated == null)
+    check(ScalarFactoryHolderDto.default().inline == listOf(7))
+    check(ScalarFactoryHolderDto.default().bytes?.single()?.contentEquals(byteArrayOf(8, 9)) == true)
+    check(ScalarFactoryHolderDto.default().nested == listOf(mapOf("owner" to 16)))
     check(value.codes == listOf(HolderDto.CodesInner.ONE, null, HolderDto.CodesInner.TWO))
     check(value.labels == mapOf("a/~" to HolderDto.LabelsValue.YES, "\$ref" to HolderDto.LabelsValue.NO))
     check(value.bareCodes == null && value.inlineNative == listOf(1) && value.inlineNativeOnly == null)
@@ -278,10 +364,27 @@ suspend fun stringEnumCollectionBoundsContracts(checked: Boolean) {
 }
 
 private suspend fun checkedRootEnumContracts(codec: Json, value: HolderDto, checked: Boolean, invalid: List<Pair<String, String>>) {
+    check(codec.decodeFromString<ScalarFactoryHolderDto>("{}").rows == listOf(4))
+    check(codec.decodeFromString<ScalarFactoryHolderDto>("{}").nested == listOf(mapOf("field" to 15)))
+    val rows = codec.decodeFromString<ScalarNestedRowsDto>("""[{"wire":17}]""")
+    check(rows == listOf(mapOf("wire" to 17)))
+    check(codec.encodeToString(serializer<ScalarNestedRowsDto>(), rows) == """[{"wire":17}]""")
+    val inlineRows = codec.decodeFromString<InlineScalarRowsDto>("""[[23]]""")
+    check(inlineRows == listOf(listOf(23)))
+    check(codec.encodeToString(serializer<InlineScalarRowsDto>(), inlineRows) == """[[23]]""")
+    val nested = codec.decodeFromString<ScalarFactoryHolderDto>("""{"nested":[{"wire":17}]}""")
+    check(nested.nested == listOf(mapOf("wire" to 17)))
+    check(codec.decodeFromString<ScalarFactoryHolderDto>(codec.encodeToString(ScalarFactoryHolderDto.serializer(), nested)).nested == nested.nested)
+    check(codec.decodeFromString<ScalarFactoryHolderDto>("""{"rows":[8],"labels":{"wire":"value"}}""").let {
+        it.rows == listOf(8) && it.labels == mapOf("wire" to "value") && it.unannotated == null && it.inline == listOf(6) && it.bytes?.single()?.contentEquals(byteArrayOf(7)) == true
+    })
     check(`RootWordDto default`() == RootWordDto.ONE && `RootWordAliasDto default`() == RootWordDto.TWO)
     check(`MaybeRootWordDto default`() == null && `NullRootWordDto default`() == null)
     check(`RootWordTreeDto default`()["factory"] == listOf(RootWordDto.ONE))
     check(`RootWordTreeAliasDto default`()["alias"] == listOf(RootWordDto.TWO))
+    check(org.example.stringenumbounds.models.`ReferencedNestedValuesDto default`().single()["root"] == listOf(RootWordDto.ONE))
+    check(org.example.stringenumbounds.models.`ReferencedNestedValuesAliasDto default`().single()["alias"] == listOf(RootWordDto.TWO))
+    check(value.referencedNestedRows == null)
     check(`MaybeRootWordTreeDto default`() == null)
     val freshTree = `RootWordTreeDto default`()
     val anotherTree = `RootWordTreeDto default`()
@@ -553,6 +656,56 @@ private suspend fun stringEnumBoundsWire(codec: Json, value: HolderDto, checked:
             }
         }
         check(api.send(value).codes == value.codes)
+        val scalarChildren = HolderDto(
+            required = value.required, scalarRefCounts = listOf(3), scalarRefLabels = mapOf("key" to "sent"),
+            inlineNested = listOf(listOf(23)),
+            inlineDates = listOf(listOf(LocalDate.parse("2024-05-01"))),
+            inlineInstants = listOf(listOf(Instant.parse("2024-05-01T00:00:00Z"))),
+            inlineUuids = listOf(listOf(Uuid.parse("123e4567-e89b-12d3-a456-426614174003"))),
+            inlineBytes = listOf(listOf(byteArrayOf(6, 7))),
+            inlineWords = listOf(listOf(InlineWordValuesDtoInner.Unrecognized("future"))),
+            inlineNativeEnums = listOf(listOf(2)),
+            inlineBooleans = listOf(listOf(false)),
+            referencedWordRows = listOf(mapOf("wire" to listOf(RootWordDto.Unrecognized("future")))),
+            referencedNativeRows = mapOf("wire" to listOf(2)),
+            referencedBooleanRows = listOf(listOf(false)),
+            referencedNestedRows = listOf(listOf(mapOf("wire" to listOf(RootWordDto.Unrecognized("future"))))),
+            scalarFactory = ScalarFactoryHolderDto(rows = listOf(12), labels = mapOf("wire" to "sent"), nested = listOf(mapOf("wire" to 18))),
+        )
+        expectedHolder = scalarChildren
+        payload = codec.encodeToString(HolderDto.serializer(), scalarChildren)
+        val scalarResponse = api.send(scalarChildren)
+        check(scalarResponse.scalarRefCounts == listOf(3) && scalarResponse.scalarRefLabels == mapOf("key" to "sent"))
+        check(scalarResponse.scalarFactory?.rows == listOf(12) && scalarResponse.scalarFactory?.labels == mapOf("wire" to "sent") && scalarResponse.scalarFactory?.inline == listOf(6))
+        check(scalarResponse.scalarFactory?.bytes?.single()?.contentEquals(byteArrayOf(7)) == true)
+        check(scalarResponse.scalarFactory?.nested == listOf(mapOf("wire" to 18)))
+        check(scalarResponse.inlineNested == listOf(listOf(23)))
+        check(scalarResponse.inlineDates == scalarChildren.inlineDates && scalarResponse.inlineInstants == scalarChildren.inlineInstants)
+        check(scalarResponse.inlineUuids == scalarChildren.inlineUuids)
+        check(scalarResponse.inlineBytes?.single()?.single()?.contentEquals(byteArrayOf(6, 7)) == true)
+        check(scalarResponse.inlineWords?.single()?.single() == InlineWordValuesDtoInner.Unrecognized("future"))
+        check(scalarResponse.inlineNativeEnums == listOf(listOf(2)) && scalarResponse.inlineBooleans == listOf(listOf(false)))
+        check(scalarResponse.referencedWordRows?.single()?.get("wire")?.single() == RootWordDto.Unrecognized("future"))
+        check(scalarResponse.referencedNativeRows == mapOf("wire" to listOf(2)))
+        check(scalarResponse.referencedBooleanRows == listOf(listOf(false)))
+        check(scalarResponse.referencedNestedRows?.single()?.single()?.get("wire")?.single() == RootWordDto.Unrecognized("future"))
+        val scalarEvent = (withTimeout(10000) { api.watch().toList() }.single() as WatchEventDto.Holder).data
+        check(scalarEvent.scalarRefCounts == listOf(3) && scalarEvent.scalarRefLabels == mapOf("key" to "sent"))
+        check(scalarEvent.scalarFactory?.rows == listOf(12) && scalarEvent.scalarFactory?.labels == mapOf("wire" to "sent") && scalarEvent.scalarFactory?.inline == listOf(6))
+        check(scalarEvent.scalarFactory?.bytes?.single()?.contentEquals(byteArrayOf(7)) == true)
+        check(scalarEvent.scalarFactory?.nested == listOf(mapOf("wire" to 18)))
+        check(scalarEvent.inlineNested == listOf(listOf(23)))
+        check(scalarEvent.inlineDates == scalarChildren.inlineDates && scalarEvent.inlineInstants == scalarChildren.inlineInstants)
+        check(scalarEvent.inlineUuids == scalarChildren.inlineUuids)
+        check(scalarEvent.inlineBytes?.single()?.single()?.contentEquals(byteArrayOf(6, 7)) == true)
+        check(scalarEvent.inlineWords?.single()?.single() == InlineWordValuesDtoInner.Unrecognized("future"))
+        check(scalarEvent.inlineNativeEnums == listOf(listOf(2)) && scalarEvent.inlineBooleans == listOf(listOf(false)))
+        check(scalarEvent.referencedWordRows?.single()?.get("wire")?.single() == RootWordDto.Unrecognized("future"))
+        check(scalarEvent.referencedNativeRows == mapOf("wire" to listOf(2)))
+        check(scalarEvent.referencedBooleanRows == listOf(listOf(false)))
+        check(scalarEvent.referencedNestedRows?.single()?.single()?.get("wire")?.single() == RootWordDto.Unrecognized("future"))
+        expectedHolder = value
+        payload = """{"required":["two"]}"""
         if (checked) {
             val beforeInvalid = calls
             for ((bad, rule) in invalid) {

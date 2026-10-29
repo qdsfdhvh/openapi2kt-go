@@ -1,0 +1,66 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Root Dictionary Wrapper API", "version": "1"},
+  "components": {
+    "schemas": {
+      "AInherit": {"allOf": [{"description": "view"}, {"$ref": "#/components/schemas/ZMap"}, {}]},
+      "BNarrow": {"allOf": [{}, {"$ref": "#/components/schemas/AInherit", "nullable": false}]},
+      "CForce": {"allOf": [{"$ref": "#/components/schemas/BNarrow"}, {"$comment": "view"}], "nullable": true},
+      "DDefault": {"allOf": [{"$ref": "#/components/schemas/ZDefault"}], "default": {"wrapper": "local"}},
+      "DOwnerAlias": {"$ref": "#/components/schemas/DDefault", "default": {"alias": "local"}},
+      "EOpen": {"allOf": [{"$ref": "#/components/schemas/ZOpen"}], "default": {"wrapper": null}},
+      "FEnum": {"allOf": [{"title": "view"}, {"$ref": "#/components/schemas/ZEnum"}], "default": {"enum": "one"}},
+      "GPeer": {"allOf": [{"$ref": "#/components/schemas/ZPeer"}, {}], "default": {"peer": {"id": "ok"}}},
+      "HNullable": {"allOf": [{"$ref": "#/components/schemas/ZDefault"}], "nullable": true, "default": null},
+      "Alias": {"$ref": "#/components/schemas/BNarrow"},
+      "Holder": {
+        "properties": {
+          "required": {"$ref": "#/components/schemas/Alias"},
+          "nullable": {"$ref": "#/components/schemas/AInherit"},
+          "optional": {"$ref": "#/components/schemas/DDefault"}
+        },
+        "required": ["required", "nullable"]
+      },
+      "ZMap": {"type": "object", "nullable": true, "additionalProperties": {"type": "string"}},
+      "ZDefault": {"additionalProperties": {"type": "string"}, "default": {"source": "value"}},
+      "ZOpen": {"nullable": true, "additionalProperties": true},
+      "ZEnum": {"additionalProperties": {"type": "string", "enum": ["one", "two"]}},
+      "ZPeer": {
+        "additionalProperties": {
+          "type": "object",
+          "properties": {"id": {"type": "string"}},
+          "required": ["id"]
+        }
+      }
+    }
+  },
+  "paths": {
+    "/map": {
+      "post": {
+        "operationId": "echoMap",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Alias"}}}},
+        "responses": {"200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/BNarrow"}}}}}
+      }
+    },
+    "/patch": {
+      "patch": {
+        "operationId": "submit",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {"$ref": "#/components/schemas/AInherit"},
+                  "required": {"$ref": "#/components/schemas/Alias"}
+                },
+                "required": ["required"]
+              }
+            }
+          }
+        },
+        "responses": {"204": {}}
+      }
+    }
+  }
+}

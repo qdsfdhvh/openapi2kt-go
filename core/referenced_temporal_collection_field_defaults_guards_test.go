@@ -93,7 +93,7 @@ func TestReferencedTemporalCollectionFieldDefaultsExcludedSourceRolesAndNoDrop(t
 		`{"Rows":{"type":"array","items":{"type":"string","format":"date"},"default":[]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Rows","default":[]}}}}`,
 		`{"Rows":{"type":"array","items":{"type":"string","format":"date"}},"Alias":{"$ref":"#/components/schemas/Rows","default":[]},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Alias","default":[]}}}}`,
 		`{"Rows":{"type":"array","items":{"type":"string","format":"date"}},"Holder":{"properties":{"v":{"allOf":[{"$ref":"#/components/schemas/Rows"}],"default":[]}}}}`,
-		`{"Rows":{"type":"array","items":{"type":"string","format":"date"}},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Rows","default":[]}}}}}`,
+		`{"Rows":{"type":"array","items":{"type":"string","format":"date"}},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Rows","default":[false]}}}}}`,
 		`{"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Rows"}},"Holder":{"properties":{"v":{"$ref":"#/components/schemas/Rows","default":[]}}}}`,
 		`{"Rows":{"type":"array","items":{"type":"string","format":"date"}},"Choice":{"oneOf":[{"properties":{"tag":{"const":"a"},"v":{"$ref":"#/components/schemas/Rows","default":[]}}},{"properties":{"tag":{"const":"b"}}}]}}`,
 	} {
@@ -103,6 +103,15 @@ func TestReferencedTemporalCollectionFieldDefaultsExcludedSourceRolesAndNoDrop(t
 			if got, err := core.GenerateWithDiagnostics(r); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("role", body, err)
 			}
+		}
+	}
+	// The original empty collection-valued child is now independently admitted.
+	validChild := schemas(`{"Rows":{"type":"array","items":{"type":"string","format":"date"}},"Holder":{"properties":{"v":{"type":"array","items":{"$ref":"#/components/schemas/Rows","default":[]}}}}}`)
+	for _, checked := range []bool{false, true} {
+		r := request(validChild, "Dto")
+		r.Options.Validation = checked
+		if _, err := core.GenerateWithDiagnostics(r); err != nil {
+			t.Fatal("admitted temporal collection child", checked, err)
 		}
 	}
 	for _, checked := range []bool{false, true} {

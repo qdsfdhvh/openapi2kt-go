@@ -228,12 +228,10 @@ func TestComponentDefaultFactoryNullableCollectionNullGraduation(t *testing.T) {
 	}
 }
 
-// allOf-wrapped containers, reference elements and bad elements keep
-// the exclusions the field role already enforces.
+// AllOf-wrapped containers and bad elements keep their existing exclusions.
 func TestComponentDefaultFactoryCollectionExclusions(t *testing.T) {
 	for _, tc := range []struct{ name, input string }{
 		{"allOf wrapped", `{"openapi":"3.1.0","components":{"schemas":{"S":{"allOf":[{"type":"array","items":{"type":"string"}}],"default":["a"]}}}}`},
-		{"ref element", `{"openapi":"3.1.0","components":{"schemas":{"T":{"type":"string"},"S":{"type":"array","items":{"$ref":"#/components/schemas/T"},"default":["a"]}}}}`},
 		{"bad element", `{"openapi":"3.1.0","components":{"schemas":{"S":{"type":"array","items":{"type":"integer"},"default":["a"]}}}}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -243,6 +241,12 @@ func TestComponentDefaultFactoryCollectionExclusions(t *testing.T) {
 				t.Fatalf("excluded collection role admitted: %v", err)
 			}
 		})
+	}
+	r := request([]byte(`{"openapi":"3.1.0","components":{"schemas":{"T":{"type":"string"},"S":{"type":"array","items":{"$ref":"#/components/schemas/T"},"default":["a"]}}}}`), "Dto")
+	r.Options.Validation = true
+	got, err := core.GenerateWithDiagnostics(r)
+	if err != nil || !strings.Contains(source(t, got, "SDto"), "fun `SDto default`") {
+		t.Fatal("referenced scalar element did not retain its own factory", err)
 	}
 }
 

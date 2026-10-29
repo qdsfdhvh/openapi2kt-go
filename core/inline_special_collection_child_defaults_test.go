@@ -127,11 +127,19 @@ func TestInlineSpecialCollectionChildInstantGrammar(t *testing.T) {
 }
 
 func TestInlineSpecialCollectionChildDefaultBoundaries(t *testing.T) {
+	// The original referenced date child is now admitted independently; retain
+	// it unchanged and keep an invalid calendar date as the counterexample.
+	referenced := `{"Date":{"type":"string","format":"date"},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Date","default":"2024-02-29"}}}}}`
+	for _, checked := range []bool{false, true} {
+		rq := request(schemas(referenced), "Dto")
+		rq.Options.Validation = checked
+		inlineBuiltinChildGraduation(t, rq, `,"default":"2024-02-29"`, `,"default":"2023-02-29"`,
+			"/components/schemas/Holder/properties/value/items/default")
+	}
 	for _, body := range []string{
 		`{"Rows":{"type":"array","items":{"type":"string","format":"uuid","default":"123e4567-e89b-12d3-a456-426614174000"}}}`,
 		`{"Holder":{"properties":{"value":{"type":"array","items":{"type":"array","items":{"type":"string","format":"date","default":"2024-02-29"}}}}}}`,
 		`{"Holder":{"properties":{"value":{"type":"array","items":{"type":"string","x-native-type":"date","default":"2024-02-29T00:00:00Z"}}}}}`,
-		`{"Date":{"type":"string","format":"date"},"Holder":{"properties":{"value":{"type":"array","items":{"$ref":"#/components/schemas/Date","default":"2024-02-29"}}}}}`,
 	} {
 		for _, checked := range []bool{false, true} {
 			rq := request(schemas(body), "Dto")

@@ -40,7 +40,7 @@ Before publishing a Go module or binary, additionally verify:
 - supported host-platform checks and dependency license/security review (procedure below);
 - documentation that clearly separates implemented behavior from planned features.
 
-No release has been published. MIT licensing does not authorize changing repository visibility, pushing a release tag or publishing assets; those require an explicit operator decision. Follow the [versioning policy](versioning.md) as well as the package checks; these checks do not publish anything.
+The [published prerelease](installation.md) covers its tagged source only. MIT licensing does not authorize changing repository visibility, pushing another release tag or publishing new assets; those require an explicit operator decision. Follow the [versioning policy](versioning.md) as well as the package checks; these checks do not publish anything.
 
 ## Dependency and vendoring audit
 

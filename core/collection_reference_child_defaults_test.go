@@ -223,9 +223,25 @@ func TestCollectionReferenceChildDefaultInOperations(t *testing.T) {
 }
 
 func TestCollectionReferenceChildDefaultDoesNotGrantOtherRoles(t *testing.T) {
+	// Preserve the formerly rejected scalar example as a positive, and verify
+	// that an invalid value still fails at the original child annotation.
+	scalar := `{"Leaf":{"type":"string"},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Leaf","default":"one"}}}`
+	for _, checked := range []bool{false, true} {
+		rq := request(schemas(scalar), "Dto")
+		rq.Options.Validation = checked
+		inlineBuiltinChildGraduation(t, rq, `,"default":"one"`, `,"default":true`,
+			"/components/schemas/Rows/items/default")
+	}
+	// Preserve the exact former enum-reference collection refusal as a
+	// positive; a word outside the original vocabulary still fails.
+	collection := `{"Leaf":{"enum":["one"]},"Inner":{"type":"array","items":{"$ref":"#/components/schemas/Leaf"}},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Inner","default":["one"]}}}`
+	for _, checked := range []bool{false, true} {
+		rq := request(schemas(collection), "Dto")
+		rq.Options.Validation = checked
+		inlineBuiltinChildGraduation(t, rq, `,"default":["one"]`, `,"default":["future"]`,
+			"/components/schemas/Rows/items/default/0")
+	}
 	for _, tc := range []struct{ name, body string }{
-		{"ordinary scalar", `{"Leaf":{"type":"string"},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Leaf","default":"one"}}}`},
-		{"collection target", `{"Leaf":{"enum":["one"]},"Inner":{"type":"array","items":{"$ref":"#/components/schemas/Leaf"}},"Rows":{"type":"array","items":{"$ref":"#/components/schemas/Inner","default":["one"]}}}`},
 		{"tuple member", `{"Leaf":{"enum":["one"]},"Rows":{"type":"array","prefixItems":[{"$ref":"#/components/schemas/Leaf","default":"one"}],"items":false}}`},
 		{"tuple tail", `{"Leaf":{"enum":["one"]},"Rows":{"type":"array","prefixItems":[{"$ref":"#/components/schemas/Leaf"}],"items":{"$ref":"#/components/schemas/Leaf","default":"one"}}}`},
 		{"discarded extra property", `{"Leaf":{"enum":["one"]},"Rows":{"type":"object","properties":{"x":{"type":"string"}},"additionalProperties":{"$ref":"#/components/schemas/Leaf","default":"one"}}}`},
@@ -236,7 +252,7 @@ func TestCollectionReferenceChildDefaultDoesNotGrantOtherRoles(t *testing.T) {
 				rq.Options.Validation = checked
 				report, err := core.GenerateWithDiagnostics(rq)
 				if err == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
-					t.Fatal("non-enum or non-collection role was admitted", checked, err)
+					t.Fatal("unsupported child role was admitted", checked, err)
 				}
 			}
 		})

@@ -32,6 +32,7 @@ Read only the reference section needed for the request:
 | Rename a configured output owner | [Rename a configured owner](references/commands.md#rename-a-configured-owner) | Verify same-root v2/v4 ownership and unchanged Kotlin/lock semantics, review `owner_renames`, then confirm ordinary generation under the new name with `--check` |
 | Move an output root or selected configured owner | [Move an output root](references/commands.md#move-an-output-root) | Verify explicit source/target and complete original inventory, review preserved bytes/hashes/state, then confirm ordinary target generation with `--check` |
 | Check local or CI drift | [Check drift](references/commands.md#check-drift) | Report consistency, differences or safety errors; no writes |
+| Use a component-root dictionary `allOf` wrapper | [Dictionary wrappers](references/dictionary-allof-wrappers.md) | Preserve the named backing, nullable priority, independent target factory and checked-consumer limits |
 | Use bounded enums inside object defaults | [Bounded enum object defaults](references/kotlin.md#bounded-enums-in-object-defaults) | Preserve original field/check sources, strict annotations and independent root/alias/consumer ownership; verify final serializers |
 | Use direct String enum field bounds | [String enum field bounds](references/kotlin.md#direct-string-enum-field-bounds) | Enable validation; preserve serialName codecs, strict defaults, Patch and actual canonical owners |
 | Own a default factory through an internal String enum alias | [Internal enum factories](references/kotlin.md#internal-string-enum-alias-factories) | Reuse the actual lexical owner, nearest nullable and independent annotations; preserve strict defaults and open runtime Strings |
@@ -143,5 +144,7 @@ For bounded String enum component roots and named aliases, read the [checked-roo
 For enum-reference List/typed Map component defaults or independent collection alias factories, read the [factory guidance](references/referenced-enum-collection-factories.md). Verify actual fresh serializers, strict original vocabularies, independent annotations and nearest nullable views; source/internal/child admission and general graph/platform completion remain separate.
 
 For an inline enum or enum-reference collection element's own annotation, read the [child-default guidance](references/collection-reference-child-defaults.md). Check original vocabulary and effective nullability independently of any container, component or field default.
+
+For an eligible builtin, UUID, temporal or byte scalar reference on a collection element, read the [scalar reference child-default guidance](references/scalar-reference-collection-child-defaults.md). Its annotation is independently validated and does not initialize the container.
 
 For an eligible ordinary named DTO's direct inline builtin collection element, read the [builtin child-default guidance](references/inline-builtin-collection-child-defaults.md). Its annotation is independently validated and does not initialize the container.

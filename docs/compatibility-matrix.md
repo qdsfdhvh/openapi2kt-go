@@ -1,5 +1,14 @@
 # JSON 首期兼容矩阵
 
+[Component-root dictionary `allOf` wrappers](dictionary-allof-wrappers.md)
+extend D01/D02/D03/F04/F07/M03/M04/M07 to a single local reference through admitted
+named dictionary aliases, with neutral empty or documentation-only siblings.
+Original member order, backing, peers, nullable priority and checked consumers
+remain. Eligible wrappers and named aliases own independent default factories;
+target grammar and original value pointers remain. Capture is bounded to 16,384
+binding/node steps and 8 MiB. General dictionary intersections and platform
+acceptance remain open.
+
 [Checked lexical String enum roots](checked-string-enum-roots.md) retain actual component declarations and shared String checks through named aliases and existing typed reference/default/collection/HTTP/SSE roles. Independent strict root/alias annotations, open standalone codecs, nearest nullable and original declaration/check/factory/binding/height proof remain; general graphs, platforms and final acceptance stay separate.
 
 
@@ -274,9 +283,11 @@
 
 ## 已有实现与测试入口
 
+[Scalar reference collection child defaults](scalar-reference-collection-child-defaults.md) cover independent builtin, UUID, temporal and byte/binary `$ref` annotations on already admitted physical List/typed Map children. Admitted scalar component and named-alias factories coexist with independent field, object and finite collection-root/alias defaults, including paths through existing named collection roots and aliases. Physical children referencing named collections or aliases ending in admitted scalar references or direct inline builtin/UUID/temporal/byte leaves may also have independently validated collection-valued defaults. Original source/binding, actual intermediate declarations, effective nullable view, checks and budgets remain; the child annotation does not initialize its container. Internal inter-container references, other default roles and general graphs retain their separate restrictions.
+
 [Builtin collection child defaults](inline-builtin-collection-child-defaults.md) cover independent inline String/Int/Long/Float/Double/Boolean/UUID/date/date-time annotations on direct List/typed Map fields of eligible ordinary named DTOs, including independently admitted owner-root factories. Original nullable, checks, source/type authority and budgets remain; a child does not initialize its container. Other source roles and general defaults remain separate.
 
-[Enum collection child defaults](collection-reference-child-defaults.md) cover independent annotations on already admitted physical List/typed Map inline lexical String or numeric/Boolean enum elements and enum-reference elements. Strict original membership, nullable/check/source authority and budgets remain; the annotation does not initialize or populate its container. Other child/default roles and general graphs remain separate.
+[Enum collection child defaults](collection-reference-child-defaults.md) cover independent annotations on already admitted physical List/typed Map inline lexical String or numeric/Boolean enum elements and enum-reference elements. A physical child may also reference an admitted named collection or alias whose finite inline tree ends in a direct enum, or whose finite path through named collections and aliases ends in a physical reference to a named enum or alias. Its collection value is validated independently. Strict original membership, nullable/check/source and actual collection and classifier authority and budgets remain; the annotation does not initialize its container. Internal collection and enum references, other child/default roles and general graphs remain separate.
 
 - [YAML document loader](yaml-input.md)：F03/P8 的有界 JSON-compatible adapter；JSON/YAML 同义 ordered tree、Kotlin files/APIs/warnings/语义 Pointers 共享同一分析/生成。Native file/stdin/config/check/失败保旧及 fresh Data/Plain×validation serde/Patch/HTTP 有独立入口；duplicate/non-String keys、alias cycle/budgets、merge、tags、implicit date、multi-doc/UTF8/size/depth 有明确合同。完整 YAML/general source spans/各宿主新候选仍 OPEN。
 

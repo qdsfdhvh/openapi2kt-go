@@ -62,7 +62,7 @@ func (a *analyzer) objectDefaultGraphNode(v *document.Value, pointer string, dep
 	// A marked original collection/alias factory keeps its annotation while
 	// consumers borrow its shape. The final graph-use pass still proves each
 	// actual linked backing and retained declaration/check object.
-	own = own || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer) || a.independentEnumComponentDefault(v, pointer)
+	own = own || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer) || a.independentScalarCollectionComponentDefault(v, pointer) || a.independentEnumComponentDefault(v, pointer)
 	if has(v, "$ref") {
 		if has(v, "default") && !own && !a.validatedCollectionReferenceChildDefault(v, pointer) {
 			// Object default walks may run before the collection's type plan.
@@ -80,6 +80,19 @@ func (a *analyzer) objectDefaultGraphNode(v *document.Value, pointer string, dep
 		}
 		own = own || a.validatedCollectionReferenceChildDefault(v, pointer)
 		if !a.objectDefaultCollectionGraph(v, depth) {
+			if a.collectionReferenceChildParent(v, pointer) != nil && a.scalarReferenceHasIndependentFactory(v, pointer) {
+				target, err := a.resolveSchema(text(get(v, "$ref")), pointer)
+				if err != nil {
+					return nil, err
+				}
+				ty, err := a.referenceType(target, nullableOverride(v), depth, pointer)
+				if err != nil {
+					return nil, err
+				}
+				// The real source and linked type validate the borrowed outer
+				// literal; the component factory remains an independent owner.
+				return a.referencedDefaultSchemaRole(v, pointer, ty, depth, false, referencedCollectionOwnDefault)
+			}
 			// Existing leaf/DTO/allOf member roles retain their original authority,
 			// chain grammar, declaration ownership and nearest-nullable checks.
 			keys := []string{"$ref", "nullable"}

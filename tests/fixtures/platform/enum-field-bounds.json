@@ -558,6 +558,85 @@
           }
         }
       },
+      "ScalarChildCount": {"type": "integer", "minimum": 0},
+      "ScalarChildDay": {"type": "string", "format": "date"},
+      "ScalarChildBytes": {"type": "string", "format": "byte"},
+      "ScalarChildValues": {
+        "type": "array",
+        "items": {"$ref": "#/components/schemas/ScalarChildCount", "default": 7},
+        "default": [1]
+      },
+      "ScalarChildValuesAlias": {
+        "$ref": "#/components/schemas/ScalarChildValues",
+        "default": [2]
+      },
+      "InlineChildWordValues": {
+        "type": "array",
+        "items": {"type": "string", "enum": ["one", "two"]},
+        "default": ["one"]
+      },
+      "InlineChildWordValuesAlias": {
+        "$ref": "#/components/schemas/InlineChildWordValues",
+        "default": ["two"]
+      },
+      "InlineChildByteValues": {
+        "type": "array",
+        "items": {"type": "string", "format": "byte"},
+        "default": [[1, 2]]
+      },
+      "NestedChildWordValues": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/RootWordTreeAlias",
+          "default": {"middle": ["two"]}
+        },
+        "default": [{"root": ["one"]}]
+      },
+      "NestedChildWordValuesAlias": {
+        "$ref": "#/components/schemas/NestedChildWordValues",
+        "default": [{"alias": ["two"]}]
+      },
+      "CollectionChildHolder": {
+        "properties": {
+          "scalar": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/ScalarChildValuesAlias", "default": [3]}
+          },
+          "inlineWords": {
+            "additionalProperties": {"$ref": "#/components/schemas/InlineChildWordValuesAlias", "default": ["one"]}
+          },
+          "bytes": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/InlineChildByteValues", "default": [[3, 4]]}
+          },
+          "nativeEnums": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/FactoryIntRowsAlias", "default": [1]}
+          },
+          "nestedWords": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/NestedChildWordValuesAlias",
+              "default": [{"child": ["two"]}]
+            }
+          }
+        }
+      },
+      "ScalarReferenceChildHolder": {
+        "properties": {
+          "counts": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/ScalarChildCount", "default": 7}
+          },
+          "days": {
+            "type": "object",
+            "additionalProperties": {"$ref": "#/components/schemas/ScalarChildDay", "default": "2000-01-01"}
+          },
+          "blobs": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/ScalarChildBytes", "default": [-128, 127]}
+          }
+        }
+      },
       "ChildAnnotationHolder": {
         "properties": {
           "inlineWords": {
