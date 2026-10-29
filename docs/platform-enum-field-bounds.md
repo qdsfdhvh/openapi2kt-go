@@ -14,7 +14,7 @@ assertions under all four encodeDefaults/explicitNulls combinations.
 | [enum field bounds](../tests/fixtures/platform/enum-field-bounds.json) | Scalar and finite List/typed Map enum checks, metadata, structural uniqueness, independent object factories and checked internal enum borrowing |
 
 The fifth input preserves String words under date/UUID/native metadata without
-a provider/date/UUID dependency. Known and Unrecognized values retain open
+mapping those enum words to provider, date or UUID types. Known and Unrecognized values retain open
 standalone enum lookup/codecs; DTO construction and automatic decoding check
 actual serialName lengths and patterns. The common consumer checks valid unknown
 words, invalid known/unknown payloads, required/default/missing/null behavior,
@@ -80,11 +80,11 @@ Android device runtime, API 23 runtime and the complete feature, engine and
 dependency matrices remain separate.
 
 The fifth input also includes independent inline and referenced enum child
-annotations, including a nested referenced element, and direct builtin scalar
-List/Map child annotations on ordinary DTOs with and without independent owner
+annotations, including a nested referenced element, and direct builtin scalar,
+UUID, LocalDate and Instant List/Map child annotations on ordinary DTOs with and without independent owner
 factories. The common consumer checks factory values, fresh containers, missing
 fields and supplied-value round trips. The
 expanded Data/Plain input passed JVM, JS/Node and macOS ARM64 Native execution
 under four Json configurations, and common metadata and Android AAR compilation
-for both styles, using the fixed toolchain above. Android device runtime and
+for both styles, using the fixed toolchain above and kotlinx-datetime 0.7.1. Android device runtime and
 general child-default or platform acceptance remain separate.

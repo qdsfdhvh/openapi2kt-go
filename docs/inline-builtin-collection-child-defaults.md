@@ -73,6 +73,7 @@ cover this role. The existing `primitive-array-defaults`,
 `nullable-component-defaults` exercises owner factories and fresh containers.
 These consumers include missing and supplied values; runtime and platform results must be
 reported for the exact candidate and target. The
-[platform probe](platform-enum-field-bounds.md) also exercises builtin6 child
-annotations in its common consumer; UUID and temporal child annotations
-require their own platform evidence.
+[platform probe](platform-enum-field-bounds.md) also exercises builtin6, UUID
+and temporal child annotations in its common consumer. Its Data/Plain profiles
+passed JVM, JS/Node and macOS ARM64 Native execution, common metadata compilation
+and Android AAR assembly; Android device runtime remains unverified.
