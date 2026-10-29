@@ -248,6 +248,16 @@ func (a *analyzer) linkNominalDeclarations(hierarchy map[string]*Hierarchy, decl
 				linkType(&(*a.referencedDefaults)[i].Type)
 			}
 		}
+		if a.collectionChildDefaultOrder != nil {
+			for _, source := range *a.collectionChildDefaultOrder {
+				for _, use := range source.Uses {
+					linkType(&use.Type)
+					if use.Actual != nil {
+						linkType(use.Actual)
+					}
+				}
+			}
+		}
 		// DTO collection-reference proofs retain the original typed planner's
 		// deferred enum leaf too. Resolve only its existing source binding,
 		// through the same unique retained declaration used by actual fields.

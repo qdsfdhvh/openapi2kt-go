@@ -22,7 +22,8 @@
             "type": "object",
             "additionalProperties": {
               "type": "integer",
-              "nullable": true
+              "nullable": true,
+              "default": 4
             },
             "default": {
               "a/~": 2,
@@ -80,9 +81,17 @@
           "empty": {
             "type": "object",
             "additionalProperties": {
-              "type": "string"
+              "type": "string",
+              "default": "element"
             },
             "default": {}
+          },
+          "childOnly": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "default": 7
+            }
           },
           "nullable": {
             "type": "object",
@@ -96,13 +105,14 @@
             "type": "object",
             "additionalProperties": {
               "type": ["string", "null"],
-              "format": "date"
+              "format": "date",
+              "default": "2000-01-01"
             },
             "default": {"a/~": "2024-02-29", "nil": null}
           },
           "times": {
             "type": "object",
-            "additionalProperties": {"type": "string", "format": "date-time"},
+            "additionalProperties": {"type": "string", "format": "date-time", "default": "2000-01-01T00:00:00Z"},
             "default": {"stamp": "2024-02-29T12:34:56.123456789+02:30"}
           },
           "edgeTimes": {
@@ -119,13 +129,13 @@
           },
           "emptyDates": {
             "type": "object",
-            "additionalProperties": {"type": "string", "format": "date"},
+            "additionalProperties": {"type": "string", "format": "date", "default": "2000-01-01"},
             "default": {}
           },
           "nullableDates": {
             "type": "object",
             "nullable": true,
-            "additionalProperties": {"type": "string", "format": "date"},
+            "additionalProperties": {"type": "string", "format": "date", "default": "2000-01-01"},
             "default": null
           },
           "kotlin": {
@@ -133,6 +143,10 @@
           },
           "kotlinx": {
             "type": "string"
+          },
+          "uuidOnly": {
+            "type": "object",
+            "additionalProperties": {"type": "string", "format": "uuid", "default": "123E4567E89B12D3A456426614174000"}
           }
         },
         "required": [

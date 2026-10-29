@@ -7,7 +7,7 @@ import (
 )
 
 // Detect only collection references within an object-default property role.
-// No new consuming-field/component/child-annotation role is inferred here.
+// The ordinary planners remain responsible for admitting every annotation.
 func (a *analyzer) objectDefaultCollectionGraph(v *document.Value, depth int) bool {
 	if v == nil || depth > MaxSchemaDepth {
 		return false
@@ -64,6 +64,21 @@ func (a *analyzer) objectDefaultGraphNode(v *document.Value, pointer string, dep
 	// actual linked backing and retained declaration/check object.
 	own = own || a.independentLexicalEnumCollectionDefault(v, pointer) || a.independentReferencedEnumCollectionDefault(v, pointer) || a.independentEnumComponentDefault(v, pointer)
 	if has(v, "$ref") {
+		if has(v, "default") && !own && !a.validatedCollectionReferenceChildDefault(v, pointer) {
+			// Object default walks may run before the collection's type plan.
+			// Record a scratch use only after independently validating the
+			// original physical element; the real planner binds its own use.
+			child, err := a.collectionReferenceChildDefault(v, pointer, depth)
+			if err != nil {
+				return nil, err
+			}
+			if child != nil {
+				if err := a.bindCollectionReferenceChildDefault(v, pointer, child); err != nil {
+					return nil, err
+				}
+			}
+		}
+		own = own || a.validatedCollectionReferenceChildDefault(v, pointer)
 		if !a.objectDefaultCollectionGraph(v, depth) {
 			// Existing leaf/DTO/allOf member roles retain their original authority,
 			// chain grammar, declaration ownership and nearest-nullable checks.
@@ -169,6 +184,9 @@ func (a *analyzer) objectDefaultGraphNode(v *document.Value, pointer string, dep
 	}
 	ty, err := a.checkedCollectionRole(TypeRef{Kind: typeKind, Element: &child.ty}, v, pointer, child.object)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.bindInlineEnumCollectionChildDefault(get(v, edge), naming.Pointer(pointer, edge), ty.Element); err != nil {
 		return nil, err
 	}
 	if _, nullable, _ := schemaType(v, pointer); nullable {

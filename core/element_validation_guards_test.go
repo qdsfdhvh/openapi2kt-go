@@ -27,6 +27,12 @@ func TestDirectElementValidationGuards(t *testing.T) {
 			{`{"type":"array","items":` + tc.leaf + `}`, "/items/"},
 			{`{"type":"object","additionalProperties":` + tc.leaf + `}`, "/additionalProperties/"},
 		} {
+			if tc.leaf == `{"type":"integer","default":0}` {
+				rq := request(fieldDoc(container.schema), "Dto")
+				rq.Options.Validation = true
+				inlineBuiltinChildGraduation(t, rq, `,"default":0`, `,"default":true`, "/components/schemas/Record/properties/value"+container.pointer+"default")
+				continue
+			}
 			aliasFailure(t, fieldDoc(container.schema), tc.code, "/components/schemas/Record/properties/value"+container.pointer+tc.suffix)
 		}
 	}

@@ -128,3 +128,19 @@ configurations, and common metadata plus Android AAR compile. Kotlin/plugin2.4.1
 and serialization1.11.0 use Gradle9.3.1 for KMP and Gradle9.5.1 for Android.
 No fifth-input Android device or complete feature/HTTP/engine acceptance is
 implied.
+
+The fifth input now additionally checks independent enum-reference List/Map
+factories for String and all five native enum mappings. The expanded Data/Plain
+profile passed JVM, JS/Node and macOS ARM64 Native runtime under four Json
+configurations, plus common metadata and Android AAR compilation, with the
+[recorded toolchain and scope](../../docs/platform-enum-field-bounds.md).
+Those AARs were not executed on an Android device for this profile.
+
+The fifth input also exercises independent inline and referenced enum collection
+child annotations and direct builtin scalar List/Map child annotations. Its
+common consumer checks independent owner factories, fresh containers and
+missing and supplied collection values. This expanded
+input passed Data/Plain JVM, JS/Node and macOS ARM64 Native execution under all
+four Json configurations, plus common metadata and Android AAR compilation.
+Those AARs have no device runtime result; the broader platform matrix remains
+separate.

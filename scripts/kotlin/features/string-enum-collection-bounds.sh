@@ -40,8 +40,8 @@ schema = {'properties': {
     'state': {'type': 'string', 'format': 'date', 'enum': ['one', 'two', 'x'], 'default': 'one'},
     'owned': {'$ref': '#/components/schemas/SeedAlias', 'default': {'state': 'two'}},
     'ownedRows': {'type': 'array', 'items': {'$ref': '#/components/schemas/SeedAlias'}, 'default': [{'state': 'two'}]},
-    'codes': {'type': 'array', 'items': {'enum': ['one', 'two', 'x']}, 'default': ['one']},
-    'labels': {'additionalProperties': {'enum': ['yes', 'no']}, 'default': {'b': 'no', 'a': 'yes'}}}}
+    'codes': {'type': 'array', 'items': {'enum': ['one', 'two', 'x'], 'default': 'two'}, 'default': ['one']},
+    'labels': {'additionalProperties': {'enum': ['yes', 'no'], 'default': 'no'}, 'default': {'b': 'no', 'a': 'yes'}}}}
 if checked:
     schema['properties']['state'].update(minLength=2, maxLength=6, pattern='^[a-z]+$')
     schema['properties']['codes']['items'].update(minLength=2, maxLength=6, pattern='^[a-z]+$')

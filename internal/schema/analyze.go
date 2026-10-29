@@ -51,6 +51,15 @@ func analyzeDocument(root *document.Value, options Options, tupleSourceValidatio
 	if err := a.finalizeTupleCollectionUses(); err != nil {
 		return nil, nil, err
 	}
+	if err := a.finalizeCollectionReferenceChildDefaults(declarations, client); err != nil {
+		return nil, nil, err
+	}
+	if err := a.finalizeInlineEnumCollectionChildDefaults(declarations, client); err != nil {
+		return nil, nil, err
+	}
+	if err := a.finalizeInlineBuiltinChildDefaults(declarations, client); err != nil {
+		return nil, nil, err
+	}
 	if err := a.validateInternalModels(declarations); err != nil {
 		return nil, nil, err
 	}
@@ -88,6 +97,26 @@ func analyzeDocument(root *document.Value, options Options, tupleSourceValidatio
 	if err := a.validateObjectDefaultGraphUses(); err != nil {
 		return nil, nil, err
 	}
+	// Field-default and object-graph validation can add scratch uses after the
+	// first freeze. Recheck existing proofs before freezing only those later uses.
+	if err := a.validateInlineEnumCollectionChildDefaults(declarations, true); err != nil {
+		return nil, nil, err
+	}
+	if err := a.finalizeInlineEnumCollectionChildDefaults(declarations, client); err != nil {
+		return nil, nil, err
+	}
+	if err := a.validateInlineEnumCollectionChildDefaults(declarations, false); err != nil {
+		return nil, nil, err
+	}
+	if err := a.validateInlineBuiltinChildDefaults(declarations, client, true); err != nil {
+		return nil, nil, err
+	}
+	if err := a.finalizeInlineBuiltinChildDefaults(declarations, client); err != nil {
+		return nil, nil, err
+	}
+	if err := a.validateInlineBuiltinChildDefaults(declarations, client, false); err != nil {
+		return nil, nil, err
+	}
 	if !tupleSourceValidation {
 		if err := a.runtimeCollisions(plan); err != nil {
 			return nil, nil, err
@@ -106,6 +135,24 @@ func analyzeDocument(root *document.Value, options Options, tupleSourceValidatio
 }
 
 func (a *analyzer) analyze(root *document.Value) ([]Declaration, *diagnostic.Diagnostic) {
+	if a.collectionChildDefaults == nil {
+		a.collectionChildDefaults = map[*document.Value]*collectionReferenceChildDefault{}
+	}
+	if a.collectionChildDefaultOrder == nil {
+		a.collectionChildDefaultOrder = &[]*collectionReferenceChildDefault{}
+	}
+	if a.inlineEnumChildDefaults == nil {
+		a.inlineEnumChildDefaults = map[*document.Value]*inlineEnumCollectionChildDefault{}
+	}
+	if a.inlineEnumChildDefaultOrder == nil {
+		a.inlineEnumChildDefaultOrder = &[]*inlineEnumCollectionChildDefault{}
+	}
+	if a.inlineBuiltinChildDefaults == nil {
+		a.inlineBuiltinChildDefaults = map[*document.Value]*inlineBuiltinChildDefault{}
+	}
+	if a.inlineBuiltinChildDefaultOrder == nil {
+		a.inlineBuiltinChildDefaultOrder = &[]*inlineBuiltinChildDefault{}
+	}
 	if a.checkedEnumSources == nil {
 		a.checkedEnumSources = map[*document.Value]*checkedEnumSource{}
 	}
@@ -1098,6 +1145,14 @@ func (a *analyzer) nonUnionPropertyType(v *document.Value, nestedName, pointer s
 		}
 		kind = "object"
 	}
+	ownChild, err := a.inlineEnumCollectionChildDefault(v, pointer, depth)
+	if err != nil {
+		return TypeRef{}, err
+	}
+	ownBuiltinChild, err := a.inlineBuiltinCollectionChildDefault(v, pointer, depth)
+	if err != nil {
+		return TypeRef{}, err
+	}
 	var ty TypeRef
 	switch {
 	case has(v, "$ref"):
@@ -1130,9 +1185,9 @@ func (a *analyzer) nonUnionPropertyType(v *document.Value, nestedName, pointer s
 		ty = TypeRef{Kind: Scalar, Name: scalar}
 	case has(v, "enum") && (kind == "integer" || kind == "number" || kind == "boolean"):
 		if a.options.Validation {
-			return a.nativeEnumValueType(v, pointer, depth)
+			return a.nativeEnumValueTypeOwnDefault(v, pointer, depth, ownChild)
 		}
-		scalar, err := a.nativeEnum(kind, v, pointer)
+		scalar, err := a.nativeEnumKeys(kind, v, pointer, ownChild)
 		if err != nil {
 			return TypeRef{}, err
 		}
@@ -1147,7 +1202,7 @@ func (a *analyzer) nonUnionPropertyType(v *document.Value, nestedName, pointer s
 		}
 		ty = value.Type
 	case has(v, "enum"):
-		model, err := buildStringEnum(nestedName, v, pointer)
+		model, err := buildStringEnumKeys(nestedName, v, pointer, ownChild)
 		if err != nil {
 			return TypeRef{}, err
 		}
@@ -1160,7 +1215,13 @@ func (a *analyzer) nonUnionPropertyType(v *document.Value, nestedName, pointer s
 	default:
 		switch kind {
 		case "string", "integer", "number", "boolean", "null", "x-void":
-			scalar, err := scalarType(kind, v, pointer)
+			var scalar string
+			var err *diagnostic.Diagnostic
+			if ownBuiltinChild {
+				scalar, err = scalarMapping(kind, v, pointer)
+			} else {
+				scalar, err = scalarType(kind, v, pointer)
+			}
 			if err != nil {
 				return TypeRef{}, err
 			}

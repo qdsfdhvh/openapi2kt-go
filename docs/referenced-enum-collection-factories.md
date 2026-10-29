@@ -55,11 +55,12 @@ Missing proof records, duplicate or replaced declarations, changed bindings,
 backings or initializers reject before output changes. Shared original
 source48/work16,384/default16,384-nodes/32KiB/checked16/enum240/JVM240 budgets remain.
 
-Container-child and reference-edge annotations receive no new default role.
+An independently validated default on an eligible physical enum-reference
+collection child follows the separate [child annotation contract](collection-reference-child-defaults.md).
 No recursive, tuple, union/hierarchy, const, provider or general composition graph
-is admitted by this profile. Existing independent component annotations are
-retained when accepted field/object walks consume their types; values are never
-inherited from those annotations.
+is admitted by this factory profile. Existing independent component annotations
+are retained when accepted field/object walks consume their types; values are
+never inherited from those annotations.
 
 **Compatibility:** eligible formerly rejected factory inputs and independently
 annotated enum sources now generate. Existing accepted APIs, wire behavior,
@@ -77,3 +78,8 @@ String and all five native scalar factories, independent annotations, fresh
 containers, four Json settings, Data/Plain profiles, optimization/name locks and
 existing typed HTTP/SSE checks. A test entry or prepare-only generation is not
 compilation/runtime evidence; verify the exact generated candidate.
+
+The [platform consumer](platform-enum-field-bounds.md) separately exercises the
+String and five native factory mappings on JVM, JS/Node and macOS ARM64 Native,
+and compiles them for common metadata and Android AAR. That evidence covers its
+exact fixture and options, not all factory contexts or Android device runtime.

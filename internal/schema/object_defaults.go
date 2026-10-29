@@ -277,7 +277,7 @@ func (a *analyzer) objectDefaultPropertyNode(v *document.Value, pointer string, 
 	} else if node != nil {
 		return node, nil
 	}
-	if (a.objectDefaultCollectionGraph(v, depth) || a.inlineReferencedScalarCollection(v)) && !a.referencedCollectionAllOfMember(v) {
+	if (a.objectDefaultCollectionGraph(v, depth) || a.inlineReferencedScalarCollection(v, pointer)) && !a.referencedCollectionAllOfMember(v) {
 		return a.objectDefaultGraphNode(v, pointer, depth, allowOwnDefault, map[*document.Value]bool{})
 	}
 	switch {

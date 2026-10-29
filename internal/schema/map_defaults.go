@@ -47,6 +47,12 @@ func (a *analyzer) primitiveMapDefault(v *document.Value, name, pointer string, 
 	if err != nil {
 		return TypeRef{}, "", err
 	}
+	if err := a.bindInlineEnumCollectionChildDefault(item, itemPointer, ty.Element); err != nil {
+		return TypeRef{}, "", err
+	}
+	if err := a.bindInlineBuiltinChildDefault(item, itemPointer, ty.Element); err != nil {
+		return TypeRef{}, "", err
+	}
 	collection := ty.Collection
 	if nullable {
 		ty = ty.Null()

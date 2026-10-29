@@ -67,6 +67,12 @@ func TestStringEnumCollectionBoundsOriginalConstraintsAndDefaults(t *testing.T) 
 			{`{"enum":[null,"one","one"],"nullable":true,"minLength":1}`, "", "E_SCHEMA_INVALID", "/" + slot + "/enum/2"},
 			{`{"enum":["one"],"minLength":1,"default":"one"}`, "", "E_SCHEMA_UNSUPPORTED", "/" + slot + "/default"},
 		} {
+			if tc.leaf == `{"enum":["one"],"minLength":1,"default":"one"}` {
+				rq := request(fieldDoc(wrap(tc.leaf, tc.def)), "Dto")
+				rq.Options.Validation = true
+				inlineEnumChildGraduation(t, rq, `,"default":"one"`, `,"default":"other"`, base+"/"+slot+"/default")
+				continue
+			}
 			enumBoundsDiagnostic(t, fieldDoc(wrap(tc.leaf, tc.def)), true, tc.code, base+tc.tail)
 		}
 		for _, tc := range []struct{ leaf, member, code string }{

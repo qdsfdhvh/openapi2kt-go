@@ -68,7 +68,8 @@
             "items": {
               "type": "string",
               "format": "uuid",
-              "nullable": true
+              "nullable": true,
+              "default": "00000000-0000-0000-0000-000000000000"
             },
             "uniqueItems": true,
             "default": [
@@ -81,7 +82,8 @@
             "items": {
               "type": "string",
               "format": "uuid",
-              "nullable": true
+              "nullable": true,
+              "default": null
             },
             "uniqueItems": true,
             "default": [

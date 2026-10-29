@@ -88,6 +88,12 @@ func TestBoundedEnumCollectionRootsSourceBeforeNullAlias(t *testing.T) {
 		{`{"enum":["one"],"minLength":1,"default":"one"}`, "E_SCHEMA_UNSUPPORTED", "/default"},
 	} {
 		doc := schemas(`{"Tree":{"type":"array","nullable":true,"items":{"additionalProperties":` + tc.leaf + `},"default":null},"Alias":{"$ref":"#/components/schemas/Tree","default":null}}`)
+		if tc.leaf == `{"enum":["one"],"minLength":1,"default":"one"}` {
+			rq := request(doc, "Dto")
+			rq.Options.Validation = true
+			inlineEnumChildGraduation(t, rq, `,"default":"one"`, `,"default":"other"`, "/components/schemas/Tree/items/additionalProperties/default")
+			continue
+		}
 		enumBoundsDiagnostic(t, doc, true, tc.code, "/components/schemas/Tree/items/additionalProperties"+tc.tail)
 	}
 }

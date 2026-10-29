@@ -136,8 +136,12 @@ For bounded lexical enum List/Map roots and aliases, read the [collection-root c
 
 For checked lexical enum internal references or borrowed collections, use the [checked borrowing contract](references/checked-enum-collections.md#checked-references). Verify actual source/declaration/getter checks, independent strict annotations and typed HTTP/SSE; standalone aliases/codecs remain open.
 
-For borrowed lexical enum List/Map defaults, read the [collection default contract](references/checked-enum-collections.md#borrowed-collection-defaults). Keep original field, alias factory and consuming annotations independent; verify fresh state, strict vocabulary and actual retained backing without granting child annotations or default inheritance.
+For borrowed lexical enum List/Map defaults, read the [collection default contract](references/checked-enum-collections.md#borrowed-collection-defaults). Keep original field, alias factory and consuming annotations independent; verify fresh state, strict vocabulary and actual retained backing without default inheritance.
 
 For bounded String enum component roots and named aliases, read the [checked-root contract](references/checked-enum-collections.md#checked-enum-roots). Keep standalone codecs open and use actual typed consumers for checks. Verify independent strict defaults/null factories, original declaration/check/binding identities and explicit nullable views; do not infer general graph or platform coverage.
 
 For enum-reference List/typed Map component defaults or independent collection alias factories, read the [factory guidance](references/referenced-enum-collection-factories.md). Verify actual fresh serializers, strict original vocabularies, independent annotations and nearest nullable views; source/internal/child admission and general graph/platform completion remain separate.
+
+For an inline enum or enum-reference collection element's own annotation, read the [child-default guidance](references/collection-reference-child-defaults.md). Check original vocabulary and effective nullability independently of any container, component or field default.
+
+For an eligible ordinary named DTO's direct inline builtin collection element, read the [builtin child-default guidance](references/inline-builtin-collection-child-defaults.md). Its annotation is independently validated and does not initialize the container.

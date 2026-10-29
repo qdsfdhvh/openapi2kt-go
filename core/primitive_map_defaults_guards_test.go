@@ -24,6 +24,10 @@ func TestPrimitiveMapDefaultsOriginalValuesAndGrammar(t *testing.T) {
 		for _, validation := range []bool{false, true} {
 			r := request(fieldDoc(tc.schema), "Dto")
 			r.Options.Validation = validation
+			if tc.schema == `{"type":"object","additionalProperties":{"type":"string","default":"x"},"default":{}}` {
+				inlineBuiltinChildGraduation(t, r, `,"default":"x"`, `,"default":true`, "/components/schemas/Record/properties/value/additionalProperties/default")
+				continue
+			}
 			report, err := core.GenerateWithDiagnostics(r)
 			if err == nil || err.(core.Diagnostics)[0].Code != tc.code || err.(core.Diagnostics)[0].Pointer == nil || *err.(core.Diagnostics)[0].Pointer != "/components/schemas/Record/properties/value"+tc.tail || !reflect.DeepEqual(report, core.GenerationReport{}) {
 				t.Fatal(tc, validation, err)

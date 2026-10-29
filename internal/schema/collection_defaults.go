@@ -19,6 +19,14 @@ func (a *analyzer) collectionDefaultElement(v *document.Value, name, pointer str
 	if err := object(v, pointer); err != nil {
 		return TypeRef{}, err
 	}
+	own, err := a.inlineEnumCollectionChildDefault(v, pointer, depth)
+	if err != nil {
+		return TypeRef{}, err
+	}
+	ownBuiltin, err := a.inlineBuiltinCollectionChildDefault(v, pointer, depth)
+	if err != nil {
+		return TypeRef{}, err
+	}
 	kind, nullable, typeErr := schemaType(v, pointer)
 	keys := []string{"type", "nullable", "format"}
 	if typeErr == nil && slices.Contains([]string{"", "string", "boolean", "integer", "number"}, kind) {
@@ -30,6 +38,9 @@ func (a *analyzer) collectionDefaultElement(v *document.Value, name, pointer str
 	if a.options.Validation {
 		keys = append(keys, primitiveBoundKeys...)
 	}
+	if own || ownBuiltin {
+		keys = append(keys, "default")
+	}
 	if err := checkKeys(v, keys, pointer); err != nil {
 		return TypeRef{}, err
 	}
@@ -40,7 +51,7 @@ func (a *analyzer) collectionDefaultElement(v *document.Value, name, pointer str
 		if hasPrimitiveBounds(v) {
 			return a.stringEnumCollectionLeaf(v, name, pointer, nested, used, depth)
 		}
-		enum, err := buildStringEnum(name, v, pointer)
+		enum, err := buildStringEnumKeys(name, v, pointer, own)
 		if err != nil {
 			return TypeRef{}, err
 		}
@@ -65,9 +76,9 @@ func (a *analyzer) collectionDefaultElement(v *document.Value, name, pointer str
 			return TypeRef{}, diagnostic.At("E_MODEL_LIMIT", "Native enum collection default exceeds the supported 240-member limit.", naming.Pointer(pointer, "enum"))
 		}
 		if a.options.Validation {
-			return a.nativeEnumValueType(v, pointer, depth)
+			return a.nativeEnumValueTypeOwnDefault(v, pointer, depth, own)
 		}
-		scalar, err := a.nativeEnum(kind, v, pointer)
+		scalar, err := a.nativeEnumKeys(kind, v, pointer, own)
 		if err != nil {
 			return TypeRef{}, err
 		}

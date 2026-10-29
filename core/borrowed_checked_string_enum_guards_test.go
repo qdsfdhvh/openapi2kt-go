@@ -100,14 +100,15 @@ func TestBorrowedCheckedStringEnumNullablePresenceAndStrictDefaults(t *testing.T
 }
 
 func TestBorrowedCheckedStringEnumRemainingSourceRoles(t *testing.T) {
-	for _, body := range []string{
-		`{"Owner":{"properties":{"rows":{"type":"array","items":{"enum":["one","x"],"minLength":2,"default":"one"}}}},"Alias":{"$ref":"#/components/schemas/Owner/properties/rows/items"}}`,
-		`{"Owner":{"properties":{"word":{"enum":["one","x"],"minLength":2}}},"Tree":{"type":"array","items":{"$ref":"#/components/schemas/Owner/properties/word","default":"one"}}}`,
-	} {
-		rq := request(schemas(body), "Dto")
-		rq.Options.Validation = true
-		if got, err := core.GenerateWithDiagnostics(rq); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
-			t.Fatal("checked borrowing inferred unrelated root/child permission", body, err)
-		}
-	}
+	// A reference to the actual checked leaf may now own its own item
+	// annotation; the leaf's original bounds still validate that value.
+	child := `{"Owner":{"properties":{"word":{"enum":["one","x"],"minLength":2}}},"Tree":{"type":"array","items":{"$ref":"#/components/schemas/Owner/properties/word","default":"one"}}}`
+	rq := request(schemas(child), "Dto")
+	rq.Options.Validation = true
+	independentEnumFactoryGraduation(t, rq)
+	enumBoundsDiagnostic(t, schemas(strings.Replace(child, `"default":"one"`, `"default":"x"`, 1)), true, "E_SCHEMA_INVALID", "/components/schemas/Tree/items/default")
+	body := `{"Owner":{"properties":{"rows":{"type":"array","items":{"enum":["one","x"],"minLength":2,"default":"one"}}}},"Alias":{"$ref":"#/components/schemas/Owner/properties/rows/items"}}`
+	rq = request(schemas(body), "Dto")
+	rq.Options.Validation = true
+	inlineEnumChildGraduation(t, rq, `,"default":"one"`, `,"default":"x"`, "/components/schemas/Owner/properties/rows/items/default")
 }

@@ -31,6 +31,10 @@ func TestNestedStringEnumCollectionDefaultsOriginalGrammarMembershipAndNoDrop(t 
 		for _, checked := range []bool{false, true} {
 			r := request(fieldDoc(tc.field), "Dto")
 			r.Options.Validation = checked
+			if tc.field == `{"type":"array","items":{"type":"array","items":{"enum":["one"],"default":"one"}},"default":[]}` {
+				inlineEnumChildGraduation(t, r, `,"default":"one"`, `,"default":"other"`, "/components/schemas/Record/properties/value/items/items/default")
+				continue
+			}
 			if checked && (tc.field == `{"type":"array","items":{"type":"array","items":{"enum":["one"],"minLength":1}},"default":[]}` || tc.field == `{"type":"array","items":{"type":"array","items":{"enum":["one"],"pattern":"^o"}},"default":[]}`) {
 				nestedStringEnumBoundsGraduation(t, r.Document)
 				continue

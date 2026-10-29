@@ -109,14 +109,17 @@ func TestReferencedEnumCollectionFactoryDefaultGuards(t *testing.T) {
 		bad = strings.Replace(bad, `"minLength":2`, `"minLength":-1`, 1)
 		enumBoundsDiagnostic(t, schemas(bad), true, "E_SCHEMA_INVALID", "/components/schemas/Word/minLength")
 	}
+	// The original child-reference refusal is now independently validated.
+	rq.Document = schemas(`{"Word":{"enum":["one"]},"Tree":{"type":"array","items":{"$ref":"#/components/schemas/Word","default":"one"},"default":["one"]}}`)
+	independentEnumFactoryGraduation(t, rq)
 	for _, bad := range []string{
-		`{"Word":{"enum":["one"]},"Tree":{"type":"array","items":{"$ref":"#/components/schemas/Word","default":"one"},"default":["one"]}}`,
+		`{"Word":{"enum":["one"]},"Tree":{"type":"array","items":{"$ref":"#/components/schemas/Word","default":"future"},"default":["one"]}}`,
 		`{"Word":{"enum":["one"]},"Tree":{"type":"array","items":{"type":"array","items":{"$ref":"#/components/schemas/Word"},"default":["one"]},"default":[["one"]]}}`,
 		`{"Word":{"enum":["one"]},"Tree":{"type":"array","items":{"$ref":"#/components/schemas/Tree"},"default":[]}}`,
 	} {
 		rq.Document = schemas(bad)
 		if report, failure := core.GenerateWithDiagnostics(rq); failure == nil || !reflect.DeepEqual(report, core.GenerationReport{}) {
-			t.Fatal("factory admitted child annotation or recursive source", failure)
+			t.Fatal("factory admitted an invalid child annotation or recursive source", failure)
 		}
 	}
 	for _, size := range []int{32750, 32766} {

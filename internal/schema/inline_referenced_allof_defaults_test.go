@@ -14,7 +14,7 @@ func TestInlineReferencedAllOfFinalSourceAuthority(t *testing.T) {
 		t.Fatal("inline collection not queued through final source barrier", len(pending))
 	}
 	plan := pending[0]
-	if !a.inlineReferencedAllOfCollection(plan.Field.Schema) || !a.deferredFieldDefault(plan.Field.Schema) {
+	if !a.inlineReferencedAllOfCollection(plan.Field.Schema) || !a.deferredFieldDefault(plan.Field.Schema, plan.Field.Pointer) {
 		t.Fatal("source role not retained")
 	}
 	before, _ := root.MarshalJSON()

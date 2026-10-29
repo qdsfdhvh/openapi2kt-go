@@ -168,7 +168,7 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 				if err != nil {
 					return nil, err
 				}
-				if a.deferredFieldDefault(f.Schema) {
+				if a.deferredFieldDefault(f.Schema, f.Pointer) {
 					*a.referencedDefaults = append(*a.referencedDefaults, referencedFieldDefault{Field: f, Type: ty})
 				}
 			}
@@ -483,7 +483,7 @@ func (a *analyzer) buildModelFromShape(name string, v *document.Value, pointer s
 				return nil, err
 			}
 		}
-		if falseRoot == nil && inlineFalse == nil && !(literalCollection != nil && literalCollection.OwnDefault) && has(f.Schema, "default") && a.deferredFieldDefault(f.Schema) {
+		if falseRoot == nil && inlineFalse == nil && !(literalCollection != nil && literalCollection.OwnDefault) && has(f.Schema, "default") && a.deferredFieldDefault(f.Schema, f.Pointer) {
 			*a.referencedDefaults = append(*a.referencedDefaults, referencedFieldDefault{Field: f, Type: annotationType, Model: model, Index: len(model.Properties)})
 		}
 		if literalFalse || literalCollection != nil {

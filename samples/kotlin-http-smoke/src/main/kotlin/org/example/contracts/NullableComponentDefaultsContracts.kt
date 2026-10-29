@@ -8,6 +8,8 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.serializer
+import org.example.nulldefaults.models.BuiltinChildFactoryDto
+import org.example.nulldefaults.models.EmptyBuiltinChildFactoryDto
 import org.example.nulldefaults.models.LeafBytesDto
 import org.example.nulldefaults.models.LeafCountsDto
 import org.example.nulldefaults.models.LeafDaysDto
@@ -76,6 +78,13 @@ suspend fun nullableComponentDefaultsContracts(checked: Boolean = false) {
         componentNullDefaultsContracts(codec)
         nullableCollectionLeafDefaults(codec)
         nestedComponentDefaultFactories(codec, checked)
+        val childFactory = BuiltinChildFactoryDto.default()
+        check(childFactory.counts == listOf(2) && childFactory.labels == mapOf("first" to "field"))
+        check(childFactory.days == listOf(kotlinx.datetime.LocalDate.parse("2024-03-01")))
+        check(childFactory.counts !== BuiltinChildFactoryDto.default().counts)
+        check(EmptyBuiltinChildFactoryDto.default().let { it.counts == null && it.instants == null })
+        val childRoundTrip = codec.decodeFromString<BuiltinChildFactoryDto>(codec.encodeToString(childFactory))
+        check(childRoundTrip.counts == listOf(2) && childRoundTrip.labels == mapOf("first" to "field") && childRoundTrip.days == childFactory.days)
 
         // Every admitted shape decodes its own annotation through the alias.
         check(`NameDto default`() == "fallback")

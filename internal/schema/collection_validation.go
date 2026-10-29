@@ -126,7 +126,11 @@ func (a *analyzer) uniqueStringEnumSource(v *document.Value, pointer string, dep
 		// The typed planner already admitted this path. Retain the same
 		// original vocabulary/declaration authority as borrowed enum leaves;
 		// neither a Named spelling nor a flattened copy grants eligibility.
-		if checkKeys(v, []string{"$ref", "nullable"}, pointer) != nil {
+		keys := []string{"$ref", "nullable"}
+		if a.validatedCollectionReferenceChildDefault(v, pointer) {
+			keys = append(keys, "default")
+		}
+		if checkKeys(v, keys, pointer) != nil {
 			return false
 		}
 		target, err := a.resolveSchema(text(get(v, "$ref")), pointer+"/$ref")

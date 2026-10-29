@@ -125,6 +125,16 @@ func (a *analyzer) nestedDefaultSchema(v *document.Value, name, pointer string, 
 // the end of its admitted inline container path. The exact node grants no
 // permission to a copied leaf or a reference.
 func (a *analyzer) nestedDefaultSchemaWithEnumBounds(v *document.Value, name, pointer string, nested *[]Declaration, used map[string]bool, depth int, root bool, boundedEnum *document.Value) (*nestedDefaultNode, *diagnostic.Diagnostic) {
+	if own, err := a.inlineEnumCollectionChildDefault(v, pointer, depth); err != nil {
+		return nil, err
+	} else if own {
+		root = true
+	}
+	if own, err := a.inlineBuiltinCollectionChildDefault(v, pointer, depth); err != nil {
+		return nil, err
+	} else if own {
+		root = true
+	}
 	if v != nil && v == boundedEnum && a.options.Validation && directStringEnumFieldBounds(v) {
 		ty, err := a.checkedStringEnumLeaf(v, name, pointer, nested, used, depth, root && has(v, "default"))
 		if err != nil {
@@ -226,6 +236,12 @@ func (a *analyzer) nestedDefaultSchemaWithEnumBounds(v *document.Value, name, po
 		node.element = element
 		ty, err := a.checkedCollectionRole(TypeRef{Kind: typeKind, Element: &element.ty}, v, pointer, element.object)
 		if err != nil {
+			return nil, err
+		}
+		if err := a.bindInlineEnumCollectionChildDefault(get(v, edge), naming.Pointer(pointer, edge), ty.Element); err != nil {
+			return nil, err
+		}
+		if err := a.bindInlineBuiltinChildDefault(get(v, edge), naming.Pointer(pointer, edge), ty.Element); err != nil {
 			return nil, err
 		}
 		node.ty = ty

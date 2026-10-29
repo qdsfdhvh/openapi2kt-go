@@ -184,6 +184,17 @@ func (a *analyzer) checkedArrayItems(element TypeRef, v *document.Value, pointer
 	if err != nil {
 		return TypeRef{}, err
 	}
+	if decision != nil && decision.Projection == nil {
+		if err := a.bindCollectionReferenceChildDefault(decision.Selected, decision.Pointer, ty.Element); err != nil {
+			return TypeRef{}, err
+		}
+		if err := a.bindInlineEnumCollectionChildDefault(decision.Selected, decision.Pointer, ty.Element); err != nil {
+			return TypeRef{}, err
+		}
+		if err := a.bindInlineBuiltinChildDefault(decision.Selected, decision.Pointer, ty.Element); err != nil {
+			return TypeRef{}, err
+		}
+	}
 	a.recordTupleCollectionWork(ty.Element, decision)
 	if a.tupleSpecials != nil && decision != nil && decision.Projection == nil && a.tupleSpecials.Sources[decision.Selected] != nil {
 		a.recordTupleSpecialUse(ty.Element, decision.Selected)

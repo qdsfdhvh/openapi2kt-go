@@ -70,6 +70,10 @@ func TestInternalEnumAliasFactoryRejectedSources(t *testing.T) {
 				}
 				continue
 			}
+			if body == `{"Owner":{"type":"array","items":{"type":"string","enum":["on"],"default":"on"}},"Alias":{"$ref":"#/components/schemas/Owner/items","default":"on"}}` {
+				inlineEnumChildGraduation(t, rq, `,"default":"on"`, `,"default":"other"`, "/components/schemas/Owner/items/default")
+				continue
+			}
 			if got, err := core.GenerateWithDiagnostics(rq); err == nil || !reflect.DeepEqual(got, core.GenerationReport{}) {
 				t.Fatal("factory granted unsupported source authority", body, checked, err)
 			}

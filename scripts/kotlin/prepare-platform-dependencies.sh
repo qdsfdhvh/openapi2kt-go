@@ -45,12 +45,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.datetime.LocalDate
 @Serializable
-private data class DependencyProbe(val value: String, val bytes: ByteArray)
+private data class DependencyProbe(val value: String, val bytes: ByteArray, val day: LocalDate)
 fun main() {
-    val value = Json.decodeFromString<DependencyProbe>("""{"value":"ready","bytes":[-128,127]}""")
+    val value = Json.decodeFromString<DependencyProbe>("""{"value":"ready","bytes":[-128,127],"day":"2024-02-29"}""")
     check(value.value == "ready" && value.bytes.contentEquals(byteArrayOf(-128,127)))
-    check(Json.decodeFromString<DependencyProbe>(Json.encodeToString(value)).value == "ready")
+    check(value.day == LocalDate.parse("2024-02-29"))
+    check(Json.decodeFromString<DependencyProbe>(Json.encodeToString(value)).day == value.day)
     println("Platform compiler and serialization dependency preparation passed")
 }
 ''')

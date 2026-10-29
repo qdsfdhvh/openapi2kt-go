@@ -6,6 +6,8 @@ Finite direct ordinary DTO arrays whose items are further inline List/typed Map 
 
 Ordinary DTO properties with a direct `type: array` and direct scalar `items` accept a representable array `default`. Element types are String, Boolean, Int, Long, Float and Double, plus direct String `format: date` / `date-time` mapped to LocalDate / Instant; nullable elements are supported independently of container nullability. This extends M01/M02/M03/M07 and exercises the existing A03/A05/A08 request, response and SSE contracts.
 
+An eligible direct builtin `items` schema can also own an independent annotation under the [child-default contract](inline-builtin-collection-child-defaults.md). It never supplies an array initializer or element.
+
 ```json
 {"type":"array","items":{"type":"integer","format":"int64"},"default":[1,2]}
 ```

@@ -31,9 +31,13 @@ func (a *analyzer) boundedPrimitiveType(v *document.Value, pointer string, depth
 		return TypeRef{}, nil, err
 	}
 	keys := append([]string{"type", "nullable", "format"}, primitiveBoundKeys...)
+	own, err := a.inlineBuiltinCollectionChildDefault(v, pointer, depth)
+	if err != nil {
+		return TypeRef{}, nil, err
+	}
 	// Only an original component node admitted by the factory planner owns a
 	// root annotation here. Arbitrary bounded typed uses keep their grammar.
-	if a.componentDefaultSchemas[v] {
+	if own || a.componentDefaultSchemas[v] {
 		keys = append(keys, "default")
 	}
 	if err := checkKeys(v, keys, pointer); err != nil {
@@ -81,7 +85,11 @@ func (a *analyzer) primitiveElementType(v *document.Value, pointer string, depth
 			return nil, err
 		}
 		if kind == "integer" || kind == "number" || kind == "boolean" {
-			ty, err := a.nativeEnumValueType(v, pointer, depth)
+			own, err := a.inlineEnumCollectionChildDefault(v, pointer, depth)
+			if err != nil {
+				return nil, err
+			}
+			ty, err := a.nativeEnumValueTypeOwnDefault(v, pointer, depth, own)
 			return &ty, err
 		}
 	}
@@ -125,6 +133,11 @@ func (a *analyzer) primitiveElementType(v *document.Value, pointer string, depth
 }
 
 func (a *analyzer) collectionElementType(v *document.Value, name, pointer string, nested *[]Declaration, used map[string]bool, depth int) (TypeRef, *diagnostic.Diagnostic) {
+	if ty, err := a.collectionReferenceChildDefault(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
 	if ty, err := a.tupleSpecialElement(v, pointer, depth); err != nil {
 		return TypeRef{}, err
 	} else if ty != nil {
@@ -209,6 +222,11 @@ func (a *analyzer) collectionElementType(v *document.Value, name, pointer string
 }
 
 func (a *analyzer) operationElementType(v *document.Value, name, pointer string, declarations *[]Declaration, used map[string]bool, depth int) (TypeRef, *diagnostic.Diagnostic) {
+	if ty, err := a.collectionReferenceChildDefault(v, pointer, depth); err != nil {
+		return TypeRef{}, err
+	} else if ty != nil {
+		return *ty, nil
+	}
 	if ty, err := a.tupleSpecialElement(v, pointer, depth); err != nil {
 		return TypeRef{}, err
 	} else if ty != nil {

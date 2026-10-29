@@ -222,6 +222,35 @@ func TestNestedNativeEnumCollectionDefaultsNativeOriginalErrorsAndSuppression(t 
 			{`{"type":"integer","enum":[1],"default":1}`, `[]`, "E_SCHEMA_UNSUPPORTED", "/items/additionalProperties/default"},
 		} {
 			doc := nestedNativeEnumDocument(nestedNativeEnumField("LM", tc.leaf, tc.value, ""))
+			if tc.leaf == `{"type":"integer","enum":[1],"default":1}` {
+				// Preserve the former refusal verbatim as a positive in an
+				// independent output, then test the original owned output with
+				// an invalid child value.
+				control := bytes.Replace(doc, []byte(`,"default":1`), nil, 1)
+				opts := core.GenerationOptions{PackageName: "org.example.catalog", Validation: checked}
+				plain, plainErr := core.GenerateWithDiagnostics(core.GenerationRequest{Document: control, Options: opts})
+				annotated, annotatedErr := core.GenerateWithDiagnostics(core.GenerationRequest{Document: doc, Options: opts})
+				if plainErr != nil || annotatedErr != nil || !reflect.DeepEqual(plain, annotated) {
+					t.Fatal("independent inline child changed output", plainErr, annotatedErr)
+				}
+				put(t, p.Input, doc)
+				graduate := nestedNativeEnumArgs(p.Input, filepath.Join(p.Root, "graduated"), checked, core.DataClass)
+				validate := []string{"validate", "--input", p.Input, "--package-name=org.example.catalog", "--diagnostic-format=json", "--model-style=" + string(core.DataClass)}
+				if checked {
+					validate = append(validate, "--validation")
+				}
+				for _, command := range [][]string{validate, graduate, append(append([]string{}, graduate...), "--check")} {
+					result(t, invoke(t, p.Root, command...), 0)
+				}
+				put(t, p.Input, bytes.Replace(doc, []byte(`"default":1`), []byte(`"default":2`), 1))
+				for _, command := range [][]string{args, append(append([]string{}, args...), "--check"), validate} {
+					failure := fails(t, invoke(t, p.Root, command...), 1, "E_SCHEMA_INVALID")
+					if failure.Diagnostics[0].Pointer == nil || *failure.Diagnostics[0].Pointer != prefix+tc.tail || !reflect.DeepEqual(before, snapshot(t, p.Output)) {
+						t.Fatal("invalid inline child changed existing output or location", failure)
+					}
+				}
+				continue
+			}
 			r, err := core.GenerateWithDiagnostics(core.GenerationRequest{Document: doc, Options: core.GenerationOptions{PackageName: "org.example.catalog", Validation: checked}})
 			if err == nil || !reflect.DeepEqual(r, core.GenerationReport{}) {
 				t.Fatal("core returned partial success", tc, err)

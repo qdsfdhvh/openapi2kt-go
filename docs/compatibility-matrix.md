@@ -274,6 +274,10 @@
 
 ## 已有实现与测试入口
 
+[Builtin collection child defaults](inline-builtin-collection-child-defaults.md) cover independent inline String/Int/Long/Float/Double/Boolean/UUID/date/date-time annotations on direct List/typed Map fields of eligible ordinary named DTOs, including independently admitted owner-root factories. Original nullable, checks, source/type authority and budgets remain; a child does not initialize its container. Other source roles and general defaults remain separate.
+
+[Enum collection child defaults](collection-reference-child-defaults.md) cover independent annotations on already admitted physical List/typed Map inline lexical String or numeric/Boolean enum elements and enum-reference elements. Strict original membership, nullable/check/source authority and budgets remain; the annotation does not initialize or populate its container. Other child/default roles and general graphs remain separate.
+
 - [YAML document loader](yaml-input.md)：F03/P8 的有界 JSON-compatible adapter；JSON/YAML 同义 ordered tree、Kotlin files/APIs/warnings/语义 Pointers 共享同一分析/生成。Native file/stdin/config/check/失败保旧及 fresh Data/Plain×validation serde/Patch/HTTP 有独立入口；duplicate/non-String keys、alias cycle/budgets、merge、tags、implicit date、multi-doc/UTF8/size/depth 有明确合同。完整 YAML/general source spans/各宿主新候选仍 OPEN。
 
 - [Borrowed retained union collection leaves](borrowed-collection-union-leaves.md)：F04/F07/M03/M09 finite ListMap/root 路径复用原 actual object/native union API、dispatch 与 Null carrier/nullable view；folded/raw/product/hierarchy 角色仍独立。

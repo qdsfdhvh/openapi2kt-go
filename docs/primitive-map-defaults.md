@@ -6,6 +6,8 @@ Finite direct ordinary DTO dictionaries whose values are further inline List/typ
 
 Ordinary DTO fields with a direct object schema and direct scalar `additionalProperties` accept a JSON object `default`. Supported values are String, Boolean, Int, Long, Float and Double, plus direct String `format: date` / `date-time` mapped to LocalDate / Instant, with independently nullable values. The object may omit `type`, or use an explicit object/nullable-object type. Fixed properties are not part of this profile.
 
+An eligible direct builtin `additionalProperties` schema can also own an independent annotation under the [child-default contract](inline-builtin-collection-child-defaults.md). It never supplies a map initializer or entry.
+
 ```json
 {
   "type": "object",
@@ -50,7 +52,7 @@ With `--validation`, `minProperties`/`maxProperties` validate both default annot
 
 ## Boundaries and compatibility
 
-Root defaults, defaults on `$ref` or composition wrappers, collection-element/value defaults, union/hierarchy fields, fixed-property objects, and nested/nominal/const/native dictionary values remain outside this profile. Direct numeric/Boolean and plain String enum values have separate [native](native-enum-collection-defaults.md) and [String](string-enum-collection-defaults.md) collection-default contracts. Boolean `additionalProperties` and untyped JSON dictionaries do not gain defaults. General reference graphs and constraint aggregation are separate capabilities.
+Root defaults, defaults on `$ref` or composition wrappers, union/hierarchy fields, fixed-property objects, and nested/nominal/const/native dictionary values remain outside this profile. Collection-element/value annotations follow the separate child contract above. Direct numeric/Boolean and plain String enum values have separate [native](native-enum-collection-defaults.md) and [String](string-enum-collection-defaults.md) collection-default contracts. Boolean `additionalProperties` and untyped JSON dictionaries do not gain defaults. General reference graphs and constraint aggregation are separate capabilities.
 
 These field schemas previously failed with `E_SCHEMA_UNSUPPORTED`. Existing accepted inputs retain their generated API, wire behavior and name-lock format. This extends M01/M02/M04/M07 and the existing typed A03/A05/A08 paths; supported opt-in checks use V05/M12 without claiming complete matrix coverage.
 
