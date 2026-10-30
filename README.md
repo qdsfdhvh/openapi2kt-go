@@ -107,7 +107,7 @@ Historical `v0.1.0-alpha.1` hosted CLI checks covered Linux, macOS and Windows. 
 | Install or upgrade | [Installation](docs/installation.md) · [Next alpha migration](docs/releases/next-alpha.md) |
 | Configure inputs and output directories | [File/stdin input](docs/local-input.md) · [Configuration](docs/configuration.md) |
 | Understand generated types and JSON behavior | [Model semantics](docs/model-semantics.md) · [Request presence and Patch](docs/request-presence.md) |
-| 使用嵌套 numeric/Boolean enum 集合字段默认值 | [直接嵌套 native enum 默认值](docs/nested-native-enum-collection-defaults.md)：保留 native scalar wire、严格原 default 词表和 required/Patch；只扩张 direct inline outer-own 角色 |
+| Use nested numeric/Boolean enum collection field defaults | [Directly nested native enum defaults](docs/nested-native-enum-collection-defaults.md): preserves native scalar wire behavior, strict original default membership, and required/Patch semantics; only extends the direct inline outer field's own default role |
 | Use a generated client | [HTTP client](docs/http-client.md) · [SSE](docs/sse.md) |
 | Handle warnings or output conflicts | [Warning policy](docs/warning-policy.md) · [Output ownership](docs/output-ownership.md) |
 | Check feature coverage | [Compatibility matrix](docs/compatibility-matrix.md) · [Remaining work](docs/remaining-work.md) |
