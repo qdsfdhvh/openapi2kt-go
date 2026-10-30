@@ -1,4 +1,4 @@
-# openapi2kt-go 开发计划
+# openapi2kt-go development plan
 
 [Component-root dictionary `allOf` wrappers](dictionary-allof-wrappers.md)
 advance E02/E03 for a single named dictionary reference, finite named alias chains
@@ -56,104 +56,104 @@ and broader E02 remain open.
 
 
 
-本计划定义完整路线图；当前已有可用的 JSON 模型生成、限定 HTTP/SSE、本地配置和安全输出，但尚未完成全部阶段及完整版本验收。
+This plan defines the complete roadmap. Usable JSON model generation, bounded HTTP/SSE, local configuration, and safe output already exist, but not all phases or complete-release acceptance are finished.
 
-先按目的阅读：
+Choose a starting point by purpose:
 
-- **查看还有什么没做**：[实现状态与剩余工作](remaining-work.md)，区分功能缺口、统一验收与后续／范围外工作。
-- **查看阶段进度**：[第 7 节](#7-开发顺序与阶段验收)，按 P0–P8 汇总已有实现和剩余退出条件。
-- **查看精确输入/API/wire 边界**：[兼容矩阵](compatibility-matrix.md)及其中链接的功能合同；有界 profile 不代表整个矩阵 ID 完成。
-- **交付当前 alpha**：[JSON 发布候选清单](json-release-checklist.md)，范围固定为现有 JSON profile、macOS ARM64 CLI 和 Kotlin/JVM。R01 范围冻结不等于 R02–R08 运行和发布门槛通过。
+- **Remaining work**: [implementation status and remaining work](remaining-work.md) distinguishes feature gaps, unified acceptance, and later/out-of-scope work.
+- **Phase progress**: [section 7](#7-development-order-and-phase-acceptance) summarizes existing implementation and remaining exit criteria for P0–P8.
+- **Exact input/API/wire boundaries**: the [compatibility matrix](compatibility-matrix.md) and its linked feature contracts; a bounded profile does not complete an entire matrix ID.
+- **Delivering the current alpha**: the [JSON release candidate checklist](json-release-checklist.md) fixes scope to the existing JSON profile, macOS ARM64 CLI, and Kotlin/JVM. R01 scope freeze does not mean R02–R08 execution and release gates passed.
 
-下面架构和完整 DoD 保留为长期设计；具体 CLI/config 示例遵循现有接口。新增功能合同应同步更新剩余工作，不再在本页堆叠重复的增量状态段落。D03 的[对象默认值 builtin scalar 别名成员](nested-object-defaults.md#builtin-scalar-alias-members)已有有限链合同，保既有类型准入、nullable 和资源边界；标准 date/date-time 链另有[temporal 成员合同](nested-object-defaults.md#temporal-scalar-alias-members)，byte/binary 链另有[bytes 成员合同](nested-object-defaults.md#bytes-scalar-alias-members)，plain String/typeless enum 链另有[String enum 成员合同](nested-object-defaults.md#string-enum-alias-members)，numeric/Boolean 链另有[native enum 成员合同](nested-object-defaults.md#native-enum-alias-members)，一般默认值图仍开放。
+The architecture and complete DoD below remain long-term design; CLI/config examples follow existing interfaces. New feature contracts should update remaining work instead of adding duplicate incremental status paragraphs here. D03 has a finite-chain contract for [builtin scalar alias members in object defaults](nested-object-defaults.md#builtin-scalar-alias-members), retaining existing type admission, nullability, and resource boundaries. Separate contracts cover [temporal members](nested-object-defaults.md#temporal-scalar-alias-members) for standard date/date-time chains, [bytes members](nested-object-defaults.md#bytes-scalar-alias-members) for byte/binary chains, [String enum members](nested-object-defaults.md#string-enum-alias-members) for plain String/typeless enum chains, and [native enum members](nested-object-defaults.md#native-enum-alias-members) for numeric/Boolean chains. General default graphs remain open.
 
-## 1. 目标与发布边界
+## 1. Goals and release boundaries
 
-用 Go 构建独立运行的 OpenAPI → Kotlin 客户端生成器。首期 JSON 及新增的[有界 YAML Adapter](yaml-input.md)均接入同一语义流水线，支持本文约定的 OpenAPI 3.0/3.1 子集。
+Build a standalone OpenAPI → Kotlin client generator in Go. Initial JSON and the added [bounded YAML adapter](yaml-input.md) enter the same semantic pipeline and support the OpenAPI 3.0/3.1 subset specified here.
 
-产品质量分三层验收：
+Accept product quality at three levels:
 
-1. **wire 行为**：请求参数编码、JSON 序列化/反序列化、Patch 三态、枚举和 union fallback、SSE 事件与取消行为。
-2. **Kotlin 使用面**：包布局、类型与方法命名、可空性、默认值、构造方式、辅助 runtime、配置开关。
-3. **工具行为**：多规格、file/stdin 输入边界、共享命名锁、增量输出、过期文件清理、失败回滚、Gradle 源集与任务接入。
+1. **Wire behavior**: request parameter encoding, JSON serialization/deserialization, three Patch states, enum and union fallback, and SSE events and cancellation.
+2. **Kotlin usage**: package layout, type and method names, nullability, defaults, construction, supporting runtime, and configuration options.
+3. **Tool behavior**: multiple specifications, file/stdin input boundaries, shared name locks, incremental output, stale file cleanup, rollback on failure, and Gradle source-set and task integration.
 
-以类型、调用方式和 wire 行为作为契约，不将某种源码排版视为正确性的依据。发布后的行为变更必须有契约测试及升级说明。
+Types, call patterns, and wire behavior are contracts; a particular source layout is not the basis of correctness. Behavior changes after release require contract tests and upgrade notes.
 
-首个完整版本包含 SSE、体积优化、命名锁、file/stdin 输入和本地 CLI 的 Kotlin 消费接入；规格下载不属于产品范围；正式 Gradle 插件不在交付范围。可提前发布能力受限的 alpha，但需明确其支持范围。YAML 不属于首期范围。
+The first complete release includes SSE, size optimization, name locks, file/stdin input, and Kotlin consumption through the local CLI. Specification download and a formal Gradle plugin are outside delivery. A limited alpha may be released earlier with its supported scope made explicit. YAML is outside the initial release scope.
 
-### 不在首期承诺内
+### Outside the initial commitment
 
-- 完整 OpenAPI/JSON Schema validator、Swagger 2.0、所有 3.1 关键字。
-- 任意外部文件/HTTP `$ref`、远端引用自动递归下载。
-- 服务端代码、其他客户端语言、GUI、动态模板插件系统。
-- OAuth 流程实现、应用业务鉴权、自动安装应用的 Ktor 插件。
-- multipart、cookie、callbacks、webhooks、links 等暂未纳入契约的能力。
-- 正式 Gradle 生成插件、自动下载或安装 CLI 的插件机制；构建示例只消费本地 CLI 输出。
+- A full OpenAPI/JSON Schema validator, Swagger 2.0, and all 3.1 keywords.
+- Arbitrary external file/HTTP `$ref` and automatic recursive downloading of remote references.
+- Server code, other client languages, a GUI, and a dynamic template plugin system.
+- OAuth flow implementation, application authentication, and automatic installation of application Ktor plugins.
+- Multipart, cookie, callbacks, webhooks, links, and other capabilities not yet in the contract.
+- A formal Gradle generation plugin or a plugin mechanism that automatically downloads or installs the CLI; build examples consume local CLI output only.
 
-遇到不支持的影响 wire 的构造要给定位诊断；不能生成一个缺参数或返回 `Unit` 的“成功结果”。已确认的近似映射见[兼容矩阵](compatibility-matrix.md)。
+Unsupported constructs affecting wire behavior need locatable diagnostics; do not generate a “successful” result with missing parameters or `Unit`. See the [compatibility matrix](compatibility-matrix.md) for confirmed approximations.
 
-## 2. 设计原则与验证状态
+## 2. Design principles and verification status
 
-本文主要定义完整版本的设计，不是全功能通过报告。P1 已有原生 Go core/CLI、单 owner 安全写出、Go API/进程/事务测试和完整已接受 serializer 的 Kotlin 编译/运行 smoke；所有更大范围的支持声明仍需要对应证据。
+This document primarily designs the complete release; it is not a report that all features passed. P1 has a native Go core/CLI, safe single-owner output, Go API/process/transaction tests, and Kotlin compilation/runtime smoke for the full accepted serializer subset. Broader support claims still require corresponding evidence.
 
-- 开放枚举、union、字典、value class、Patch、SSE 和模型压缩均属于产品范围。
-- 命名与 shape 复用需要全局规划；请求/响应上下文会影响类结构，不能只对原始 schema 做哈希去重。
-- 生成只接收本地文件/显式stdin；下载、鉴权、重试和缓存由外部工具负责，不内置网络适配或curlwrapper，编译不触发隐式联网。
-- 输出清单和异常回滚是工具的核心可靠性契约。
-- inline 对象请求及其递归 inline 子树的 `required + nullable` 使用 `T?`，不设默认值；`explicitNulls=true` 时，即使 `encodeDefaults=false` 也发送 null 键。共享组件、响应与根 union 请求仍保留普通 `T? = null`；`explicitNulls=false` 不保证 null 键，必须分别测试这些上下文及 JSON 配置。
-- UUID 已映射到 `kotlin.uuid.Uuid`，含显式[兼容迁移](nullable-uuid.md#migration)。
-- 日期时间已映射到 `kotlin.time.Instant` 和 `kotlinx.datetime.LocalDate`；见[特殊标量合同](special-scalars.md)。最低依赖版本仍须由实际编译矩阵确定。
+- Open enums, unions, dictionaries, value classes, Patch, SSE, and model compression are in product scope.
+- Naming and shape reuse require global planning; request/response context affects class structure, so hashing raw schemas alone is insufficient for deduplication.
+- Generation accepts only local files or explicit stdin. External tools handle downloads, authentication, retries, and caching; no network adapter or curl wrapper is built in, and compilation does not implicitly access the network.
+- Output manifests and rollback on failure are core reliability contracts.
+- `required + nullable` uses `T?` without a default for inline object requests and their recursive inline subtrees; with `explicitNulls=true`, the null key is sent even with `encodeDefaults=false`. Shared components, responses, and root union requests retain ordinary `T? = null`; `explicitNulls=false` does not guarantee a null key. Test these contexts and JSON configurations separately.
+- UUID maps to `kotlin.uuid.Uuid`, with an explicit [compatibility migration](nullable-uuid.md#migration).
+- Date/time maps to `kotlin.time.Instant` and `kotlinx.datetime.LocalDate`; see the [special scalar contract](special-scalars.md). Actual compilation matrices must establish minimum dependencies.
 
-测试数据和变更验证要求见[贡献指南](../CONTRIBUTING.md)。
+See [Contributing](../CONTRIBUTING.md) for test data and change verification requirements.
 
-## 3. 总体架构
+## 3. Overall architecture
 
 ```text
-本地 CLI 适配层
-          │ 配置合并、bounded 本地file/stdin读取（规格获取是外部工具）
+Local CLI adapter
+          │ configuration merge, bounded local file/stdin reads (external tools acquire specifications)
           ▼
-Document Loader：JSON / 有界 YAML Adapter
+Document Loader: JSON / bounded YAML adapter
           ▼
 Raw Document + Source Map
           ▼
-OpenAPI 解码 → 本地引用图 → 规范化 → 用途分析
+OpenAPI decoding → local reference graph → normalization → usage analysis
           ▼
-类型/operation 计划 → shape 收集 → 稳定命名/命名锁
+Type/operation planning → shape collection → stable naming/name lock
           ▼
-Kotlin IR → 可选去重/合并 → 模型风格 → Kotlin emitter
+Kotlin IR → optional deduplication/merge → model style → Kotlin emitter
           ▼
-Artifact Set + 新命名锁 + Diagnostics + Metrics
+Artifact Set + new name lock + Diagnostics + Metrics
           ▼
-Output Transaction：校验、暂存、提交、清理、失败恢复
+Output Transaction: validation, staging, commit, cleanup, failure recovery
 ```
 
-### 3.1 Go module 与包边界
+### 3.1 Go module and package boundaries
 
-公开小型 core API，复杂决策留在内部包，CLI/文件事务单独适配：
+Expose a small core API, retain complex decisions in internal packages, and adapt CLI/file transactions separately:
 
 ```text
-go.mod                    # 当前仅依赖标准库
-core/                     # 公开 request/result/diagnostic API 与合同测试
-cmd/openapi-kt/            # native CLI 入口
+go.mod                    # pinned module dependencies
+core/                     # public request/result/diagnostic API and contract tests
+cmd/openapi-kt/            # native CLI entry point
 internal/
-  document/               # ordered JSON、精确数值与输入限额
-  naming/                 # Kotlin 名称、literal、Pointer
-  schema/                 # catalog、source views、规范化与有界图
-  kotlin/                 # typed declarations 的稳定输出
-  diagnostic/             # 安全结构化诊断
+  document/               # ordered JSON, exact numbers, and input limits
+  naming/                 # Kotlin names, literals, Pointers
+  schema/                 # catalog, source views, normalization, and bounded graphs
+  kotlin/                 # stable output of typed declarations
+  diagnostic/             # safe structured diagnostics
   cli/                    # input/flags/report/exit
-  output/                 # manifest、锁、同盘暂存、回滚
-  testutil/               # 测试专用原 fixture 清单
-tests/fixtures/           # 独立合成 JSON 与完整 Kotlin 快照
+  output/                 # manifest, locks, same-filesystem staging, rollback
+  testutil/               # original fixture inventory for tests
+tests/fixtures/          # independent synthetic JSON and complete Kotlin snapshots
 samples/                  # Kotlin serializer consumer smoke
-scripts/                  # 离线验证与发布检查
+scripts/                  # offline verification and release checks
 ```
 
-生成内核不依赖 Gradle/JVM，不联网、读环境或写文件；Go tests 无需 Rust/Cargo。Kotlin 编译/runtime 使用显式 smoke harness；Kotlin 工程通过显式调用本地 CLI 和配置生成源目录接入；不新增正式 Gradle 生成插件。
+The generation core does not depend on Gradle/JVM, access the network, read the environment, or write files; Go tests need no Rust/Cargo. Kotlin compilation/runtime uses an explicit smoke harness. Kotlin projects integrate by explicitly invoking the local CLI and configuring generated source directories; no formal Gradle generation plugin is added.
 
-### 3.2 小 Interface，复杂 Implementation 留在 Module 内
+### 3.2 Small interface, complex implementation inside the module
 
-核心对外保留一个生成入口，概念契约如下（非可直接编译的 API）：
+The core exposes one generation entry point, conceptually (not a directly compilable API):
 
 ```text
 generate(GenerationRequest {
@@ -162,84 +162,84 @@ generate(GenerationRequest {
 }) -> Result<GenerationArtifacts, Diagnostics>
 ```
 
-结果包含相对文件路径与内容、新命名锁、生成摘要、诊断；不直接暴露几十个 builder。初期中间 IR 是内部实现，不承诺稳定公共 API。`source_label` 默认使用相对路径；报告不含原文或绝对路径。
+The result contains relative file paths and contents, a new name lock, generation summary, and diagnostics; it does not expose dozens of builders. The initial intermediate IR is internal and has no stable public API promise. `source_label` defaults to a relative path; reports omit source text and absolute paths.
 
-CLI 的职责是加载文件/配置、调用内核、提交结果。核心用同一入口完成内存快照测试，文件事务另做故障注入测试。不要为尚不存在的十种后端设计插件框架。
+The CLI loads files/configuration, invokes the core, and commits results. Core in-memory snapshot tests use the same entry point; file transactions get separate failure-injection tests. Do not design a plugin framework for ten nonexistent backends.
 
-### 3.3 JSON / YAML 的真正扩展点
+### 3.3 JSON / YAML extension point
 
-- `InputFormat = Auto | Json | Yaml` 已实现 JSON 和[有界 YAML profile](yaml-input.md)，通过 vendored `go.yaml.in/yaml/v3` v3.0.4 解析节点，不按行拼凑。
-- Loader 只负责语法 → ordered JSON 兼容树及安全诊断。两个格式进入同一个引用解析、规范化和生成入口。
-- `auto` 按 `.json`/`.yaml`/`.yml` 后缀选择 parser；无后缀（含 stdin）是 JSON，未知后缀要求 `--input-format`。禁止 JSON 失败后降级为另一种解释。
-- 语义定位保留 JSON Pointer；YAML node 错误提供可用行列，原 parser 错误替换为安全消息，不伪造 general source span。
-- YAML 的重复 key/非 String key、anchor rebinding/cycle、alias node/byte/depth budgets、merge/tag/隐式日期/多文档/UTF8 策略以合同为准；完整 YAML 仍不承诺。
-- emitter 无 YAML 分支。同义接受输入的 ordered tree、文件/warnings/诊断 parity 与 fresh Kotlin serde/Patch/HTTP 消费通过独立 fixture 检查。
+- `InputFormat = Auto | Json | Yaml` implements JSON and the [bounded YAML profile](yaml-input.md), parsing nodes with vendored `go.yaml.in/yaml/v3` v3.0.4 instead of assembling lines.
+- The loader handles syntax → ordered JSON-compatible tree and safe diagnostics only. Both formats enter the same reference resolution, normalization, and generation entry point.
+- `auto` chooses a parser by `.json`/`.yaml`/`.yml` suffix; inputs without a suffix (including stdin) are JSON, and unknown suffixes require `--input-format`. JSON failure must not fall back to a different interpretation.
+- Semantic locations retain JSON Pointers; YAML node errors provide available line/column information, and raw parser errors are replaced with safe messages without inventing general source spans.
+- The contract governs duplicate/non-String keys, anchor rebinding/cycles, alias node/byte/depth budgets, merge/tag/implicit date/multiple document/UTF8 policy. Full YAML is not promised.
+- The emitter has no YAML branch. Separate fixtures check ordered tree, file/warning/diagnostic parity and fresh Kotlin serialization/Patch/HTTP consumption for equivalent accepted inputs.
 
-### 3.4 schema 与引用图
+### 3.4 Schema and reference graphs
 
-当前实现独立的 [terminal builtin scalar schema Pointer 子集](model-semantics.md#terminal-scalar-schema-pointers)，及 [finite List/typed Map targets](model-semantics.md#finite-collection-schema-pointers)：沿真实 component schema edges 借用原节点/source；集合支持直接有限嵌套和 terminal internal scalar-ref 叶，保留 typed checks/root override/inner nullability；[internal collection reference chains](model-semantics.md#internal-collection-reference-chains)另扩张有限 collection-ref hops/嵌套引用，跨 ref/container 原节点 active path 有界拒绝环，不引入 nominal 身份、root component alias 或 HTTP schema anchors。另有 [internal scalar reference chains](model-semantics.md#internal-scalar-reference-chains) 的有限透明 hop 解析：原 terminal/source、最近 nullable override、累计 consumer 高度与请求 Patch；循环仍保持历史排除诊断。既有 named/HTTP references 不变；下述 SchemaId/SCC 是更广图设计，不是该有界实现的能力承诺。完整 F04/V05/V06 与非 YAML 后续计划仍开放。独立 240 浅集合字段和单字段 16 层编译验证不保证广深组合：深泛型宽模型仍可能超出 Kotlin/JVM compiler/class-file 字符串资源，这一既有 direct schema 亦可触发的资源问题须继续处理，不通过新增 cap 或提高 heap 规避。
+The current implementation separately supports [terminal builtin scalar schema Pointers](model-semantics.md#terminal-scalar-schema-pointers) and [finite List/typed Map targets](model-semantics.md#finite-collection-schema-pointers), borrowing original nodes and sources along actual component schema edges. Collections support direct finite nesting and terminal internal scalar-reference leaves, retaining typed checks, root overrides, and inner nullability. [Internal collection reference chains](model-semantics.md#internal-collection-reference-chains) separately extend finite collection-reference hops and nested references, rejecting cycles within a bounded active path across original reference/container nodes without introducing nominal identity, root component aliases, or HTTP schema anchors. [Internal scalar reference chains](model-semantics.md#internal-scalar-reference-chains) separately resolve finite transparent hops while preserving the original terminal/source, nearest nullable override, accumulated consumer height, and request Patch; cycles retain their historical exclusion diagnostic. Existing named/HTTP references are unchanged. SchemaId/SCC below describe a broader graph design, not a capability promised by this bounded implementation. Full F04/V05/V06 and later non-YAML plans remain open. Independent compilation checks for 240 shallow collection fields and one 16-layer field do not guarantee a wide-and-deep combination: wide models with deep generics can exceed Kotlin/JVM compiler/class-file string resources. This resource issue, also possible with existing direct schemas, remains to be addressed without adding a cap or raising heap to evade it.
 
-[Direct internal ordinary DTO references](internal-dto-references.md) 另有 typed-use 有界增量：direct component 的直接 properties 对象树中，内部 `$ref` 绑定既有 nested DTO canonical FQName，保留 nominal 递归屏障与 nullable/Patch。有限内部 ref chain→这些 DTO 已有独立 nearestnullable/fullhop/cacheheight 增量；direct List/Map-owned DTO targets另复用nested Inner/Value与root top-level peer，保持container/leaf nullable独立。独立[component-root aliases→internal DTO](internal-dto-references.md#component-root-aliases-to-internal-dtos)保exported typealias与canonical物理owner/ctor/serializer、最近nullable及完整named/internal hop/cacheheight；未使用的alias也需final constructor-bearing确认，不复制catalog。独立[internal chains→named ordinary DTO](internal-dto-references.md#finite-internal-chains-to-named-ordinary-dtos)支持有限内部hop到direct named构造DTO、真实catalog/canonical顶层owner、nearestnullable/最终namededge与alias缓存预算；另有[internal chains→named DTO aliases](internal-dto-references.md#finite-internal-chains-through-named-dto-aliases)保existing directnamed/internal canonicalowner、nearestaliasnullable/累计全named-internalhop；另有[root aliases→internal chains→named DTO bridges](internal-dto-references.md#component-root-aliases-through-internal-chains-to-named-dtos)共用catalogDFS、canonicalphysicalowner、own/internal/namedintent与全hop/cacheheight；nonordinaryalias/shape expansion不扩张。Hierarchy 与 composition-owned targets、借用集合中的 DTO/enum/union/hierarchy/scalar leaves 已有独立合同，见[兼容矩阵](compatibility-matrix.md)。Ambiguous owners、fixed extras scratch 与更广 shape expansion 仍未覆盖；不等于完整 F04。
+[Direct internal ordinary DTO references](internal-dto-references.md) separately add bounded typed use: internal `$ref` in a direct component's direct properties object tree binds the existing nested DTO's canonical FQName, preserving the nominal recursion barrier and nullable/Patch behavior. Finite internal reference chains to these DTOs have a separate nearest-nullable/full-hop/cache-height increment. Direct List/Map-owned DTO targets reuse nested Inner/Value and root top-level peers, keeping container and leaf nullability independent. Separate [component-root aliases to internal DTOs](internal-dto-references.md#component-root-aliases-to-internal-dtos) preserve exported typealiases, canonical physical owner/constructor/serializer, nearest nullability, and full named/internal hop/cache height; even unused aliases require final constructor-bearing confirmation without copying the catalog. [Internal chains to named ordinary DTOs](internal-dto-references.md#finite-internal-chains-to-named-ordinary-dtos) support finite internal hops to direct named constructor DTOs, actual catalog/canonical top-level ownership, nearest nullability/final named edge, and alias cache budgets. [Internal chains through named DTO aliases](internal-dto-references.md#finite-internal-chains-through-named-dto-aliases) retain existing direct named/internal canonical owners, nearest alias nullability, and accumulated named/internal hops. [Root aliases through internal chains to named DTO bridges](internal-dto-references.md#component-root-aliases-through-internal-chains-to-named-dtos) share catalog DFS, canonical physical ownership, own/internal/named intent, and full hop/cache height; nonordinary aliases and shape expansion are not extended. Hierarchy and composition-owned targets and DTO/enum/union/hierarchy/scalar leaves in borrowed collections have separate contracts; see the [compatibility matrix](compatibility-matrix.md). Ambiguous owners, fixed-extras scratch, and broader shape expansion remain uncovered; this does not complete F04.
 
-IR 必须区分：字段是否 required、值是否 nullable、是否有 default、是否 const，以及 schema 是任意值、不可满足、对象还是字典；不能把这些挤进一个 `Option<T>`。
+The IR must distinguish whether a field is required, whether its value is nullable, whether it has a default, whether it is const, and whether a schema is any value, unsatisfiable, an object, or a dictionary; these cannot be collapsed into one `Option<T>`.
 
-- 引用使用 `SchemaId`/节点索引，保留来源 Pointer；用访问状态/SCC 控制递归，禁止无限展开。
-- 只在 schema/parameter/response 等合法位置解释 `$ref`，不改写 examples/default 中同名的用户数据。
-- 本地 Pointer 解码 `~0`/`~1`，引用缺失明确报错；外部引用明确不支持。
-- 区分 `UsageContext = RequestBody | ResponseBody | Parameter | SharedComponent | SsePayload`。
-- 共享 component 的 canonical 构造器、nullable 默认值与 serializer 保持；普通 HTTP DTO 的 readOnly/writeOnly 字段另按[定向模型合同](directional-models.md)生成 operation-owned Request/PublicResponse 视图，包含受影响的引用、集合和名义递归。无定向需求的引用仍共享模型。一般 Patch 上下文仍用于 inline 对象请求及其递归 inline 子树；定向 Request clone 使用相同 presence 表，根 union 请求、response 和 deepObject 不开启 Patch。
-- 规范化保留有损变换诊断。生成器支持某种“近似表示”不等于验证了 JSON Schema 全部约束。
+- References use `SchemaId`/node indices and preserve source Pointers; visitation state/SCC controls recursion and prevents infinite expansion.
+- Interpret `$ref` only at legal schema/parameter/response locations; do not rewrite user data with the same name in examples/defaults.
+- Decode `~0`/`~1` in local Pointers and clearly report missing references; external references are explicitly unsupported.
+- Distinguish `UsageContext = RequestBody | ResponseBody | Parameter | SharedComponent | SsePayload`.
+- Preserve shared components' canonical constructors, nullable defaults, and serializers. For ordinary HTTP DTO readOnly/writeOnly fields, the [directional model contract](directional-models.md) separately generates operation-owned Request/PublicResponse views, including affected references, collections, and nominal recursion. References without directional needs still share models. General Patch context remains applicable to inline object requests and recursive inline subtrees; directional Request clones use the same presence table, while root union requests, responses, and deepObject do not enable Patch.
+- Normalization retains lossy-transformation diagnostics. Supporting an “approximate representation” does not mean all JSON Schema constraints are validated.
 
-### 3.5 Kotlin IR 与 emitter
+### 3.5 Kotlin IR and emitter
 
-Go emitter 使用**小型、强类型声明模型**，统一生成策略，而不是到处重复字符串拼接，也不必做完整 Kotlin AST。
+The Go emitter uses a **small, strongly typed declaration model** to unify generation policy instead of repeating string concatenation throughout; a complete Kotlin AST is unnecessary.
 
-至少覆盖 `TypeRef`、declaration、property、constructor、annotation、函数、常量、类型参数、nullable、import、KDoc、受控代码片段。统一负责：
+At minimum cover `TypeRef`, declarations, properties, constructors, annotations, functions, constants, type parameters, nullability, imports, KDoc, and controlled code snippets. Handle centrally:
 
-- Kotlin 标识符、关键字、大小写不敏感文件名碰撞。
-- 字符串中的引号、反斜杠、`$`、换行；数值后缀和负数边界。
-- 正则字面量与 KDoc 中的 `*/`，防止规格内容破坏源码结构。
-- import 歧义、嵌套类型和 typealias 引用。
-- 无构造参数的 const-only 模型，不生成非法 `data class`。
+- Kotlin identifiers, keywords, and case-insensitive filename collisions.
+- Quotes, backslashes, `$`, and newlines in strings; numeric suffixes and negative limits.
+- Regex literals and `*/` in KDoc, preventing specification content from breaking source structure.
+- Import ambiguity, nested types, and typealias references.
+- Const-only models without constructor parameters, avoiding illegal `data class` declarations.
 
-[模型风格](model-style.md)已接通 `data_class`/`plain_class` 的 typed owned IR 样式与显式 value methods；结构合并已有下方初始有界 profile，非完整 O04。[Initial resolved ordinary model merging](merge-models.md) 已在 typed IR 上接通 default-off merge/exact FQ exclusions、component-first canonical owners/acyclic resolved references 与 source/noDrop/alias migration；general graphs仍待；[portable regex/literal suffix exclusions](merge-exclusions.md)已实现full-FQ-match与short-generated-name suffix，exact旧语义不变。模型风格和结构合并在 IR 上进行，不对生成后的 Kotlin 文本做正则替换。合并先于包含类名字符串的 plain-class `toString` 输出。
+[Model style](model-style.md) connects `data_class`/`plain_class` typed owned IR styles and explicit value methods. Structural merging has the initial bounded profile below, not complete O04. [Initial resolved ordinary model merging](merge-models.md) connects default-off merge/exact FQ exclusions, component-first canonical owners/acyclic resolved references, and source/NoDrop/alias migration on typed IR; general graphs remain. [Portable regex/literal suffix exclusions](merge-exclusions.md) implement full-FQ matching and short-generated-name suffixes without changing existing exact semantics. Model style and structural merging operate on IR, not regex replacements of generated Kotlin text. Merging precedes plain-class `toString` output containing class-name strings.
 
-### 3.6 确定性和命名锁
+### 3.6 Determinism and name locks
 
-1. 收集所有 components、operation 输入/输出、参数、错误体、SSE payload 的 shape。
-2. shape fingerprint 包含类型、wire 名、required/default/nullable、序列化器、校验、请求上下文；通常排除纯说明文字。
-3. 集中分配符号，考虑组件名、runtime 保留名、别名、大小写折叠冲突。
-4. 读取有版本的命名锁，优先匹配结构，再按已定义 occurrence 规则识别变化；不依赖随机哈希顺序。
-5. 输出重命名报告与新锁，在文件提交成功时一起更新。
+1. Collect shapes for all components, operation inputs/outputs, parameters, error bodies, and SSE payloads.
+2. Shape fingerprints include types, wire names, required/default/nullable, serializers, validation, and request context; pure descriptions are normally excluded.
+3. Allocate symbols centrally, accounting for component names, runtime reserved names, aliases, and case-folding collisions.
+4. Read versioned name locks, match structures first, and identify changes using defined occurrence rules rather than random hash order.
+5. Emit rename reports and new locks, updating them together when file commit succeeds.
 
-命名锁格式及 fingerprint 规则要版本化。遇到不支持的格式版本必须报错；后续升级提供转换或显式重建流程，并输出类型名差异清单，不能静默当空锁。
+Version name-lock formats and fingerprint rules. Reject unsupported format versions; later upgrades provide conversion or explicit rebuild and a type-name difference list, never silently treating the lock as empty.
 
-保持已约定的属性声明顺序和 union 分支优先级；只对无序集合确定性排序。“乱序测试”不得打乱具有语义的列表。
+Preserve agreed property declaration order and union branch priority; sort only unordered collections deterministically. Reordering tests must not reorder semantically significant lists.
 
-## 4. 当前配置与 CLI 契约
+## 4. Current configuration and CLI contract
 
-以下命令和字段已实现；完整配置/lifecycle的剩余边界见[本地配置](configuration.md)和[剩余工作](remaining-work.md)。
+The commands and fields below are implemented; see [local configuration](configuration.md) and [remaining work](remaining-work.md) for remaining configuration/lifecycle boundaries.
 
-### 4.1 命令
+### 4.1 Commands
 
 ```bash
 openapi-kt generate --config openapi-kt.toml
 openapi-kt generate --config openapi-kt.toml --spec catalog
 openapi-kt generate --config openapi-kt.toml --check
 openapi-kt validate --input tests/fixtures/http/basic.json --input-format json
-# 外部工具可供流；stdin 不用于多spec配置。
+# An external tool can supply a stream; stdin is not used for multi-spec configuration.
 curl -fsSL https://api.example.test/openapi.json | openapi-kt validate --input -
 ```
 
-- direct `generate`/`validate`/`--check` 读本地file或显式 `--input -` JSON/YAML（auto stdin 为 JSON，YAML stream 须显式format）；配置仅localfile、拒绝stdin marker。移除旧download/URL/header配置；外部producer与退出状态由调用方负责。
-- `--check` 计算 Kotlin 文件、manifest、命名锁差异，**不写回**。
-- `validate` 是“本工具支持子集及可生成性检查”，不是通用规范认证。
-- [同 root named-owner rename](output-owner-rename.md)已支持一次性 repeatable `--rename-owner OLD:NEW`，仅 generate/validate --config；full 映射每个当前 spec，partial 唯一对应 NEW，identity 验证后 no-op。保持现有 v2/v4、exact Kotlin 与锁语义；只更新 metadata、不 reconcile，保留 config 外 peers。
-- 退出码：0 成功、1 输入/配置/生成失败、2 CLI 用法错误、3 check 有差异、4 输入IO或文件提交/存储/rename安全拒绝。
-- `--diagnostic-format text|json`；机器报告写 stdout，进度日志写 stderr。诊断有稳定 code、severity、阶段、相对来源和 Pointer。
-- [CLI warning policy](warning-policy.md) 已实现 `generate`/`validate`/`generate --check` 的 `--deny-warnings` 与 repeatable exact `--allow-warning CODE`；成功生成后在 output IO 前以原 Pointer 拒绝未放行 warnings，保留全部 warnings。默认行为不变；[opt-in CLI metrics](cli-metrics.md) 已实现实际 read/generate/warning_policy/check-or-commit 的 coarse timing 和 planned byte/file counts，纯 core/输出 hash 不变；[配置聚合](cli-metrics.md#configuration-aggregation)已接通 config/read/generate/policy/batch 累计和同root-path helper去重计数，core实际options/parse/analyze/transform/emit子阶段与Darwin/Linux process-lifetime peak RSS已接通；resolve/name交织在analyze内，独立分摊/phase memory仍不提供，不能全局吞异常。
+- Direct `generate`/`validate`/`--check` read local JSON/YAML files or explicit `--input -` (auto stdin is JSON; YAML streams require an explicit format). Configuration accepts local files only and rejects the stdin marker. Old download/URL/header configuration is removed; callers own external producers and their exit status.
+- `--check` computes Kotlin file, manifest, and name-lock differences **without writing**.
+- `validate` checks this tool's supported subset and generatability; it is not general specification certification.
+- [Same-root named-owner rename](output-owner-rename.md) supports one-time repeatable `--rename-owner OLD:NEW`, only with generate/validate --config. Full mapping covers every current spec; partial mapping uniquely identifies NEW; identity is a validated no-op. Existing v2/v4, exact Kotlin, and lock semantics are preserved; only metadata changes, without reconciliation, and peers outside the configuration remain.
+- Exit codes: 0 success, 1 input/configuration/generation failure, 2 CLI usage error, 3 check differences, 4 input IO or file commit/storage/rename safety rejection.
+- `--diagnostic-format text|json`; machine reports go to stdout and progress logs to stderr. Diagnostics have stable code, severity, phase, relative source, and Pointer.
+- [CLI warning policy](warning-policy.md) implements `--deny-warnings` and repeatable exact `--allow-warning CODE` for `generate`, `validate`, and `generate --check`. After successful generation and before output IO, it rejects unallowed warnings at their original Pointers while retaining all warnings. Default behavior remains unchanged. [Opt-in CLI metrics](cli-metrics.md) provide coarse actual read/generate/warning_policy/check-or-commit timing and planned byte/file counts without changing pure core or output hashes. [Configuration aggregation](cli-metrics.md#configuration-aggregation) accumulates config/read/generate/policy/batch and deduplicates same-root-path helper counts. Actual core options/parse/analyze/transform/emit subphases and Darwin/Linux process-lifetime peak RSS are connected. Resolve/name are interleaved within analyze; separate attribution and phase memory remain unavailable, and exceptions must not be swallowed globally.
 
-### 4.2 中性配置示例
+### 4.2 Neutral configuration example
 
 ```toml
 config_version = 1
@@ -264,150 +264,150 @@ api_client_name = "CatalogApiClient"
 exclude_apis = []
 ```
 
-`catalog.json` 由调用方提供，路径相对配置文件。命名锁由输出 manifest 管理并保存在输出根，不接受自定义 `hoisted_names_lock_file` 路径；具体 version3/4 文件名与生命周期见[命名锁合同](name-lock.md)。
+`catalog.json` is supplied by the caller, with paths relative to the configuration file. The output manifest manages the name lock in the output root; a custom `hoisted_names_lock_file` path is not accepted. See the [name-lock contract](name-lock.md) for version 3/4 filenames and lifecycle.
 
-规格获取由外部工具负责，本地配置没有download字段/表。上方外部producer域名仅作示例，不用于CI；无fetch回归只用loopback。
+External tools acquire specifications; local configuration has no download field or table. The external producer domain above is an example, not used by CI; no-fetch regressions use loopback only.
 
-优先级：内置默认 < `[defaults]` < 单 spec < 明确 CLI 覆盖。路径相对配置文件目录解析，而不是调用时 cwd。CLI 生成选项覆盖要求只选择一个 spec（或配置只有一个 spec）；不能在多 spec 下含糊地覆盖 `--package-name`。
+Precedence is built-in defaults < `[defaults]` < individual spec < explicit CLI overrides. Paths resolve relative to the configuration file directory, not the invocation cwd. CLI generation option overrides require selecting one spec (or a configuration containing only one); `--package-name` cannot ambiguously override multiple specs.
 
-[去重](deduplicate-models.md)、[hoist](hoist-models.md)、[merge](merge-models.md)和[命名锁](name-lock.md)均已有 core/CLI/config 有界实现，ordinary inline error DTO 也参与这些操作。当前支持 runtime package、API 排除、client name、hoist qualification/lock，以及 exact FQ、portable regex 和 literal suffix merge exclusions。广义结构优化、不完整owner分配及超出[同版本owned目标合并](output-root-merge.md)的迁移仍待；selected-owner/disjoint-source-group root move及完整覆盖split adoption已有独立合同；[完整同root single-owner v3→v4 adoption](ownership-migration.md#locked-owner-adoption)与[完整现有 root 显式迁移](output-root-move.md)已提供同版本 v1–v4 原始 bytes/属性/完整 owner/shared/lock 状态保留与两侧 CAS/rollback；显式 disable/reset 与旧/新命名及产物差异报告、[同 root v2/v4 named-owner rename](output-owner-rename.md)已提供，后者要求 Kotlin membership/bytes 和锁 mode/profile/allocations/occurrences 不变，见 D08–D10。配置未知字段报错；不提供插件 DSL 或 `autoGenerateOnCompile` 开关，消费工程自行显式调用本地 CLI。
+[Deduplication](deduplicate-models.md), [hoist](hoist-models.md), [merge](merge-models.md), and [name locks](name-lock.md) all have bounded core/CLI/config implementations; ordinary inline error DTOs also participate. Runtime package, API exclusions, client name, hoist qualification/lock, and exact FQ, portable regex, and literal suffix merge exclusions are supported. General structural optimization, incomplete owner allocation, and migration beyond [same-version owned-target merge](output-root-merge.md) remain; selected-owner/disjoint-source-group root moves and complete-coverage split adoption have separate contracts. [Full same-root single-owner v3→v4 adoption](ownership-migration.md#locked-owner-adoption) and [explicit full existing-root migration](output-root-move.md) provide same-version v1–v4 preservation of original bytes/attributes/full owner/shared/lock state and CAS/rollback on both sides. Explicit disable/reset and old/new name and artifact difference reports, and [same-root v2/v4 named-owner rename](output-owner-rename.md), are available; the latter requires unchanged Kotlin membership/bytes and lock mode/profile/allocations/occurrences. See D08–D10. Unknown configuration fields fail; no plugin DSL or `autoGenerateOnCompile` option is provided, and consumer projects explicitly invoke the local CLI.
 
-配置排除正则已采用[可移植 ASCII 子集](merge-exclusions.md)，对生成的 FQ root name 做完整匹配；lookaround/backreference 等明确拒绝。literal suffix 对生成的 short classifier 做大小写敏感匹配。schema `pattern` 则沿用独立的 Kotlin 校验合同，不能与名称排除规则混为一谈。
+Configuration exclusion regex uses a [portable ASCII subset](merge-exclusions.md), matching the complete generated FQ root name; lookaround, backreferences, and similar constructs are explicitly rejected. Literal suffixes match generated short classifiers case-sensitively. Schema `pattern` follows a separate Kotlin validation contract and must not be confused with name exclusions.
 
-## 5. 输出、输入和 Gradle
+## 5. Output, input, and Gradle
 
-### 5.1 输出事务
+### 5.1 Output transactions
 
-[Named-owner adapter](output-ownership.md) 已有 version2 membership/shared-byte/partial-retention/reconcile/lock-time-replan/rollback；Direct --input 保持未启用锁时的 v1。[disjoint-root batch](output-batches.md)、[exact-match v1 ownership adoption](ownership-migration.md)、[共享 runtime](runtime-package.md)和[version3/4 命名锁事务](name-lock.md)均已接通。[遗留事务检测并拒绝](recovery-rejection.md)已实现；[named-owner rename](output-owner-rename.md)已提供同 root v2/v4 metadata-only 事务，精确 manifest+全部 owned lock bytes 在 preflight 和完整 sorted lock set 内作 CAS，保留所有 peers/shared memberships、不 reconcile、不写 Kotlin。[显式完整 root move](output-root-move.md)已提供具体 source/target 的同版本 v1–v4 bytes/属性/归属保留与完整排序两侧锁/CAS/正常失败 rollback；selected-owner/disjoint-source-group move和[完整覆盖split adoption](ownership-migration.md#split-locked-owner-adoption)已有独立合同；[显式donor向已有v4添加owner](ownership-migration.md#add-an-owner-to-an-existing-locked-inventory)已有保全部旧peer的unchanged子集合同；不完整分配、owner重新分配/移除和自动恢复仍待；[完整同root v3→v4 adoption](ownership-migration.md#locked-owner-adoption)已有独立metadata-only绑定/失败保旧合同，不承诺 crash atomicity。
+The [named-owner adapter](output-ownership.md) implements version 2 membership/shared-byte/partial-retention/reconcile/lock-time-replan/rollback; direct `--input` remains v1 when locking is disabled. [Disjoint-root batch](output-batches.md), [exact-match v1 ownership adoption](ownership-migration.md), [shared runtime](runtime-package.md), and [version 3/4 name-lock transactions](name-lock.md) are connected. [Stale transactions are detected and rejected](recovery-rejection.md). [Named-owner rename](output-owner-rename.md) provides same-root v2/v4 metadata-only transactions, CAS on exact manifest and all owned lock bytes at preflight and inside the complete sorted lock set, preserving all peers/shared memberships without reconciliation or Kotlin writes. [Explicit full root move](output-root-move.md) preserves same-version v1–v4 bytes/attributes/ownership for specified source/target, with full sorted locks on both sides, CAS, and normal-failure rollback. Selected-owner/disjoint-source-group moves and [complete-coverage split adoption](ownership-migration.md#split-locked-owner-adoption) have separate contracts. [Explicit donor addition of an owner to existing v4](ownership-migration.md#add-an-owner-to-an-existing-locked-inventory) has an unchanged-subset contract preserving all old peers. Incomplete allocation, owner reassignment/removal, and automatic recovery remain pending. [Full same-root v3→v4 adoption](ownership-migration.md#locked-owner-adoption) has a separate metadata-only binding and failure-preservation contract; crash atomicity is not promised.
 
-- 先完成生成及路径冲突检查，再碰目标文件；严禁先删 output 再解析。
-- manifest 记录 owner/spec、相对文件路径、内容 hash、共享 runtime owner 集合及格式版本。
-- 只删除 manifest 管理的旧文件；保护手写文件，拒绝覆写不归本工具所有的同名文件，提供明确迁移流程。
-- 共享 runtime 同包必须同输出根，内容一致；全部 owner 删除后才清理。
-- `--spec` 单独生成不能把没选中的其他 spec 当作已删除。普通完整配置用于 owner 判定；清空规格也要有显式 reconcile 路径。显式 owner rename 的 full/partial 均保留当前 config 不存在的 peer owners。
-- output 迁移后的旧根不能自动发现。[显式完整 root move](output-root-move.md)只处理选定的源／目标与全 manifest-owned 范围；保留各侧 unowned 文件、原 root/目录与协调 sidecar，不递归清空目录。selected-owner与disjoint配置source group见该合同；owned target merge和历史root发现仍待。
-- 对输出根加跨进程锁，跨多个根按稳定顺序加锁；共享根的 spec 串行提交。
-- 路径禁止绝对路径、`..`、越界符号链接；包名/规格名不可变成任意磁盘路径。
-- staging 在目标同一文件系统；受控提交失败恢复旧代码、manifest 和输出根内由 manifest 管理的命名锁。
-- 不承诺跨文件/文件系统 crash-atomic 更新。检测遗留事务后拒绝继续，故障后保留证据，不盲删备份；没有自动 recover 命令。
-- 相同内容不改写，保持 mtime；成功后清理暂存文件。
+- Finish generation and path-collision checks before touching target files; never delete output before parsing.
+- The manifest records owner/spec, relative paths, content hashes, shared runtime owner sets, and format version.
+- Delete only old files managed by the manifest; protect handwritten files, reject overwriting same-name files not owned by the tool, and provide an explicit migration path.
+- Shared runtime in the same package must use the same output root and identical content; clean it only after all owners are removed.
+- Generating a single `--spec` must not treat unselected specs as deleted. Ordinary full configuration determines owners; clearing specs also needs an explicit reconcile path. Both full and partial explicit owner rename preserve peers absent from current configuration.
+- Old roots cannot be automatically discovered after output migration. [Explicit full root move](output-root-move.md) handles only the selected source/target and full manifest-owned scope, preserving unowned files on each side, original roots/directories, and coordination sidecars without recursively clearing directories. See that contract for selected-owner and disjoint-configuration source groups; owned-target merge and historical root discovery remain pending.
+- Lock output roots across processes in a stable order across multiple roots; specs sharing a root commit serially.
+- Reject absolute paths, `..`, and escaping symlinks; package/spec names must not become arbitrary disk paths.
+- Stage on the target filesystem; controlled commit failure restores old code, manifest, and manifest-managed name locks within the output root.
+- Cross-file/filesystem crash-atomic updates are not promised. Reject continuation after detecting a stale transaction, preserve evidence after failure, and do not blindly delete backups; no automatic recover command exists.
+- Do not rewrite identical content, preserving mtime; clean staged files after success.
 
-### 5.2 本地 file/stdin 与外部获取
+### 5.2 Local file/stdin and external acquisition
 
-[输入契约](local-input.md)固定direct `--input -` 单流、EOF/8MiB+1 detection/strictJSON/readerror与同core输出；本地多spec配置保留，不消费/replay stdin。旧download命令与下载元数据明确拒绝，这是CLI/config破坏性迁移，不改变generated Kotlin/wire或manifest/config版本。
+The [input contract](local-input.md) fixes direct `--input -` to one stream, EOF/8MiB+1 detection/strict JSON/read errors, and core-equivalent output. Local multi-spec configuration remains and does not consume or replay stdin. Old download commands and download metadata are explicitly rejected; this is a CLI/config breaking migration without changing generated Kotlin/wire or manifest/config versions.
 
-下载URL/鉴权/代理/redirect/retry/cache/输入原子替换属于curl/CI等外部工具，不增加内置fetch或子进程wrapper，也不拉取external `$ref`。调用方须观察上游退出状态；有效JSON后producer失败不能回滚已完成生成，需要时先完成外部文件获取再生成。
+Download URLs/authentication/proxies/redirect/retry/cache/atomic input replacement belong to external tools such as curl/CI. Do not add built-in fetch or subprocess wrappers or fetch external `$ref`. Callers must inspect upstream exit status; a producer failing after valid JSON cannot roll back completed generation. When needed, finish external file acquisition before generating.
 
-### 5.3 本地 CLI 消费接入
+### 5.3 Local CLI consumer integration
 
-- 不开发或发布正式 Gradle 生成插件；生成器只提供本地 native CLI 和 Go core。
-- 使用文档给出显式 CLI 生成与 JVM `main`、KMP `commonMain`、Android 生成源目录配置；可提供手写 `Exec` 示例，但不能借此宣称平台已验收。
-- 规格获取完全外置；编译不触发隐式联网，也不自动获取 latest CLI。
-- 消费工程自行控制是否在编译前调用 CLI，固定本地 executable 版本、OS/arch 和 checksum；已有生成源目录无需自动任务也可使用。
-- 多 spec、共享输出和命名锁的并发/事务规则由 CLI 测试证明，不引入插件 DSL、TestKit 或插件缓存承诺。
-- 平台声明以真实 freshly-generated 编译和运行结果为准；Gradle/JDK 只是消费工程验证工具，不是生成器运行依赖。
+- Do not develop or release a formal Gradle generation plugin; the generator provides only a local native CLI and Go core.
+- Usage documentation shows explicit CLI generation and JVM `main`, KMP `commonMain`, and Android generated-source configuration. A handwritten `Exec` example may be provided but cannot establish platform acceptance.
+- Specification acquisition is entirely external; compilation does not implicitly access the network or automatically fetch the latest CLI.
+- Consumer projects decide whether to invoke the CLI before compilation and pin local executable version, OS/architecture, and checksum; existing generated source directories work without automatic tasks.
+- CLI tests prove concurrency/transaction rules for multi-spec, shared output, and name locks; no plugin DSL, TestKit, or plugin-cache promise is introduced.
+- Platform claims depend on actual freshly generated compilation and runtime results; Gradle/JDK are consumer verification tools, not generator runtime dependencies.
 
-## 6. 技术选型与兼容基线
+## 6. Technology choices and compatibility baseline
 
-当前技术选型与后续扩展边界：
+Current technology choices and later extension boundaries:
 
-| 位置 | 建议 | 约束 |
+| Area | Choice | Constraints |
 |---|---|---|
-| JSON / 数据结构 | `encoding/json` Token decoder + ordered internal AST | 保留有意义的声明顺序、数值精度，schema slot 类型不丢失 |
-| CLI / 配置 | 已实现封闭 flags parser、固定版本 TOML 1.1 库读取现有封闭 schema/local配置+disjoint-root batch；固定 byte/depth/work 预算 | 配置 schema 版本化、未知字段失败 |
-| 错误 | `core.Diagnostics` implements `error` | 对外稳定诊断 code，不依赖错误字符串做协议 |
-| 输入适配 | 标准库 `io`/`os` boundedfile/stdin | 获取交外部工具，不用HTTP/子进程下载适配；core保持纯byte输入 |
-| 测试 | Go `testing`、native fuzz、真实进程/临时 FS | 最小 fixture、可审查快照，生成结果必须编译和运行 |
-| fingerprint | 稳定 hash（如 SHA-256） | hash 前明确 canonicalization 与版本，不用默认 HashMap hasher |
-| YAML | vendored `go.yaml.in/yaml/v3` v3.0.4 | YAML 官方组织维护、纯 Go；保留 MIT/Apache/NOTICE，产品另管 JSON-compatible tree 与 alias 预算 |
+| JSON / data structures | `encoding/json` Token decoder + ordered internal AST | Preserve meaningful declaration order and numeric precision without losing schema slot types |
+| CLI / configuration | Implemented closed flags parser, pinned TOML 1.1 library for existing closed schema/local configuration and disjoint-root batch; fixed byte/depth/work budgets | Version configuration schemas; reject unknown fields |
+| Errors | `core.Diagnostics` implements `error` | Stable external diagnostic codes; do not use error strings as a protocol |
+| Input adapter | Standard library `io`/`os` bounded file/stdin | External tools acquire inputs; no HTTP/subprocess download adapter; core retains pure byte input |
+| Tests | Go `testing`, native fuzz, real processes/temporary FS | Minimal fixtures and reviewable snapshots; generated output must compile and run |
+| Fingerprint | Stable hash (such as SHA-256) | Define canonicalization and version before hashing; do not use a default HashMap hasher |
+| YAML | Vendored `go.yaml.in/yaml/v3` v3.0.4 | Maintained by the official YAML organization, pure Go; retain MIT/Apache/NOTICE; product separately manages the JSON-compatible tree and alias budgets |
 
-P0 固定 Go toolchain、Kotlin、serialization、Ktor、datetime、Gradle、JDK、AGP 的**真实可编译组合**，提交版本清单和 lock。日期类型至少验证 `kotlin.time.Instant` 与 `kotlinx.datetime.LocalDate` 的 serialization 支持；不能只写“支持 Kotlin 1.9+”。
+P0 pins an **actually compilable combination** of Go toolchain, Kotlin, serialization, Ktor, datetime, Gradle, JDK, and AGP, with a committed version list and lock. Date types must at least verify serialization support for `kotlin.time.Instant` and `kotlinx.datetime.LocalDate`; “Kotlin 1.9+ supported” alone is insufficient.
 
-默认 runtime 由生成 Kotlin 源码提供。SSE 首期采用 `client.sse` 后端，调用方配置 Ktor SSE/ContentNegotiation；更换流式后端时需重新验证事件、取消与重连契约。
+The default runtime is supplied by generated Kotlin source. Initial SSE uses the `client.sse` backend, with callers configuring Ktor SSE/ContentNegotiation; changing streaming backends requires renewed verification of event, cancellation, and reconnection contracts.
 
-## 7. 开发顺序与阶段验收
+## 7. Development order and phase acceptance
 
-| 阶段 | 当前实现状态 | 尚未关闭的工作与退出条件 |
+| Phase | Current implementation status | Open work and exit criteria |
 |---|---|---|
-| P0 契约与工具链 | 已有矩阵、合成 fixture、命名/nullable/SSE/引用等合同及候选工具链组合 | 完整矩阵仍有开放边界；最低依赖、其他平台和公开 Go module 坐标待确认。当前候选范围已冻结，不能外推成完整 P0 验收 |
-| P1 最小纵切 | 已实现 Go core/CLI、JSON Loader、基础模型、Kotlin emitter、单 owner 安全写出；已有 Go/进程/事务和 Kotlin 测试入口 | 基础纵切见 [P1 合同](p1-contract.md)。不把完整配置或一般模型语义计入该纵切；当前有界候选 R02–R05 已通过，新候选仍需重新绑定验收证据 |
-| P2 模型语义 | 已有 enum/nullable/特殊标量/value class/Patch、named/internal refs、借用集合、union/allOf/hierarchy、默认值、const 与 opt-in 校验的多项有界实现 | [D01–D06](remaining-work.md#2-尚未完成的功能覆盖)：一般引用/nullable 图、组合/所有权、一般 default/const/enum 与约束聚合、Boolean/tuple 边界。退出需对应 M01–M13/API/wire 合同与新候选运行证据 |
-| P3 HTTP 与 SSE | 已有 tag/client/method/参数、JSON body/response、typed inline error DTO、SSE Flow 与 wire/分块/取消测试入口 | [D07](remaining-work.md#2-尚未完成的功能覆盖)：更广参数/style/media/组合和 error roots；当前近似映射保持明确。A01–A08 的完整阶段验收未关闭 |
-| P4 规模与稳定性 | 已有 dedup/hoist/merge、exact/regex/suffix exclusions、plain class、共享 runtime、core 与 CLI/config 命名锁、显式 disable/reset 及同 root owner rename | [D08–D09](remaining-work.md#2-尚未完成的功能覆盖)：一般结构优化与锁生命周期；选项交互、资源和性能证据分别验收，不由单个 profile 推导 |
-| P5 工具可靠性 | 已有多 spec/config、manifest/reconcile、metadata-only owner rename、正常失败回滚、并发锁、file/stdin、check、warning policy、metrics、遗留事务检测并拒绝 | [D09–D10](remaining-work.md#2-尚未完成的功能覆盖)：迁移生命周期与超出现有 envelope 的配置需求（封闭 schema 的 TOML 语法已完成）；统一可靠性/确定性证据见 R02/R04。当前合同不承诺自动 recover 或 crash atomicity |
-| P6 本地消费生态 | 已有本地 CLI 的 JVM 消费工程及历史宿主 CI/打包入口 | Android、KMP metadata/JS/Native、其他宿主/引擎与最低依赖组合仍需实际验收；不交付正式 Gradle 插件。新候选的 host/runtime 证据分别关闭 R05 |
-| P7 发布 | `v0.2.0-alpha.1` 已发布，其 R01–R08 已关闭；已有文档、MIT/attribution、打包与安装检查 | 后续源码必须重新绑定候选并完成对应审查、版本/包安装与发布授权；已发布版本的勾选和资产不自动覆盖近期实现 |
-| P8 YAML | 已实现有界 Loader Adapter、core/native/config 与同义 JSON/YAML fixture | 完整 YAML/merge/非 JSON tags/keys/general source spans、各宿主新候选证据仍开放；不改模型/API generator，不重写历史 JSON 候选范围 |
+| P0 Contracts and toolchain | Matrix, synthetic fixtures, naming/nullable/SSE/reference and other contracts, and candidate toolchain combination exist | The complete matrix still has open boundaries; minimum dependencies, other platforms, and public Go module coordinates remain to be determined. Frozen candidate scope cannot be extrapolated to complete P0 acceptance |
+| P1 Minimum vertical slice | Go core/CLI, JSON Loader, basic models, Kotlin emitter, and safe single-owner output are implemented; Go/process/transaction and Kotlin test entry points exist | See the [P1 contract](p1-contract.md). Full configuration and general model semantics are not part of this slice; R02–R05 passed for the bounded candidate, but new candidates must rebind acceptance evidence |
+| P2 Model semantics | Multiple bounded implementations cover enum/nullable/special scalars/value class/Patch, named/internal refs, borrowed collections, union/allOf/hierarchy, defaults, const, and opt-in validation | [D01–D06](remaining-work.md#2-remaining-feature-coverage): general reference/nullable graphs, composition/ownership, general default/const/enum and constraint aggregation, Boolean/tuple boundaries. Exit requires corresponding M01–M13/API/wire contracts and new-candidate execution evidence |
+| P3 HTTP and SSE | Tag/client/method/parameters, JSON body/response, typed inline error DTOs, SSE Flow, and wire/chunking/cancellation test entry points exist | [D07](remaining-work.md#2-remaining-feature-coverage): broader parameters/styles/media/composition and error roots; current approximations remain explicit. Full A01–A08 phase acceptance is open |
+| P4 Scale and stability | Dedup/hoist/merge, exact/regex/suffix exclusions, plain class, shared runtime, core and CLI/config name locks, explicit disable/reset, and same-root owner rename exist | [D08–D09](remaining-work.md#2-remaining-feature-coverage): general structural optimization and lock lifecycle; option interaction, resource, and performance evidence are accepted separately, not inferred from one profile |
+| P5 Tool reliability | Multi-spec/config, manifest/reconcile, metadata-only owner rename, normal-failure rollback, concurrent locks, file/stdin, check, warning policy, metrics, and stale transaction detection/rejection exist | [D09–D10](remaining-work.md#2-remaining-feature-coverage): migration lifecycle and configuration needs beyond the current envelope (closed-schema TOML syntax is complete); see R02/R04 for unified reliability/determinism evidence. Current contracts promise neither automatic recovery nor crash atomicity |
+| P6 Local consumer ecosystem | A local-CLI JVM consumer project and historical host CI/packaging entry points exist | Android, KMP metadata/JS/Native, other hosts/engines, and minimum dependency combinations still require actual acceptance; no formal Gradle plugin is delivered. New-candidate host/runtime evidence closes R05 separately |
+| P7 Release | `v0.2.0-alpha.1` is published with R01–R08 closed; documentation, MIT/attribution, packaging, and installation checks exist | Later source must be rebound to a candidate and complete corresponding review, version/package installation, and release authorization; published checkboxes and assets do not automatically cover recent implementation |
+| P8 YAML | Bounded Loader Adapter, core/native/config, and equivalent JSON/YAML fixtures are implemented | Full YAML/merge/non-JSON tags/keys/general source spans and new-candidate evidence on each host remain open; do not change the model/API generator or rewrite historical JSON candidate scope |
 
-依赖链是 P0 → P1 → P2 → P3 → P4 → P5 → P6 → P7；输入校验与安全写出从 P0/P1 开始，不等到最后补。按“一个 fixture → 一条语义 → 编译/运行证明”迭代，不先堆完整 parser 再集中测试。
+The dependency chain is P0 → P1 → P2 → P3 → P4 → P5 → P6 → P7. Input validation and safe output begin in P0/P1 rather than being deferred. Iterate “one fixture → one semantic behavior → compilation/runtime proof”; do not accumulate a complete parser before testing.
 
-不先承诺速度倍数或工期。P1/P2 完成后按生成器耗时、Kotlin 编译耗时和复杂规则返工量估算剩余工作。
+Do not promise a speed multiplier or schedule in advance. After P1/P2, estimate remaining work from generator time, Kotlin compilation time, and rework on complex rules.
 
-### 7.1 剩余工作的执行与关闭顺序
+### 7.1 Execution and closure order for remaining work
 
-完整路线图的开放范围以[剩余工作 D01–D10](remaining-work.md#2-尚未完成的功能覆盖)为准。下面将开发、资源和平台验收排成可独立检查的任务；每个任务可分多次增量实现，不能因为一个增量通过就关闭整个方向。既有合同明确接受的输入必须保留，明确的范围外能力不因本表成为交付承诺。
+[Remaining work D01–D10](remaining-work.md#2-remaining-feature-coverage) defines the open scope of the complete roadmap. The tasks below make development, resource, and platform acceptance independently checkable; each can take multiple increments, and one passing increment does not close the direction. Preserve inputs explicitly accepted by existing contracts; explicitly out-of-scope capabilities do not become delivery promises through this table.
 
-E03 的[枚举集合子节点默认值](collection-reference-child-defaults.md)已限定在原物理 List/typed Map 的直接内联枚举或已准入枚举引用元素上独立校验，也支持引用以直接内联枚举或命名枚举引用为叶的已准入命名集合或别名；后者可经过已准入命名集合及别名。[普通标量子节点默认值](inline-builtin-collection-child-defaults.md)另限普通 named DTO 的直接内联 builtin6、UUID 和 date/date-time 元素。[已准入标量引用子节点](scalar-reference-collection-child-defaults.md)分别支持 builtin6、UUID、date/date-time 和 byte/binary 的独立注解，已准入标量及有限集合组件、命名别名和外层字段/对象可各自保有独立默认值，集合路径可经过已准入命名集合及别名；物理子节点引用以已准入标量引用或直接内联 builtin/UUID/temporal/byte 为叶的命名集合或别名时也能独立校验集合值注解。内部中间集合引用、其他默认值角色和该任务的整体关闭仍需逐项验收。
+E03 [enum collection child defaults](collection-reference-child-defaults.md) independently validate direct inline enum or admitted enum-reference elements of original physical List/typed Maps. They also support references to admitted named collections or aliases with direct inline enum or named enum-reference leaves; the latter can pass through admitted named collections and aliases. [Ordinary scalar child defaults](inline-builtin-collection-child-defaults.md) are separately limited to direct inline builtin6, UUID, and date/date-time elements on ordinary named DTOs. [Admitted scalar reference children](scalar-reference-collection-child-defaults.md) independently support builtin6, UUID, date/date-time, and byte/binary annotations; admitted scalar and finite collection components, named aliases, and outer fields/objects can each own independent defaults, and collection paths can pass through admitted named collections and aliases. Physical children referencing a named collection or alias with admitted scalar references or direct inline builtin/UUID/temporal/byte leaves can also independently validate collection-value annotations. Internal intermediate collection references, other default roles, and overall task closure still require individual acceptance.
 
-| 顺序 | 任务 | 完成所需产物与证据 |
+| Order | Task | Deliverables and evidence required |
 |---|---|---|
-| E01 | 建立当前源码基线 | 绑定 source、fixture、consumer、binary 和工具链；执行完整 `all` 门禁并保存结果。旧 alpha 的运行记录不作为新源码通过证据 |
-| E02 | D01 引用与 D02 组合/层级 | 将剩余角色逐项形成最小接受/拒绝用例；实现共享解析与唯一声明归属、nullable 优先级、dispatch/Unknown，覆盖循环、缓存高度与原 Pointer；fresh Kotlin 构造/API 与 JSON 运行断言 |
-| E03 | D03 默认值 | [enum-reference collection component factories](referenced-enum-collection-factories.md)补充 finite List/Map 根、独立 alias 和 enum 来源注解，保 actual source/export/check/codec 与不继承；[raw tuple field/root/alias own defaults](tuple-raw-defaults.md)已接通实际 List<JsonElement> codec 与完整来源/值预算，保 required/Patch/独立注解及既有 JSON 判重；已修复 [nullable enum 收窄别名自身工厂](narrowed-enum-wrapper-defaults.md) 的原词表校验；继续按 root/field/member/container 及 named/internal/composed 来源列出剩余角色；逐项实现自身注解、不继承、required/Patch 抑制前校验、最终类型绑定和整树预算；非法默认值诊断及实际 codec 消费验证 |
-| E04 | D04 const/enum 与 D05 约束 | 已覆盖 [pinned const 数据字段](pinned-structured-const.md)、[discarded const 来源验证](discarded-structured-const.md)及 [typeless String/null nullable 推断](implicit-string-enum-null.md)；继续逐项处理尚未支持的组合、跨贡献约束、whole-object counts、typed/nominal/projected uniqueness；保留已声明的开放词表和近似合同，新增严格语义须单列 opt-in 或迁移影响；测试构造、decode、HTTP/SSE 与 default 一致性 |
-| E05 | D06 Boolean/tuple/递归边界 | [Boolean tuple tails](tuple-boolean-tails.md)已接通 shared typed/raw projection、原 prefix 校验与明确近似警告；明确 false、结构化/ref/composed tuple 与 nullable recursive edge 的 Kotlin 表示及拒绝边界；实现有界图和资源守卫，用正反 fixture、Go/native 与 Kotlin JSON 断言验证，保留有损诊断 |
-| E06 | D07 HTTP 参数/媒体/错误体 | 已补 [direct form 字段自身默认值](form-field-defaults.md)，保原 literal/enum/check、required 抑制与 optional getter/编码语义；逐项补齐剩余 style、结构参数、composition/projection 和非 ordinary error roots；同步请求/响应上下文，验证真实 call-site、URL/header/body/media/error/cancellation，不扩大自动错误分派或 SSE 重连保证 |
-| E07 | D08 优化与资源 | 已消除 [discarded const 临时 initializer](discarded-const-validation.md) 的已测分配瓶颈；继续扩展 union/hierarchy/递归和 nested-only shape 的等价规划，验证 default/check/codec/context/owner 身份、命名锁和 alias 迁移；覆盖声明过的 pairwise/全开组合，独立测量宽×深编译资源和下游成本 |
-| E08 | D09 迁移与 D10 配置 | partial/disjoint root move、[多 owner 选择](output-root-move.md#selected-owner-moves)、完整 split/donor adoption、同版本 owned-target merge、完全锁定同 profile owner reassignment 和 retained-source partial adoption 已有独立合同与故障测试；继续实现尚未准入的 legacy/unlocked/不完整分配接管、更广 profile 原子重分配及其他明确迁移。将超出当前配置 schema 的具体需求显式列出再实现。不得删 manifest/锁绕过迁移；已完成的 TOML 语法不重列为缺口 |
-| E09 | 平台、工具链与输入验收 | 对声明的平台执行当前源码的完整受支持 profile；分别记录 Android 真机、KMP targets、CLI 宿主和最低依赖组合结果。JSON/有界 YAML 共用语义与离线安全合同；无设备或缺依赖的检查保持未验证 |
-| E10 | 最终统一回归与交付准备 | 在最后一次实现后重跑完整门禁、确定性/失败保旧/选项交互及包安装检查；同步矩阵、合同、使用说明与 migration。发布操作另依 R08 获取具体授权，未发布不妨碍如实交付本地实现与验收结果 |
+| E01 | Establish current source baseline | Bind source, fixture, consumer, binary, and toolchain; run and record the full `all` gate. An old alpha run is not pass evidence for new source |
+| E02 | D01 references and D02 composition/hierarchy | Form minimal acceptance/rejection cases for remaining roles; implement shared resolution, unique declaration ownership, nullable precedence, dispatch/Unknown, covering cycles, cache height, and original Pointers; fresh Kotlin constructor/API and JSON runtime assertions |
+| E03 | D03 defaults | [Enum-reference collection component factories](referenced-enum-collection-factories.md) add finite List/Map roots, independent aliases, and enum-source annotations, preserving actual source/export/check/codec and non-inheritance. [Raw tuple field/root/alias own defaults](tuple-raw-defaults.md) connect actual List<JsonElement> codecs and full source/value budgets, preserving required/Patch/independent annotations and existing JSON uniqueness. Original vocabulary validation for [nullable enum narrowed alias own factories](narrowed-enum-wrapper-defaults.md) is fixed. Continue listing remaining roles by root/field/member/container and named/internal/composed source; implement independent annotations, non-inheritance, validation before required/Patch suppression, final type binding, and full-tree budgets for each; verify invalid-default diagnostics and actual codec consumption |
+| E04 | D04 const/enum and D05 constraints | [Pinned const data fields](pinned-structured-const.md), [discarded const source validation](discarded-structured-const.md), and [typeless String/null nullable inference](implicit-string-enum-null.md) are covered. Continue unsupported compositions, cross-contribution constraints, whole-object counts, and typed/nominal/projected uniqueness; preserve declared open vocabularies and approximation contracts. New strict semantics require separate opt-in or migration impact; test constructor, decode, HTTP/SSE, and default consistency |
+| E05 | D06 Boolean/tuple/recursive boundaries | [Boolean tuple tails](tuple-boolean-tails.md) connect shared typed/raw projection, original prefix validation, and explicit approximation warnings. Define Kotlin representation and rejection boundaries for false, structured/ref/composed tuples, and nullable recursive edges; implement bounded graphs and resource guards, verify with positive/negative fixtures, Go/native and Kotlin JSON assertions, and preserve lossy diagnostics |
+| E06 | D07 HTTP parameters/media/error bodies | [Direct form field own defaults](form-field-defaults.md) preserve original literals/enums/checks, required suppression, and optional getter/encoding semantics. Address remaining styles, structured parameters, composition/projection, and nonordinary error roots; synchronize request/response contexts and verify actual call-site, URL/header/body/media/error/cancellation without extending automatic error dispatch or SSE reconnect guarantees |
+| E07 | D08 optimization and resources | The measured [discarded const temporary initializer](discarded-const-validation.md) allocation bottleneck is removed. Extend equivalence planning for union/hierarchy/recursion and nested-only shapes, verifying default/check/codec/context/owner identity, name locks, and alias migration; cover declared pairwise/all-enabled combinations and independently measure width × depth compilation resources and downstream cost |
+| E08 | D09 migration and D10 configuration | Partial/disjoint root moves, [multiple-owner selection](output-root-move.md#selected-owner-moves), full split/donor adoption, same-version owned-target merge, fully locked same-profile owner reassignment, and retained-source partial adoption have separate contracts and failure tests. Continue unadmitted legacy/unlocked/incomplete allocation adoption, broader-profile atomic reassignment, and other explicit migrations. List concrete requirements beyond the current configuration schema before implementation. Do not delete manifests/locks to bypass migration; do not relist completed TOML syntax as a gap |
+| E09 | Platform, toolchain, and input acceptance | Execute the current source's complete supported profile on declared platforms; separately record Android device, KMP target, CLI host, and minimum dependency combination results. JSON/bounded YAML share semantic and offline safety contracts; checks lacking devices or dependencies remain unverified |
+| E10 | Final unified regression and delivery preparation | After the final implementation rerun full gates, determinism/failure preservation/option interactions, and package installation checks; synchronize matrix, contracts, usage documentation, and migration. Obtain specific release-operation authorization separately under R08; lack of publication does not prevent honest delivery of local implementation and acceptance results |
 
-执行时从 E01 开始，按依赖选择 E02–E08 的最小可验证增量，E09 可在有对应工具时穿插执行，最后关闭 E10。每项证据必须注明适用源码和 profile；不通过删除拒绝测试、放宽资源 cap、撤销现有支持或把“已有入口”改写为“已通过”来完成任务。
+Start with E01; choose the smallest verifiable E02–E08 increments in dependency order. E09 can run when corresponding tools are available; close E10 last. Each item of evidence must identify applicable source and profile. Do not complete tasks by deleting rejection tests, relaxing resource caps, withdrawing support, or rewriting “entry point exists” as “passed.”
 
-## 8. 验证策略与完成定义
+## 8. Verification strategy and definition of done
 
-### 8.1 四层验证
+### 8.1 Four verification layers
 
-1. Go 单元/性质测试：规范化、引用、命名、literal escaping、冲突、递归/深度限额；fuzz 不崩溃、不挂死。
-2. 生成快照：独立编写的最小 JSON，断言文件集合与关键声明；更新快照必须说明语义变化，不能整批 accept 代替审查。
-3. Kotlin 编译/运行：serialization round-trip、未知 enum/union、Patch 三态、required nullable、plain equality、请求 wire、SSE。
-4. 工具集成：临时文件系统故障、stdin pipe/EOF/read-limit/no-fetch、本地 CLI 多 spec、命名锁与 check 无写入、消费工程源集接入。
+1. Go unit/property tests: normalization, references, naming, literal escaping, collisions, recursion/depth limits; fuzzing must not crash or hang.
+2. Generated snapshots: independently authored minimal JSON asserting file sets and key declarations; snapshot updates must explain semantic changes, and bulk acceptance cannot replace review.
+3. Kotlin compilation/runtime: serialization round-trips, unknown enums/unions, three Patch states, required nullable, plain equality, request wire, and SSE.
+4. Tool integration: temporary filesystem failures, stdin pipe/EOF/read-limit/no-fetch, local CLI multi-spec, name locks and check without writes, and consumer project source-set integration.
 
-P1 普通 DTO 以 Go 单测和生成快照为主，模板首次落地或实质变更时做最小 Kotlin 编译 smoke；Patch、union、自定义 serializer 等复杂语义进入后续运行测试。完整阶段默认 `data_class` 全量跑；优化选项做 pairwise + 全开组合，尤其 hoist×merge、hoist×Patch、plain×enum/union、runtime×多 spec。`encodeDefaults` / `explicitNulls` 组合单独成表；不把默认 Json 的正确性外推到所有用户自定义配置。
+P1 ordinary DTOs primarily use Go unit tests and generated snapshots, with minimal Kotlin compilation smoke for initial or substantial template changes; complex Patch, union, and custom serializer semantics enter later runtime tests. The full phase runs default `data_class` throughout; optimization options use pairwise plus all-enabled combinations, especially hoist×merge, hoist×Patch, plain×enum/union, and runtime×multi-spec. Tabulate `encodeDefaults` / `explicitNulls` combinations separately; default Json correctness does not imply correctness for all user configurations.
 
-### 8.2 CI 分层
+### 8.2 CI layers
 
-- PR：gofmt、go vet、Go unit/process/race tests、fixture 快照、JVM 编译/运行、公开材料扫描。当前工作流已配置 Go 后置的独立 Kotlin/JVM models、HTTP/SSE 与选定 profile job，显式准备依赖后运行离线门禁；具体提交的 CI 通过状态仍需对应 run 证明。
-- 主分支：本地 CLI 消费集成、Android 编译、KMP metadata + JVM + JS、macOS 上 Native smoke；以真正通过的 target 声明支持。
-- 发布：Linux/macOS/Windows CLI smoke，归档 checksum，依赖许可/漏洞检查，包内容与安装验证。
+- PR: gofmt, go vet, Go unit/process/race tests, fixture snapshots, JVM compilation/runtime, and public-material scans. The current workflow configures separate Kotlin/JVM models, HTTP/SSE, and selected profile jobs after Go, running offline gates after explicit dependency preparation; a specific commit's CI pass still requires evidence from its run.
+- Main branch: local CLI consumer integration, Android compilation, KMP metadata + JVM + JS, and Native smoke on macOS; claim support only for targets that actually pass.
+- Release: Linux/macOS/Windows CLI smoke, archive checksums, dependency license/vulnerability checks, and package contents and installation verification.
 
-Go module 与 `scripts/kotlin/models.sh` 已可执行；当前源码最低要求为 Go 1.27.2，CI 和打包通过 `go.mod` 选择工具链。既有 Kotlin 编译/运行证据的组合为 Go 1.26.5、Kotlin 2.4.10、serialization 1.11.0、Gradle 9.3.1、JDK 21，宿主 macOS ARM64；提高 Go 版本不自动构成新的 Kotlin 编译/运行证据。Go 三宿主 CI 与首个 Draft Alpha 的六目标打包已有实际执行；Android/KMP 和完整运行语义矩阵仍是后续建设目标。
+The Go module and `scripts/kotlin/models.sh` are executable. Current source requires at least Go 1.27.2; CI and packaging select the toolchain through `go.mod`. Existing Kotlin compilation/runtime evidence used Go 1.26.5, Kotlin 2.4.10, serialization 1.11.0, Gradle 9.3.1, and JDK 21 on macOS ARM64; raising the Go version does not automatically produce new Kotlin compilation/runtime evidence. Three-host Go CI and six-target packaging for the first Draft Alpha have actually run; Android/KMP and the complete runtime semantics matrix remain later work.
 
-### 8.3 性能
+### 8.3 Performance
 
-用原创合成规格生成小/中/大规模样本，维度包括 operation 数、重复 shape、递归和 union 深度。分别记录 parse/resolve/analyze/name/emit/commit 耗时、峰值 RSS、文件/声明/行数、Kotlin 编译耗时和产物大小。只比较同机同输入同选项，不能拿 Go 生成速度代替 Kotlin 编译收益。
+Generate small/medium/large samples from original synthetic specifications, varying operation count, repeated shapes, recursion, and union depth. Record parse/resolve/analyze/name/emit/commit time, peak RSS, file/declaration/line counts, Kotlin compilation time, and artifact size separately. Compare only the same machine, input, and options; Go generation speed does not substitute for Kotlin compilation gains.
 
-### 8.4 首个完整版本 Definition of Done
+### 8.4 First complete release definition of done
 
-下列为广义完整版本标准；[JSON 候选清单](json-release-checklist.md)的有界交付不能自动替代它。若调整范围，需列明差异并明确批准，按 [版本策略](versioning.md)选择成熟度；文档收敛不等于 `1.0.0` 或发布授权。
+These are broad complete-release criteria; bounded delivery under the [JSON candidate checklist](json-release-checklist.md) does not automatically replace them. Scope changes require explicit differences and approval, with maturity selected under the [version policy](versioning.md); documentation convergence is not `1.0.0` or release authorization.
 
-- 兼容矩阵全部首期项有自动测试，所有行为差异都有明确记录和批准。
-- 默认与优化模式输出在支持工具链上编译；运行测试覆盖 wire，而不只有字符串匹配。
-- JSON file/stdin 生成离线可重复；规格获取外置、旧download/config明确拒绝；失败不破坏旧产物；不会误删手写文件。
-- Kotlin 消费工程可通过本地 CLI 显式生成并配置源集完成编译；不要求或交付正式 Gradle 生成插件。
-- 样本、快照、依赖及发布包通过贡献与发布检查。
-- YAML 增量有明确接受/拒绝及预算合同，JSON/YAML 同义树共享分析与生成；完整 YAML 不属于首期 DoD。
+- Every initial compatibility matrix item has automated tests, and all behavior differences are explicitly documented and approved.
+- Default and optimized output compiles on supported toolchains; runtime tests cover wire behavior, not just string matching.
+- JSON file/stdin generation is offline and reproducible; specification acquisition is external, old download/config is explicitly rejected, failures preserve old artifacts, and handwritten files are not accidentally deleted.
+- Kotlin consumer projects can explicitly generate with the local CLI and configure source sets to compile; a formal Gradle generation plugin is neither required nor delivered.
+- Samples, snapshots, dependencies, and release packages pass contribution and release checks.
+- YAML increments have explicit acceptance/rejection and budget contracts; equivalent JSON/YAML trees share analysis and generation. Full YAML is outside the initial DoD.
 
-## 9. 待确定决策
+## 9. Decisions still to make
 
-默认路线：**行为契约优先、JSON 首期、Go 本地 CLI、合成测试样例**。
+Default direction: **behavior contracts first, JSON initially, local Go CLI, synthetic test examples**.
 
-1. 项目许可证已确定为 [MIT](../LICENSE)。产品版本与预览阶段按[版本规则](versioning.md)管理；公开 Go module 发布坐标仍待确定，未改变当前 module 路径。
-2. 当前方法命名、配置排除正则子集、命名锁格式已分别有合同；显式 disable/reset 生命周期已有迁移报告与事务，同 root version2/4 named-owner rename 已有[独立合同](output-owner-rename.md)。[显式完整 root move](output-root-move.md)也已有同版本 v1–v4 完整原始状态迁移合同；selected-owner/disjoint-source-group move和完整覆盖split adoption已有独立合同；不完整分配、更广profile的owner重分配及升级流程仍待；完全锁定同profile已有[独立重分配合同](locked-owner-reassignment.md)；[完整同root v3→v4 single-owner adoption](ownership-migration.md#locked-owner-adoption)已有独立exact-preservation合同，D09 不整体关闭，见 [D09](remaining-work.md#2-尚未完成的功能覆盖)。
-3. 正式 Gradle 插件不在交付范围；本地 CLI 与显式消费工程源集配置足够，平台覆盖单独按执行证据验收。
-4. 首批 release binary 与 Kotlin/KMP targets，以真正通过的构建矩阵声明支持。
+1. The project license is [MIT](../LICENSE). Product versions and preview stages follow the [version policy](versioning.md); public Go module release coordinates remain undecided and the current module path is unchanged.
+2. Current method naming, configuration exclusion regex subset, and name-lock format each have contracts. Explicit disable/reset lifecycle has migration reports and transactions; same-root version 2/4 named-owner rename has a [separate contract](output-owner-rename.md). [Explicit full root move](output-root-move.md) has a same-version v1–v4 complete original-state migration contract; selected-owner/disjoint-source-group moves and complete-coverage split adoption have separate contracts. Incomplete allocation, broader-profile owner reassignment, and upgrades remain; fully locked same-profile reassignment has a [separate contract](locked-owner-reassignment.md). [Full same-root v3→v4 single-owner adoption](ownership-migration.md#locked-owner-adoption) has a separate exact-preservation contract. D09 remains open as a whole; see [D09](remaining-work.md#2-remaining-feature-coverage).
+3. A formal Gradle plugin is out of scope; a local CLI and explicit consumer source-set configuration suffice, with platform coverage accepted separately using execution evidence.
+4. Claim initial release binaries and Kotlin/KMP targets according to the build matrix that actually passes.
 
-以上决策及验证进展应随实现更新，不将设计目标表述为已实现能力。
+Update these decisions and verification progress alongside implementation; do not present design goals as implemented capabilities.
 
 ### Complete split locked ownership
 

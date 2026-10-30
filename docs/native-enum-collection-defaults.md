@@ -1,6 +1,6 @@
 # Native enum collection defaults on DTO fields
 
-[直接嵌套 native enum 集合默认值](nested-native-enum-collection-defaults.md)另授予 ordinary direct inline finite List/typed Map 树的 outer-own default，保既有五种 mapped scalar、原 exact default membership、逐层 nullable/counts、required/Patch/discarded 预验证、实际优化/锁身份与原预算。本页单层 grammar 不扩张其他 default 角色。
+[Directly nested native enum collection defaults](nested-native-enum-collection-defaults.md) separately admit the outer field's own default for ordinary direct inline finite List/typed Map trees. They preserve the five existing mapped scalars, exact original default membership, per-layer nullability and counts, validation before required/Patch suppression or discarding, actual optimizer and lock identity, and existing budgets. This page's single-layer grammar does not extend other default roles.
 
 Direct ordinary DTO arrays and typed dictionaries accept collection defaults whose direct items/values are integer, number or Boolean enums. The Kotlin element types remain Int, Long, Float, Double or Boolean; no enum wrapper or new codec is introduced.
 

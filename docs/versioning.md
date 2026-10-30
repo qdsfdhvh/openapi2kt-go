@@ -63,7 +63,7 @@ Examples after a hypothetical `0.1.0` release:
 
 For a fixed target version, increment the stage number (`alpha.1` → `alpha.2`); start a new stage at 1 (`alpha.2` → `beta.1` → `rc.1`). Change the target version when the intended scope or compatibility level changes, resetting the stage number. Numbers are not dates, commit counts or CI run IDs.
 
-`1.0.0` requires the [complete first-version definition of done](development-plan.md#84-首个完整版本-definition-of-done), or an explicitly approved and documented scope adjustment. It does not imply full OpenAPI/JSON Schema support, YAML, Android or KMP unless those contracts have actually been verified.
+`1.0.0` requires the [complete first-version definition of done](development-plan.md#84-first-complete-release-definition-of-done), or an explicitly approved and documented scope adjustment. It does not imply full OpenAPI/JSON Schema support, YAML, Android or KMP unless those contracts have actually been verified.
 
 ## Release discipline
 
